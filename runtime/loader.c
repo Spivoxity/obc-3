@@ -132,8 +132,6 @@ static void relocate(int size) {
 	       p = (value *) &dmem[base+i];
 
 	       switch (rbits) {
-	       case R_NONE:
-		    break;
 	       case R_WORD:
 		    (*p).i = m;
 		    break;
