@@ -124,18 +124,6 @@ static void put_value(int addr, int value, int reloc) {
      relocate(addr, reloc);
 }
 
-static void data_value(int value, int reloc) {
-     buf_grow(dbuf);
-     put_value(dloc, value, reloc);
-     dloc += 4;
-}
-
-static void data_symbol(symbol s) {
-     buf_grow(dbuf);
-     use_global(s, dbuf, dloc);
-     dloc += 4;
-}
-
 static int const_value(char *s) {
      /* We must allow both signed and unsigned (especially hex)
 	constants, so negative numbers must be treated separately.
@@ -147,13 +135,20 @@ static int const_value(char *s) {
      else
 	  return strtoul(s, NULL, 0);
 }
-     
+
+static void data_value(int value, int reloc) {
+     buf_grow(dbuf);
+     put_value(dloc, value, reloc);
+     dloc += 4;
+}
 
 static void data_word(char *s) {
+     buf_grow(dbuf);
      if (isdigit((int) s[0]) || s[0] == '-')
-	  data_value(const_value(s), R_WORD);
+	  put_value(dloc, const_value(s), R_WORD);
      else
-	  data_symbol(find_symbol(s));
+	  use_global(find_symbol(s), dbuf, dloc);
+     dloc += 4;
 }
 
 /* Constant pool */
@@ -177,12 +172,14 @@ static int find_const(int value, symbol sym) {
      i = nconsts++;
      buf_grow(const_sym);
      const_sym[i] = sym;
+     buf_grow(dbuf);
 
      if (sym == NULL)
-	  data_value(value, R_WORD);
+	  put_value(dloc, value, R_WORD);
      else
-	  data_symbol(sym);
+	  use_global(sym, dbuf, dloc);
 
+     dloc += 4;
      return i;
 }
 
@@ -205,7 +202,10 @@ static int find_dconst(int val0, int val1) {
 }
 
 static int make_const(char *s) {
-     return find_const(0, find_symbol(s));
+     if (isdigit((int) s[0]) || s[0] == '-')
+	  return find_const(const_value(s), NULL);
+     else
+	  return find_const(0, find_symbol(s));
 }
 
 
@@ -476,7 +476,7 @@ static int get_arg(char tmpl, char *rand, template t) {
      case '2':
      case 'N':
 	  if (isdigit((int) rand[0]) || rand[0] == '-')
-	       return strtol(rand, NULL, 0);
+	       return const_value(rand);
 	  else
 	       return sym_value(find_symbol(rand));
 
@@ -542,8 +542,7 @@ static void const_head(int prim, int code, int reloc,
 
 typedef struct {
      phrase sm_addr;		/* Pointer to the JPROC instruction */
-     symbol sm_symbol;		/* Symbol for the stack map, or NULL */
-     unsigned sm_value;		/* Value of the bitmap if no symbol */
+     char *sm_text;		/* Symbol or numeric value */
 } stackmap;
 
 static growdecl(smbuf);
@@ -568,10 +567,7 @@ static void fix_stackmaps(void) {
 	  data_value(iloc + sm->sm_addr->q_addr + 1, R_CODE);
 
 	  /* The stack map */
-	  if (sm->sm_symbol == NULL)
-	       data_value(sm->sm_value, R_WORD);
-	  else
-	       data_symbol(sm->sm_symbol);
+	  data_word(sm->sm_text);
      }
 
      data_value(0, R_WORD);
@@ -612,10 +608,11 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 
      case D_CONST:
 	  check_inproc(dir);
-	  if (fits(i = const_value(rands[0]), 16))
+	  if ((isdigit((int) rands[0][0]) || rands[0][0] == '-')
+	      && fits(i = const_value(rands[0]), 16))
 	       gen_inst("PUSH %d", i);
 	  else
-	       gen_inst("LDKW %d", find_const(i, NULL));
+	       gen_inst("LDKW %d", make_const(rands[0]));
 	  break;
 
      case D_GLOBAL:
@@ -722,13 +719,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  check_inproc(dir);
 	  buf_grow(smbuf);
 	  smbuf[smp].sm_addr = put_mark(NULL);
-	  if (isdigit((int) rands[0][0])) {
-	       smbuf[smp].sm_symbol = NULL;
-	       smbuf[smp].sm_value = strtoul(rands[0], NULL, 0);
-	  } else {
-	       smbuf[smp].sm_symbol = find_symbol(rands[0]);
-	       smbuf[smp].sm_value = 0;
-	  }
+	  smbuf[smp].sm_text = must_strdup(rands[0]);
 	  smp++;
 	  break;
 
@@ -853,7 +844,7 @@ void init_linker(char *outname, char *interp) {
 /* end_linking -- write later parts of object file */
 void end_linking(void) {
      trailer t;
-     int fsize, csize, symcount = 0, nwritten;
+     int fsize, csize, symcount = 0;
      const char *magic = MAGIC;
 
      csize = ftell(binfp) - start;
@@ -889,8 +880,7 @@ void end_linking(void) {
      put4(t.nprocs, (sflag ? 0 : nprocs));
      put4(t.nmods, (sflag ? 0 : nmods));
      put4(t.nsyms, symcount);
-     nwritten = fwrite(&t, sizeof(trailer), 1, binfp);
-
+     fwrite(&t, sizeof(trailer), 1, binfp);
      fclose(binfp);
 }
 

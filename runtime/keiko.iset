@@ -29,37 +29,11 @@
 #
 
 defs {
-
-#define NOACC
-
-/* Macros for caching the stack top in an accumulator */
-#define M(k)  		sp += k
-#ifdef NOACC
-#define P(k)		sp += k
-#define S(k)		
-#define G
-#define A(k)		sp[k]
-#define IFACC(x)
-#else
-#define P(k)		sp[0] = acc; sp += k
-#define S(k)		sp[k] = acc
-#define G		acc = sp[0]
-#define A(k)		acc
-#define IFACC(x)        x
-#endif
-
 #define local(n) 	((uchar *) bp + (n))
 #define parent(a, t)	indir(bp[SL].x + a, t)
 #define indir(p, t) 	(* (t *) (p))
-#define subs(p, n, t)	(* (((t *) (p)) + n))
+#define subs(p, n, t)	((t *) (p))[n]
 #define const(n)	cp[CP_CONST+n]
-
-#define type(t) type##t
-#define typei int
-#define typef float
-#define typex uchar *
-#define typep value *
-
 #define jump(lab)	pc = pc0 + lab
 }
 
@@ -67,7 +41,7 @@ defs {
 # CONSTANTS
 
 inst PUSH {[-1,6,1] 1 2} V.i {$a}
-inst LDKW {1 2} 	V.* {const($a).$t}
+inst LDKW {1 2} 	V.i {const($a).i}
 inst LDKF {1 2}		V.f {const($a).f}
 
 
@@ -104,12 +78,12 @@ inst STOREF 0		S2  {indir($2.x, float) = $1.f;}
 # LDLs n :: --> mem_s[bp+n]
 # STLs n :: a --> []; mem_s[bp+n] := a
 inst LDLW {[-24,-4,4] [12,32,4] 1 2} \
-     	  	        V.* {indir(local($a), type($t))}
+     	  	        V.i {indir(local($a), int)}
 inst LDLS {1 2}		V.i {indir(local($a), short)}
 inst LDLC {1 2}		V.i {indir(local($a), uchar)}
 inst LDLF {1 2}		V.f {indir(local($a), float)}
 inst STLW {[-24,-4,4] [12,32,4] 1 2} \
-     	  	        S1  {indir(local($a), type($u1)) = $1.*;}
+     	  	        S1  {indir(local($a), int) = $1.i;}
 inst STLS {1 2}		S1  {indir(local($a), short) = $1.i;}
 inst STLC {1 2}		S1  {indir(local($a), uchar) = $1.i;}
 inst STLF {1 2}		S1  {indir(local($a), float) = $1.f;}
@@ -117,11 +91,11 @@ inst STLF {1 2}		S1  {indir(local($a), float) = $1.f;}
 # Load/store global
 # LDGs n :: --> mem_s[const(n)]
 # STGs n :: a --> []; mem_s[const(n)] := a
-inst LDGW {K L}		V.* {indir(const($a).x, type($t))}
+inst LDGW {K L}		V.i {indir(const($a).x, int)}
 inst LDGS {K L}		V.i {indir(const($a).x, short)}
 inst LDGC {K L}		V.i {indir(const($a).x, uchar)}
 inst LDGF {K L}		V.f {indir(const($a).x, float)}
-inst STGW {K L}		S1  {indir(const($a).x, type($u1)) = $1.*;}
+inst STGW {K L}		S1  {indir(const($a).x, int) = $1.i;}
 inst STGS {K L}		S1  {indir(const($a).x, short) = $1.i;}
 inst STGC {K L}		S1  {indir(const($a).x, uchar) = $1.i;}
 inst STGF {K L}		S1  {indir(const($a).x, float) = $1.f;}
@@ -129,17 +103,17 @@ inst STGF {K L}		S1  {indir(const($a).x, float) = $1.f;}
 # Indexed load/store
 # LDNs n :: a -> mem_s[a+n]
 # STNs n :: a, b -> []; mem_s[b+n] := a
-inst LDNW {[-16,40,4] 1 2} M.* {indir($1.x + $a, type($t))}
-inst STNW {[-16,20,4] 1 2} S2  {indir($2.x + $a, type($u1)) = $1.*;}
+inst LDNW {[-16,40,4] 1 2} M.i {indir($1.x + $a, int)}
+inst STNW {[-16,20,4] 1 2} S2  {indir($2.x + $a, int) = $1.i;}
 
 # Double indexed load/store
 # LDIs :: a, b --> mem_s[a+s*b]
 # STIs :: a, b, c --> []; mem_s[b+s*c] := a
-inst LDIW 0		B.* {subs($1.x, $2.i, type($t))}
+inst LDIW 0		B.i {subs($1.x, $2.i, int)}
 inst LDIF 0		B.f {subs($1.x, $2.i, float)}
 inst LDIS 0		B.i {subs($1.x, $2.i, short)}
 inst LDIC 0		B.i {subs($1.x, $2.i, uchar)}
-inst STIW 0		S3  {subs($2.x, $3.i, type($u1)) = $1.*;}
+inst STIW 0		S3  {subs($2.x, $3.i, int) = $1.i;}
 inst STIF 0		S3  {subs($2.x, $3.i, float) = $1.f;}
 inst STIS 0		S3  {subs($2.x, $3.i, short) = $1.i;}
 inst STIC 0		S3  {subs($2.x, $3.i, uchar) = $1.i;}
@@ -147,8 +121,8 @@ inst STIC 0		S3  {subs($2.x, $3.i, uchar) = $1.i;}
 # Load/store in enclosing frame
 # LDEs n :: --> mem_s[mem_4[bp-4]+n]
 # STEs n :: a --> []; mem_s[mem_4[bp-4]+n] := a
-inst LDEW {1 2}		V.* {parent($a, type($t))}
-inst STEW {1 2}		S1  {parent($a, type($u1)) = $1.*;}
+inst LDEW {1 2}		V.i {parent($a, int)}
+inst STEW {1 2}		S1  {parent($a, int) = $1.i;}
 
 # If the argument of any of the above instructions is so large that it
 # does not fit in two bytes, then it's the job of the compiler to find
@@ -188,14 +162,14 @@ equiv STGQ K {LDKW $a, STOREQ}
 # ASSORTED INSTRUCTIONS
 
 defs {
-#define dup(n, sp) 	P(-1); A(0) = sp[n+1]
-#define swap(sp) 	sp[-1] = sp[1]; sp[1] = A(0); A(0) = sp[-1]
+#define dup(n, sp) 	sp--; sp[0] = sp[n+1]
+#define swap(sp) 	sp[-1] = sp[1]; sp[1] = sp[0]; sp[0] = sp[-1]
 }
 inst INCL 1		S0 {indir(local($a), int)++;}
 inst DECL 1		S0 {indir(local($a), int)--;}
 inst DUP {[0,2,1]}	S0 {dup($a, $s);}
 inst SWAP 0		S0 {swap($s);}
-inst POP 1		S0 {M($a); G;}
+inst POP 1		S0 {sp += $a;}
 
 equiv INCL 2		{LDLW $a, INC, STLW $a}
 equiv DECL 2		{LDLW $a, DEC, STLW $a}
@@ -517,21 +491,14 @@ inst FIXCOPY 0	   	S3 {fixcopy($1.x, $2.x, $3.i);}
 # and a size in bytes; it copies the parameter to dynamic local space, 
 # then overwrites the parameter with the new address.
 defs {
-#ifdef NOACC
-#define FLEXA sp
-#define FLEXB
-#else
-#define FLEXA (sp+1)
-#define FLEXB sp[0].i = 0
-#endif
 #define flexcopy(d0, size0)						\
      { value *d = (value *) d0; int size = size0;			\
        int sizew = (size+3)/4; prof_charge(sizew);			\
        sp -= sizew;							\
        if ((uchar *) sp < stack + SLIMIT)				\
             error(E_STACK, 0);						\
-       memcpy(FLEXA, d[0].x, size);					\
-       d[0].x = (uchar *) FLEXA; FLEXB; }
+       memcpy(sp, d[0].x, size);					\
+       d[0].x = (uchar *) sp;}
 }
 inst FLEXCOPY 0		S2 {flexcopy($1.x, $2.i);}
 
@@ -555,8 +522,7 @@ defs {
      bp = sp;								\
      sp = (value *) ((uchar *) bp - cp[CP_FRAME].i);			\
      if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);		\
-     memset(sp, 0, cp[CP_FRAME].i);					\
-     IFACC(A(0).i = 0);
+     memset(sp, 0, cp[CP_FRAME].i);
 
 #ifdef OBXDEB
 #define cond_break() \
@@ -568,7 +534,7 @@ defs {
 }
 
 inst JPROC 0 S0 {
-     value *p = A(0).p;
+     value *p = sp[0].p;
      sp -= HEAD-1; sp[BP].p = bp; sp[PC].x = pc; sp[CP].p = p;
      if (p[CP_PRIM].z != interp) {
 #ifdef PROFILE
@@ -583,8 +549,7 @@ inst JPROC 0 S0 {
 #ifdef OBXDEB
 	  prim_bp = NULL;
 #endif
-     }
-     else {
+     } else {
 #ifdef PROFILE
 	  prof_enter(p, ticks, PROF_CALL);
 #endif
@@ -595,16 +560,16 @@ inst JPROC 0 S0 {
 }
 
 defs {
-#define slide(nargs) sp += HEAD + nargs; G; cond_break();
+#define slide(nargs) sp += HEAD + nargs; cond_break();
 }
 
-inst SLIDE 1		S0 {slide($a); G;}
-inst SLIDEW 1		S0 {slide($a); P(-1); A(0).i = ob_res.i;}
-inst SLIDED 1		S0 {slide($a); P(-2); 
-     	    			putdbl(&sp[0], getdbl(&ob_dres)); G;}
-inst SLIDEF 1		S0 {slide($a); P(-1); A(0).f = ob_res.f;}
-inst SLIDEQ 1		S0 {slide($a); P(-2);
-				putlong(&sp[0], getlong(&ob_dres)); G;}
+inst SLIDE 1		S0 {slide($a);}
+inst SLIDEW 1		S0 {slide($a); sp--; sp[0].i = ob_res.i;}
+inst SLIDED 1		S0 {slide($a); sp -= 2; 
+     	    			putdbl(&sp[0], getdbl(&ob_dres));}
+inst SLIDEF 1		S0 {slide($a); sp--; sp[0].f = ob_res.f;}
+inst SLIDEQ 1		S0 {slide($a); sp -= 2;
+				putlong(&sp[0], getlong(&ob_dres));}
 
 equiv RETURNW 0		{RESULTW, RETURN}
 equiv RETURNF 0		{RESULTF, RETURN}
@@ -617,8 +582,6 @@ inst RESULTF 0 		S1 {ob_res.f = $1.f;}
 inst RESULTQ 0 		S1q {putlong(&ob_dres, $1.q);}
 
 inst RETURN 0 S0 {
-     S(0);
-
      if (bp == base) {
 	  level--;
 #ifdef PROFILE
@@ -685,7 +648,7 @@ inst CASEJUMP 1   	S1  {casejump($1.i, $a);}
 zinst CASEARM 2R
 
 inst PACK 0		B.i {pack($2.p, $1.x)}
-inst UNPACK 0		S0 {P(-1); A(0).p = getcode(sp[1].i); 
+inst UNPACK 0		S0 {sp--; sp[0].p = getcode(sp[1].i); 
      	    		   	   sp[1].x = getenvt(sp[1].i);}
 }
 
@@ -699,10 +662,10 @@ zinst CON 0
 # DIRECTIVES
 
 dir CONST ?
-dir GLOBAL ?
 dir FCONST ?
 dir DCONST ?
 dir QCONST ?
+dir GLOBAL ?
 dir LABEL ?
 dir PROC ????
 dir END 0

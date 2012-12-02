@@ -82,9 +82,6 @@ void interp(value *sp0) {
      uchar *pc = cp[CP_CODE].x;
      register uchar *pc0 = NULL;
      register value *sp = sp0;
-#ifndef NOACC
-     register value acc;
-#endif
      register uchar ir = 0;
 #ifdef PROFILE
      register counter ticks = 0;
@@ -135,13 +132,7 @@ $$ jump table
 	       printf("pc=%s+%d(%p) sp=%p bp=%p cp=%p",
 		      thisproc->p_name, pc - cp[1].x, pc, sp, bp, cp);
 	       fflush(stdout);
-#ifdef NOACC
-	       for (i = 0; 
-#else
-	       printf(" %x", acc.i);
-	       for (i = 1; 
-#endif
-		    i < 8; i++) printf(" %x", sp[i].i);
+	       for (i = 0; i < 8; i++) printf(" %x", sp[i].i);
 	       printf("\n");
 	       printf("%6d: %s\n", pc-imem, fmt_inst(pc));
 	       fflush(stdout);

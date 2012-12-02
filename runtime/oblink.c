@@ -32,7 +32,7 @@
 #include "oblink.h"
 #include "keiko.h"
 
-char *copyright = "Copyright (C) 1999 J. M. Spivey";
+const char *copyright = "Copyright (C) 1999 J. M. Spivey";
 
 /* The module table has one entry for each module that appears in the
    input files.  There's another table kept by the linker itself that

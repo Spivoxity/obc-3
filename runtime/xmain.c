@@ -33,14 +33,14 @@
 #include "keiko.h"
 #include "exec.h"
 
-char *copyright = "Copyright (C) 1999 J. M. Spivey";
+const char *copyright = "Copyright (C) 1999 J. M. Spivey";
 
 extern int vm_debug;
 
 /* Helper functions for the loader */
 
 module make_module(char *name, uchar *addr, int chksum, int nlines) {
-     module m = scratch_alloc(sizeof(struct _module), FALSE);
+     module m = (module) scratch_alloc(sizeof(struct _module), FALSE);
      m->m_name = name;
      m->m_addr = addr;
 #ifdef PROFILE
@@ -232,19 +232,19 @@ static void run(value *prog) {
 boolean custom_file(char *name) {
      char buf[4];
      FILE *fp;
-     boolean result;
      int nread;
+     boolean result;
 
      fp = fopen(name, "rb");
      if (fp == NULL) return FALSE;
      fseek(fp, -sizeof(trailer), SEEK_END);
      nread = fread(buf, 1, 4, fp);
-     if (strncmp(buf, MAGIC, 4) != 0)
+     if (nread < 4 || strncmp(buf, MAGIC, 4) != 0)
 	  result = FALSE;
      else {
 	  fseek(fp, 0, SEEK_SET);
 	  nread = fread(buf, 1, 2, fp);
-	  result = (strncmp(buf, "#!", 2) != 0);
+	  result = (nread == 2 && strncmp(buf, "#!", 2) != 0);
      }
      fclose(fp);
      return result;
