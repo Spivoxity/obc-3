@@ -29,8 +29,6 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# $Id$
-#
 
 # Config stuff
 srcdir = @srcdir@
@@ -42,6 +40,7 @@ RANLIB = @RANLIB@
 WINDOWS = @WINDOWS@
 MACOS = @MACOS@
 VPATH = @srcdir@
+CAMLDEP = @top_srcdir@/camldep
 DEPEND = @DEPEND@
 PKG_CONFIG = @PKG_CONFIG@
 # End of config
@@ -128,10 +127,10 @@ $(COBJS): gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
 	pango_tags.h wrappers.h
 
 %Props.ml o%Props.ml: %.props propcc
-	./propcc $<
+	./propcc -o $*Props.ml $<
 
 %_tags.c %_tags.h %Enums.ml: %_tags.var varcc
-	./varcc $<
+	./varcc -c $*_tags.c -h $*_tags.h $<
 
 propcc varcc: %: %.ml
 	ocamlc -o $@ $<
@@ -194,7 +193,7 @@ ML = gAction.mli gBin.mli gBroken.mli gButton.mli gContainer.mli	\
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
-	ocamldep $^ >$@
+	$(CAMLDEP) $^ >$@
 endif
 
 include $(srcdir)/Depend

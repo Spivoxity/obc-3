@@ -69,7 +69,6 @@ BASIS = util.cmo print.cmo growvect.cmo symtab.cmo config.cmo eval.cmo \
 basis.cma: $(BASIS)
 	$(OCAMLC) $(MLFLAGS) -a -o $@ $(BASIS)
 
-
 main.cmo lexer.cmo parser.cmo symparse.cmo config.cmo symfile.cmo: %.cmo: %.ml
 	$(OCAMLC) $(MLFLAGS) $(YYLIB) -c -o $@ $<
 
