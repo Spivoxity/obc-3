@@ -1,0 +1,445 @@
+MODULE tLongJump;
+
+(*<<
+ 1 101 201 301 351 401 451 501 502 505
+>>*)
+
+IMPORT Out;
+
+VAR x: INTEGER;
+
+BEGIN
+  x := 0;
+  REPEAT
+    CASE x OF
+    502:
+      x := x+3
+    | 1..300:
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+      x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1
+    | 301..499:
+      x := x+50
+    ELSE
+      x := x+1
+    END;
+
+    Out.Char(' '); Out.Int(x,0)
+  UNTIL x >= 503;
+  Out.Ln
+END tLongJump.
+
+(*[[
+!! SYMFILE #tLongJump STAMP #tLongJump.%main 1
+!! END STAMP
+!! 
+MODULE tLongJump STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tLongJump.%main 0 12 0
+!   x := 0;
+CONST 0
+STGW tLongJump.x
+LABEL 1
+!     CASE x OF
+LDGW tLongJump.x
+CONST 502
+TESTGEQ 7
+CONST 301
+TESTGEQ 8
+CONST 1
+JGEQ 5
+JUMP 2
+LABEL 8
+CONST 499
+JLEQ 6
+JUMP 2
+LABEL 7
+CONST 502
+JNEQ 2
+!       x := x+3
+LDGW tLongJump.x
+CONST 3
+PLUS
+STGW tLongJump.x
+JUMP 3
+LABEL 5
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+!       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+JUMP 3
+LABEL 6
+!       x := x+50
+LDGW tLongJump.x
+CONST 50
+PLUS
+STGW tLongJump.x
+JUMP 3
+LABEL 2
+!       x := x+1
+LDGW tLongJump.x
+INC
+STGW tLongJump.x
+LABEL 3
+!     Out.Char(' '); Out.Int(x,0)
+CONST 32
+ALIGNC
+CONST Out.Char
+CALL 1
+CONST 0
+LDGW tLongJump.x
+CONST Out.Int
+CALL 2
+!   UNTIL x >= 503;
+LDGW tLongJump.x
+CONST 503
+JLT 1
+!   Out.Ln
+CONST Out.Ln
+CALL 0
+RETURN
+END
+
+! Global variables
+GLOBAL tLongJump.x 4
+
+! End of file
+]]*)

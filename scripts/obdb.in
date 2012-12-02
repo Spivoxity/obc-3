@@ -1,0 +1,83 @@
+#!/bin/sh
+
+#
+# @configure_input@
+#
+# obdb.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Config stuff
+ROOT=@ROOT@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+LIBDIR=@libdir@/obc
+VERSION=@VERSION@
+obdb1=$LIBDIR/obdb1
+obxdeb=$LIBDIR/obxdeb
+stdlib="-I $LIBDIR"
+resources="-R $LIBDIR"
+MACOS=@MACOS@
+LIVE=1
+# End of config
+
+usage () {
+    /bin/echo Usage: obdb [-I libdir] ... program args ... >&2
+    exit 2
+}
+
+incl=
+vflag=false
+flags=
+
+while [ $# -gt 0 ]; do
+    case $1 in
+	-I) 	shift; incl="$incl -I $1";;
+	-v)	vflag=true;;
+	-d)	flags="$flags -d";;
+	-*)     usage;;
+	*)	break
+    esac
+    shift
+done
+
+if $vflag; then 
+    /bin/echo "Oxford Oberon-2 debugger driver version $VERSION"
+    $obdb1 -v 
+    $obxdeb -v 
+    exit
+fi
+
+if [ $# -eq 0 ]; then usage; fi
+
+if [ "$MACOS" = 1 ] && [ "$LIVE" = 1 ]; then
+    export XDG_DATA_DIRS=$LIBDIR/gtk/share
+    export GDK_PIXBUF_MODULE_FILE=$LIBDIR/gtk/etc/gtk-2.0/gdk-pixbuf.loaders
+fi
+
+$obdb1 $resources $flags -i $ROOT$obxdeb $incl $stdlib "$@"

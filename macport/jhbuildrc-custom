@@ -1,0 +1,17 @@
+# -*- mode: python -*-
+
+# As can the default modules to build.
+#
+
+# In addition, you can override _exec_prefix (used to set $M4 and
+# $LIBTOOLIZE); by default it's set to prefix. You might want to reset
+# it if you want to bootstrap to one directory and build in another
+# (or more likely, several others). Similarly, you can override
+# tarballdir so that you need download tarballs only once for multiple
+# builds.
+# _exec_prefix = os.path.join(os.path.expanduser("~"), "Source", "bootstrap")
+# tarballdir = os.path.join(os.path.expanduser("~"), "Source", "Download")
+
+setup_sdk(target="10.5", sdk_version="10.5", architectures=["i386"])
+modules = [ "meta-gtk-osx-bootstrap", "meta-gtk-osx-core", "gtksourceview" ]
+# prefix = "/usr/local/lib/obc/gtk"

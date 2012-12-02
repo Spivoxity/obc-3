@@ -1,0 +1,176 @@
+#!/usr/bin/env tclsh
+
+#
+# camldep
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Automatic Makefile generation for Objective CAML
+# Mike Spivey
+# January 1995
+
+# Command-line flags:
+# -M file	name of the makefile to copy (default none)
+# -I dir 	add to list of directories to search for includes
+
+# The variables:
+# files		is the set of files seen
+# depend(f)	is the set of modules m such that file f depends on m
+
+set srcdir [file dirname $argv0]
+source "$srcdir/runtime/util.tcl"
+
+set debug 0
+set infiles {}
+set incl {}
+set makefile ""
+
+set i 0
+while {$i < [llength $argv]} {
+    switch -- [lindex $argv $i] {
+	-M {incr i; set makefile [lindex $argv $i]}
+	-I {incr i; lappend incl [lindex $argv $i]}
+	-d {incr debug}
+	default {lappend infiles [lindex $argv $i]}
+    }
+    incr i
+}
+
+set files {};			# Root names of files
+
+foreach ifn $infiles {
+    if {$debug > 0} {puts stderr "Reading $ifn"}
+
+    set fn [file tail $ifn]
+    lappend files $fn
+    set deps {}
+
+    set f [open $ifn "r"]
+    while {[gets $f line] >= 0} {
+	if {[regexp {open[ \t]*([A-Z][A-Za-z0-9]*)} $line dummy used]} {
+	    if {$debug > 0} {puts stderr "$fn opens $used"}
+	    ladd deps $used
+	} else {
+	    while {[regexp {([A-Z][A-Za-z0-9]*)\.[A-Za-z]} $line dummy used]} {
+		if {$debug > 0} {puts stderr "$fn uses $used"}
+		ladd deps $used
+		regsub {([A-z][a-z0-9]*)\.} $line " " line
+	    }
+	}
+    }
+    close $f
+
+    set deps2 {}
+    foreach d $deps {lappend deps2 [string tolower $d 0 1]}
+    set depend($fn) $deps2
+}
+
+if {$makefile != "" && [file readable $makefile]} {
+    set f [open $makefile "r"]
+    while {[gets $f line] >= 0 && ![regexp {^###} $line]} {
+	puts $line
+    }
+    puts "###"
+    puts ""
+    close $f
+}
+
+set files [lsort $files]
+
+proc deporder {a b} {
+    set aa [expr [string first "/" $a] > 0]
+    set bb [expr [string first "/" $b] > 0]
+    if {$aa != $bb} {return [expr {$aa - $bb}]}
+    return [string compare $a $b]
+}
+
+foreach fn $files {
+    if {$debug > 0} {puts stderr "Dependencies for $fn:"}
+    set modname [file rootname $fn]
+    set ext [file extension $fn]
+
+    switch -- $ext {
+	.mli {set obj ".cmi"}
+	.ml {set obj ".cmo"}
+	default {set obj "???"}
+    }
+
+    set deps {}
+
+    # A ".cmo" file depends on the corresponding ".cmi" file if a
+    # separate interface exists
+    if {$obj == ".cmo" && [lmember "$modname.mli" $files]} {
+	lappend deps "$modname.cmi"
+    }
+
+    # A file depends on the ".cmi" file of every module it
+    # imports -- or the ".cmo" file if no separate interface
+    # exists.  We don't mind if a module is unknown to us -- it's
+    # probably part of the CAML system.
+    foreach m $depend($fn) {
+	if {$debug > 0} {puts stderr "Trying $m"}
+
+	if {$m == $modname} continue
+
+	# A ".cmo" file need not depend explicitly on
+	# files that are already needed for its ".cmi" file.  
+	set mlifile "$modname.mli"
+	if {$ext == ".ml" \
+		&& [lmember $mlifile $files] \
+		&& [lmember $m $depend($mlifile)]} continue
+	
+	if {[lmember "$m.mli" $files]} {
+	    lappend deps "$m.cmi"
+	} elseif {[lmember "$m.ml" $files]} {
+	    lappend deps "$m.cmo"
+	} else {
+	    # Look for a .cmi file along the include path
+	    foreach d $incl {
+		set fn1 "$d/$m.cmi"
+		if {[file readable $fn1]} {lappend deps $fn1; break}
+	    }
+	}
+    }
+
+    if {[llength $deps] > 0} {
+	set deps [lsort -command deporder $deps]
+
+	puts -nonewline [format "%-13s : " "$modname$obj"]
+	set frag [lindex $deps 0]
+	foreach dp [lrange $deps 1 end] {
+	    if {[string length "$frag $dp"] <= 60} {
+		set frag "$frag $dp"
+	    } else {
+		puts "$frag \\"
+		puts -nonewline "\t\t"
+		set frag $dp
+	    }
+	}
+	puts $frag
+    }
+}

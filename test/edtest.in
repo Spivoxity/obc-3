@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# @configure_input@
+
+#
+# Oxford Oberon-2 compiler
+# test/edtest.in
+# Copyright (C) J. M. Spivey 1995, 1998
+#
+
+# Config stuff
+srcdir=@srcdir@
+top_srcdir=@top_srcdir@
+# End of config
+
+for d in ../lib $top_srcdir/lib; do
+    if [ -r $d/lscript ]; then
+	lib=$d; break
+    fi
+done
+if [ -z "$lib" ]; then
+    echo Couldn\'t find library files
+    exit 2
+fi
+
+compiler="../compiler/obc1 -I $lib -O"
+linker=../runtime/oblink
+modules="Buffer Plane Terminal Display Editor Search Keymap EdMain"
+
+link=
+for f in $modules; do link="$link $f.k"; done
+
+set -x 
+
+for f in $modules; do
+    $compiler $srcdir/$f.m >$f.k
+done
+
+$linker -L $lib $link -o editor

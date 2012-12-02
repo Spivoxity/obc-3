@@ -1,0 +1,3 @@
+if [ ! -r configure ]; then autoconf; fi
+export CFLAGS='-mno-cygwin -O2'
+./configure -C --disable-dynlink

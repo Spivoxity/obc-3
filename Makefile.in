@@ -1,0 +1,328 @@
+#
+# @configure_input@
+#
+# root/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Configuration stuff
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+datarootdir = @datarootdir@
+bindir = @bindir@
+libdir = @libdir@
+mandir = @mandir@
+export AUTOCONF = @AUTOCONF@
+export AUTOHEADER = @AUTOHEADER@
+CC = @CC@
+CFLAGS = @CFLAGS@
+CFLAGS_JIT = @CFLAGS_JIT@
+RTFLAGS = @RTFLAGS@
+INSTALL = @INSTALL@
+INSTALL_PROG = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+RESDIR = $(top_srcdir)/resources
+RESOURCES = @RESOURCES@
+@SET_MAKE@
+SHELL = /bin/sh
+VPATH = @srcdir@
+VERSION = @PACKAGE_VERSION@
+DEBUG = @DEBUG@
+MODULES = @MODULES@
+SHLMODS = @SHLMODS@
+CHECKMODS = @CHECKMODS@
+BYTEMODS = @BYTEMODS@
+DYNLINK = @DYNLINK@
+DLEXT = @DLEXT@
+DLFLAGS = @DLFLAGS@
+LIBS = @LIBS@
+MATHLIB = @MATHLIB@
+HAVE_X = @HAVE_X@
+XLIB = @XLIB@
+DEB_LIBS = @DEB_LIBS@
+WINDOWS = @WINDOWS@
+MACOS = @MACOS@
+EXEEXT = @EXEEXT@
+ENABLE_JIT = @ENABLE_JIT@
+ENABLE_GUI = @ENABLE_GUI@
+ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
+ABS_SRCDIR = @ABS_SRCDIR@
+ABS_BINDIR = @ABS_BINDIR@
+# end of Configuration stuff
+
+all : config.h predirs subdirs build sanity
+
+PREDIRS = yacc
+SUBDIRS = compiler runtime lib
+BUILD = obx obprof obc obb obdump
+DEBUILD = obc0 obb0 obtrace
+
+ifdef ENABLE_JIT
+  BUILD += obxj
+  INTERP = obxj
+else
+  INTERP = obx
+endif
+
+ifdef ENABLE_DEBUGGER
+  PREDIRS += lablgtk
+  SUBDIRS += debugger
+  BUILD += obxdeb obdb
+  DEBUILD += obdb0
+endif
+
+predirs : $(PREDIRS)
+subdirs : $(SUBDIRS)
+build :: $(BUILD)
+
+ifdef DEBUG
+  build :: $(DEBUILD)
+endif
+
+.PHONY: subdirs build $(PREDIRS) $(SUBDIRS) 
+
+$(PREDIRS) $(SUBDIRS) :
+	$(MAKE) -C $@ all
+
+lib: compiler
+debugger: compiler lablgtk
+
+ifndef DYNLINK
+  EXTRA_LIBS = $(MATHLIB) $(XLIB)
+endif
+
+ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
+obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
+
+LINK = $(CC) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
+
+obx : lib/stdprims.o runtime/obx.a lib/oblib.a;			$(LINK)
+obxj : lib/stdprims.o runtime/obx-j.a lib/oblib.a
+	$(LINK) $(CFLAGS_JIT)
+obtrace : lib/stdprims.o runtime/obx-t.a lib/oblib.a;		$(LINK)
+obprof : lib/stdprims.o runtime/obx-p.a lib/oblib.a;		$(LINK)
+obxdeb : lib/stdprims.o runtime/obx-d.a lib/oblib.a;		$(LINK)
+
+ifndef WINDOWS
+  obdump : ObDump.m compiler/obc1 runtime/oblink lib/Out.k
+	compiler/obc1 -x -I lib $< >ObDump.k
+	runtime/oblink -i $(libdir)/obc/$(INTERP) -L lib -R $(libdir)/obc \
+		ObDump.k -o $@
+	chmod +x $@
+else
+  # Cygwin needs the chmod -- otherwise the execute permission is not
+  # set in the access control lists shown by 'cacls'
+  obdump : ObDump.m compiler/obc1 runtime/oblink lib/Out.k $(INTERP)
+	compiler/obc1 -x -I lib $< >ObDump.k
+	runtime/oblink -L lib ObDump.k -o obdump.x
+	cat $(INTERP).exe obdump.x >$@.exe
+	chmod +x $@.exe
+endif
+
+sanity : Fac.m force
+	compiler/obc1 -x -g -pl -I lib $< >Fac.k
+	runtime/oblink -g -pl -L lib Fac.k -o Fac.x
+	./$(INTERP) ./Fac.x 20
+	@echo "The factorial of 20 is 2432902008176640000"
+
+tartan : Tartan.m lib/XYplane.k force
+	compiler/obc1 -I lib $< >Tartan.k
+	runtime/oblink -i $(ABS_BINDIR)/$(INTERP) -L $(ABS_BINDIR)/lib \
+		Tartan.k -o tartan
+	chmod +x tartan
+
+# Installation stuff:
+# This supports two kinds of installation:
+# (1) building from source, followed by 'make install'
+# (2) a binary distribution that comes with its own 'configure' script
+
+# Installed in {prefix}/bin:
+BIN = obc obb obdump obprof 
+
+# Executables installed in {prefix}/lib
+LIBX = compiler/obc1 compiler/obb1 runtime/oblink obx
+
+# Library source
+LIBSRC = $(MODULES:%=$(srcdir)/lib/%.m)
+
+# Other files installed in {prefix}/lib
+LIB = runtime/obx.a runtime/obx-j.a runtime/obx-p.a lib/oblib.a lib/dlstub.o \
+	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h \
+	lib/lscript lib/lscript-b \
+	$(srcdir)/lib/Builtin.m lib/_Builtin.k \
+	$(MODULES:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k)
+
+# Man pages
+MAN = $(wildcard $(srcdir)/doc/*.1)
+
+# Installation directories
+DIRS = $(bindir) $(libdir)/obc $(mandir)/man1
+
+# Inputs for bindist config process
+ETC = $(srcdir)/scripts/obc.in $(srcdir)/scripts/obb.in \
+	ObDump.k lib/stdprims.o
+
+# Misc bindist files
+INST = $(srcdir)/README $(srcdir)/THANKS $(srcdir)/Fac.m
+
+ifdef DYNLINK
+  LIB += $(SHLMODS:%=lib/%$(DLEXT))
+endif
+
+ifdef ENABLE_JIT
+  LIBX += obxj
+endif
+
+ifdef ENABLE_DEBUGGER
+  BIN += obdb
+  LIB += $(RESOURCES:%=$(RESDIR)/%)
+  LIBX += debugger/obdb1 obxdeb
+  ETC += $(srcdir)/scripts/obdb.in
+endif
+
+# We install the library source before the object files, so that the
+# datestamps have the right relationship.  It matters because obb checks.
+
+# Install after building
+install:: force
+	for d in $(DIRS); do $(INSTALL) -d $$d; done
+	for f in $(BIN); do $(INSTALL_PROG) $$f $(bindir); done
+	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(libdir)/obc; done
+	for f in $(LIB); do $(INSTALL_DATA) $$f $(libdir)/obc; done
+	for f in $(LIBX); do $(INSTALL_PROG) $$f $(libdir)/obc; done
+	for f in $(MAN); do $(INSTALL_DATA) $$f $(mandir)/man1; done
+
+ifdef ENABLE_DEBUGGER
+  ifdef MACOS
+    install:: force
+	$(MAKE) -C macport install-gtk
+  endif
+endif
+
+uninstall: force
+	rm -rf $(patsubst %,$(bindir)/%,$(notdir $(BIN))) $(libdir)/obc \
+	    $(patsubst %,$(mandir)/man1/%, $(notdir $(MAN)))
+
+
+# Binary distribution
+BINDIST = bindist
+
+bindist: force
+	@rm -rf $(BINDIST)
+	for d in bin libexec lib libsrc etc man; \
+		do $(INSTALL) -d $(BINDIST)/$$d; done
+	$(AUTOCONF) $(srcdir)/scripts/bindist.conf.in \
+		| sed -e 's/--VERSION--/$(VERSION)/' \
+			-e 's/--ENABLE_JIT--/$(ENABLE_JIT)/' \
+			>$(BINDIST)/configure
+	chmod 755 $(BINDIST)/configure
+	$(INSTALL_DATA) $(srcdir)/scripts/bindist.make.in \
+						$(BINDIST)/Makefile.in
+	$(INSTALL_PROG) $(srcdir)/scripts/install-sh $(BINDIST)
+	$(INSTALL_PROG) obprof $(BINDIST)/bin
+	for f in $(LIBX); do $(INSTALL_PROG) $$f $(BINDIST)/libexec; done
+	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(BINDIST)/libsrc; done
+	for f in $(LIB); do $(INSTALL_DATA) $$f $(BINDIST)/lib; done
+	for f in $(MAN); do $(INSTALL_DATA) $$f $(BINDIST)/man; done
+	for f in $(ETC); do $(INSTALL_DATA) $$f $(BINDIST)/etc; done	
+	for f in $(INST); do $(INSTALL_DATA) $$f $(BINDIST); done
+
+# Cleanup: 
+#   clean removes object files, but not the configuration
+#   quiteclean also removes generated files and cleans the predirs
+#   distclean also config info and files that are not distributed
+#   realclean removes all but original source
+
+CONFIG = Makefile config.h stamp-h config.status config.cache
+EXTRADIRS = test winport
+
+.PHONY: cleanhere distcleanhere clean distclean quitecleanhere quiteclean
+
+cleanhere:
+	rm -f a.out fac tartan *.[kio] Fac.[cx] FacPrims.c config.log \
+		$(patsubst %,%$(EXEEXT),obx obxdeb obprof obtrace obdump obxj)
+	rm -rf $(BINDIST) $(BINDIST).tgz build-stamp
+
+quitecleanhere: cleanhere
+	rm -f obc obb obdb obc0 obb0 obdb0 config0
+
+distcleanhere: quitecleanhere
+	rm -f $(CONFIG)
+
+realcleanhere: distcleanhere
+	rm -f configure config.h.in stamp-h.in
+
+clean:
+	for d in $(SUBDIRS) $(EXTRADIRS); do $(MAKE) -C $$d $@; done
+	$(MAKE) $@here
+
+quiteclean distclean realclean: 
+	for d in $(PREDIRS) $(SUBDIRS) $(EXTRADIRS); do $(MAKE) -C $$d $@; done
+	$(MAKE) $@here
+
+force:
+
+.DELETE_ON_ERROR:
+
+# Automatic reconfiguration
+
+$(srcdir)/configure: configure.in aclocal.m4
+	cd $(srcdir) && $(AUTOCONF)
+     
+config.status: configure
+	./config.status --recheck
+
+$(srcdir)/config.h.in: stamp-h.in
+$(srcdir)/stamp-h.in: configure.in aclocal.m4
+	cd $(srcdir) && $(AUTOHEADER)
+	echo timestamp >$(srcdir)/stamp-h.in
+     
+config.h: stamp-h
+stamp-h: config.h.in config.status
+	CONFIG_FILES= CONFIG_HEADERS=config.h ./config.status
+	echo timestamp >stamp-h
+
+Makefile: Makefile.in config.status
+	./config.status
+     
+obc obb obdb: %: scripts/%.in config.status
+	./config.status --file=$@:$<
+	chmod +x $@
+
+%0 : scripts/%.in config0
+	sed -e 's:\@configure_input\@:Generated automagically from $(<F):' \
+	    -e "/# Config/r config0" \
+	    -e "/# Config/,/# End of config/d" $< >$@
+	chmod +x $@
+
+config0: scripts/config0.in config.status
+	./config.status --file=config0:scripts/config0.in
+
+

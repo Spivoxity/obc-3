@@ -1,0 +1,14 @@
+Oxford Oberon-2 Compiler
+Acknowledgements and Thanks
+
+The Oxford Oberon-2 Compiler is written in Objective CAML, and thanks
+go to the INRIA team for providing a highly productive but lightweight
+implementation language, and a convincing demonstration that
+bytecode-based language implementations can still be small, fast and
+usable.  Of course, large amounts of runtime and library code from the
+Objective CAML system form part of the Oberon-2 compiler binary.
+However, once compiled, Oberon-2 programs do not depend on any code
+from Objective CAML.
+
+-- Mike Spivey,
+-- 4th January 2009

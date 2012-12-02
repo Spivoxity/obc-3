@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# How to make release 2.4.3:
+#	Update release number in configure.in
+#	Run all the tests: regress bigtest edtest errtest
+#	svn commit to releases/2.4
+#	(svn rm svn://spivey/obc/tags/rel-2.4.3)
+#	svn copy svn://spivey/obc/releases/2.4 \
+#				svn://spivey/obc/tags/rel-2.4.3
+#	run 'mkdist 2.4.3'
+
+if [ $# -lt 1 ]; then
+    echo 'Usage: mkdist release-num [repos-loc]'
+    echo '       e.g. mkdist 2.4.3 releases/2.4'
+    exit 1
+fi
+
+set -x
+
+RELEASE=$1
+REPOS=svn://spivey/obc/${2:-tags/rel-$RELEASE}
+
+# Find out latest minor release
+VERSION=`svn cat $REPOS/configure.in | 
+    sed -n '/AC_INIT(obc, *\([0-9.]*\),.*/s//\1/p'`
+
+echo "Located release $VERSION"
+
+if [ "$RELEASE" != "$VERSION" ]; then
+    echo "? configure.in has version $VERSION, not $RELEASE"
+    exit 1
+fi
+
+svn export $REPOS obc-$RELEASE
+
+(cd obc-$RELEASE; \
+    rm -f scripts/myconf; \
+    dpkg-buildpackage -rfakeroot -b -us -uc -tc -d \
+    && ./configure \
+    && make \
+    && make bindist BINDIST=../obc-linux-$RELEASE \
+    && make distclean
+ ) || exit 1
+
+tar cvfz obc-$RELEASE.tar.gz obc-$RELEASE || exit 1
+tar cvfz obc-linux-$RELEASE.tar.gz obc-linux-$RELEASE || exit 1
+

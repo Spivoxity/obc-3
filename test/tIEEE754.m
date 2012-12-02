@@ -1,0 +1,2333 @@
+MODULE tIEEE754;
+
+(* Alex Shiryaev: big procedures can overflow memory for error handlers
+   in the JIT *)
+
+	IMPORT SYSTEM, Out;
+
+	PROCEDURE TestREAL;
+		VAR y, x, z: REAL; s: SET;
+	BEGIN
+		x := 0.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {});
+		s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 0.0);
+
+		x := +0.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {});
+		s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(x = +0.0);
+
+		x := 1.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {23..29});
+		s := {23..29}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 1.0);
+
+		x := 2.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {30});
+		s := {30}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 2.0);
+
+		x := 3.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {22,30});
+		s := {22,30}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 3.0);
+
+		x := -1.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {23..29,31});
+		s := {23..29,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = -1.0);
+
+		x := -2.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {30,31});
+		s := {30,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = -2.0);
+
+		x := 0.1; s := SYSTEM.VAL(SET, x); ASSERT(s = {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29});
+		s := {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 0.1);
+
+		x := -0.1; s := SYSTEM.VAL(SET, x); ASSERT(s = {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29,31});
+		s := {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = -0.1);
+
+		x := MAX(REAL); s := SYSTEM.VAL(SET, x); ASSERT(s = {0..22,24..30});
+		s := {0..22,24..30}; x := SYSTEM.VAL(REAL, s); ASSERT(x = MAX(REAL));
+
+		x := MIN(REAL); s := SYSTEM.VAL(SET, x); ASSERT(s = {0..22,24..30,31});
+		s := {0..22,24..30,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = MIN(REAL));
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x / y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x / y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x / y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x / y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31});
+
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31});
+
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x / y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x / y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x / y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x / y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31})
+	END TestREAL;
+
+BEGIN
+	ASSERT( SIZE(SET) = 4 );
+	ASSERT( SIZE(REAL) = 4 );
+
+	ASSERT(MIN(REAL) = -MAX(REAL));
+	ASSERT(-MAX(REAL) = MIN(REAL));
+
+	ASSERT(-MIN(REAL) = MAX(REAL));
+	ASSERT(MAX(REAL) = -MIN(REAL));
+
+	TestREAL;
+
+	Out.String('TestIEEE754: OK'); Out.Ln
+END tIEEE754.
+
+(*<<
+TestIEEE754: OK
+>>*)
+
+(*[[
+!! SYMFILE #tIEEE754 STAMP #tIEEE754.%main 1
+!! END STAMP
+!! 
+MODULE tIEEE754 STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tIEEE754.TestREAL 4 8 0
+! 	PROCEDURE TestREAL;
+! 		x := 0.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {});
+FCONST 0.
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+JEQZ 2
+CONST 0
+EASSERT 11
+LABEL 2
+! 		s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 0.0);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST 0.
+FJEQ 3
+CONST 0
+EASSERT 12
+LABEL 3
+! 		x := +0.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {});
+FCONST 0.
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+JEQZ 4
+CONST 0
+EASSERT 14
+LABEL 4
+! 		s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(x = +0.0);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST 0.
+FJEQ 5
+CONST 0
+EASSERT 15
+LABEL 5
+! 		x := 1.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {23..29});
+FCONST 1.
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST 1065353216
+JEQ 6
+CONST 0
+EASSERT 17
+LABEL 6
+! 		s := {23..29}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 1.0);
+CONST 1065353216
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST 1.
+FJEQ 7
+CONST 0
+EASSERT 18
+LABEL 7
+! 		x := 2.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {30});
+FCONST 2.
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST 1073741824
+JEQ 8
+CONST 0
+EASSERT 20
+LABEL 8
+! 		s := {30}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 2.0);
+CONST 1073741824
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST 2.
+FJEQ 9
+CONST 0
+EASSERT 21
+LABEL 9
+! 		x := 3.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {22,30});
+FCONST 3.
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST 1077936128
+JEQ 10
+CONST 0
+EASSERT 23
+LABEL 10
+! 		s := {22,30}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 3.0);
+CONST 1077936128
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST 3.
+FJEQ 11
+CONST 0
+EASSERT 24
+LABEL 11
+! 		x := -1.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {23..29,31});
+FCONST -1.
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST -1082130432
+JEQ 12
+CONST 0
+EASSERT 26
+LABEL 12
+! 		s := {23..29,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = -1.0);
+CONST -1082130432
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST -1.
+FJEQ 13
+CONST 0
+EASSERT 27
+LABEL 13
+! 		x := -2.0; s := SYSTEM.VAL(SET, x); ASSERT(s = {30,31});
+FCONST -2.
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST -1073741824
+JEQ 14
+CONST 0
+EASSERT 29
+LABEL 14
+! 		s := {30,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = -2.0);
+CONST -1073741824
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST -2.
+FJEQ 15
+CONST 0
+EASSERT 30
+LABEL 15
+! 		x := 0.1; s := SYSTEM.VAL(SET, x); ASSERT(s = {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29});
+FCONST 0.1
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST 1036831949
+JEQ 16
+CONST 0
+EASSERT 32
+LABEL 16
+! 		s := {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29}; x := SYSTEM.VAL(REAL, s); ASSERT(x = 0.1);
+CONST 1036831949
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST 0.1
+FJEQ 17
+CONST 0
+EASSERT 33
+LABEL 17
+! 		x := -0.1; s := SYSTEM.VAL(SET, x); ASSERT(s = {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29,31});
+FCONST -0.1
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST -1110651699
+JEQ 18
+CONST 0
+EASSERT 35
+LABEL 18
+! 		s := {0,2,3,6,7,10,11,14,15,18,19,22,23,24,26,27,28,29,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = -0.1);
+CONST -1110651699
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST -0.1
+FJEQ 19
+CONST 0
+EASSERT 36
+LABEL 19
+! 		x := MAX(REAL); s := SYSTEM.VAL(SET, x); ASSERT(s = {0..22,24..30});
+FCONST 3.40282346639e+38
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST 2139095039
+JEQ 20
+CONST 0
+EASSERT 38
+LABEL 20
+! 		s := {0..22,24..30}; x := SYSTEM.VAL(REAL, s); ASSERT(x = MAX(REAL));
+CONST 2139095039
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST 3.40282346639e+38
+FJEQ 21
+CONST 0
+EASSERT 39
+LABEL 21
+! 		x := MIN(REAL); s := SYSTEM.VAL(SET, x); ASSERT(s = {0..22,24..30,31});
+FCONST -3.40282346639e+38
+STLF -8
+LDLF -8
+STLW -16
+LDLW -16
+CONST -8388609
+JEQ 22
+CONST 0
+EASSERT 41
+LABEL 22
+! 		s := {0..22,24..30,31}; x := SYSTEM.VAL(REAL, s); ASSERT(x = MIN(REAL));
+CONST -8388609
+STLW -16
+LDLW -16
+STLF -8
+LDLF -8
+FCONST -3.40282346639e+38
+FJEQ 23
+CONST 0
+EASSERT 42
+LABEL 23
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 24
+CONST 0
+EASSERT 44
+LABEL 24
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 25
+CONST 0
+EASSERT 45
+LABEL 25
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -4
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 26
+CONST 0
+EASSERT 46
+LABEL 26
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483648
+JEQ 27
+CONST 0
+EASSERT 47
+LABEL 27
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 28
+CONST 0
+EASSERT 49
+LABEL 28
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 29
+CONST 0
+EASSERT 50
+LABEL 29
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -4
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 30
+CONST 0
+EASSERT 51
+LABEL 30
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+JEQZ 31
+CONST 0
+EASSERT 52
+LABEL 31
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 32
+CONST 0
+EASSERT 54
+LABEL 32
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 33
+CONST 0
+EASSERT 55
+LABEL 33
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -4
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 34
+CONST 0
+EASSERT 56
+LABEL 34
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+JEQZ 35
+CONST 0
+EASSERT 57
+LABEL 35
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 36
+CONST 0
+EASSERT 59
+LABEL 36
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 37
+CONST 0
+EASSERT 60
+LABEL 37
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -4
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 38
+CONST 0
+EASSERT 61
+LABEL 38
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483648
+JEQ 39
+CONST 0
+EASSERT 62
+LABEL 39
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 40
+CONST 0
+EASSERT 64
+LABEL 40
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 41
+CONST 0
+EASSERT 65
+LABEL 41
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -4
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 42
+CONST 0
+EASSERT 66
+LABEL 42
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483648
+JEQ 43
+CONST 0
+EASSERT 67
+LABEL 43
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 44
+CONST 0
+EASSERT 69
+LABEL 44
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 45
+CONST 0
+EASSERT 70
+LABEL 45
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -4
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 46
+CONST 0
+EASSERT 71
+LABEL 46
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483648
+JEQ 47
+CONST 0
+EASSERT 72
+LABEL 47
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 48
+CONST 0
+EASSERT 74
+LABEL 48
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 49
+CONST 0
+EASSERT 75
+LABEL 49
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -4
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 50
+CONST 0
+EASSERT 76
+LABEL 50
+! 		s := {}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+JEQZ 51
+CONST 0
+EASSERT 77
+LABEL 51
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 52
+CONST 0
+EASSERT 79
+LABEL 52
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 53
+CONST 0
+EASSERT 80
+LABEL 53
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -4
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 54
+CONST 0
+EASSERT 81
+LABEL 54
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST 1
+JEQ 55
+CONST 0
+EASSERT 82
+LABEL 55
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 56
+CONST 0
+EASSERT 84
+LABEL 56
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 57
+CONST 0
+EASSERT 85
+LABEL 57
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -4
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 58
+CONST 0
+EASSERT 86
+LABEL 58
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST 1
+JEQ 59
+CONST 0
+EASSERT 87
+LABEL 59
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 60
+CONST 0
+EASSERT 89
+LABEL 60
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 61
+CONST 0
+EASSERT 90
+LABEL 61
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -4
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 62
+CONST 0
+EASSERT 91
+LABEL 62
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483648
+JEQ 63
+CONST 0
+EASSERT 92
+LABEL 63
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 64
+CONST 0
+EASSERT 94
+LABEL 64
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 65
+CONST 0
+EASSERT 95
+LABEL 65
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -4
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 66
+CONST 0
+EASSERT 96
+LABEL 66
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483648
+JEQ 67
+CONST 0
+EASSERT 97
+LABEL 67
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x / y; s := {31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 99
+FDIV
+STLF -12
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 68
+CONST 0
+EASSERT 99
+LABEL 68
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x / y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 100
+FDIV
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 69
+CONST 0
+EASSERT 100
+LABEL 69
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x / y; s := {31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 101
+FDIV
+STLF -4
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 70
+CONST 0
+EASSERT 101
+LABEL 70
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x / y; s := SYSTEM.VAL(SET, z); ASSERT(s = {31});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 102
+FDIV
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483648
+JEQ 71
+CONST 0
+EASSERT 102
+LABEL 71
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 72
+CONST 0
+EASSERT 104
+LABEL 72
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 73
+CONST 0
+EASSERT 105
+LABEL 73
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -4
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 74
+CONST 0
+EASSERT 106
+LABEL 74
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483647
+JEQ 75
+CONST 0
+EASSERT 107
+LABEL 75
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 76
+CONST 0
+EASSERT 109
+LABEL 76
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 77
+CONST 0
+EASSERT 110
+LABEL 77
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -4
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 78
+CONST 0
+EASSERT 111
+LABEL 78
+! 		s := {0}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST 1
+JEQ 79
+CONST 0
+EASSERT 112
+LABEL 79
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 80
+CONST 0
+EASSERT 114
+LABEL 80
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 81
+CONST 0
+EASSERT 115
+LABEL 81
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -4
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 82
+CONST 0
+EASSERT 116
+LABEL 82
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483647
+JEQ 83
+CONST 0
+EASSERT 117
+LABEL 83
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 84
+CONST 0
+EASSERT 119
+LABEL 84
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 85
+CONST 0
+EASSERT 120
+LABEL 85
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x + y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -4
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 86
+CONST 0
+EASSERT 121
+LABEL 86
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x + y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31});
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FPLUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483647
+JEQ 87
+CONST 0
+EASSERT 122
+LABEL 87
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 88
+CONST 0
+EASSERT 124
+LABEL 88
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 89
+CONST 0
+EASSERT 125
+LABEL 89
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -4
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 90
+CONST 0
+EASSERT 126
+LABEL 90
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+JEQZ 91
+CONST 0
+EASSERT 127
+LABEL 91
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 92
+CONST 0
+EASSERT 129
+LABEL 92
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 93
+CONST 0
+EASSERT 130
+LABEL 93
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x * y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -4
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 94
+CONST 0
+EASSERT 131
+LABEL 94
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x * y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FTIMES
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+JEQZ 95
+CONST 0
+EASSERT 132
+LABEL 95
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x / y; s := {}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 134
+FDIV
+STLF -12
+CONST 0
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 96
+CONST 0
+EASSERT 134
+LABEL 96
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x / y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 135
+FDIV
+STLF -8
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 97
+CONST 0
+EASSERT 135
+LABEL 97
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x / y; s := {}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 136
+FDIV
+STLF -4
+CONST 0
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 98
+CONST 0
+EASSERT 136
+LABEL 98
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x / y; s := SYSTEM.VAL(SET, z); ASSERT(s = {});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FZCHECK 137
+FDIV
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+JEQZ 99
+CONST 0
+EASSERT 137
+LABEL 99
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+CONST 1
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 100
+CONST 0
+EASSERT 139
+LABEL 100
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -8
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 101
+CONST 0
+EASSERT 140
+LABEL 101
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -4
+CONST 1
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 102
+CONST 0
+EASSERT 141
+LABEL 102
+! 		s := {31}; x := SYSTEM.VAL(REAL, s); s := {0,31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0});
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST 1
+JEQ 103
+CONST 0
+EASSERT 142
+LABEL 103
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := {0,31}; x := SYSTEM.VAL(REAL, s); ASSERT(z = x);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+LDLF -12
+LDLF -8
+FJEQ 104
+CONST 0
+EASSERT 144
+LABEL 104
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); x := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(x = z);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -8
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -8
+LDLF -12
+FJEQ 105
+CONST 0
+EASSERT 145
+LABEL 105
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); y := x - y; s := {0,31}; z := SYSTEM.VAL(REAL, s); ASSERT(y = z);
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -4
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -12
+LDLF -4
+LDLF -12
+FJEQ 106
+CONST 0
+EASSERT 146
+LABEL 106
+! 		s := {0,31}; x := SYSTEM.VAL(REAL, s); s := {31}; y := SYSTEM.VAL(REAL, s); z := x - y; s := SYSTEM.VAL(SET, z); ASSERT(s = {0,31})
+CONST -2147483647
+STLW -16
+LDLW -16
+STLF -8
+CONST -2147483648
+STLW -16
+LDLW -16
+STLF -4
+LDLF -8
+LDLF -4
+FMINUS
+STLF -12
+LDLF -12
+STLW -16
+LDLW -16
+CONST -2147483647
+JEQ 107
+CONST 0
+EASSERT 147
+LABEL 107
+RETURN
+END
+
+PROC tIEEE754.%main 0 12 0
+! 	TestREAL;
+CONST tIEEE754.TestREAL
+CALL 0
+! 	Out.String('TestIEEE754: OK'); Out.Ln
+CONST 16
+CONST tIEEE754.%1
+CONST Out.String
+CALL 2
+CONST Out.Ln
+CALL 0
+RETURN
+END
+
+! String "TestIEEE754: OK"
+DEFINE tIEEE754.%1
+STRING 54657374494545453735343A204F4B00
+
+! End of file
+]]*)

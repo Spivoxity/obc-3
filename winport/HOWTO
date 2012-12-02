@@ -1,0 +1,31 @@
+(This is out of date: since OCaml 2.11, building requires Cygwin)
+
+To build Windows version:
+
+1. Install MSYS + MsysDTK + TCL/Tk, MinGW, OCaml for MinGW, Inno
+setup, Subversion for Windows.  
+
+Make sure HOME does not contain spaces (else #! scripts don't
+work).
+
+I added two scripts to /usr/local/bin: tclsh links to tclsh84, and iscc
+links to "/c/Program Files/Inno Setup 5/iscc".  Both shell scripts, because
+there are no links, symbolic or otherwise.
+
+2. Check out sources with SVN.  Use svn first from a command prompt, and
+enter the password there -- doesn't work from the shell window -- then
+
+	svn co svn://spivey/usr/svn/src/obc/branches/2.5 obc-2.5
+
+3. Run
+
+	winport/winconfig 
+	make
+	(cd test; make; regress -nocode)
+
+4. To package:
+
+	cd winport
+	make
+
+5. Deliver obc2-5-0.exe (or whatever).

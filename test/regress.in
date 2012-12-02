@@ -1,0 +1,91 @@
+#!/bin/sh
+# @configure_input@
+
+#
+# Oxford Oberon-2 compiler
+# test/regress.in
+# Copyright (C) J. M. Spivey 1995, 1998
+#
+
+# Config stuff
+srcdir=@srcdir@
+top_srcdir=@top_srcdir@
+WINDOWS=@WINDOWS@
+DIFF=@DIFF@
+ENABLE_JIT=@ENABLE_JIT@
+# End of config
+
+for d in ../lib $top_srcdir/lib; do
+    if [ -r $d/lscript ]; then
+	lib=$d; break
+    fi
+done
+
+if [ -z "$lib" ]; then
+    echo Couldn\'t find library files
+    exit 2
+fi
+
+compiler="../compiler/obc1 -I $lib -x"
+interp="../obx"
+if [ "$ENABLE_JIT" = 1 ]; then interp="../obxj"; fi
+OBC_LIB=../lib
+export OBC_LIB
+
+if [ "$WINDOWS" = 1 ]; then
+    fixup=d2u
+    fixexp='sed -e s/\([0-9]\)E\([+-]\)\([0-9][0-9]\)$/\1E\20\3/'
+else
+    fixup=cat
+    fixexp=cat
+fi
+
+promote=false; code=true; run=true
+
+while true; do
+    case $1 in
+	-promote)
+	    promote=true; shift;;
+	-nocode)
+	    code=false; shift;;
+	-norun)
+	    run=false; shift;;
+	-nojit)
+	    interp="../obx"; shift;;
+	-*)
+	    compiler="$compiler $1"; shift;;
+	*)
+	    break
+    esac
+done
+
+status=0
+
+$compiler $srcdir/xTypes.m >xTypes.k
+$compiler $srcdir/xPrelude.m >xPrelude.k
+
+for f in ${*:-`cd $srcdir; echo t*.m`}; do
+    echo "$f"
+
+    flag=
+    if [ $f = tMixIt.m ]; then flag=-w; fi
+
+    rm -f a.out a.k out code
+    ($compiler $flag -O $srcdir/$f >a.k \
+	&& sed -f $srcdir/stamp.sed a.k >code \
+	&& ../runtime/oblink -L $lib xTypes.k xPrelude.k a.k -o a.out \
+	&& if $run; then \
+	    $interp ./a.out dummy arguments 2>&1 | $fixup >out; fi)
+    if $promote; then
+	sed -f $srcdir/promote.sed $srcdir/$f >$f.new
+	mv $f.new $srcdir/$f
+    else
+	sed -n -e '1,/^(\*<</d' -e '/^>>\*)/q' -e p $srcdir/$f | $fixexp >out.0
+	sed -n -e '1,/^(\*\[\[/d' -e '/^]]\*)/q' -e p $srcdir/$f >code.0
+	if $run; then $DIFF out.0 out || status=1; fi
+	if $code; then $DIFF -c code.0 code; fi
+    fi
+done
+
+if [ $status -ne 0 ]; then echo Failed!; fi
+exit $status

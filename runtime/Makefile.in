@@ -1,0 +1,162 @@
+#
+# @configure_input@
+#
+# runtime/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Config stuff
+CC = @CC@
+AR = ar
+RANLIB = @RANLIB@
+CFLAGS = @CFLAGS@
+RTFLAGS = @RTFLAGS@
+HAVE_X = @HAVE_X@
+XYPRIMS = @XYPRIMS@
+TCLSH = @TCLSH@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+libdir = @libdir@/obc
+subdir = runtime
+SHELL = /bin/sh
+DEBUG = @DEBUG@
+VPATH = @srcdir@:../lib
+ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
+ENABLE_JIT = @ENABLE_JIT@
+GC_PAGESIZE = @GC_PAGESIZE@
+# End
+
+all :: oblink obx.a obx-p.a
+
+ifdef DEBUG
+  DEBUGDEF = -DDEBUG
+  all :: obx-t.a
+endif
+
+ifdef ENABLE_JIT
+  all :: obx-j.a
+endif
+
+ifdef ENABLE_DEBUGGER
+  all :: obx-d.a
+endif
+
+ALL_CFLAGS = $(CFLAGS) -Wall $(INCLUDE)
+ALL_RTFLAGS = $(RTFLAGS) -Wall $(INCLUDE)
+INCLUDE = -I . -I .. -I $(srcdir)
+
+OBLINK = oblink.o linker.o symtab.o template.o
+oblink : $(OBLINK) util.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(OBLINK) util.o : %.o : %.c
+	$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+COMMON = support.o loader.o
+OBX = interp.o xmain.o $(COMMON)
+JIT = jit.o jitlab.o jitregs.o jitval.o
+PACK = $(AR) cr $@ $^; $(RANLIB) $@
+
+obx.a :   $(OBX) gc.o;						$(PACK)
+obx-t.a : interp-t.o xmain-t.o trace.o $(COMMON) gc-t.o;	$(PACK)
+obx-p.a : interp-p.o xmain-p.o profile.o $(COMMON) gc.o;	$(PACK)
+obx-d.a : interp-d.o xmain-d.o debug.o $(COMMON) gc.o;		$(PACK)
+obx-j.a : $(JIT) vm386.o xmain-j.o decode.o $(COMMON) gc.o;	$(PACK)
+
+# Cancel default rule
+%.o: %.c
+
+vm386.o : %.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DCODEPAGE=$(GC_PAGESIZE) $(DEBUGDEF) -c $< -o $@
+
+$(OBX) $(JIT) decode.o gc.o trace.o profile.o debug.o: %.o : %.c
+	$(CC) $(ALL_RTFLAGS) -c $< -o $@
+
+%-n.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DNATIVE -c $< -o $@
+
+%-t.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DTRACE -c $< -o $@
+
+%-p.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DPROFILE -c $< -o $@
+
+%-d.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DOBXDEB -c $< -o $@
+
+%-j.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DJIT -c $< -o $@
+
+keiko.h template.c interp.c : keiko.iset iset.tcl util.tcl iparse.tcl iskel.c
+	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset $(srcdir)/iskel.c \
+		keiko.h template.c interp.c
+
+decode.c : keiko.iset jitgen.tcl util.tcl iparse.tcl 
+	$(TCLSH) $(srcdir)/jitgen.tcl $(srcdir)/keiko.iset decode.c
+
+
+## Cleanup
+
+# clean: remove all object files
+clean:
+	rm -f oblink *.[ao]
+
+quiteclean: clean
+	rm -f interp.c keiko.h template.c decode.c
+
+# distclean: also remove all non-distributed files
+realclean distclean: quiteclean
+	rm -f Makefile 
+
+.DELETE_ON_ERROR:
+
+## Configuration and dependencies
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && ./config.status $(subdir)/$@
+
+###
+
+support.o interp.o interp-t.o interp-p.o interp-d.o profile.o \
+xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o debug.o gc0.o gc.o gc-t.o \
+trace.o loader.o jit.o jitlab.o: \
+	obx.h obcommon.h ../config.h exec.h
+
+interp.o interp-t.o interp-p.o interp-d.o \
+xmain.o xmain-t.o xmain-p.o xmain-d.o debug.o jit.o: \
+	keiko.h
+
+linker.o oblink.o symtab.o template.o util.o: \
+	oblink.h obcommon.h ../config.h exec.h util.h keiko.h
+
+$(JIT) decode.o: decode.h 
+jit.o jitval.o decode.o: keiko.h
+$(JIT): jit.h vm.h
+vm386.o: vm.h

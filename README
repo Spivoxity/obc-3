@@ -1,0 +1,40 @@
+Oxford Oberon-2 compiler for LINUX/i386
+Copyright (C) 1995-2005 J. M. Spivey
+
+
+INSTALLING THE BINARY DISTRIBUTION
+
+To install OBC on a linux system, first obtain and unpack the binary
+tarball, which will have a name like obc-linux-2.4.0.tgz.  Then type
+the following shell commands:
+
+	$ cd obc-linux-2.4.0
+	$ ./configure
+	$ make
+	$ sudo make install
+
+This will install the compiler and runtime system under /usr/local.
+
+The program Fac.m included in the distribution makes it easy to
+perform a simple sanity test: just type the commands
+
+	$ obc -o fac Fac.m
+	$ ./fac 10
+
+and check for the output
+
+	The factorial of 10 is 3628800
+
+The installation is now complete.
+
+This software includes the Objective Caml run-time system, which is
+copyright 1991-2005, INRIA.  Objective Caml may be obtained from
+http://caml.inria.fr
+
+
+INSTALLING THE SOURCE DISTRIBUTION
+
+Intructions are in the file INSTALL
+
+
+-- Mike Spivey

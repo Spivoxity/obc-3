@@ -1,0 +1,41 @@
+MODULE tAssert2;
+
+VAR x: INTEGER;
+
+BEGIN
+  x := 3;
+  ASSERT(x = 2, 999)
+END tAssert2.
+
+(*<<
+Runtime error: assertion failed (999) on line 7 in module tAssert2
+In procedure tAssert2.%main
+   called from MAIN
+>>*)
+
+(*[[
+!! SYMFILE #tAssert2 STAMP #tAssert2.%main 1
+!! END STAMP
+!! 
+MODULE tAssert2 STAMP 0
+ENDHDR
+
+PROC tAssert2.%main 0 8 0
+!   x := 3;
+CONST 3
+STGW tAssert2.x
+!   ASSERT(x = 2, 999)
+LDGW tAssert2.x
+CONST 2
+JEQ 1
+CONST 999
+EASSERT 7
+LABEL 1
+RETURN
+END
+
+! Global variables
+GLOBAL tAssert2.x 4
+
+! End of file
+]]*)

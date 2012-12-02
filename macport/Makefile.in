@@ -1,0 +1,117 @@
+#
+# @configure_input@
+#
+# macport/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# $Id$
+#
+
+# Config stuff
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+datarootdir = @datarootdir@
+abs_builddir = @abs_builddir@
+bindir = @bindir@
+libdir = @libdir@
+VERSION=@PACKAGE_VERSION@
+SIG=@SIG@
+subdir = macport
+INSTALL = @INSTALL@
+INSTALL_PROG = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+# End
+
+all:
+
+CONFIG = gdk-pixbuf.loaders
+
+gdk-pixbuf.loaders: %: %.in
+	cd .. && ./config.status --file=$(subdir)/$@
+
+PACKAGE = obc-mac-$(VERSION).pkg
+VNUM := $(shell echo $(SIG) | sed 's/0x0*//')
+
+package: tree force
+	sudo chown -R root:wheel tree
+	/Developer/usr/bin/packagemaker -v -b -m -w \
+	    --root tree -o $(PACKAGE) \
+	    --title 'Oxford Oberon-2 compiler' \
+	    --id uk.ac.ox.oriel.spivey.obc \
+	    --version $(VNUM) \
+	    --target 10.5
+
+tree: $(CONFIG) force
+	if [ -r tree ]; then sudo rm -rf tree; fi
+	$(MAKE) -C .. prefix=$(abs_builddir)/tree/usr/local install
+
+GTKSRC = ~/gtk/inst
+GTKDIR = $(libdir)/obc/gtk
+
+GTKLIB = libatk-1.0.0 libcairo.2 libexpat.1.5.2 libfontconfig.1		\
+	libfreetype.6 libgailutil.18 libgdk-quartz-2.0.0		\
+	libgdk_pixbuf-2.0.0 libgettextlib-0.17 libgettextpo.0.4.0	\
+	libgettextsrc-0.17 libgio-2.0.0 libglib-2.0.0 libgmodule-2.0.0	\
+	libgobject-2.0.0 libgthread-2.0.0 libgtk-quartz-2.0.0		\
+	libgtksourceview-2.0.0 libintl.8 libjpeg.7 libltdl.7		\
+	libpango-1.0.0 libpangocairo-1.0.0 libpangoft2-1.0.0		\
+	libpixman-1.0 libpng.3 libpng12.0 libtiff.3 libtiffxx.3
+
+INST = $(INSTALL) -d $(GTKDIR)/$(2) && \
+	for f in $(3); do \
+	    $(INSTALL_$(1)) $(GTKSRC)/$(2)/$$f $(GTKDIR)/$(2); \
+	done
+
+install-gtk: install-gtk-main install-gtk-special
+
+install-gtk-main:
+	$(call INST,PROG,lib,$(GTKLIB:%=%.dylib))
+	$(call INST,DATA,share/gtksourceview-2.0/language-specs, \
+		def.lang language.dtd language.rng language2.rng)
+	$(call INST,DATA,share/gtksourceview-2.0/styles, \
+		classic.xml styles.rng)
+	$(call INST,PROG,lib/gtk-2.0/2.10.0/loaders, libpixbufloader-png.so)
+
+install-gtk-special: $(CONFIG)
+	$(INSTALL) -d $(GTKDIR)/etc/gtk-2.0
+	$(INSTALL_DATA) gdk-pixbuf.loaders $(GTKDIR)/etc/gtk-2.0
+
+
+# Clean-up
+
+clean quiteclean disclean realclean: force
+	rm -rf $(PACKAGE) tree gdk-pixbuf.loaders
+
+# Configuration
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
+
+force:

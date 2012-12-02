@@ -1,0 +1,32 @@
+#!/bin/sh
+
+DIR=~/gtk/inst/lib
+DIR2=/usr/local/lib/obc/gtk/lib
+LIBS=`find $DIR -name '*.dylib' -type f`
+SHOBS=`find $DIR -name '*.so' -type f`
+
+# Find install names of all libraries
+NAMES=`otool -D $LIBS \
+      | sed -n -e '/:$/d' -e "\@$DIR@s@.*$DIR/\([^ ]*\).*@\1@p" \
+			  -e "\@$DIR2@s@.*$DIR2/\([^ ]*\).*@\1@p" \
+      | sort -u`
+
+# Make -change options for each library
+change=
+for name in $NAMES; do
+    change="$change -change $DIR/$name $DIR2/$name"
+done
+
+# Change install name and dependencies for each dylib
+for lib in $LIBS; do
+    echo $lib
+    name=`otool -D $lib | sed -n 2p`
+    name2="$DIR2/`basename $name`"
+    install_name_tool -id $name2 $change $lib
+done
+
+# Change dependencies for each so
+for lib in $SHOBS; do
+    echo $lib
+    install_name_tool $change $lib
+done

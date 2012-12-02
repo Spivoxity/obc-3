@@ -1,0 +1,257 @@
+#!/bin/sh
+
+#
+# @configure_input@
+#
+# obc.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Config stuff
+ROOT=@ROOT@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+LIBDIR=@libdir@/obc
+VERSION=@PACKAGE_VERSION@
+EXEEXT=@EXEEXT@
+ENABLE_JIT=@ENABLE_JIT@
+obc1=$LIBDIR/obc1
+oblink=$LIBDIR/oblink
+obx=$LIBDIR/obx
+obxj=$LIBDIR/obxj
+stdinc="-I $ROOT/$LIBDIR"
+rundir=$LIBDIR
+libdir=$LIBDIR
+# End of config
+
+program=`basename $0`
+
+usage () {
+    p=/bin/echo
+    $p "Usage: $program [flag ...] file ..." >&2
+    $p >&2
+    $p "  -O0     Turn off peephole optimiser" >&2
+    $p "  -O      Turn on peephole optimiser (default)" >&2
+    $p "  -b      Disable runtime checks" >&2
+    $p "  -v      Print compiling and linking commands" >&2
+    $p "  -w      Turn off warnings" >&2
+    $p "  -x      Enable language extensions" >&2
+    $p "  -I dir  Add dir as search directory for imported modules" >&2
+    $p "  -d n    Set compiler debugging level to n" >&2
+    $p "  -rsb    Keywords and built-ins are in lower case"  >&2
+    $p "  -c      Compile only; omit linking step" >&2
+    $p "  -o file Set output file for linking" >&2
+    $p "  -s      Strip symbol table in linker output" >&2
+    if [ "$ENABLE_JIT" = 1 ]; then
+	$p "  -j0     Disable JIT translator at run time" >&2
+    fi
+    $p "  -k n    Set runtime stack size" >&2
+    $p "  -C      Build specialized runtime system into linker output" >&2
+    $p "  -l lib  (with -C) Add C library to runtime system" >&2
+    $p "  -L dir  Add search directory for -l" >&2
+    $p "  -p      (with -C) Use profiling runtime system" >&2
+    $p "  -r      Do not delete temporary files" >&2
+    $p "  -t dir  Set directory for temporary files" >&2
+    $p >&2
+    $p "  *.m, *.mod  Oberon source file to be compiled" >&2
+    $p "  *.k     Bytecode file for linking" >&2
+    $p "  *.c     File of primitives coded in C" >&2
+    $p "  *.o     File of object code for primitives" >&2
+    exit 2
+}
+
+command () {
+    if $vflag; then /bin/echo $* >&2; fi
+    eval $*
+}
+
+remove () {
+    if $rmflag; then /bin/rm -rf $*; fi
+}
+
+compile () {
+    command $obc1 -g -pl $sw $incl -I $ROOT$libdir $1 \>$2 \
+	|| { /bin/rm -f $2; status=1; }
+}
+
+linkit () {
+    if $custom; then
+	{ command $oblink -custom -script $lscript $lsw -L $ROOT$libdir \
+	        $obj -o $tmp.out \>$primc \
+	    && command gcc $incl $stdinc $primc $ofiles $rundir/$obx_a \
+	        $libdir/dlstub.o $libdir/oblib.a $libs \
+	        -o $outfile \
+	    && command strip $outfile \
+	    && command cat $tmp.out \>\>$outfile; } \
+	|| { /bin/rm -f $outfile; status=1; }
+	remove $tmp.out $primc
+    else
+	{ command $oblink -g -pl -i $interp $lsw -script $lscript \
+	        -L $ROOT$libdir $obj -o $outfile \
+	    && command chmod +x $outfile; } \
+	|| { /bin/rm -f $outfile; status=1; }
+    fi
+}
+
+ccomp () {
+    command gcc -c $incl $stdinc -O $1 -o $2 || status=1
+}
+
+nsrc=0
+nobj=0
+nothers=0
+sw=
+lsw=
+lscript=lscript
+src=
+obj=
+cfiles=
+ofiles=
+outfile=
+link=true
+status=0
+vflag=false
+libf=oblib.k
+incl=
+libs=
+obx_a=
+obx_a_default=obx.a
+custom=false
+rmflag=true
+tmpdir=/tmp
+interp=$obx
+
+if [ "$ENABLE_JIT" = 1 ]; then
+    obx_a_default=obx-j.a
+    interp=$obxj
+fi
+
+if [ $# -eq 0 ]; then usage; fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+	-O0|-O|-O2|-w|-x|-rsb) 
+                sw="$sw $1";;
+        -s)	lsw="$lsw $1";;
+        -v)	vflag=true;;
+	-c)	link=false;;
+	-o)	shift; outfile=$1;;
+	-d)	shift; sw="$sw -d $1";;
+        -j0)    obx_a_default=obx.a; interp=$obx;;
+	-k)	shift; lsw="$lsw -k $1";;
+        -b)	sw="$sw -b"; lscript=lscript-b;;
+	-I)	shift; incl="$incl -I $1";;
+	-C)	custom=true;;
+	-[lL]*)	libs="$libs $1";;
+	-p)	obx_a=obx-p.a;;
+	-r)	rmflag=false;;
+	-t)	shift; tmpdir=$1;;
+	-g)	;;
+	-pl)	;;
+	*.m)    src="$src $1"
+		base=`basename $1 .m`
+		obj="$obj $base.k"
+		nsrc=`expr $nsrc + 1`;;
+	*.mod)  src="$src $1"
+		base=`basename $1 .mod`
+		obj="$obj $base.k"
+		nsrc=`expr $nsrc + 1`;;
+	*.k)	obj="$obj $1"
+		nobj=`expr $nobj + 1`;;
+	*.c)	cfiles="$cfiles $1"
+		base=`basename $1 .c`
+		ofiles="$ofiles $base.o"
+		nothers=`expr $nothers + 1`;;
+	*.o)	ofiles="$ofiles $1"
+		nothers=`expr $nothers + 1`;;
+	*)	usage
+    esac
+    shift
+done
+
+# This mechanism ensures that "obc -C -p -j0" uses obx-p.a and not obx.a
+if [ "$obx_a" = "" ]; then obx_a=$obx_a_default; fi
+
+# On Windows/MSYS, we give a #! script the default name "a.out", but
+# we give a custom executable the name "a.exe".  If the output file is
+# specified with -o, we add .exe for a custom link if it is not
+# already present.  (Most people will be using the C driver anyway)
+#
+# On UNIX, we use the name "a.out" or the one specified with -o, in
+# each case without change.
+
+if [ "$EXEEXT" = "" ]; then
+    # Unix: output defaults to a.out
+    if [ "$outfile" = "" ]; then outfile=a.out; fi
+elif [ "$outfile" = "" ]; then
+    # Windows: output defaults to a.exe if custom, else a.out
+    if $custom; then outfile=a.exe; else outfile=a.out; fi
+elif $custom; then
+    # Windows: if custom, output file must have extension .exe
+    exe=`echo $EXEEXT | sed 's/\\./\\\\./'`
+    outfile=`echo $outfile | sed -e "s/$exe\$//" -e "s/\$/$exe/"`
+fi
+
+tmp=$tmpdir/obc$$
+primc=$tmpdir/obc$$p.c
+
+if $vflag; then
+    /bin/echo "Oxford Oberon-2 compiler driver version $VERSION"
+    $obc1 -v
+    $oblink -v
+    $interp -v
+fi
+
+if [ $nsrc -eq 0 -a $nobj -eq 0 -a $nothers -eq 0 ]; then 
+    if $vflag; then exit 0; else usage; fi
+fi
+
+# For portability to older shells
+notcustom=true; $custom && notcustom=false
+
+if [ $nothers -gt 0 ] && $notcustom && $link; then
+    echo "$program: must specify -C with .c or .o files" >&2
+    exit 2
+fi
+
+for f in $src; do 
+    base=`basename $f .m`
+    compile $f $base.k $base.c
+    if [ $status -ne 0 ]; then exit $status; fi
+done
+
+for f in $cfiles; do
+    base=`basename $f .c`
+    ccomp $f $base.o
+    if [ $status -ne 0 ]; then exit $status; fi
+done
+
+if $link; then linkit; fi
+
+exit $status
+

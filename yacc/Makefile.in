@@ -1,0 +1,148 @@
+#
+# yacc/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Config stuff
+OCAMLC = ocamlc
+OCAMLLEX = ocamllex
+CAMLDEP = @top_srcdir@/camldep
+MLFLAGS = @MLFLAGS@
+srcdir = @srcdir@
+subdir = yacc
+SHELL = /bin/sh
+DEPEND = @DEPEND@
+EXEEXT = @EXEEXT@
+VPATH = @srcdir@
+# End of config
+
+all: myacc yyparse.cmo
+
+COMMON = yyparse.cmo growvect.cmo vector.cmo print.cmo error.cmo util.cmo \
+	table.cmo grammar.cmo lr0.cmo lalr.cmo \
+	conflict.cmo report.cmo compile.cmo output.cmo
+
+bootyacc: $(COMMON) bootlexer.cmo bootyacc.cmo bootmain.cmo
+	ocamlc $(MLFLAGS) -o $@ str.cma $^
+
+myacc: $(COMMON) lexer.cmo yacc.cmo main.cmo
+	ocamlc $(MLFLAGS) -o $@ str.cma $^
+
+bootlexer.ml bootmain.ml: boot%: %
+	sed -e 's/Yacc/Bootyacc/g' -e 's/Lexer/Bootlexer/' $< >$@
+
+%.cmo: %.ml
+	ocamlc $(MLFLAGS) -c -o $@ $<
+
+%.cmi: %.mli
+	ocamlc $(MLFLAGS) -c -o $@ $<
+
+%.ml: %.mll
+	ocamllex -o $@ $<
+
+%.mli %.ml: %.mly
+	$(MAKE) bootyacc
+	./bootyacc $<
+
+update: force
+	cp yacc.mli bootyacc.mli
+	cp yacc.ml bootyacc.ml
+
+# Cleanup
+
+clean: force
+
+quiteclean: clean
+	rm -f myacc bootyacc
+	rm -f *.cmi *.cmo
+	rm -f lexer.ml yacc.ml yacc.mli
+	rm -f bootmain.ml bootlexer.ml
+
+distclean: quiteclean
+	rm -f Makefile
+
+realclean: distclean
+	rm -f Depend
+
+# Config and dependencies
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
+
+ML = compile.ml compile.mli conflict.ml conflict.mli error.ml \
+	error.mli grammar.ml grammar.mli growvect.ml growvect.mli \
+	lalr.ml lalr.mli lexer.ml lr0.ml lr0.mli main.ml \
+	output.ml output.mli report.ml report.mli table.ml table.mli \
+	util.ml util.mli yacc.ml yacc.mli yyparse.ml yyparse.mli \
+	print.mli print.ml vector.mli vector.ml
+
+ifdef DEPEND
+$(srcdir)/Depend: $(ML)
+	$(CAMLDEP) $^ >$@
+endif
+
+# include $(srcdir)/Depend
+
+force:
+
+###
+
+compile.cmo   : compile.cmi table.cmi util.cmi
+compile.cmi   : grammar.cmi lr0.cmi
+conflict.cmo  : conflict.cmi error.cmi print.cmi util.cmi
+conflict.cmi  : grammar.cmi lr0.cmi
+error.cmo     : error.cmi
+error.cmi     : print.cmi
+grammar.cmo   : error.cmi grammar.cmi growvect.cmi
+grammar.cmi   : print.cmi table.cmi
+growvect.cmo  : growvect.cmi
+lalr.cmo      : grammar.cmi lalr.cmi lr0.cmi print.cmi
+lexer.cmo     : error.cmi grammar.cmi output.cmi print.cmi yacc.cmi
+lr0.cmo       : growvect.cmi lr0.cmi util.cmi
+lr0.cmi       : grammar.cmi print.cmi table.cmi vector.cmi
+main.cmo      : compile.cmi conflict.cmi error.cmi grammar.cmi lalr.cmi \
+		lexer.cmo lr0.cmi output.cmi print.cmi report.cmi table.cmi \
+		util.cmi yacc.cmi
+output.cmo    : compile.cmi error.cmi grammar.cmi growvect.cmi lr0.cmi \
+		output.cmi print.cmi table.cmi yyparse.cmi
+output.cmi    : lr0.cmi
+print.cmo     : print.cmi
+report.cmi    : lr0.cmi
+report.cmo    : error.cmi grammar.cmi print.cmi report.cmi util.cmi
+table.cmo     : table.cmi util.cmi
+table.cmi     : growvect.cmi
+util.cmo      : print.cmi util.cmi
+yacc.cmo      : error.cmi print.cmi yacc.cmi
+yacc.cmi      : grammar.cmi
+yyparse.cmo   : yyparse.cmi
+vector.cmo    : vector.cmi
+
+bootlexer.cmo : error.cmi grammar.cmi output.cmi print.cmi bootyacc.cmi
+bootyacc.cmi  : grammar.cmi
+bootyacc.cmo  : bootyacc.cmi
+bootmain.cmo  : lr0.cmi

@@ -1,0 +1,86 @@
+#!/bin/sh
+
+# @configure_input@
+
+#
+# Oxford Oberon-2 compiler
+# test/bigtest.in
+# Copyright (C) J. M. Spivey 1995, 1998
+#
+
+# Config stuff
+srcdir=@srcdir@
+top_srcdir=@top_srcdir@
+WINDOWS=@WINDOWS@
+EXEEXT=@EXEEXT@
+GC_LIB=@GC_LIB@
+# End of config
+
+for d in ../lib $top_srcdir/lib; do
+    if [ -r $d/lscript ]; then
+	lib=$d; break
+    fi
+done
+if [ -z "$lib" ]; then
+    echo Couldn\'t find library files
+    exit 2
+fi
+
+compiler="../compiler/obc1 -I $lib -O"
+OBC_LIB=../lib
+export OBC_LIB
+
+# Under MSYS/MinGW, the "sed -n p" converts CR/LF to LF in test output
+if [ "$WINDOWS" = yes ]; then
+    fixup="sed -n p"
+    fixexp='sed -e s/\([0-9]\)E\([+-]\)\([0-9][0-9]\)$/\1E\20\3/'
+else
+    fixup=cat
+    fixexp=cat
+fi
+
+echo Library
+../runtime/oblink -custom -nostdlib -L $lib \
+    `sed "s:^:$lib/:" $lib/lscript` >/dev/null
+
+echo Planner
+rm -f Planner.k planner
+$compiler -pl $srcdir/Planner.m >Planner.k \
+    && ../runtime/oblink -pl -L $lib Planner.k -o planner \
+    && ../obprof -g -o Plan.pro -l ./planner <$srcdir/Planner.in >Plan.out \
+    && ($fixup Plan.out | diff $srcdir/Planner.out -; \
+	sed -f $srcdir/stamp.sed Planner.k >Plan.code; \
+        diff $srcdir/Planner.code Plan.code; \
+	$fixup Plan.pro | diff $srcdir/Planner.pro -; \
+	../obxj ../obdump $srcdir/Planner.m >Plan.dmp; \
+	$fixup Plan.dmp | diff $srcdir/Planner.dmp -)
+
+echo Fib
+($compiler $srcdir/FibFun.m >FibFun.k \
+    && $compiler $srcdir/FibMain.m >FibMain.k \
+    && ../runtime/oblink -i `cd ..; pwd`/obx \
+	-L $lib FibFun.k FibMain.k -o fib \
+    && chmod +x fib \
+    && ./fib | $fixup | cmp $srcdir/Fib.out -)
+
+exit
+
+echo Primtest
+
+prim=prim$EXEEXT
+(tclsh $top_srcdir/lib/makeprims.tcl $srcdir/PrimTest.m >newprims.c \
+    && $compiler $srcdir/PrimTest.m >PrimTest.k \
+    && ../runtime/oblink -custom -L $lib PrimTest.k \
+	-o PrimTest.x >primtab.c \
+    && gcc -g -I $top_srcdir/runtime -I .. primtab.c newprims.c \
+	../runtime/obx.a ../lib/dlstub.o ../lib/oblib.a \
+        $GC_LIB -o $prim \
+    && cat PrimTest.x >>$prim \
+    && ./$prim | $fixup | cmp $srcdir/PrimTest.out -)
+    
+echo PrimTest2
+(gcc -g -I $top_srcdir/runtime -I .. primtab.c newprims.c \
+	../runtime/obx-p.a ../lib/oblib.a -o $prim \
+    && cat PrimTest.x >>$prim \
+    && ./$prim -o PrimTest.p | cmp $srcdir/PrimTest.out - \
+    && cmp $srcdir/PrimTest.prof PrimTest.p)

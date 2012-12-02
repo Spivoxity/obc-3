@@ -1,0 +1,206 @@
+#
+# @configure_input@
+#
+# lablgtk/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# $Id$
+#
+
+# Config stuff
+srcdir = @srcdir@
+subdir = lablgtk
+abs_top_srcdir = @abs_top_srcdir@
+RANLIB = @RANLIB@
+WINDOWS = @WINDOWS@
+MACOS = @MACOS@
+VPATH = @srcdir@
+PKGS = gtk+-2.0 gtksourceview-2.0
+DEPEND = @DEPEND@
+# End of config
+
+ALL = lablgtk.cma liblablgtk.a gtkThread.cmo
+
+COBJS = ml_gdkpixbuf.o ml_gdk.o ml_glib.o ml_gobject.o \
+	ml_gpointer.o ml_gvaluecaml.o wrappers.o \
+	$(GTKOBJS)
+
+GTKOBJS = ml_gtk.o ml_pango.o ml_gtkaction.o \
+	ml_gtkbin.o ml_gtkbroken.o ml_gtkbutton.o \
+	ml_gtkedit.o ml_gtkfile.o ml_gtklist.o \
+	ml_gtkmenu.o ml_gtkmisc.o \
+	ml_gtkpack.o ml_gtkstock.o \
+	ml_gtktext.o ml_gtktree.o ml_gtksourceview2.o
+
+GTKPROPS = gtkBase.props gtkBin.props gtkButton.props gtkEdit.props \
+	gtkList.props gtkMenu.props gtkMisc.props gtkPack.props \
+	gtkText.props gtkTree.props gtkFile.props \
+	gtkAction.props gtkBroken.props \
+	gtkSourceView2.props
+MLOBJS1 =  gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo
+ENUMOBJS = gdkEnums.cmo pangoEnums.cmo gtkEnums.cmo sourceView2Enums.cmo
+MLOBJS2 = pango.cmo gdk.cmo gdkEvent.cmo gdkKeysyms.cmo gdkPixbuf.cmo \
+	gtk.cmo gtkSignal.cmo gtkStock.cmo gtkObject.cmo
+MLOBJS3 = gtkData.cmo gtkBase.cmo gtkPack.cmo gtkButton.cmo \
+	gtkMenu.cmo gtkMisc.cmo gtkWindow.cmo gtkList.cmo \
+	gtkBin.cmo gtkEdit.cmo gtkText.cmo gtkTree.cmo \
+	gtkFile.cmo gtkMain.cmo gtkBroken.cmo gtkSourceView2.cmo \
+	gPango.cmo gDraw.cmo gObj.cmo gData.cmo gMain.cmo
+MLOBJS4 = gContainer.cmo gPack.cmo gButton.cmo gText.cmo \
+	gMenu.cmo gMisc.cmo gTree.cmo gList.cmo gFile.cmo gWindow.cmo \
+	gBin.cmo gEdit.cmo gAction.cmo gBroken.cmo \
+	gUtil.cmo gToolbox.cmo gSourceView2.cmo
+MLOBJS =  $(MLOBJS1) $(ENUMOBJS) $(MLOBJS2) $(GTKPROPS:.props=Props.cmo) \
+	$(MLOBJS3) $(GTKPROPS:%.props=o%Props.cmo) $(MLOBJS4)
+
+all: $(ALL)
+
+lablgtk.cma: $(MLOBJS)
+	ocamlc -a -o $@ $^ -cclib -llablgtk -cclib "$(GTKLIBS)"
+
+liblablgtk.a: $(COBJS) $(SV2OBJS)
+	ar cr $@ $^; $(RANLIB) $@	
+
+gtkThread.cmi: gtkThread.mli
+	ocamlc -c -thread -o $@ $<
+
+gtkThread.cmo: gtkThread.ml
+	ocamlc -c -thread -w s -o $@ $<
+
+ifdef WINDOWS
+  PKG_CONFIG = \
+    env PKG_CONFIG_PATH=$(abs_top_srcdir)/winport:/cygdrive/c/GTK/lib/pkgconfig \
+	pkg-config --define-variable=prefix=C:/GTK
+else
+  PKG_CONFIG = pkg-config
+endif
+
+GTKFLAGS := $(shell $(PKG_CONFIG) --cflags $(PKGS))
+GTKLIBS := \
+	$(shell $(PKG_CONFIG) --libs-only-L $(PKGS)) \
+	$(shell $(PKG_CONFIG) --libs-only-l $(PKGS))
+
+ifdef MACOS
+  GTKFLAGS += -DHAS_GTKQUARTZ
+endif
+
+$(COBJS): %.o: %.c
+	ocamlc -c -ccopt '-I .' -ccopt '$(GTKFLAGS)' -o $@ $<
+
+$(GTKOBJS): pango_tags.h gtk_tags.h ml_gtk.h gdk_tags.h ml_gdk.h \
+	    ml_gobject.h ml_glib.h wrappers.h
+ml_glib.o: glib_tags.h ml_glib.h wrappers.h
+ml_gobject.o: gobject_tags.h ml_gvaluecaml.h wrappers.h
+ml_gvaluecaml.o: ml_gobject.h wrappers.h
+ml_gdk.o: gdk_tags.h ml_gdk.h ml_gpointer.h \
+	pango_tags.h ml_pango.h wrappers.h
+ml_gtk.o ml_gtktext.o: ml_pango.h gtk_tags.h
+ml_gtkgl.o: gtkgl_tags.h ml_gtk.h ml_gdk.h wrappers.h
+ml_gpointer.o: ml_gpointer.h
+ml_gdkpixbuf.o: ml_gdkpixbuf.h gdkpixbuf_tags.h ml_gdk.h gdk_tags.h \
+	wrappers.h ml_gpointer.h
+ml_pango.o: pango_tags.h ml_pango.h
+
+$(SV2OBJS): ml_glib.h ml_gdk.h ml_gtk.h ml_gobject.h ml_gdkpixbuf.h \
+	ml_pango.h gtk_tags.h gdk_tags.h ml_gtktext.h \
+	sourceView2_tags.h wrappers.h
+
+%Props.ml o%Props.ml: %.props propcc
+	./propcc $<
+
+TAGS = gdkpixbuf_tags.var gdk_tags.var glib_tags.var gobject_tags.var \
+	gtk_tags.var pango_tags.var sourceView2_tags.var
+
+%_tags.c %_tags.h %Enums.ml: %_tags.var varcc
+	./varcc $<
+
+propcc varcc: %: %.ml4
+	ocamlc -pp "camlp4o -impl" -o $@ -impl $<
+
+%.cmo: %.ml
+	ocamlc $(OCAMLFLAGS) -c -w s -o $@ $< 
+
+%.cmi: %.mli
+	ocamlc $(OCAMLFLAGS) -c -o $@ $< 
+
+clean: force
+	rm -f *.cma *.cmi *.cmo *.o *.a propcc varcc
+
+quiteclean : clean
+	rm -f $(GTKPROPS:%.props=%Props.ml) $(GTKPROPS:%.props=o%Props.ml) \
+		$(TAGS:%.var=%.h) $(TAGS:%.var=%.c) \
+		$(TAGS:%_tags.var=%Enums.ml)
+
+distclean: quiteclean
+	rm Makefile
+
+realclean: distclean
+	rm -f $(srcdir)/Depend
+
+## Configuration and dependencies
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
+
+ML = gAction.mli gBin.mli gBroken.mli gButton.mli gContainer.mli	\
+	gData.mli gdk.mli gdkPixbuf.mli gDraw.mli gEdit.mli gFile.mli	\
+	glib.mli gList.mli gMain.mli gMenu.mli gMisc.mli gobject.mli	\
+	gObj.mli gPack.mli gSourceView2.mli gSourceView.mli		\
+	gText.mli gtkSourceView2_types.mli gtkThread.mli gToolbox.mli	\
+	gTree.mli gUtil.mli gWindow.mli gAction.ml gaux.ml gBin.ml	\
+	gBroken.ml gButton.ml gContainer.ml gData.ml gdkEnums.ml	\
+	gdkEvent.ml gdkKeysyms.ml gdk.ml gdkPixbuf.ml gDraw.ml		\
+	gEdit.ml gFile.ml glib.ml gList.ml gMain.ml gMenu.ml gMisc.ml	\
+	gobject.ml gObj.ml gPack.ml gPango.ml gpointer.ml 		\
+	gSourceView2.ml gSourceView.ml gText.ml gtkActionProps.ml	\
+	gtkBase.ml gtkBaseProps.ml gtkBin.ml gtkBinProps.ml		\
+	gtkBroken.ml gtkBrokenProps.ml gtkButton.ml gtkButtonProps.ml	\
+	gtkData.ml gtkEdit.ml gtkEditProps.ml gtkEnums.ml gtkFile.ml	\
+	gtkFileProps.ml gtkList.ml gtkListProps.ml gtkMain.ml		\
+	gtkMenu.ml gtkMenuProps.ml gtkMisc.ml gtkMiscProps.ml gtk.ml	\
+	gtkObject.ml gtkPack.ml gtkPackProps.ml 			\
+	gtkSignal.ml gtkSourceView2.ml					\
+	gtkSourceView2Props.ml gtkStock.ml gtkText.ml gtkTextProps.ml	\
+	gtkThread.ml gtkTree.ml gtkTreeProps.ml gtkWindow.ml		\
+	gToolbox.ml gTree.ml gUtil.ml gWindow.ml ogtkActionProps.ml	\
+	ogtkBaseProps.ml ogtkBinProps.ml ogtkBrokenProps.ml		\
+	ogtkButtonProps.ml ogtkEditProps.ml ogtkFileProps.ml		\
+	ogtkListProps.ml ogtkMenuProps.ml ogtkMiscProps.ml		\
+	ogtkPackProps.ml ogtkSourceView2Props.ml			\
+	ogtkTextProps.ml ogtkTreeProps.ml pangoEnums.ml pango.ml	\
+	sourceView2Enums.ml gutf8.mli gutf8.ml
+
+ifdef DEPEND
+$(srcdir)/Depend: $(ML)
+	ocamldep $^ >$@
+endif
+
+include $(srcdir)/Depend
+
+force:
+

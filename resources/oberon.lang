@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="oberon" _name="Oberon" version="2.0" _section="Sources">
+  <metadata>
+    <property name="mimetypes">text/x-oberon</property>
+    <property name="globs">*.m</property>
+  </metadata>
+
+  <styles>
+    <style id="comment" _name="Comment" map-to="def:comment"/>
+    <style id="string" _name="String" map-to="def:string"/>
+    <style id="keyword" _name="Keyword" map-to="def:keyword"/>
+    <style id="identifier" _name="Identifier" map-to="def:identifier"/>
+    <style id="decimal" _name="Decimal" map-to="def:decimal"/>
+  </styles>
+
+  <default-regex-options case-sensitive="true"/>
+
+  <definitions>
+    <context id="string-1" style-ref="string">
+      <start>'</start>
+      <end>'</end>
+    </context>
+
+    <context id="string-2" style-ref="string">
+      <start>"</start>
+      <end>"</end>
+    </context>
+
+    <context id="block-comment" style-ref="comment">
+      <start>\(\*</start>
+      <end>\*\)</end>
+      <include>
+        <context ref="def:in-comment"/>
+      </include>
+    </context>
+
+    <context id="keyword" style-ref="keyword">
+      <keyword>ABSTRACT</keyword>
+      <keyword>ARRAY</keyword>
+      <keyword>BEGIN</keyword>
+      <keyword>BY</keyword>
+      <keyword>CASE</keyword>
+      <keyword>CONST</keyword>
+      <keyword>DIV</keyword>
+      <keyword>DO</keyword>
+      <keyword>ELSE</keyword>
+      <keyword>ELSIF</keyword>
+      <keyword>END</keyword>
+      <keyword>EXIT</keyword>
+      <keyword>FOR</keyword>
+      <keyword>IF</keyword>
+      <keyword>IMPORT</keyword>
+      <keyword>IN</keyword>
+      <keyword>IS</keyword>
+      <keyword>LOOP</keyword>
+      <keyword>MOD</keyword>
+      <keyword>MODULE</keyword>
+      <keyword>NIL</keyword>
+      <keyword>OF</keyword>
+      <keyword>OR</keyword>
+      <keyword>POINTER</keyword>
+      <keyword>PROCEDURE</keyword>
+      <keyword>RECORD</keyword>
+      <keyword>REPEAT</keyword>
+      <keyword>RETURN</keyword>
+      <keyword>THEN</keyword>
+      <keyword>TO</keyword>
+      <keyword>TYPE</keyword>
+      <keyword>UNTIL</keyword>
+      <keyword>VAR</keyword>
+      <keyword>WHILE</keyword>
+      <keyword>WITH</keyword>
+    </context>
+
+    <context id="identifier" style-ref="identifier">
+      <match extended="true">
+        [A-Za-z][A-Za-z0-9]*
+      </match>
+    </context>
+
+    <context id="number" style-ref="decimal">
+      <match extended="true">
+        (?&lt;![\w\.])
+        (([0-9]+)|([0-9]+\.[0-9]+([Ee][-]?[0-9]+)?))
+        (?![\w\.])
+      </match>
+    </context>
+
+    <context id="oberon">
+      <include>
+        <context ref="string-1"/>
+        <context ref="string-2"/>
+        <context ref="block-comment"/>
+        <context ref="keyword"/>
+        <context ref="number"/>
+	<context ref="identifier"/>
+      </include>
+    </context>
+
+  </definitions>
+</language>

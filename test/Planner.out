@@ -1,0 +1,196 @@
+colour {Oxford} {Birmingham} green
+colour {Northampton} {Birmingham} green
+colour {Nottingham} {Birmingham} green
+colour {Shrewsbury} {Birmingham} green
+colour {Stoke-on-Trent} {Birmingham} green
+colour {Gloucester} {Birmingham} green
+pause
+colour {Shrewsbury} {Birmingham} blue
+paint {Shrewsbury} white
+colour {Liverpool} {Shrewsbury} green
+colour {Aberystwyth} {Shrewsbury} green
+colour {Holyhead} {Shrewsbury} green
+colour {Hereford} {Shrewsbury} green
+pause
+colour {Stoke-on-Trent} {Birmingham} blue
+paint {Stoke-on-Trent} white
+colour {Manchester} {Stoke-on-Trent} green
+colour {Sheffield} {Stoke-on-Trent} green
+pause
+colour {Gloucester} {Birmingham} blue
+paint {Gloucester} white
+colour {Hereford} {Shrewsbury} brown
+colour {Hereford} {Gloucester} green
+colour {Bristol} {Gloucester} green
+pause
+colour {Nottingham} {Birmingham} blue
+paint {Nottingham} white
+colour {Lincoln} {Nottingham} green
+colour {Peterborough} {Nottingham} green
+colour {Sheffield} {Stoke-on-Trent} brown
+colour {Sheffield} {Nottingham} green
+pause
+colour {Northampton} {Birmingham} blue
+paint {Northampton} white
+colour {Cambridge} {Northampton} green
+colour {London} {Northampton} green
+pause
+colour {Oxford} {Birmingham} blue
+paint {Oxford} white
+colour {Southampton} {Oxford} green
+pause
+colour {Hereford} {Gloucester} blue
+paint {Hereford} white
+pause
+colour {Bristol} {Gloucester} blue
+paint {Bristol} white
+colour {Salisbury} {Bristol} green
+colour {Cardiff} {Bristol} green
+colour {Taunton} {Bristol} green
+pause
+colour {Lincoln} {Nottingham} blue
+paint {Lincoln} white
+colour {Hull} {Lincoln} green
+pause
+colour {Manchester} {Stoke-on-Trent} blue
+paint {Manchester} white
+colour {Preston} {Manchester} green
+pause
+colour {Sheffield} {Nottingham} blue
+paint {Sheffield} white
+colour {Leeds} {Sheffield} green
+pause
+colour {Cambridge} {Northampton} blue
+paint {Cambridge} white
+colour {Colchester} {Cambridge} green
+colour {Norwich} {Cambridge} green
+pause
+colour {Peterborough} {Nottingham} blue
+paint {Peterborough} white
+pause
+colour {Liverpool} {Shrewsbury} blue
+paint {Liverpool} white
+pause
+colour {Aberystwyth} {Shrewsbury} blue
+paint {Aberystwyth} white
+colour {Carmarthen} {Aberystwyth} green
+pause
+colour {London} {Northampton} blue
+paint {London} white
+colour {Brighton} {London} green
+colour {Maidstone} {London} green
+colour {Guildford} {London} green
+pause
+colour {Preston} {Manchester} blue
+paint {Preston} white
+colour {Kendal} {Preston} green
+pause
+colour {Southampton} {Oxford} blue
+paint {Southampton} white
+colour {Dorchester} {Southampton} green
+colour {Portsmouth} {Southampton} green
+pause
+colour {Leeds} {Sheffield} blue
+paint {Leeds} white
+colour {Middlesborough} {Leeds} green
+colour {York} {Leeds} green
+colour {Newcastle} {Leeds} green
+pause
+colour {Cardiff} {Bristol} blue
+paint {Cardiff} white
+pause
+colour {Hull} {Lincoln} blue
+paint {Hull} white
+pause
+colour {Taunton} {Bristol} blue
+paint {Taunton} white
+colour {Barnstaple} {Taunton} green
+colour {Dorchester} {Southampton} brown
+colour {Dorchester} {Taunton} green
+colour {Exeter} {Taunton} green
+pause
+colour {Salisbury} {Bristol} blue
+paint {Salisbury} white
+colour {Dorchester} {Taunton} brown
+colour {Dorchester} {Salisbury} green
+pause
+colour {Holyhead} {Shrewsbury} blue
+paint {Holyhead} white
+pause
+colour {Guildford} {London} blue
+paint {Guildford} white
+pause
+colour {Portsmouth} {Southampton} blue
+paint {Portsmouth} white
+pause
+colour {Colchester} {Cambridge} blue
+paint {Colchester} white
+pause
+colour {York} {Leeds} blue
+paint {York} white
+pause
+colour {Maidstone} {London} blue
+paint {Maidstone} white
+colour {Dover} {Maidstone} green
+pause
+colour {Kendal} {Preston} blue
+paint {Kendal} white
+colour {Carlisle} {Kendal} green
+pause
+colour {Norwich} {Cambridge} blue
+paint {Norwich} white
+pause
+colour {Carmarthen} {Aberystwyth} blue
+paint {Carmarthen} white
+pause
+colour {Exeter} {Taunton} blue
+paint {Exeter} white
+colour {Plymouth} {Exeter} green
+pause
+colour {Brighton} {London} blue
+paint {Brighton} white
+pause
+colour {Dorchester} {Salisbury} blue
+paint {Dorchester} white
+pause
+colour {Barnstaple} {Taunton} blue
+paint {Barnstaple} white
+pause
+colour {Middlesborough} {Leeds} blue
+paint {Middlesborough} white
+pause
+colour {Dover} {Maidstone} blue
+paint {Dover} white
+pause
+colour {Carlisle} {Kendal} blue
+paint {Carlisle} white
+colour {Glasgow} {Carlisle} green
+colour {Stranraer} {Carlisle} green
+pause
+colour {Plymouth} {Exeter} blue
+paint {Plymouth} white
+colour {Penzance} {Plymouth} green
+pause
+colour {Newcastle} {Leeds} blue
+paint {Newcastle} white
+colour {Edinburgh} {Newcastle} green
+pause
+colour {Penzance} {Plymouth} blue
+paint {Penzance} white
+pause
+colour {Glasgow} {Carlisle} blue
+paint {Glasgow} white
+colour {Fort William} {Glasgow} green
+colour {Perth} {Glasgow} green
+pause
+colour {Stranraer} {Carlisle} blue
+paint {Stranraer} white
+pause
+colour {Edinburgh} {Newcastle} blue
+pause
+colour {Edinburgh} {Newcastle} yellow
+colour {Newcastle} {Leeds} yellow
+colour {Leeds} {Sheffield} yellow
+colour {Sheffield} {Nottingham} yellow
+colour {Nottingham} {Birmingham} yellow
+found 339.0

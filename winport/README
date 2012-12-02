@@ -1,0 +1,40 @@
+Oxford Oberon-2 compiler for Windows
+
+The compiler runs as a console application under any version of
+Windows from Windows 95 on.  The programs it builds also run as
+console applications.
+
+The compiler comes as a self-extracting installation program with a
+name like OBC2-4-0.EXE.  To install the compiler, run this program and
+accept the defaults that are offered, so that the files are extracted
+into the directory C:\Program Files\Oxford Oberon-2 Compiler.
+
+On Windows 95, 98 and ME, you must finish the installation manually by
+adding this directory to the Windows path as follows: edit the file
+C:\AUTOEXEC.BAT and add the line
+
+	set path="%path%;C:\Program Files\Oxford Oberon-2 Compiler"
+
+at the end, and reboot your machine.  On Windows NT, 2000 and XP, the
+installation directory is added to the path automatically, and there
+is no need to reboot.
+
+The compiler can now be run as the program "obc" at the command
+prompt.  To check the installation, try compiling and running the
+program Fac.m that is comes with the compiler:
+
+	copy "C:\Program Files\Oxford Oberon-2 Compiler\Fac.m" Fac.m
+	obc -o fac.exe Fac.m
+	fac 10
+
+This should give as output, "The factorial of 10 is 3628800".
+
+--------
+This software includes the Objective Caml run-time system, which is
+copyright 1999, INRIA.  Objective Caml may be obtained from 
+http://caml.inria.fr.
+
+As far as the author is aware, this software contains no code that is
+covered by the GNU General Public Licence.
+
+-- Mike Spivey

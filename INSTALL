@@ -1,0 +1,125 @@
+INSTALLING OBC FROM SOURCE ON A UNIX MACHINE
+
+Version 2.8.n
+
+First, check if a binary distribution exists for your machine: this
+may save you a lot of effort, since it is necessary to install the
+Objective CAML system before recompiling obc, but not in order to run a
+binary distribution.
+
+If you do want or need to rebuild obc, here are basic instructions.
+In what follows, "2.8.n" stands for the relevant release number
+(starting from 2.8.0).
+
+1.  Unpack the sources: a directory obc-2.6.n will be created.
+	
+	tar xvfz obc-2.6.n.tgz
+
+2.  Change to the directory obc-2.6.n, and type
+
+	./configure
+
+    By default, an Oberon-specific garbage collector is included.
+    It's also possible to build the runtime system to use
+    Hans-J. Boehm's conservative garbage collector, or to use no
+    garbage collector at all.
+
+    If your machine is x86-based, then the runtime system will be built
+    to include a just-in-time translator from the OBC bytecode into
+    native machine code.  You can disable the JIT by specifying
+    --disable-jit.  The JIT is based on a virtual machine model
+    similar to the one provided by GNU Lightning, and would be easy
+    to port to non-x86 architectures -- but I haven't found the time
+    to do so yet.
+
+    The default is also to build the GUI debugger.  Doing so requires 
+    some GTK stuff to be installed, but you can disable it by specifying 
+    --disable-debugger.
+
+    Various checks on your machine will be performed.  If the results
+    are good enough, the rest of the installation will go smoothly;
+    but if they are bad, then you probably won't notice until the next
+    part fails.
+
+    If you want a version of obc that can be built without X windows
+    being present on the build machine, then add the flag --without-x.
+    The X libraries are loaded dynamically when the display is opened
+    in XYplane, so Oberon programs do not depend on the presence of X
+    to run, even if they have been built on a system configured for X
+    -- unless, that is, they actually use XYplane.
+
+    And if you want to install in some place other than
+    /usr/local, you can type e.g.
+
+	./configure --prefix=/usr/mike
+
+    There are other options too: specifically, it's possible to
+    disable dynamic linking on systems that don't support it.
+
+3.  Type "make".  This builds the various parts of the system.  It
+    takes only a few seconds on a modern workstation.
+
+    The makefiles use the VPATH feature of GNU make in order to
+    support build directories (see below).
+
+4.  Check the last two lines of output from the build process: they
+    should be 
+
+	The factorial of 10 is 3628800
+	Was that 'The factorial of 10 is 3628800'?  Delightful!
+
+    If you feel like running some more tests, some regression tests
+    can be found in the 'obc-2.6.n/test' sub-directory.  Typing "make"
+    in that directory, followed by "./regress" will automatically run
+    the whole test suite, showing differences in the code generated
+    and in the output of the test programs.  Some other tests that
+    exercise profiling, separate compilation, and linking of C
+    primitives are run by typing "./bigtest" in the same directory.
+
+5.  If you want to check out the X windows implementation of XYplane,
+    type (in the obc-2.6.n directory)
+
+	make tartan
+	./tartan
+
+    This compiles and runs a program that displays a dynamic random
+    meta-tartan pattern.  Type 'q' to exit.
+
+6.  Become super-user and type
+
+	make install
+
+    The obc compiler and tools will be installed in /usr/local/bin,
+    /usr/local/lib/obc, and /usr/local/man/man1.
+
+
+BUILD DIRECTORIES
+
+It is possible to use build directories to build versions of the
+Oberon-2 system for multiple architectures in completely separate
+directories, but doing this depends on having at release 3.08 of the
+Objective CAML compiler.  Create a subdirectory of the main obc-2.0
+directory and proceed as follows, e.g. for a Sparc build:
+
+	mkdir sparc
+	cd sparc
+	../configure
+	make
+	su -c "make install"
+
+The configure step creates subdirectories of obc-2.0/sparc to contain
+the machine-dependent files.
+
+
+DOCUMENTATION
+
+Apart from the manual pages, there is a document describing how to run
+the compiler and what can be found on the library modules.  This
+document is generated (using plain TeX) from the source in
+doc/obcman.tex, using the macros in doc/jmsmac.tex.  Although the
+document was originally set in Lucida Bright, I've tried to make a
+version that only uses the basic set of Computer Modern fonts.
+For convenience, PostScript and PDF versions of the document are
+provided in doc/obcman.ps and doc/obcman.pdf.
+
+-- Mike Spivey

@@ -1,0 +1,171 @@
+#
+# @configure_input@
+#
+# lib/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Config stuff
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+srcdir = @srcdir@
+subdir = lib
+top_srcdir = @top_srcdir@
+LIBDIR = @libdir@/obc
+CC = @CC@
+AR = ar
+RANLIB = @RANLIB@
+CFLAGS = @CFLAGS@
+RTFLAGS = @RTFLAGS@
+X_CFLAGS = @X_CFLAGS@
+SHELL = /bin/sh
+TCLSH = @TCLSH@
+DEBUG = @DEBUG@
+VPATH = @srcdir@
+MODULES = @MODULES@
+MODULES_B = @MODULES_B@
+MODULES_J = @MODULES_J@
+PRIMMODS = @PRIMMODS@
+SHLMODS = @SHLMODS@
+CHECKMODS = @CHECKMODS@
+BYTEMODS = @BYTEMODS@
+LIBS = @LIBS@
+MATHLIB = @MATHLIB@
+XLIB = @XLIB@
+DYNLINK = @DYNLINK@
+DLEXT= @DLEXT@
+SHL_CFLAGS = @SHL_CFLAGS@
+XYPLANE = @XYPLANE@
+# End
+
+ifdef DEBUG
+  # During development, recompile library on each compiler change
+  LIBDEP = ../compiler/obc1
+endif
+
+MLIB = _Builtin $(MODULES)
+MLIBB = _Builtin $(MODULES_B)
+PRIM = _Builtin $(PRIMMODS)
+
+all:: $(MLIB:%=%.k) $(CHECKMODS:%=%-b.k) oblib.a stdprims.o dlstub.o \
+	lscript lscript-b
+
+ifdef DYNLINK
+all:: $(SHLMODS:%=%$(DLEXT))
+endif
+
+
+### Bytecode files
+
+OBC1 = ../compiler/obc1
+
+_Builtin.k: Builtin.m
+	$(OBC1) -w -b $< | \
+	    sed -e 's/Builtin\.\([^%]\)/\1/' -e 's/Builtin/_Builtin/' >$@
+
+_Builtin.k $(MLIB:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP)
+In.k Out.k Err.k In-b.k : Files.k
+In.k In-b.k : Conv.k
+$(SHLMODS:%=%.k) : DynLink.k
+
+%.k: %.m
+	$(OBC1) -O -g -x $< >$@
+
+%-b.k: %.m
+	$(OBC1) -O -g -x -b $< >$@
+
+
+### C and object code for primitives
+
+ALL_RTFLAGS = $(RTFLAGS) -Wall $(INCLUDE)
+INCLUDE = -I .. -I $(top_srcdir)/runtime -I ../runtime
+
+oblib.a: $(PRIM:%=%.o) $(SHLMODS:%=%.o)
+	$(AR) cr $@ $^
+
+$(PRIMMODS:%=%.c) $(SHLMODS:%=%.c): %.c: %.m makeprims.tcl
+	$(TCLSH) $(srcdir)/makeprims.tcl $< >$@
+
+_Builtin.c: Builtin.m makeprims.tcl
+	$(TCLSH) $(srcdir)/makeprims.tcl $< >$@
+
+stdprims.c: ../runtime/oblink lscript $(PRIMMODS:%=%.k)
+	../runtime/oblink -L . -dump >stdprims.c
+
+XYplane$(DLEXT): XYplane.c
+	$(CC) $(ALL_RTFLAGS) $(X_CFLAGS) $(SHL_CFLAGS) $< $(LIBS) $(XLIB) -o $@
+
+Math$(DLEXT) MathL$(DLEXT): %$(DLEXT): %.c
+	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $< $(LIBS) $(MATHLIB) -o $@
+
+Files$(DLEXT): Files.c
+	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $< $(LIBS) -o $@
+
+dlstub.o: DynLink.c
+	$(CC) $(ALL_RTFLAGS) -D STUB -c $< -o $@
+
+%.o: %.c
+	$(CC) $(ALL_RTFLAGS) -c $< -o $@
+
+$(PRIM:%=%.o) $(SHLMODS:%=%.o) $(SHLMODS:%=%$(DLEXT)) stdprims.o: \
+	../config.h $(top_srcdir)/runtime/obx.h \
+	$(top_srcdir)/runtime/obcommon.h
+Coroutines.o: ../runtime/keiko.h
+
+
+### Library scripts
+
+lscript: ../config.status
+	for m in $(MLIB:%=%.k); do echo $$m; done >$@
+
+lscript-b : ../config.status
+	for m in $(MLIBB:%=%.k); do echo $$m; done >$@
+
+
+## Cleanup
+
+# clean: remove all object files
+clean:
+	rm -f *.o *.k *.k0 *.a *.so *.dylib
+
+quiteclean: clean
+	rm -f lscript* stdprims.c
+	rm -f _Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c) 
+
+# distclean: also remove all non-distributed files
+realclean distclean: quiteclean
+	rm -f Makefile 
+
+
+.DELETE_ON_ERROR:
+
+
+## Configuration
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && ./config.status $(subdir)/$@

@@ -1,0 +1,42 @@
+MODULE tAssert;
+
+(*<<
+Runtime error: assertion failed (0) on line 12 in module tAssert
+In procedure tAssert.Fail
+   called from tAssert.%main
+   called from MAIN
+>>*)
+
+PROCEDURE Fail;
+BEGIN
+  ASSERT(1 < 0)
+END Fail;
+
+BEGIN
+  Fail
+END tAssert.
+
+(*[[
+!! SYMFILE #tAssert STAMP #tAssert.%main 1
+!! END STAMP
+!! 
+MODULE tAssert STAMP 0
+ENDHDR
+
+PROC tAssert.Fail 0 4 0
+! PROCEDURE Fail;
+!   ASSERT(1 < 0)
+CONST 0
+EASSERT 12
+RETURN
+END
+
+PROC tAssert.%main 0 4 0
+!   Fail
+CONST tAssert.Fail
+CALL 0
+RETURN
+END
+
+! End of file
+]]*)

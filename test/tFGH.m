@@ -1,0 +1,81 @@
+MODULE tFGH;
+
+(*<<
+17
+>>*)
+
+IMPORT Out;
+
+PROCEDURE f(): INTEGER;
+
+  VAR x: INTEGER;
+
+  PROCEDURE g;
+    PROCEDURE h(i: INTEGER); BEGIN x := i END h;
+  BEGIN h(17) END g;
+
+BEGIN
+  g;
+  RETURN x
+END f;
+
+BEGIN
+  Out.Int(f(), 0); Out.Ln
+END tFGH.
+
+(*[[
+!! SYMFILE #tFGH STAMP #tFGH.%main 1
+!! END STAMP
+!! 
+MODULE tFGH STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tFGH.%2.h 1 12 0
+!     PROCEDURE h(i: INTEGER); BEGIN x := i END h;
+SAVELINK
+LDLW 12
+LDEW -4
+STNW -4
+RETURN
+END
+
+PROC tFGH.%1.g 1 12 0
+!   PROCEDURE g;
+SAVELINK
+!   BEGIN h(17) END g;
+CONST 17
+LOCAL 0
+LINK
+CONST tFGH.%2.h
+CALL 1
+RETURN
+END
+
+PROC tFGH.f 1 12 0
+! PROCEDURE f(): INTEGER;
+!   g;
+LOCAL 0
+LINK
+CONST tFGH.%1.g
+CALL 0
+!   RETURN x
+LDLW -4
+RETURNW
+END
+
+PROC tFGH.%main 0 12 0
+!   Out.Int(f(), 0); Out.Ln
+CONST 0
+CONST tFGH.f
+CALLW 0
+CONST Out.Int
+CALL 2
+CONST Out.Ln
+CALL 0
+RETURN
+END
+
+! End of file
+]]*)
+

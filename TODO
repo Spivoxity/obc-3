@@ -1,0 +1,3 @@
+Fix propcc, varcc and Makefile.in to allow build directories
+
+Fix conf problem

@@ -1,0 +1,63 @@
+.\" Copyright (C) 1999 J. M. Spivey
+.TH OBPROF 1
+.SH NAME
+obprof \- Oberon\-2 profiler
+.SH SYNOPSIS
+.B obprof
+.RB [ \-o
+.IR outfile ]
+.RB [ \-g ]
+.RB [ \-l ]
+.I program 
+.RI [ arg ...]
+.SH DESCRIPTION
+.B Obprof
+is a profiling tool that works with the Oberon\-2 compiler
+.BR obc .
+It runs the Oberon\-2
+program
+specified on the command line, passing to it any arguments specified.
+During execution of the program,
+.B obprof
+keeps an account of the number of machine cycles of the Oberon\-2
+abstract machine that are expended in executing each procedure in the
+program.  After the program has terminated, the profile data is
+printed on standard error in the form of a table.  For each procedure
+that was called at least once during execution, the number of calls
+and the percentage time are shown, in decreasing order of time.
+
+The
+.B \-o
+flag specifies the name of an output file to be used instead of
+standard error. This is useful with shells that do not easily provide
+separate redirection of the standard output and error channels.
+
+The
+.B \-g 
+flag selects call-graph profiling similar to that provided by
+.BR gprof , 
+where the time taken by each
+subroutine is also charged to the account of its caller.
+
+The
+.B \-l
+flag requests line-count profiling.  Each module that has been
+compiled using the
+.B \-pl
+flag to
+.B obc
+is monitored during execution, and
+.B obprof 
+maintains a count of how many times each line of code has
+been executed.  At the end of execution, these data are written to a
+file
+.I obprof.out
+for later analysis by the program
+.BR obdump .
+
+.SH BUGS
+The profiling does not take into account the time taken to execute
+primitive procedures that are implemented as part of the run-time system.
+
+.SH AUTHOR
+Mike Spivey

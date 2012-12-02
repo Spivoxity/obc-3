@@ -1,0 +1,131 @@
+#
+# @configure_input@
+#
+# debugger/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Config stuff
+OCAMLC = ocamlc
+OCAMLLEX = ocamllex
+MYACC = ../yacc/myacc
+YYPARSE = ../yacc/yyparse.cmo
+YYLIB = -I ../yacc
+CAMLDEP = @top_srcdir@/camldep
+MLFLAGS = @MLFLAGS@
+MLLINKFLAGS = @MLLINKFLAGS@
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+subdir = debugger
+SHELL = /bin/sh
+DEPEND = @DEPEND@
+EXEEXT = @EXEEXT@
+VPATH = @srcdir@
+OCAMLDIR = @OCAMLDIR@
+LABLGTK2 = @LABLGTK2@
+# End
+
+all: obdb1
+
+COMMON = ../compiler/basis.cma debugger.cma 
+OBGDB1 = guiapp.cmo sourcebook.cmo varsview.cmo stackview.cmo guimain.cmo
+obdb1: $(COMMON) $(OBGDB1) debprims.o  \
+		../lablgtk/lablgtk.cma ../lablgtk/liblablgtk.a
+	$(OCAMLC) $(MLFLAGS) -I ../lablgtk -thread -custom -o $@ \
+	    unix.cma threads.cma lablgtk.cma \
+	    debprims.o gtkThread.cmo $(YYPARSE) str.cma \
+	    $(COMMON) $(OBGDB1) $(MLLINKFLAGS)
+
+DEBUGGER  = binary.cmo info.cmo procio.cmo data.cmo control.cmo
+debugger.cma: $(DEBUGGER)
+	ocamlc $(MLFLAGS) -a -o $@ $^
+
+GUI_INC = -I ../compiler -I ../lablgtk
+
+$(OBGDB1): %.cmo: %.ml
+	$(OCAMLC) $(MLFLAGS) -c $(GUI_INC) -thread -o $@ $<
+
+$(OBGDB1:%.cmo=%.cmi): %.cmi: %.mli
+	$(OCAMLC) $(MLFLAGS) -c $(GUI_INC) -o $@ $<
+
+debprims.o: debprims.c
+	$(OCAMLC) -c -ccopt "-I .." -o $@ $<
+
+## Rules
+
+%.mli %.ml: %.mly
+	$(MYACC) -v $<
+
+%.ml: %.mll
+	$(OCAMLLEX) -o $@ $<
+
+%.cmi: %.mli
+	$(OCAMLC) $(MLFLAGS) -c -I ../compiler -o $@ $<
+
+%.cmo: %.ml
+	$(OCAMLC) $(MLFLAGS) -c -I ../compiler -o $@ $<
+
+.DELETE_ON_ERROR:
+
+## Cleanup
+
+ifdef DEPEND
+DEPFILE = $(srcdir)/Depend
+endif
+
+clean:
+	rm -f obdb1$(EXEEXT) *.cmi *.cmo *.cma *.o
+
+quiteclean: clean
+
+distclean: quiteclean
+	rm -f Makefile
+
+realclean: distclean
+	rm -f $(srcdir)/Depend
+
+## Configuration and dependencies
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
+
+deblex.mli: %: %.in
+	cp $< $@
+
+ML = procio.mli procio.ml binary.mli binary.ml \
+	info.mli info.ml data.mli data.ml control.mli control.ml \
+	guimain.ml guiapp.ml sourcebook.ml \
+	sourcebook.mli varsview.ml varsview.mli stackview.ml \
+	stackview.mli
+
+ifdef DEPEND
+$(srcdir)/Depend: $(ML)
+	$(CAMLDEP) -I ../compiler $^ >$@
+endif
+
+include $(srcdir)/Depend

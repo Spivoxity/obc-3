@@ -1,0 +1,773 @@
+#
+# keiko.iset
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+defs {
+
+/* Macros for caching the stack top in an accumulator */
+#define M(k)  		sp += k
+#ifdef NOACC
+#define P(k)		sp += k
+#define S(k)		
+#define G
+#define A(k)		sp[k]
+#else
+#define P(k)		sp[0] = acc; sp += k
+#define S(k)		sp[k] = acc
+#define G		acc = sp[0]
+#define A(k)		acc
+#endif
+
+#define local(n) 	((uchar *) bp + (n))
+#define parent(a, t)	indir(bp[SL].x + a, t)
+#define indir(p, t) 	(* (t *) (p))
+#define subs(p, n, t)	(* (((t *) (p)) + n))
+#define const(n)	cp[CP_CONST+n]
+
+#define type(t) type##t
+#define typei int
+#define typef float
+#define typex uchar *
+#define typep value *
+
+#define jump(lab)	pc = pc0 + lab
+}
+
+
+# CONSTANTS
+
+inst PUSH {[-1,6,1] 1 2} V.i {$a}
+inst LDKW {1 2} 	V.* {const($a).$t}
+inst LDKF {1 2}		V.f {const($a).f}
+
+
+# ADDRESSING OPERATORS
+
+# Push address of local
+# LOCAL n :: --> bp+n
+inst LOCAL {1 2}	V.x {local($a)}
+
+# Compute indexed address
+# INDEXs :: a, b --> a + s * b
+equiv PLUSA 0  	       	{INDEXC}
+inst INDEXC 0		B.x {$1.x + $2.i}
+inst INDEXS 0		B.x {$1.x + ($2.i<<1)}
+inst INDEXW 0		B.x {$1.x + ($2.i<<2)}
+inst INDEXD 0		B.x {$1.x + ($2.i<<3)}
+
+
+# LOADS AND STORES
+
+# Load/store from address
+# LOADs :: a --> mem_s[a]
+# STOREs :: a, b --> []; mem_s[b] := a
+inst LOADW 0		M.i {indir($1.x, int)}
+inst LOADS 0		M.i {indir($1.x, short)}
+inst LOADC 0		M.i {indir($1.x, uchar)}
+inst LOADF 0		M.f {indir($1.x, float)}
+inst STOREW 0		S2  {indir($2.x, int) = $1.i;}
+inst STORES 0		S2  {indir($2.x, short) = $1.i;}
+inst STOREC 0		S2  {indir($2.x, uchar) = $1.i;}
+inst STOREF 0		S2  {indir($2.x, float) = $1.f;}
+
+# Load/store local
+# LDLs n :: --> mem_s[bp+n]
+# STLs n :: a --> []; mem_s[bp+n] := a
+inst LDLW {[-24,-4,4] [12,32,4] 1 2 } \
+     	  	        V.* {indir(local($a), type($t))}
+inst LDLS {1 2}		V.i {indir(local($a), short)}
+inst LDLC {1 2}		V.i {indir(local($a), uchar)}
+inst LDLF {1 2}		V.f {indir(local($a), float)}
+inst STLW {[-24,-4,4] [12,32,4] 1 2} \
+     	  	        S1  {indir(local($a), type($u1)) = $1.*;}
+inst STLS {1 2}		S1  {indir(local($a), short) = $1.i;}
+inst STLC {1 2}		S1  {indir(local($a), uchar) = $1.i;}
+inst STLF {1 2}		S1  {indir(local($a), float) = $1.f;}
+
+# Load/store global
+# LDGs n :: --> mem_s[const(n)]
+# STGs n :: a --> []; mem_s[const(n)] := a
+inst LDGW {K L}		V.* {indir(const($a).x, type($t))}
+inst LDGS {K L}		V.i {indir(const($a).x, short)}
+inst LDGC {K L}		V.i {indir(const($a).x, uchar)}
+inst LDGF {K L}		V.f {indir(const($a).x, float)}
+inst STGW {K L}		S1  {indir(const($a).x, type($u1)) = $1.*;}
+inst STGS {K L}		S1  {indir(const($a).x, short) = $1.i;}
+inst STGC {K L}		S1  {indir(const($a).x, uchar) = $1.i;}
+inst STGF {K L}		S1  {indir(const($a).x, float) = $1.f;}
+
+# Indexed load/store
+# LDNs n :: a -> mem_s[a+n]
+# STNs n :: a, b -> []; mem_s[b+n] := a
+inst LDNW {[-16,40,4] 1 2} M.* {indir($1.x + $a, type($t))}
+inst STNW {[-16,20,4] 1 2} S2  {indir($2.x + $a, type($u1)) = $1.*;}
+
+# Double indexed load/store
+# LDIs :: a, b --> mem_s[a+s*b]
+# STIs :: a, b, c --> []; mem_s[b+s*c] := a
+inst LDIW 0		B.* {subs($1.x, $2.i, type($t))}
+inst LDIS 0		B.i {subs($1.x, $2.i, short)}
+inst LDIC 0		B.i {subs($1.x, $2.i, uchar)}
+inst STIW 0		S3  {subs($2.x, $3.i, type($u1)) = $1.*;}
+inst STIS 0		S3  {subs($2.x, $3.i, short) = $1.i;}
+inst STIC 0		S3  {subs($2.x, $3.i, uchar) = $1.i;}
+
+# Load/store in enclosing frame
+# LDEs n :: --> mem_s[mem_4[bp-4]+n]
+# STEs n :: a --> []; mem_s[mem_4[bp-4]+n] := a
+inst LDEW {1 2}		V.* {parent($a, type($t))}
+inst STEW {1 2}		S1  {parent($a, type($u1)) = $1.*;}
+
+# If the argument of any of the above instructions is so large that it
+# does not fit in two bytes, then it's the job of the compiler to find
+# an equivalent sequence using LDKW that achieves the same effect:
+# for example, LDLW n --> LDKW [n] / LOADW
+
+# Loads and stores for doubles
+inst LOADD 0		M.dp  {getdbl($1.p)}
+inst STORED 0		S2dp  {putdbl($2.p, $1.d);}
+inst LDKD {1 2}		V.d   {getdbl(&const($a))}
+
+inst LOADQ 0		M.qp  {getlong($1.p)}
+inst STOREQ 0		S2qp  {putlong($2.p, $1.q);}
+inst LDKQ {1 2}         V.q   {getlong(&const($a))}
+
+#inst LDID 0		B.qpi {getlong($1.p + 2*$2.i)}
+#inst STID 0		S3qpi {putlong($2.p + 2*$3.i, $1.q);}
+#inst LDLD {1 2}	V.q   {getlong((value *) local($a))}
+#inst STLD {1 2}	S1q   {putlong((value *) local($a), $1.q);}
+#inst LDGD {K L}	V.q   {getlong(const($a).p)}
+#inst STGD {K L}	S1q   {putlong(const($a).p, $1.q);}
+
+equiv LDID 0  		{INDEXD, LOADD}
+equiv STID 0		{INDEXD, STORED}
+equiv LDLD 1		{LOCAL $a, LOADD}
+equiv STLD 1		{LOCAL $a, STORED}
+equiv LDGD K		{LDKW $a, LOADD}
+equiv STGD K		{LDKW $a, STORED}
+
+equiv LDIQ 0 {INDEXD, LOADQ}
+equiv STIQ 0 {INDEXD, STOREQ}
+equiv LDLQ 1 {LOCAL $a, LOADQ}
+equiv STLQ 1 {LOCAL $a, STOREQ}
+equiv LDGQ K {LDKW $a, LOADQ}
+equiv STGQ K {LDKW $a, STOREQ}
+
+# ASSORTED INSTRUCTIONS
+
+defs {
+#define dup(n, sp) 	P(-1); A(0) = sp[n+1]
+#define swap(sp) 	sp[-1] = sp[1]; sp[1] = A(0); A(0) = sp[-1]
+}
+inst INCL 1		S0 {indir(local($a), int)++;}
+inst DECL 1		S0 {indir(local($a), int)--;}
+inst DUP {[0,2,1]}	S0 {dup($a, $s);}
+inst SWAP 0		S0 {swap($s);}
+inst POP 1		S0 {M($a); G;}
+
+equiv INCL 2		{LDLW $a, INC, STLW $a}
+equiv DECL 2		{LDLW $a, DEC, STLW $a}
+
+
+# INTEGER OPERATORS
+
+inst PLUS 0		B.i {$1.i + $2.i}
+inst MINUS 0		B.i {$1.i - $2.i}
+inst TIMES 0		B.i {$1.i * $2.i}
+inst UMINUS 0		M.i {- $1.i}
+inst AND 0		B.i {$1.i && $2.i}
+inst OR 0		B.i {$1.i || $2.i}
+inst NOT 0		M.i {! $1.i}
+inst INC 0		M.i {$1.i + 1}
+inst DEC 0		M.i {$1.i - 1}
+inst BITAND 0		B.i {$1.i & $2.i}
+inst BITOR 0		B.i {$1.i | $2.i}
+inst BITXOR 0		B.i {$1.i ^ $2.i}
+inst BITNOT 0		M.i {~ $1.i}
+inst BITSUB 0		B.i {$1.i & ~$2.i}
+inst BIT 0		M.i {bit[$1.i]}
+inst LSL 0		B.i {$1.i << $2.i}
+inst LSR 0		B.i {((unsigned) $1.i) >> $2.i}
+inst ASR 0		B.i {$1.i >> $2.i}
+
+defs {
+/* The DIV and MOD instructions must give the correct results, even if 
+   C is wrong.  Correct means that b * (a DIV b) + a MOD b = a, and 
+   (-a) DIV (-b) = a DIV b, and if b > 0 then 0 <= a MOD b < b. */
+
+static inline divop_decl(int)
+static inline divop_decl(longint)
+}
+
+inst DIV 0		B.i {int_divop($1.i, $2.i, 1)}
+inst MOD 0		B.i {int_divop($1.i, $2.i, 0)}
+
+inst EQ 0		B.i {$1.i == $2.i}
+inst LT 0		B.i {$1.i < $2.i}
+inst GT 0		B.i {$1.i > $2.i}
+inst LEQ 0		B.i {$1.i <= $2.i}
+inst GEQ 0		B.i {$1.i >= $2.i}
+inst NEQ 0		B.i {$1.i != $2.i}
+
+inst JEQ {S R}		S2 {if ($1.i == $2.i) jump($a);}
+inst JLT {S R}		S2 {if ($1.i < $2.i) jump($a);}
+inst JGT {S R}		S2 {if ($1.i > $2.i) jump($a);}
+inst JLEQ {S R}		S2 {if ($1.i <= $2.i) jump($a);}
+inst JGEQ {S R}		S2 {if ($1.i >= $2.i) jump($a);}
+inst JNEQ {S R}		S2 {if ($1.i != $2.i) jump($a);}
+
+inst JLTZ S		S1 {if ($1.i < 0) jump($a);}
+inst JGTZ S		S1 {if ($1.i > 0) jump($a);}
+inst JLEQZ S		S1 {if ($1.i <= 0) jump($a);}
+inst JGEQZ S		S1 {if ($1.i >= 0) jump($a);}
+
+equiv JUMPF R		{JEQZ $a}
+equiv JUMPT R		{JNEQZ $a}
+
+equiv JLTZ R		{PUSH 0, JLT $a}
+equiv JGTZ R		{PUSH 0, JGT $a}
+equiv JLEQZ R		{PUSH 0, JLEQ $a}
+equiv JGEQZ R		{PUSH 0, JGEQ $a}
+
+inst JNEQZ {S R}	S1 {if ($1.i != 0) jump($a);}
+inst JEQZ {S R}		S1 {if ($1.i == 0) jump($a);}
+inst JUMP {S R}		S0 {jump($a);}
+
+# LONGINT OPERATORS
+
+inst QPLUS 0		B.q {$1.q + $2.q}
+inst QMINUS 0		B.q {$1.q - $2.q}
+inst QTIMES 0		B.q {$1.q * $2.q}
+inst QUMINUS 0		M.q {- $1.q}
+inst QDIV 0		B.q {longint_divop($1.q, $2.q, 1)}
+inst QMOD 0		B.q {longint_divop($1.q, $2.q, 0)}
+
+equiv QINC 0		{PUSH 1, CONVNQ, QPLUS}
+equiv QDEC 0		{PUSH 1, CONVNQ, QMINUS}
+
+
+# CASE STATEMENTS
+
+defs {
+#define jcase(x, n) \
+     if ((unsigned) x < n) { pc0 = pc + 2*x; jump(get2(pc0)); } \
+     else pc += 2*n
+}
+inst JCASE 1		S1  {jcase($1.i, $a);}
+zinst CASEL R
+
+inst JRANGE {S R}	S3  {if ($1.i >= $2.i && $1.i <= $3.i) jump($a);}
+
+# The "T2" means take two arguments, but leave one of them on the stack
+inst TESTGEQ {S R}	T2  {if ($1.i >= $2.i) jump($a);}
+
+
+# FLOATING-POINT OPERATORS
+
+inst FPLUS 0		B.f {$1.f + $2.f}
+inst FMINUS 0		B.f {$1.f - $2.f}
+inst FTIMES 0		B.f {$1.f * $2.f}
+inst FDIV 0		B.f {$1.f / $2.f}
+inst FUMINUS 0		M.f {- $1.f}
+
+defs {
+static inline int fcmp(double a, double b) {
+     /* This doesn't deal well with NaN ... */
+     return (a < b ? -1 : a > b ? 1 : 0);
+}
+
+static inline int lcmp(longint a, longint b) {
+     return (a < b ? -1 : a > b ? 1 : 0);
+}
+}
+
+inst FCMP 0		B.i {fcmp($1.f, $2.f)}
+
+equiv FEQ 0		{FCMP, PUSH 0, EQ}
+equiv FLT 0		{FCMP, PUSH 0, LT}
+equiv FGT 0		{FCMP, PUSH 0, GT}
+equiv FLEQ 0		{FCMP, PUSH 0, LEQ}
+equiv FGEQ 0		{FCMP, PUSH 0, GEQ}
+equiv FNEQ 0		{FCMP, PUSH 0, NEQ}
+
+# The floating-point conditional jumps are just shorthand for a
+# comparison and an integer jump.  This saves valuable opcodes for more
+# important functions.
+equiv FJEQ R		{FCMP, JEQZ $a}
+equiv FJLT R		{FCMP, JLTZ $a}
+equiv FJGT R		{FCMP, JGTZ $a}
+equiv FJLEQ R		{FCMP, JLEQZ $a}
+equiv FJGEQ R		{FCMP, JGEQZ $a}
+equiv FJNEQ R		{FCMP, JNEQZ $a}
+
+
+# DOUBLE-PRECISION OPERATORS
+
+defs {
+#ifdef i386
+#define getdbl get_double
+#define putdbl put_double
+#define getlong get_long
+#define putlong put_long
+#else
+static inline double getdbl(value *v) {
+     dblbuf dd;
+     dd.n.lo = v[0].i;
+     dd.n.hi = v[1].i;
+     return dd.d;
+}
+
+static inline void putdbl(value *v, double x) {
+     dblbuf dd;
+     dd.d = x;
+     v[0].i = dd.n.lo;
+     v[1].i = dd.n.hi;
+}
+
+static inline longint getlong(value *v) {
+     dblbuf dd;
+     dd.n.lo = v[0].i;
+     dd.n.hi = v[1].i;
+     return dd.q;
+}
+
+static inline void putlong(value *v, longint x) {
+     dblbuf dd;
+     dd.q = x;
+     v[0].i = dd.n.lo;
+     v[1].i = dd.n.hi;
+}
+#endif
+}
+
+inst DPLUS 0		B.d {$1.d + $2.d}
+inst DMINUS 0		B.d {$1.d - $2.d}
+inst DTIMES 0		B.d {$1.d * $2.d}
+inst DDIV 0		B.d {$1.d / $2.d}
+inst DUMINUS 0		M.d {- $1.d}
+
+inst DCMP 0		B.idd {fcmp($1.d, $2.d)}
+
+equiv DEQ 0		{DCMP, PUSH 0, EQ}
+equiv DLT 0		{DCMP, PUSH 0, LT}
+equiv DGT 0		{DCMP, PUSH 0, GT}
+equiv DLEQ 0		{DCMP, PUSH 0, LEQ}
+equiv DGEQ 0		{DCMP, PUSH 0, GEQ}
+equiv DNEQ 0		{DCMP, PUSH 0, NEQ}
+
+equiv DJEQ S		{DCMP, JEQZ $a}
+equiv DJLT S		{DCMP, JLTZ $a}
+equiv DJGT S		{DCMP, JGTZ $a}
+equiv DJLEQ S		{DCMP, JLEQZ $a}
+equiv DJGEQ S		{DCMP, JGEQZ $a}
+equiv DJNEQ S		{DCMP, JNEQZ $a}
+
+equiv DJEQ R		{DEQ, JUMPT $a}
+equiv DJLT R		{DLT, JUMPT $a}
+equiv DJGT R		{DGT, JUMPT $a}
+equiv DJLEQ R		{DLEQ, JUMPT $a}
+equiv DJGEQ R		{DGEQ, JUMPT $a}
+equiv DJNEQ R		{DNEQ, JUMPT $a}
+
+inst QCMP 0		B.iqq {lcmp($1.q, $2.q)}
+
+equiv QEQ 0		{QCMP, PUSH 0, EQ}
+equiv QLT 0		{QCMP, PUSH 0, LT}
+equiv QGT 0		{QCMP, PUSH 0, GT}
+equiv QLEQ 0		{QCMP, PUSH 0, LEQ}
+equiv QGEQ 0		{QCMP, PUSH 0, GEQ}
+equiv QNEQ 0		{QCMP, PUSH 0, NEQ}
+
+equiv QJEQ R		{QCMP, JEQZ $a}
+equiv QJLT R		{QCMP, JLTZ $a}
+equiv QJGT R		{QCMP, JGTZ $a}
+equiv QJLEQ R		{QCMP, JLEQZ $a}
+equiv QJGEQ R		{QCMP, JGEQZ $a}
+equiv QJNEQ R		{QCMP, JNEQZ $a}
+
+
+# CONVERSIONS
+
+defs {
+#define signext(x) 	((int) (x) << 16 >> 16)
+}
+
+# ENTIER is now a subroutine
+inst CONVNF 0		M.f  {flo_conv($1.i)}
+inst CONVND 0		M.di {flo_conv($1.i)}
+inst CONVFD 0		M.df {$1.f}
+inst CONVDF 0		M.fd {(float) $1.d}
+inst CONVNC 0		M.i  {$1.i & 0xff}
+inst CONVNS 0		M.i  {signext($1.i)}
+inst CONVNQ 0		M.qi {$1.i}
+inst CONVQN 0		M.iq {(int) $1.q}
+inst CONVQD 0		M.dq {flo_convq($1.q)}
+
+
+# RUN-TIME CHECKS
+
+# The operand of these checks is the line number to show in the error
+# message.  God forbid people should make source files containing
+# more than 65536 lines
+
+defs {
+static inline int boundcheck(unsigned i, unsigned n, int line,		     
+			     value *bp, uchar *pc) {	     
+     if (i >= n) runtime_error(E_BOUND, line, bp, pc);
+     return i;						     
+}
+
+#define checkdef(name, type, arg, extra, test, msg)			\
+     static inline type name(type arg extra, int line, 		     	\
+			     value *bp, uchar *pc) {			\
+	  if (test) runtime_error(msg, line, bp, pc);	   		\
+	  return arg;						     	\
+     }
+
+checkdef(nullcheck, uchar *, p,, p == NULL, E_NULL)
+checkdef(zerocheck, int, n,, n == 0, E_DIV)
+checkdef(fzerocheck, double, x,, x == 0.0, E_FDIV)
+checkdef(lzerocheck, longint, n,, n == 0, E_DIV)
+checkdef(globcheck, value *, p,, p != NULL, E_GLOB)
+
+/* TYPETEST n expects two descriptor addresses d1 and d2:
+   it test whether the ancestor of d1 at level n is d2. */
+static inline int typetest(value *d1, value *d2, int n) {
+     return (d1[DESC_DEPTH].i >= n && d1[DESC_ANCES].p[n].p == d2);
+}
+
+#define czech(chk, a, n) chk(a, n, bp, pc0)
+#define czech2(chk, a, b, n) chk(a, b, n, bp, pc0)
+#define error(msg, n) runtime_error(msg, n, bp, pc0);
+}
+
+inst BOUND 2		B.i {czech2(boundcheck, $1.i, $2.i, $a)}
+inst NCHECK 2		M.x {czech(nullcheck, $1.x, $a)}
+inst GCHECK 2		S1  {czech(globcheck, $1.p, $a);}
+inst ZCHECK 2		M.i {czech(zerocheck, $1.i, $a)}
+inst FZCHECK 2 		M.f {czech(fzerocheck, $1.f, $a)}
+inst DZCHECK 2 		M.d {czech(fzerocheck, $1.d, $a)}
+inst QZCHECK 2		M.q {czech(lzerocheck, $1.q, $a)}
+inst ERROR 12		S0  {error($a, $b);}
+equiv EASSERT 2		{RESULTW, ERROR E_ASSERT $a}
+
+
+# MORE BITS AND PIECES
+
+# ALIGNs instructions are used on big-endian machines like the SPARC
+# to ensure than CHAR and SHORT parameters appear at the right address.
+defs {
+#ifdef WORDS_BIGENDIAN
+#define alignx(a, n) 	(a <<= (32-n))
+#else
+#define alignx(a, n)	a
+#endif
+}
+inst ALIGNC 0		M.i {alignx($1.i, 8)}
+inst ALIGNS 0		M.i {alignx($1.i, 16)}
+
+defs {
+#ifdef PROFILE
+#define prof_charge(n) 	ticks += n
+#else
+#define prof_charge(n)
+#endif
+}
+
+# FIXCOPY copies a fixed number of bytes; it is used for structure
+# assignment and also for value parameters of (fixed) array or record type. */
+defs {
+#define fixcopy(a, b, n) prof_charge(n/4); memcpy(a, b, n)
+}
+inst FIXCOPY 0	   	S3 {fixcopy($1.x, $2.x, $3.i);}
+
+# FLEXCOPY expects to find on the stack the address of a flex array parameter 
+# and a size in bytes; it copies the parameter to dynamic local space, 
+# then overwrites the parameter with the new address.
+defs {
+#ifdef NOACC
+#define FLEXA sp
+#define FLEXB
+#else
+#define FLEXA (sp+1)
+#define FLEXB sp[0].i = 0
+#endif
+#define flexcopy(d0, size0)						\
+     { value *d = (value *) d0; int size = size0;			\
+       int sizew = (size+3)/4; prof_charge(sizew);			\
+       sp -= sizew;							\
+       if ((uchar *) sp < stack + SLIMIT)				\
+            error(E_STACK, 0);						\
+       memcpy(FLEXA, d[0].x, size);					\
+       d[0].x = (uchar *) FLEXA; FLEXB; }
+}
+inst FLEXCOPY 0		S2 {flexcopy($1.x, $2.i);}
+
+inst TYPETEST 1		B.i {typetest($1.p, $2.p, $a)}
+
+# In the interpreter, the CALLW and CALLD instructions are implemented as 
+# two operations, an ordinary CALL followed by a SLIDE; the return address 
+# of the called routine points to the SLIDE instruction, which is 
+# responsible for copying the result.
+equiv CALL 1  	  	{JPROC, SLIDE $a}
+equiv CALLW 1		{JPROC, SLIDEW $a}
+equiv CALLQ 1 		{JPROC, SLIDEQ $a}
+equiv CALLF 1 		{JPROC, SLIDEF $a}
+equiv CALLD 1		{JPROC, SLIDED $a}
+
+inst LINK 0 		S1 {statlink = $1.p;}
+inst SAVELINK 0		S0 {bp[SL].p = statlink;}
+
+defs {
+#define frame()								\
+     bp = sp;								\
+     sp = (value *) bp - cp[CP_FRAME].i - 1;				\
+     if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);		\
+     memset(sp, 0, 4*(cp[CP_FRAME].i + 1));				\
+     A(0).i = 0;
+
+#ifdef OBXDEB
+#define cond_break() \
+     if (one_shot && *pc != K_LNUM_2 && *pc != K_BREAK_2) \
+         debug_break(cp, bp, pc, "stop")
+#else
+#define cond_break()
+#endif
+}
+
+inst JPROC 0 S0 {
+     value *p = A(0).p;
+     sp -= HEAD-1; sp[BP].p = bp; sp[PC].x = pc; sp[CP].p = p;
+     if (p[CP_PRIM].z != interp) {
+#ifdef PROFILE
+	  /* Calling a native-code routine */
+	  prof_enter(p, ticks, PROF_PRIM);
+	  ticks = 0;
+#endif
+#ifdef OBXDEB
+	  prim_bp = sp;
+#endif
+	  (*(p[CP_PRIM].z))(sp);
+#ifdef OBXDEB
+	  prim_bp = NULL;
+#endif
+     }
+     else {
+#ifdef PROFILE
+	  prof_enter(p, ticks, PROF_CALL);
+#endif
+	  cp = p; pc = cp[CP_CODE].x;
+	  do_find_proc;
+	  frame();
+     }
+}
+
+defs {
+#define slide(nargs) sp += HEAD + nargs; G; cond_break();
+}
+
+inst SLIDE 1		S0 {slide($a); G;}
+inst SLIDEW 1		S0 {slide($a); P(-1); A(0).i = ob_res.i;}
+inst SLIDED 1		S0 {slide($a); P(-2); 
+     	    			putdbl(&sp[0], getdbl(&ob_dres)); G;}
+inst SLIDEF 1		S0 {slide($a); P(-1); A(0).f = ob_res.f;}
+inst SLIDEQ 1		S0 {slide($a); P(-2);
+				putlong(&sp[0], getlong(&ob_dres)); G;}
+
+equiv RETURNW 0		{RESULTW, RETURN}
+equiv RETURNF 0		{RESULTF, RETURN}
+equiv RETURND 0		{RESULTD, RETURN}
+equiv RETURNQ 0		{RESULTQ, RETURN}
+
+inst RESULTW 0		S1 {ob_res = $1;}
+inst RESULTD 0		S1d {putdbl(&ob_dres, $1.d);}
+inst RESULTF 0 		S1 {ob_res.f = $1.f;}
+inst RESULTQ 0 		S1q {putlong(&ob_dres, $1.q);}
+
+inst RETURN 0 S0 {
+     S(0);
+
+     if (bp == base) {
+	  level--;
+#ifdef PROFILE
+	  prof_exit(NULL, ticks);
+#endif
+	  return;
+     }
+
+     sp = bp; pc = sp[PC].x; bp = sp[BP].p; cp = bp[CP].p;
+     do_find_proc;
+#ifdef PROFILE
+     prof_exit(cp, ticks);
+     ticks = 0;
+#endif
+     cond_break();
+}
+
+inst LNUM 2 S0 {
+#ifdef PROFILE
+     if (lflag) { 
+	  static module m = NULL; /* Cache most recent module */
+	  ticks--;
+	  if (m == NULL || cp < (value *) m->m_addr 
+		|| cp >= (value *) (m->m_addr + m->m_length)) {
+	       m = find_module(cp);
+	  }
+	  m->m_lcount[$a-1]++; 
+     }
+#endif
+#ifdef OBXDEB
+     if (intflag)
+     	  debug_break(cp, bp, pc0, "interrupt");
+     else if (one_shot) 
+          debug_break(cp, bp, pc0, "stop");
+#endif
+}
+
+inst BREAK 2 S0 {
+#ifdef OBXDEB
+     debug_break(cp, bp, pc0, "break");
+#endif
+}
+
+if {[info exists SPECIALS]} {
+
+# SPECIALS FOR COMPILERS COURSE
+
+defs {
+#define casejump(x, n0)					\
+     {							\
+	  int n = n0;					\
+	  pc0 = pc; pc += 4*n;				\
+	  while (n > 0) {				\
+	       if (x == get2(pc0)) {			\
+		    jump(get2(pc0+2));			\
+		    break;				\
+	       }					\
+	       pc0 += 4; n--;				\
+	  }						\
+     }
+}
+
+inst CASEJUMP 1   	S1  {casejump($1.i, $a);}
+zinst CASEARM 2R
+
+inst PACK 0		B.i {pack($2.p, $1.x)}
+inst UNPACK 0		S0 {P(-1); A(0).p = getcode(sp[1].i); 
+     	    		   	   sp[1].x = getenvt(sp[1].i);}
+}
+
+
+zinst REG 0
+zinst ADDR 0
+zinst STACK 0
+zinst CON 0
+
+
+# DIRECTIVES
+
+dir CONST ?
+dir FCONST ?
+dir DCONST ?
+dir QCONST ?
+dir LABEL ?
+dir PROC ????
+dir END 0
+dir PRIMDEF ????
+dir DEFINE ?
+dir STRING ?
+dir GLOBAL ??
+dir WORD ?
+dir MODULE ???
+dir ENDHDR 0
+dir IMPORT ??
+dir PRIM ?
+dir STKMAP ?
+dir FLOAT ?
+dir DOUBLE ?
+dir LONG ?
+dir LINE ?
+
+
+# EXPANSIONS USED BY THE JIT TRANSLATOR
+
+expand LDLW 1		{LOCAL $a, LOADW}
+expand LDLS 1		{LOCAL $a, LOADS}
+expand LDLC 1		{LOCAL $a, LOADC}
+expand LDLF 1		{LOCAL $a, LOADF}
+expand LDLD 1		{LOCAL $a, LOADD}
+expand STLW 1		{LOCAL $a, STOREW}
+expand STLS 1		{LOCAL $a, STORES}
+expand STLC 1		{LOCAL $a, STOREC}
+expand STLF 1		{LOCAL $a, STOREF}
+expand STLD 1		{LOCAL $a, STORED}
+
+expand LDGW 1		{LDKW $a, LOADW}
+expand LDGS 1		{LDKW $a, LOADS}
+expand LDGC 1		{LDKW $a, LOADC}
+expand LDGF 1		{LDKW $a, LOADF}
+expand LDGD 1		{LDKW $a, LOADD}
+expand STGW 1		{LDKW $a, STOREW}
+expand STGS 1		{LDKW $a, STORES}
+expand STGC 1		{LDKW $a, STOREC}
+expand STGF 1		{LDKW $a, STOREF}
+expand STGD 1		{LDKW $a, STORED}
+
+expand LDNW 1		{PUSH $a, PLUSA, LOADW}
+expand STNW 1		{PUSH $a, PLUSA, STOREW}
+
+expand INDEXC 0		{PLUSA}
+expand INDEXS 0		{PUSH 1, LSL, PLUSA}
+expand INDEXW 0		{PUSH 2, LSL, PLUSA}
+expand INDEXD 0		{PUSH 3, LSL, PLUSA}
+
+expand LDIC 0		{INDEXC, LOADC}
+expand LDIS 0		{INDEXS, LOADS}
+expand LDIW 0		{INDEXW, LOADW}
+expand LDID 0		{INDEXD, LOADD}
+expand STIC 0		{INDEXC, STOREC}
+expand STIS 0		{INDEXS, STORES}
+expand STIW 0		{INDEXW, STOREW}
+expand STID 0		{INDEXD, STORED}
+
+expand LDEW 1		{LDLW -4, LDNW $a}
+expand STEW 1		{LDLW -4, STNW $a}
+
+expand INC 0 		{PUSH 1, PLUS}
+expand DEC 0		{PUSH 1, MINUS}
+
+expand INCL 1		{LDLW $a, INC, STLW $a}
+expand DECL 1		{LDLW $a, DEC, STLW $a}
+
+expand JEQZ S		{PUSH 0, JEQ $a}
+expand JLTZ S		{PUSH 0, JLT $a}
+expand JGTZ S		{PUSH 0, JGT $a}
+expand JLEQZ S		{PUSH 0, JLEQ $a}
+expand JGEQZ S		{PUSH 0, JGEQ $a}
+expand JNEQZ S		{PUSH 0, JNEQ $a}

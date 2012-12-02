@@ -1,0 +1,1464 @@
+!! SYMFILE #Planner STAMP #Planner.%main 1
+!! END STAMP
+!! 
+MODULE Planner STAMP 347
+IMPORT In STAMP
+IMPORT Out STAMP
+IMPORT MathL STAMP
+IMPORT Conv STAMP
+IMPORT GC STAMP
+ENDHDR
+
+PROC Planner.Panic 0 12 0
+! PROCEDURE Panic(msg: ARRAY OF CHAR);
+LINE 48
+LOCAL 12
+LDLW 16
+FLEXCOPY
+!   Out.String(msg); Out.Ln;
+LINE 50
+LDLW 16
+LDLW 12
+CONST Out.String
+CALL 2
+CONST Out.Ln
+CALL 0
+!   HALT(2)
+LINE 51
+CONST 2
+CONST HALT
+CALL 1
+RETURN
+END
+
+PROC Planner.Split 2 20 0x00500001
+! PROCEDURE Split(VAR line: ARRAY OF CHAR; VAR words: ARRAY OF word): SHORTINT;
+LINE 54
+!   n := 0; i := 0;
+LINE 57
+CONST 0
+STLW -8
+CONST 0
+STLS -2
+JUMP 22
+LABEL 21
+LDLS -2
+INC
+STLS -2
+LABEL 22
+!     WHILE line[i] = ' ' DO INC(i) END;
+LINE 59
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 59
+LDIC
+CONST 32
+JEQ 21
+!     IF line[i] = 0X THEN EXIT END;
+LINE 60
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 60
+LDIC
+JEQZ 20
+!     IF line[i] = '{' THEN
+LINE 61
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 61
+LDIC
+CONST 123
+JNEQ 26
+!       INC(i); j := 0;
+LINE 62
+LDLS -2
+INC
+STLS -2
+CONST 0
+STLS -4
+JUMP 28
+LABEL 27
+! 	words[n][j] := line[i];
+LINE 64
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 64
+LDIC
+LDLW 20
+LDLW -8
+LDLW 24
+BOUND 64
+CONST 32
+TIMES
+LDLS -4
+CONST 32
+BOUND 64
+PLUS
+STIC
+! 	INC(i); INC(j)
+LINE 65
+LDLS -2
+INC
+STLS -2
+LDLS -4
+INC
+STLS -4
+LABEL 28
+!       WHILE (line[i] # '}') & (line[i] # 0X) DO
+LINE 63
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 63
+LDIC
+CONST 125
+JEQ 29
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 63
+LDIC
+JNEQZ 27
+LABEL 29
+!       words[n][j] := 0X;
+LINE 67
+CONST 0
+LDLW 20
+LDLW -8
+LDLW 24
+BOUND 67
+CONST 32
+TIMES
+LDLS -4
+CONST 32
+BOUND 67
+PLUS
+STIC
+!       IF line[i] = '}' THEN INC(i) END
+LINE 68
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 68
+LDIC
+CONST 125
+JNEQ 25
+LDLS -2
+INC
+STLS -2
+JUMP 25
+LABEL 26
+!       j := 0;
+LINE 70
+CONST 0
+STLS -4
+JUMP 33
+LABEL 32
+! 	words[n][j] := line[i];
+LINE 72
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 72
+LDIC
+LDLW 20
+LDLW -8
+LDLW 24
+BOUND 72
+CONST 32
+TIMES
+LDLS -4
+CONST 32
+BOUND 72
+PLUS
+STIC
+! 	INC(i); INC(j)
+LINE 73
+LDLS -2
+INC
+STLS -2
+LDLS -4
+INC
+STLS -4
+LABEL 33
+!       WHILE (line[i] # ' ') & (line[i] # 0X) DO
+LINE 71
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 71
+LDIC
+CONST 32
+JEQ 34
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 71
+LDIC
+JNEQZ 32
+LABEL 34
+!       words[n][j] := 0X
+LINE 75
+CONST 0
+LDLW 20
+LDLW -8
+LDLW 24
+BOUND 75
+CONST 32
+TIMES
+LDLS -4
+CONST 32
+BOUND 75
+PLUS
+STIC
+LABEL 25
+!     INC(n)
+LINE 77
+INCL -8
+JUMP 22
+LABEL 20
+!   RETURN SHORT(n)
+LINE 79
+LDLW -8
+CONVNS
+RETURNW
+END
+
+PROC Planner.Euclid 4 24 0x00300001
+! PROCEDURE Euclid(t, u: town): R;
+LINE 83
+!   dx := t.Tx - u.Tx; dy := t.Ty - u.Ty;
+LINE 86
+LDLW 12
+NCHECK 86
+LOADD
+LDLW 16
+NCHECK 86
+LOADD
+DMINUS
+STLD -8
+LDLW 12
+NCHECK 86
+CONST 1
+LDID
+LDLW 16
+NCHECK 86
+CONST 1
+LDID
+DMINUS
+STLD -16
+!   RETURN M.Sqrt(dx*dx + dy*dy)
+LINE 89
+LDLD -8
+LDLD -8
+DTIMES
+LDLD -16
+LDLD -16
+DTIMES
+DPLUS
+CONST MathL.Sqrt
+CALLD 2
+RETURND
+END
+
+PROC Planner.Hash 2 24 0x00100001
+! PROCEDURE Hash(VAR name: word): INTEGER;
+LINE 93
+!   h := 0; i := 0;
+LINE 96
+CONST 0
+STLW -4
+CONST 0
+STLS -6
+JUMP 36
+LABEL 35
+!     h := (5 * h + ORD(name[i])) MOD HSIZE;
+LINE 98
+LDLW -4
+CONST 5
+TIMES
+LDLW 12
+LDLS -6
+CONST 32
+BOUND 98
+LDIC
+PLUS
+CONST 127
+MOD
+STLW -4
+!     INC(i)
+LINE 99
+LDLS -6
+INC
+STLS -6
+LABEL 36
+!   WHILE name[i] # 0X DO
+LINE 97
+LDLW 12
+LDLS -6
+CONST 32
+BOUND 97
+LDIC
+JNEQZ 35
+!   RETURN h
+LINE 101
+LDLW -4
+RETURNW
+END
+
+PROC Planner.Lookup 2 24 0x00108001
+! PROCEDURE Lookup(VAR name: word): town;
+LINE 105
+!   h := Hash(name);
+LINE 108
+LDLW 12
+CONST Planner.Hash
+CALLW 1
+STLW -4
+!   t := hashtable[h];
+LINE 109
+CONST Planner.hashtable
+LDLW -4
+CONST 127
+BOUND 109
+LDIW
+STLW -8
+JUMP 38
+LABEL 37
+!     IF name = t.Tname THEN RETURN t END;
+LINE 111
+LDLW -8
+NCHECK 111
+CONST 44
+PLUSA
+CONST 32
+SWAP
+CONST 32
+LDLW 12
+CONST COMPARE
+CALLW 4
+JNEQZ 40
+LDLW -8
+RETURNW
+LABEL 40
+!     t := t.Thlink
+LINE 112
+LDLW -8
+NCHECK 112
+LDNW 28
+STLW -8
+LABEL 38
+!   WHILE t # NIL DO
+LINE 110
+LDLW -8
+JNEQZ 37
+!   Panic("Unknown town");
+LINE 114
+CONST 13
+CONST Planner.%1
+CONST Planner.Panic
+CALL 2
+!   RETURN NIL
+LINE 115
+CONST 0
+RETURNW
+END
+
+PROC Planner.AddTown 2 24 0x00108001
+! PROCEDURE AddTown(VAR name: word; x, y: R);
+LINE 119
+!   h := Hash(name);
+LINE 122
+LDLW 12
+CONST Planner.Hash
+CALLW 1
+STLW -4
+!   NEW(t); NEW(t);
+LINE 123
+CONST 76
+CONST Planner.townrec
+LOCAL -8
+CONST NEW
+CALL 3
+CONST 76
+CONST Planner.townrec
+LOCAL -8
+CONST NEW
+CALL 3
+!   t.Tname := name;
+LINE 124
+LDLW -8
+NCHECK 124
+CONST 44
+PLUSA
+LDLW 12
+CONST 32
+FIXCOPY
+!   t.Tx := x; t.Ty := y;
+LINE 125
+LDLD 16
+LDLW -8
+NCHECK 125
+STORED
+LDLD 24
+LDLW -8
+NCHECK 125
+CONST 1
+STID
+!   t.Tdist := 0.0;
+LINE 126
+DCONST 0.
+LDLW -8
+NCHECK 126
+CONST 2
+STID
+!   t.Troads := NIL;
+LINE 127
+CONST 0
+LDLW -8
+NCHECK 127
+STNW 24
+!   t.Thlink := hashtable[h];
+LINE 128
+CONST Planner.hashtable
+LDLW -4
+CONST 127
+BOUND 128
+LDIW
+LDLW -8
+NCHECK 128
+STNW 28
+!   t.Tprev := NIL; t.Tnext := NIL;
+LINE 129
+CONST 0
+LDLW -8
+NCHECK 129
+STNW 32
+CONST 0
+LDLW -8
+NCHECK 129
+STNW 36
+!   t.Tbacklink := NIL;
+LINE 130
+CONST 0
+LDLW -8
+NCHECK 130
+STNW 40
+!   hashtable[h] := t
+LINE 131
+LDLW -8
+CONST Planner.hashtable
+LDLW -4
+CONST 127
+BOUND 131
+STIW
+RETURN
+END
+
+PROC Planner.AddRoad 4 24 0x0031e001
+! PROCEDURE AddRoad(VAR name1, name2: word; leng: R);
+LINE 135
+!   t1 := Lookup(name1); t2 := Lookup(name2);
+LINE 138
+LDLW 12
+CONST Planner.Lookup
+CALLW 1
+STLW -4
+LDLW 16
+CONST Planner.Lookup
+CALLW 1
+STLW -8
+!   NEW(r1); NEW(r1); NEW(r2);
+LINE 139
+CONST 16
+CONST Planner.roadrec
+LOCAL -12
+CONST NEW
+CALL 3
+CONST 16
+CONST Planner.roadrec
+LOCAL -12
+CONST NEW
+CALL 3
+CONST 16
+CONST Planner.roadrec
+LOCAL -16
+CONST NEW
+CALL 3
+!   IF leng < Euclid(t1, t2) THEN
+LINE 141
+LDLD 20
+LDLW -8
+LDLW -4
+CONST Planner.Euclid
+CALLD 2
+DJGEQ 42
+!     Out.LongReal(leng); Out.Ln;
+LINE 142
+LDLD 20
+CONST Out.LongReal
+CALL 2
+CONST Out.Ln
+CALL 0
+!     Out.LongReal(Euclid(t1, t2)); Out.Ln;
+LINE 143
+LDLW -8
+LDLW -4
+CONST Planner.Euclid
+CALLD 2
+CONST Out.LongReal
+CALL 2
+CONST Out.Ln
+CALL 0
+!     Panic("Road is too short")
+LINE 144
+CONST 18
+CONST Planner.%2
+CONST Planner.Panic
+CALL 2
+LABEL 42
+!   r1.Rdest := t2; r2.Rdest := t1;
+LINE 147
+LDLW -8
+LDLW -12
+NCHECK 147
+STOREW
+LDLW -4
+LDLW -16
+NCHECK 147
+STOREW
+!   r1.Rlength := leng; r2.Rlength := leng;
+LINE 148
+LDLD 20
+LDLW -12
+NCHECK 148
+CONST 4
+PLUSA
+STORED
+LDLD 20
+LDLW -16
+NCHECK 148
+CONST 4
+PLUSA
+STORED
+!   r1.Rnext := t1.Troads; t1.Troads := r1;
+LINE 149
+LDLW -4
+NCHECK 149
+LDNW 24
+LDLW -12
+NCHECK 149
+STNW 12
+LDLW -12
+LDLW -4
+NCHECK 149
+STNW 24
+!   r2.Rnext := t2.Troads; t2.Troads := r2;
+LINE 150
+LDLW -8
+NCHECK 150
+LDNW 24
+LDLW -16
+NCHECK 150
+STNW 12
+LDLW -16
+LDLW -8
+NCHECK 150
+STNW 24
+RETURN
+END
+
+PROC Planner.InitQueue 0 24 0
+! PROCEDURE InitQueue();
+LINE 159
+!   NEW(qhead);
+LINE 161
+CONST 76
+CONST Planner.townrec
+CONST Planner.qhead
+CONST NEW
+CALL 3
+!   qhead.Tdist := -1.0;
+LINE 162
+DCONST -1.
+LDGW Planner.qhead
+NCHECK 162
+CONST 2
+STID
+!   qhead.Tnext := qhead;
+LINE 163
+LDGW Planner.qhead
+LDGW Planner.qhead
+NCHECK 163
+STNW 36
+!   qhead.Tprev := qhead
+LINE 164
+LDGW Planner.qhead
+LDGW Planner.qhead
+NCHECK 164
+STNW 32
+RETURN
+END
+
+PROC Planner.ClearQueue 0 24 0
+! PROCEDURE ClearQueue();
+LINE 168
+!   qhead.Tnext := qhead;
+LINE 170
+LDGW Planner.qhead
+LDGW Planner.qhead
+NCHECK 170
+STNW 36
+!   qhead.Tprev := qhead
+LINE 171
+LDGW Planner.qhead
+LDGW Planner.qhead
+NCHECK 171
+STNW 32
+RETURN
+END
+
+PROC Planner.Enqueue 2 24 0x00118001
+! PROCEDURE Enqueue(t: town);
+LINE 175
+!      p := qhead.Tprev;
+LINE 182
+LDGW Planner.qhead
+NCHECK 182
+LDNW 32
+STLW -4
+JUMP 44
+LABEL 43
+LDLW -4
+NCHECK 183
+LDNW 32
+STLW -4
+LABEL 44
+!      WHILE t.Tdist < p.Tdist DO p := p.Tprev END;
+LINE 183
+LDLW 12
+NCHECK 183
+CONST 2
+LDID
+LDLW -4
+NCHECK 183
+CONST 2
+LDID
+DJLT 43
+!      q := p.Tnext;
+LINE 184
+LDLW -4
+NCHECK 184
+LDNW 36
+STLW -8
+!      t.Tprev := p; t.Tnext := q;
+LINE 185
+LDLW -4
+LDLW 12
+NCHECK 185
+STNW 32
+LDLW -8
+LDLW 12
+NCHECK 185
+STNW 36
+!      p.Tnext := t; q.Tprev := t;
+LINE 186
+LDLW 12
+LDLW -4
+NCHECK 186
+STNW 36
+LDLW 12
+LDLW -8
+NCHECK 186
+STNW 32
+RETURN
+END
+
+PROC Planner.Delmin 2 24 0x00018001
+! PROCEDURE Delmin(): town;
+LINE 190
+!      p := qhead.Tnext;
+LINE 193
+LDGW Planner.qhead
+NCHECK 193
+LDNW 36
+STLW -4
+!      IF p = qhead THEN RETURN NIL END;
+LINE 194
+LDLW -4
+LDGW Planner.qhead
+JNEQ 46
+CONST 0
+RETURNW
+LABEL 46
+!      q := p.Tnext;
+LINE 195
+LDLW -4
+NCHECK 195
+LDNW 36
+STLW -8
+!      qhead.Tnext := q; q.Tprev := qhead; 
+LINE 196
+LDLW -8
+LDGW Planner.qhead
+NCHECK 196
+STNW 36
+LDGW Planner.qhead
+LDLW -8
+NCHECK 196
+STNW 32
+!      RETURN p;
+LINE 197
+LDLW -4
+RETURNW
+END
+
+PROC Planner.Requeue 2 24 0x00118001
+! PROCEDURE Requeue(t: town);
+LINE 201
+!      p := t.Tprev; q := t.Tnext;
+LINE 204
+LDLW 12
+NCHECK 204
+LDNW 32
+STLW -4
+LDLW 12
+NCHECK 204
+LDNW 36
+STLW -8
+!      p.Tnext := q; q.Tprev := p;
+LINE 205
+LDLW -8
+LDLW -4
+NCHECK 205
+STNW 36
+LDLW -4
+LDLW -8
+NCHECK 205
+STNW 32
+JUMP 48
+LABEL 47
+LDLW -4
+NCHECK 206
+LDNW 32
+STLW -4
+LABEL 48
+!      WHILE t.Tdist < p.Tdist DO p := p.Tprev END;
+LINE 206
+LDLW 12
+NCHECK 206
+CONST 2
+LDID
+LDLW -4
+NCHECK 206
+CONST 2
+LDID
+DJLT 47
+!      q := p.Tnext;
+LINE 207
+LDLW -4
+NCHECK 207
+LDNW 36
+STLW -8
+!      t.Tprev := p; t.Tnext := q;
+LINE 208
+LDLW -4
+LDLW 12
+NCHECK 208
+STNW 32
+LDLW -8
+LDLW 12
+NCHECK 208
+STNW 36
+!      p.Tnext := t; q.Tprev := t
+LINE 209
+LDLW 12
+LDLW -4
+NCHECK 209
+STNW 36
+LDLW 12
+LDLW -8
+NCHECK 209
+STNW 32
+RETURN
+END
+
+PROC Planner.Init 2 24 0x00308001
+! PROCEDURE Init(src, dst: town; heur: BOOLEAN);
+LINE 217
+!   ClearQueue();
+LINE 220
+CONST Planner.ClearQueue
+CALL 0
+!   FOR i := 0 TO HSIZE-1 DO
+LINE 222
+CONST 0
+STLW -4
+JUMP 50
+LABEL 49
+!     t := hashtable[i];
+LINE 223
+CONST Planner.hashtable
+LDLW -4
+CONST 127
+BOUND 223
+LDIW
+STLW -8
+JUMP 52
+LABEL 51
+!       t.Tbacklink := NIL;
+LINE 225
+CONST 0
+LDLW -8
+NCHECK 225
+STNW 40
+!       t := t.Thlink
+LINE 226
+LDLW -8
+NCHECK 226
+LDNW 28
+STLW -8
+LABEL 52
+!     WHILE t # NIL DO
+LINE 224
+LDLW -8
+JNEQZ 51
+!   FOR i := 0 TO HSIZE-1 DO
+LINE 222
+INCL -4
+LABEL 50
+LDLW -4
+CONST 126
+JLEQ 49
+!   src.Tdist := 0.0;
+LINE 230
+DCONST 0.
+LDLW 12
+NCHECK 230
+CONST 2
+STID
+!   src.Tbacklink := src;
+LINE 231
+LDLW 12
+LDLW 12
+NCHECK 231
+STNW 40
+!   goal := dst;
+LINE 232
+LDLW 16
+STGW Planner.goal
+!   hflag := heur;
+LINE 233
+LDLC 20
+STGC Planner.hflag
+RETURN
+END
+
+PROC Planner.ShowLink 0 24 0x00100001
+! PROCEDURE ShowLink(t: town; colour: ARRAY OF CHAR);
+LINE 237
+LOCAL 16
+LDLW 20
+FLEXCOPY
+!   Out.String("colour {"); Out.String(t.Tname); Out.String("} {");
+LINE 239
+CONST 9
+CONST Planner.%3
+CONST Out.String
+CALL 2
+LDLW 12
+NCHECK 239
+CONST 44
+PLUSA
+CONST 32
+SWAP
+CONST Out.String
+CALL 2
+CONST 4
+CONST Planner.%4
+CONST Out.String
+CALL 2
+!   Out.String(t.Tbacklink.Tname); Out.String("} ");
+LINE 240
+LDLW 12
+NCHECK 240
+LDNW 40
+NCHECK 240
+CONST 44
+PLUSA
+CONST 32
+SWAP
+CONST Out.String
+CALL 2
+CONST 3
+CONST Planner.%5
+CONST Out.String
+CALL 2
+!   Out.String(colour); Out.Ln
+LINE 241
+LDLW 20
+LDLW 16
+CONST Out.String
+CALL 2
+CONST Out.Ln
+CALL 0
+RETURN
+END
+
+PROC Planner.VisitNeighbours 4 24 0x00118001
+! PROCEDURE VisitNeighbours(t: town);
+LINE 245
+!   r := t.Troads;
+LINE 248
+LDLW 12
+NCHECK 248
+LDNW 24
+STLW -4
+JUMP 54
+LABEL 53
+!     u := r.Rdest;
+LINE 250
+LDLW -4
+NCHECK 250
+LOADW
+STLW -8
+!     d := t.Tdist + r.Rlength;
+LINE 251
+LDLW 12
+NCHECK 251
+CONST 2
+LDID
+LDLW -4
+NCHECK 251
+CONST 4
+PLUSA
+LOADD
+DPLUS
+STLD -16
+!     IF hflag THEN d := d - Euclid(t, goal) + Euclid(u, goal) END;
+LINE 255
+LDGC Planner.hflag
+JUMPF 56
+LDLD -16
+LDGW Planner.goal
+LDLW 12
+CONST Planner.Euclid
+CALLD 2
+DMINUS
+LDGW Planner.goal
+LDLW -8
+CONST Planner.Euclid
+CALLD 2
+DPLUS
+STLD -16
+LABEL 56
+!     IF u.Tbacklink = NIL THEN
+LINE 257
+LDLW -8
+NCHECK 257
+LDNW 40
+JNEQZ 58
+!       u.Tdist := d;
+LINE 259
+LDLD -16
+LDLW -8
+NCHECK 259
+CONST 2
+STID
+!       u.Tbacklink := t;
+LINE 260
+LDLW 12
+LDLW -8
+NCHECK 260
+STNW 40
+!       ShowLink(u, "green");
+LINE 261
+CONST 6
+CONST Planner.%6
+LDLW -8
+CONST Planner.ShowLink
+CALL 3
+!       Enqueue(u);
+LINE 262
+LDLW -8
+CONST Planner.Enqueue
+CALL 1
+JUMP 59
+LABEL 58
+!     ELSIF d < u.Tdist THEN
+LINE 263
+LDLD -16
+LDLW -8
+NCHECK 263
+CONST 2
+LDID
+DJGEQ 59
+!       ShowLink(u, "brown");
+LINE 265
+CONST 6
+CONST Planner.%7
+LDLW -8
+CONST Planner.ShowLink
+CALL 3
+!       u.Tdist := d;
+LINE 266
+LDLD -16
+LDLW -8
+NCHECK 266
+CONST 2
+STID
+!       u.Tbacklink := t;
+LINE 267
+LDLW 12
+LDLW -8
+NCHECK 267
+STNW 40
+!       ShowLink(u, "green");
+LINE 268
+CONST 6
+CONST Planner.%6
+LDLW -8
+CONST Planner.ShowLink
+CALL 3
+!       Requeue(u)
+LINE 269
+LDLW -8
+CONST Planner.Requeue
+CALL 1
+LABEL 59
+!     r := r.Rnext
+LINE 272
+LDLW -4
+NCHECK 272
+LDNW 12
+STLW -4
+LABEL 54
+!   WHILE r # NIL DO
+LINE 249
+LDLW -4
+JNEQZ 53
+RETURN
+END
+
+PROC Planner.Search 5 24 0x0031c001
+! PROCEDURE Search(VAR sname, dname: word; heur: BOOLEAN);
+LINE 277
+!   src := Lookup(sname);
+LINE 280
+LDLW 12
+CONST Planner.Lookup
+CALLW 1
+STLW -8
+!   dst := Lookup(dname);
+LINE 281
+LDLW 16
+CONST Planner.Lookup
+CALLW 1
+STLW -12
+!   Init(src, dst, heur);
+LINE 283
+LDLC 20
+ALIGNC
+LDLW -12
+LDLW -8
+CONST Planner.Init
+CALL 3
+!   t := src;
+LINE 284
+LDLW -8
+STLW -4
+!   GC.Collect;
+LINE 286
+CONST GC.Collect
+CALL 0
+JUMP 61
+LABEL 60
+!     IF t # src THEN
+LINE 289
+LDLW -4
+LDLW -8
+JEQ 63
+!       Out.String("paint {"); Out.String(t.Tname); 
+LINE 290
+CONST 8
+CONST Planner.%8
+CONST Out.String
+CALL 2
+LDLW -4
+NCHECK 290
+CONST 44
+PLUSA
+CONST 32
+SWAP
+CONST Out.String
+CALL 2
+!       Out.String("} white"); Out.Ln
+LINE 291
+CONST 8
+CONST Planner.%9
+CONST Out.String
+CALL 2
+CONST Out.Ln
+CALL 0
+LABEL 63
+!     VisitNeighbours(t);
+LINE 293
+LDLW -4
+CONST Planner.VisitNeighbours
+CALL 1
+!     Out.String("pause"); Out.Ln;
+LINE 294
+CONST 6
+CONST Planner.%10
+CONST Out.String
+CALL 2
+CONST Out.Ln
+CALL 0
+!     t := Delmin();
+LINE 296
+CONST Planner.Delmin
+CALLW 0
+STLW -4
+!     IF t = NIL THEN
+LINE 297
+LDLW -4
+JNEQZ 65
+!       Out.String("unreachable"); Out.Ln;
+LINE 298
+CONST 12
+CONST Planner.%11
+CONST Out.String
+CALL 2
+CONST Out.Ln
+CALL 0
+!       RETURN
+LINE 299
+RETURN
+LABEL 65
+!     ShowLink(t, "blue");
+LINE 302
+CONST 5
+CONST Planner.%12
+LDLW -4
+CONST Planner.ShowLink
+CALL 3
+LABEL 61
+!   WHILE t # dst DO
+LINE 288
+LDLW -4
+LDLW -12
+JNEQ 60
+!   Out.String("pause"); Out.Ln;
+LINE 305
+CONST 6
+CONST Planner.%10
+CONST Out.String
+CALL 2
+CONST Out.Ln
+CALL 0
+!   t := dst;
+LINE 308
+LDLW -12
+STLW -4
+JUMP 67
+LABEL 66
+!     ShowLink(t, "yellow");
+LINE 310
+CONST 7
+CONST Planner.%13
+LDLW -4
+CONST Planner.ShowLink
+CALL 3
+!     t := t.Tbacklink
+LINE 311
+LDLW -4
+NCHECK 311
+LDNW 40
+STLW -4
+LABEL 67
+!   WHILE t # src DO
+LINE 309
+LDLW -4
+LDLW -8
+JNEQ 66
+!   d := dst.Tdist;
+LINE 314
+LDLW -12
+NCHECK 314
+CONST 2
+LDID
+STLD -20
+!   IF hflag THEN d := d + Euclid(src, dst) END;
+LINE 315
+LDGC Planner.hflag
+JUMPF 69
+LDLD -20
+LDLW -12
+LDLW -8
+CONST Planner.Euclid
+CALLD 2
+DPLUS
+STLD -20
+LABEL 69
+!   Out.String("found "); Out.Fixed(d, 0, 1); Out.Ln;
+LINE 316
+CONST 7
+CONST Planner.%14
+CONST Out.String
+CALL 2
+CONST 1
+CONST 0
+LDLD -20
+CONST Out.Fixed
+CALL 4
+CONST Out.Ln
+CALL 0
+RETURN
+END
+
+PROC Planner.Main 145 28 0
+! PROCEDURE Main();
+LINE 320
+!   InitQueue();
+LINE 325
+CONST Planner.InitQueue
+CALL 0
+LABEL 70
+!     In.Line(buf);
+LINE 328
+CONST 256
+LOCAL -260
+CONST In.Line
+CALL 2
+!     IF ~ In.Done THEN EXIT END;
+LINE 329
+LDGC In.Done
+JUMPF 71
+!     nwords := Split(buf, words);
+LINE 331
+CONST 10
+LOCAL -580
+CONST 256
+LOCAL -260
+CONST Planner.Split
+CALLW 4
+STLW -4
+!     IF (nwords = 4) & (words[0] = "town") THEN
+LINE 333
+LDLW -4
+CONST 4
+JNEQ 75
+CONST 5
+CONST Planner.%15
+CONST 32
+LOCAL -580
+CONST COMPARE
+CALLW 4
+JNEQZ 75
+!       AddTown(words[1], Conv.RealVal(words[2]), Conv.RealVal(words[3]))
+LINE 334
+CONST 32
+LOCAL -580
+CONST 96
+PLUSA
+CONST Conv.RealVal
+CALLF 2
+CONVFD
+CONST 32
+LOCAL -580
+CONST 64
+PLUSA
+CONST Conv.RealVal
+CALLF 2
+CONVFD
+LOCAL -548
+CONST Planner.AddTown
+CALL 5
+JUMP 70
+LABEL 75
+!     ELSIF (nwords = 4) & (words[0] = "road") THEN
+LINE 335
+LDLW -4
+CONST 4
+JNEQ 76
+CONST 5
+CONST Planner.%16
+CONST 32
+LOCAL -580
+CONST COMPARE
+CALLW 4
+JNEQZ 76
+!       AddRoad(words[1], words[2], Conv.RealVal(words[3]))
+LINE 336
+CONST 32
+LOCAL -580
+CONST 96
+PLUSA
+CONST Conv.RealVal
+CALLF 2
+CONVFD
+LOCAL -516
+LOCAL -548
+CONST Planner.AddRoad
+CALL 4
+JUMP 70
+LABEL 76
+!     ELSIF (nwords = 4) & (words[0] = "search") THEN
+LINE 337
+LDLW -4
+CONST 4
+JNEQ 77
+CONST 7
+CONST Planner.%17
+CONST 32
+LOCAL -580
+CONST COMPARE
+CALLW 4
+JNEQZ 77
+!       Search(words[1], words[2], (words[3][0] = '1'))
+LINE 338
+LDLC -484
+CONST 49
+EQ
+ALIGNC
+LOCAL -516
+LOCAL -548
+CONST Planner.Search
+CALL 3
+JUMP 70
+LABEL 77
+!       Panic("bad command")
+LINE 340
+CONST 12
+CONST Planner.%18
+CONST Planner.Panic
+CALL 2
+JUMP 70
+LABEL 71
+RETURN
+END
+
+PROC Planner.%main 0 28 0
+!   Main()
+LINE 346
+CONST Planner.Main
+CALL 0
+RETURN
+END
+
+! Global variables
+GLOBAL Planner.hashtable 508
+GLOBAL Planner.qhead 4
+GLOBAL Planner.hflag 1
+GLOBAL Planner.goal 4
+
+! Pointer map
+DEFINE Planner.%gcmap
+WORD GC_BASE
+WORD Planner.hashtable
+WORD GC_BLOCK
+WORD 0
+WORD 127
+WORD GC_BASE
+WORD Planner.qhead
+WORD 0
+WORD GC_BASE
+WORD Planner.goal
+WORD 0
+WORD GC_END
+
+! String "Unknown town"
+DEFINE Planner.%1
+STRING 556E6B6E6F776E20746F776E00
+
+! String "Road is too short"
+DEFINE Planner.%2
+STRING 526F616420697320746F6F2073686F727400
+
+! String "colour {"
+DEFINE Planner.%3
+STRING 636F6C6F7572207B00
+
+! String "} {"
+DEFINE Planner.%4
+STRING 7D207B00
+
+! String "} "
+DEFINE Planner.%5
+STRING 7D2000
+
+! String "green"
+DEFINE Planner.%6
+STRING 677265656E00
+
+! String "brown"
+DEFINE Planner.%7
+STRING 62726F776E00
+
+! String "paint {"
+DEFINE Planner.%8
+STRING 7061696E74207B00
+
+! String "} white"
+DEFINE Planner.%9
+STRING 7D20776869746500
+
+! String "pause"
+DEFINE Planner.%10
+STRING 706175736500
+
+! String "unreachable"
+DEFINE Planner.%11
+STRING 756E726561636861626C6500
+
+! String "blue"
+DEFINE Planner.%12
+STRING 626C756500
+
+! String "yellow"
+DEFINE Planner.%13
+STRING 79656C6C6F7700
+
+! String "found "
+DEFINE Planner.%14
+STRING 666F756E642000
+
+! String "town"
+DEFINE Planner.%15
+STRING 746F776E00
+
+! String "road"
+DEFINE Planner.%16
+STRING 726F616400
+
+! String "search"
+DEFINE Planner.%17
+STRING 73656172636800
+
+! String "bad command"
+DEFINE Planner.%18
+STRING 62616420636F6D6D616E6400
+
+! Descriptor for townrec
+DEFINE Planner.townrec
+WORD 0x00000f81
+WORD 0
+WORD Planner.townrec.%anc
+
+DEFINE Planner.townrec.%anc
+WORD Planner.townrec
+
+! Descriptor for roadrec
+DEFINE Planner.roadrec
+WORD 0x00000013
+WORD 0
+WORD Planner.roadrec.%anc
+
+DEFINE Planner.roadrec.%anc
+WORD Planner.roadrec
+
+! End of file

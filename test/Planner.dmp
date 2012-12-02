@@ -1,0 +1,347 @@
+       |MODULE Planner;
+       |
+       |IMPORT In, Out, M := MathL, Conv, GC;
+       |
+       |TYPE R = LONGREAL;
+       |
+       |TYPE word = ARRAY 32 OF CHAR;
+       |
+       |(* Information about a town is stored as a structure with many links. *)
+       |
+       |  town = POINTER TO townrec;
+       |  road = POINTER TO roadrec;
+       |
+       |  townrec = RECORD
+       |    Tx, Ty: R;		(* X and Y coordinates *)
+       |    Tdist: R;		(* Best known distance from start *)
+       |    Troads: road;		(* List of roads starting here *)
+       |    Thlink: town;		(* Next town in hash chain *)
+       |    Tprev, Tnext: town;		(* Prev and Next towns in queue *)
+       |    Tbacklink: town;		(* Prev town on shortest path *)
+       |    Tname: word;		(* Name of the town *)
+       |  END;
+       |
+       |  roadrec = RECORD
+       |    Rdest: town;		(* Town reached by road *)
+       |    Rlength: R;		(* Length of road *)
+       |    Rnext: road;		(* Next road from same source *)
+       |  END;    
+       |
+       |(* The towns live in a small hash table, so that a town can be found
+       |   quickly, given its name. *)
+       |
+       |CONST HSIZE = 127;
+       |
+       |VAR hashtable: ARRAY HSIZE OF town;
+       |
+       |(* There's a priority queue of towns, ordered by best known distance
+       |   from the origin.  We implement it as a doubly-linked ordered list. *)
+       |
+       |VAR qhead: town;		(* List head *)
+       |
+       |VAR
+       |  hflag: BOOLEAN;		(* If true, use the Euclidean heuristic *)
+       |  goal: town;			(* Goal town (used by heuristic) *)
+       |
+       |(* ---------------------------------------------------------------- *)
+       |
+       |PROCEDURE Panic(msg: ARRAY OF CHAR);
+       |BEGIN
+       |  Out.String(msg); Out.Ln;
+       |  HALT(2)
+       |END Panic;
+       |
+    148|PROCEDURE Split(VAR line: ARRAY OF CHAR; VAR words: ARRAY OF word): SHORTINT;
+       |  VAR i, j: SHORTINT; n: INTEGER;
+       |BEGIN
+    148|  n := 0; i := 0;
+       |  LOOP
+   1184|    WHILE line[i] = ' ' DO INC(i) END;
+    740|    IF line[i] = 0X THEN EXIT END;
+    592|    IF line[i] = '{' THEN
+      4|      INC(i); j := 0;
+     52|      WHILE (line[i] # '}') & (line[i] # 0X) DO
+     48|	words[n][j] := line[i];
+     48|	INC(i); INC(j)
+       |      END;
+      4|      words[n][j] := 0X;
+      4|      IF line[i] = '}' THEN INC(i) END
+       |    ELSE
+    588|      j := 0;
+   4117|      WHILE (line[i] # ' ') & (line[i] # 0X) DO
+   3529|	words[n][j] := line[i];
+   3529|	INC(i); INC(j)
+       |      END;
+    588|      words[n][j] := 0X
+       |    END;
+    592|    INC(n)
+       |  END;
+    148|  RETURN SHORT(n)
+       |END Split;
+       |
+       |(* euclid -- Euclidean distance between towns *)
+     97|PROCEDURE Euclid(t, u: town): R;
+       |  VAR dx, dy: R;
+       |BEGIN
+     97|  dx := t.Tx - u.Tx; dy := t.Ty - u.Ty;
+       |  (* Out.LongReal(dx); Out.Ln;
+       |  Out.LongReal(dy); Out.Ln; *)
+     97|  RETURN M.Sqrt(dx*dx + dy*dy)
+       |END Euclid;
+       |
+       |(* hash -- compute hash function of string *)
+    246|PROCEDURE Hash(VAR name: word): INTEGER;
+       |  VAR h: INTEGER; i: SHORTINT;
+       |BEGIN
+    246|  h := 0; i := 0;
+   2330|  WHILE name[i] # 0X DO
+   2084|    h := (5 * h + ORD(name[i])) MOD HSIZE;
+   2084|    INC(i)
+       |  END;
+    246|  RETURN h
+       |END Hash;
+       |
+       |(* lookup -- find a town in the hash table *)
+    196|PROCEDURE Lookup(VAR name: word): town;
+       |  VAR h: INTEGER; t: town;
+       |BEGIN
+    196|  h := Hash(name);
+    196|  t := hashtable[h];
+    237|  WHILE t # NIL DO
+    237|    IF name = t.Tname THEN RETURN t END;
+     41|    t := t.Thlink
+       |  END;
+       |  Panic("Unknown town");
+       |  RETURN NIL
+       |END Lookup;
+       |
+       |(* add_town -- add a new town to the hash table *)
+     50|PROCEDURE AddTown(VAR name: word; x, y: R);
+       |  VAR h: INTEGER; t: town;
+       |BEGIN
+     50|  h := Hash(name);
+     50|  NEW(t); NEW(t);
+     50|  t.Tname := name;
+     50|  t.Tx := x; t.Ty := y;
+     50|  t.Tdist := 0.0;
+     50|  t.Troads := NIL;
+     50|  t.Thlink := hashtable[h];
+     50|  t.Tprev := NIL; t.Tnext := NIL;
+     50|  t.Tbacklink := NIL;
+     50|  hashtable[h] := t
+       |END AddTown;
+       |
+       |(* add_road -- add a road and its converse *)
+     97|PROCEDURE AddRoad(VAR name1, name2: word; leng: R);
+       |  VAR t1, t2: town; r1, r2: road;
+       |BEGIN
+     97|  t1 := Lookup(name1); t2 := Lookup(name2);
+     97|  NEW(r1); NEW(r1); NEW(r2);
+       |
+     97|  IF leng < Euclid(t1, t2) THEN
+       |    Out.LongReal(leng); Out.Ln;
+       |    Out.LongReal(Euclid(t1, t2)); Out.Ln;
+       |    Panic("Road is too short")
+       |  END;
+       |
+     97|  r1.Rdest := t2; r2.Rdest := t1;
+     97|  r1.Rlength := leng; r2.Rlength := leng;
+     97|  r1.Rnext := t1.Troads; t1.Troads := r1;
+     97|  r2.Rnext := t2.Troads; t2.Troads := r2;
+       |END AddRoad;
+       |
+       |(* ---------------------------------------------------------------- *)
+       |
+       |(* There's a priority queue of towns, ordered by best known distance
+       |   from the origin.  We implement it as a doubly-linked ordered list. *)
+       |
+       |(* init_queue -- initialize the queue *)
+      1|PROCEDURE InitQueue();
+       |BEGIN
+      1|  NEW(qhead);
+      1|  qhead.Tdist := -1.0;
+      1|  qhead.Tnext := qhead;
+      1|  qhead.Tprev := qhead
+       |END InitQueue;
+       |
+       |(* clear_queue -- set the queue to be empty *)
+      1|PROCEDURE ClearQueue();
+       |BEGIN
+      1|  qhead.Tnext := qhead;
+      1|  qhead.Tprev := qhead
+       |END ClearQueue;
+       |
+       |(* enqueue -- add a town to the queue *)
+     47|PROCEDURE Enqueue(t: town);
+       |  VAR p, q: town;
+       |BEGIN
+       |     (* Since towns are visited in order of increasing distance, it
+       |        seems reasonable to BEGIN the insertion PROCEDUREess from the tail
+       |        of the queue *)
+       |
+     47|     p := qhead.Tprev;
+    145|     WHILE t.Tdist < p.Tdist DO p := p.Tprev END;
+     47|     q := p.Tnext;
+     47|     t.Tprev := p; t.Tnext := q;
+     47|     p.Tnext := t; q.Tprev := t;
+       |END Enqueue;
+       |
+       |(* delmin -- delete and return the first town in the queue *)
+     45|PROCEDURE Delmin(): town;
+       |  VAR p, q: town;
+       |BEGIN
+     45|     p := qhead.Tnext;
+     45|     IF p = qhead THEN RETURN NIL END;
+     45|     q := p.Tnext;
+     45|     qhead.Tnext := q; q.Tprev := qhead; 
+     45|     RETURN p;
+       |END Delmin;
+       |
+       |(* requeue -- a town has reduced in distance: adjust its place in the queue *)
+      4|PROCEDURE Requeue(t: town);
+       |  VAR p, q: town;
+       |BEGIN
+      4|     p := t.Tprev; q := t.Tnext;
+      4|     p.Tnext := q; q.Tprev := p;
+      5|     WHILE t.Tdist < p.Tdist DO p := p.Tprev END;
+      4|     q := p.Tnext;
+      4|     t.Tprev := p; t.Tnext := q;
+      4|     p.Tnext := t; q.Tprev := t
+       |END Requeue;
+       |
+       |(* ---------------------------------------------------------------- *)
+       |
+       |(* Now here's our implementation of Dijkstra's algorithm *)
+       |
+       |(* init -- initialize the search *)
+      1|PROCEDURE Init(src, dst: town; heur: BOOLEAN);
+       |  VAR i: INTEGER; t: town;
+       |BEGIN
+      1|  ClearQueue();
+       |
+    128|  FOR i := 0 TO HSIZE-1 DO
+    127|    t := hashtable[i];
+    177|    WHILE t # NIL DO
+     50|      t.Tbacklink := NIL;
+     50|      t := t.Thlink
+       |    END
+       |  END;         
+       |
+      1|  src.Tdist := 0.0;
+      1|  src.Tbacklink := src;
+      1|  goal := dst;
+      1|  hflag := heur;
+       |END Init;
+       |
+       |(* show_link -- send command to colour a road *)
+    105|PROCEDURE ShowLink(t: town; colour: ARRAY OF CHAR);
+       |BEGIN
+    105|  Out.String("colour {"); Out.String(t.Tname); Out.String("} {");
+    105|  Out.String(t.Tbacklink.Tname); Out.String("} ");
+    105|  Out.String(colour); Out.Ln
+       |END ShowLink;
+       |
+       |(* visit_neighbours -- update distances to neighbours of a town *)
+     45|PROCEDURE VisitNeighbours(t: town);
+       |  VAR r: road; u: town; d: R;
+       |BEGIN
+     45|  r := t.Troads;
+    223|  WHILE r # NIL DO
+    178|    u := r.Rdest;
+    178|    d := t.Tdist + r.Rlength;
+       |
+       |    (* Heuristic: reduce the length of each road by the distance
+       |       it takes us closer to the goal. *)
+    178|    IF hflag THEN d := d - Euclid(t, goal) + Euclid(u, goal) END;
+       |
+    178|    IF u.Tbacklink = NIL THEN
+       |      (* First time we've seen u *)
+     47|      u.Tdist := d;
+     47|      u.Tbacklink := t;
+     47|      ShowLink(u, "green");
+     47|      Enqueue(u);
+    131|    ELSIF d < u.Tdist THEN
+       |      (* Previous link to u has been improved *)
+      4|      ShowLink(u, "brown");
+      4|      u.Tdist := d;
+      4|      u.Tbacklink := t;
+      4|      ShowLink(u, "green");
+      4|      Requeue(u)
+       |    END;
+       |
+    178|    r := r.Rnext
+       |  END
+       |END VisitNeighbours;
+       |
+       |(* search -- main search function *)
+      1|PROCEDURE Search(VAR sname, dname: word; heur: BOOLEAN);
+       |  VAR t, src, dst: town; d: R;
+       |BEGIN
+      1|  src := Lookup(sname);
+      1|  dst := Lookup(dname);
+       |
+      1|  Init(src, dst, heur);
+      1|  t := src;
+       |
+      1|  GC.Collect;
+       |
+     46|  WHILE t # dst DO
+     45|    IF t # src THEN
+     44|      Out.String("paint {"); Out.String(t.Tname); 
+     44|      Out.String("} white"); Out.Ln
+       |    END;
+     45|    VisitNeighbours(t);
+     45|    Out.String("pause"); Out.Ln;
+       |
+     45|    t := Delmin();
+     45|    IF t = NIL THEN
+       |      Out.String("unreachable"); Out.Ln;
+       |      RETURN
+       |    END;
+       |
+     45|    ShowLink(t, "blue");
+       |  END;
+       |
+      1|  Out.String("pause"); Out.Ln;
+       |
+       |  (* Show the shortest route in yellow *)
+      1|  t := dst;
+      6|  WHILE t # src DO
+      5|    ShowLink(t, "yellow");
+      5|    t := t.Tbacklink
+       |  END;
+       |
+      1|  d := dst.Tdist;
+      1|  IF hflag THEN d := d + Euclid(src, dst) END;
+      1|  Out.String("found "); Out.Fixed(d, 0, 1); Out.Ln;
+       |END Search;
+       |
+       |(* main -- main program *)
+      1|PROCEDURE Main();
+       |  VAR nwords: INTEGER;
+       |    buf: ARRAY 256 OF CHAR;
+       |    words: ARRAY 10 OF word;
+       |BEGIN
+      1|  InitQueue();
+       |
+       |  LOOP
+    149|    In.Line(buf);
+    149|    IF ~ In.Done THEN EXIT END;
+       |    (* Out.String(buf); Out.Ln; *)
+    148|    nwords := Split(buf, words);
+       |
+    148|    IF (nwords = 4) & (words[0] = "town") THEN
+     50|      AddTown(words[1], Conv.RealVal(words[2]), Conv.RealVal(words[3]))
+     98|    ELSIF (nwords = 4) & (words[0] = "road") THEN
+     97|      AddRoad(words[1], words[2], Conv.RealVal(words[3]))
+      1|    ELSIF (nwords = 4) & (words[0] = "search") THEN
+      1|      Search(words[1], words[2], (words[3][0] = '1'))
+       |    ELSE
+       |      Panic("bad command")
+       |    END
+       |  END
+       |END Main;
+       |
+       |BEGIN
+      1|  Main()
+       |END Planner.

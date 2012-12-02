@@ -1,0 +1,84 @@
+MODULE tOdd;
+
+IMPORT Out;
+
+(*<<
+1133557799
+>>*)
+
+VAR b, r: BOOLEAN; i : INTEGER;
+
+BEGIN
+  r := TRUE;
+  FOR i := 0 TO 10 DO
+    IF ODD(i) THEN Out.Int(i,0) END;
+    b := ODD(i);
+    IF b = r THEN Out.Int(i,0) END
+  END;
+  Out.Ln
+END tOdd.
+
+(*[[
+!! SYMFILE #tOdd STAMP #tOdd.%main 1
+!! END STAMP
+!! 
+MODULE tOdd STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tOdd.%main 0 12 0
+!   r := TRUE;
+CONST 1
+STGC tOdd.r
+!   FOR i := 0 TO 10 DO
+CONST 0
+STGW tOdd.i
+JUMP 2
+LABEL 1
+!     IF ODD(i) THEN Out.Int(i,0) END;
+LDGW tOdd.i
+CONST 1
+BITAND
+JEQZ 4
+CONST 0
+LDGW tOdd.i
+CONST Out.Int
+CALL 2
+LABEL 4
+!     b := ODD(i);
+LDGW tOdd.i
+CONST 1
+BITAND
+CONST 0
+NEQ
+STGC tOdd.b
+!     IF b = r THEN Out.Int(i,0) END
+LDGC tOdd.b
+LDGC tOdd.r
+JNEQ 6
+CONST 0
+LDGW tOdd.i
+CONST Out.Int
+CALL 2
+LABEL 6
+!   FOR i := 0 TO 10 DO
+LDGW tOdd.i
+INC
+STGW tOdd.i
+LABEL 2
+LDGW tOdd.i
+CONST 10
+JLEQ 1
+!   Out.Ln
+CONST Out.Ln
+CALL 0
+RETURN
+END
+
+! Global variables
+GLOBAL tOdd.b 1
+GLOBAL tOdd.r 1
+GLOBAL tOdd.i 4
+
+! End of file
+]]*)

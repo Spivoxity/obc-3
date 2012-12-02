@@ -1,0 +1,18 @@
+#!/bin/sh
+
+for d in . ..; do
+    if [ -r $d/configure.in ]; then
+	srcdir=$d; break
+    fi
+done
+
+if [ ! -r $srcdir/configure.in ]; then
+    echo Couldn\'t find configure.in >&2
+    exit 1
+fi
+
+(cd $srcdir; autoconf)
+
+# export CFLAGS="-g -O2 -fno-strict-aliasing"
+
+$srcdir/configure --enable-debug "$@"

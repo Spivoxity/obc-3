@@ -1,0 +1,23 @@
+# Magic config
+ROOT=@ROOT@
+TOPDIR=@ABS_SRCDIR@
+BINDIR=@ABS_BINDIR@
+VERSION=@PACKAGE_VERSION@
+EXEEXT=@EXEEXT@
+ENABLE_JIT=@ENABLE_JIT@
+obc1=$BINDIR/compiler/obc1
+oblink=$BINDIR/runtime/oblink
+obx=$BINDIR/obx
+obxj=$BINDIR/obxj
+obb1=$BINDIR/compiler/obb1
+obdb1=$BINDIR/debugger/obdb1
+obgdb1=$BINDIR/debugger/obgdb1
+obxdeb=$BINDIR/obxdeb
+stdlib="-I $ROOT$BINDIR/lib -I $ROOT$TOPDIR/lib"
+stdinc="-I $ROOT$BINDIR -I $ROOT$TOPDIR/runtime -I $ROOT$BINDIR/runtime"
+resources="-R $ROOT$TOPDIR/resources"
+rundir=$BINDIR/runtime
+libdir=$BINDIR/lib
+MACOS=@MACOS@
+LIVE=0
+# End of config

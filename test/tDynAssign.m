@@ -1,0 +1,120 @@
+MODULE tDynAssign;
+
+(* Check for dynamic type test on assigning to a 
+   VAR parameter of record type *)
+
+TYPE R = RECORD x: INTEGER END;
+
+TYPE S = RECORD (R) y: INTEGER END;
+
+PROCEDURE (VAR r: R) Assign;
+  VAR r2: R;
+BEGIN
+  r2.x := 3;
+  r := r2
+END Assign;
+
+PROCEDURE Assign2(VAR r: R);
+  VAR r2: R;
+BEGIN
+  r2.x := 3;
+  r := r2
+END Assign2;
+
+VAR s: S;
+
+BEGIN
+  s.Assign;
+  Assign2(s)
+END tDynAssign.
+
+(*<<
+Runtime error: dynamic type error in record assignment on line 14 in module tDynAssign
+In procedure tDynAssign.R.Assign
+   called from tDynAssign.%main
+   called from MAIN
+>>*)
+
+(*[[
+!! SYMFILE #tDynAssign STAMP #tDynAssign.%main 1
+!! END STAMP
+!! 
+MODULE tDynAssign STAMP 0
+ENDHDR
+
+PROC tDynAssign.R.Assign 1 12 0x00100001
+! PROCEDURE (VAR r: R) Assign;
+!   r2.x := 3;
+CONST 3
+STLW -4
+!   r := r2
+LDLW 16
+CONST tDynAssign.R
+JEQ 1
+ERROR E_ASSIGN 14
+LABEL 1
+LDLW 12
+LOCAL -4
+CONST 4
+FIXCOPY
+RETURN
+END
+
+PROC tDynAssign.Assign2 1 12 0x00100001
+! PROCEDURE Assign2(VAR r: R);
+!   r2.x := 3;
+CONST 3
+STLW -4
+!   r := r2
+LDLW 16
+CONST tDynAssign.R
+JEQ 2
+ERROR E_ASSIGN 21
+LABEL 2
+LDLW 12
+LOCAL -4
+CONST 4
+FIXCOPY
+RETURN
+END
+
+PROC tDynAssign.%main 0 12 0
+!   s.Assign;
+CONST tDynAssign.S
+CONST tDynAssign.s
+CONST tDynAssign.R.Assign
+CALL 2
+!   Assign2(s)
+CONST tDynAssign.S
+CONST tDynAssign.s
+CONST tDynAssign.Assign2
+CALL 2
+RETURN
+END
+
+! Global variables
+GLOBAL tDynAssign.s 8
+
+! Descriptor for R
+DEFINE tDynAssign.R
+WORD 0
+WORD 0
+WORD tDynAssign.R.%anc
+WORD tDynAssign.R.Assign
+
+DEFINE tDynAssign.R.%anc
+WORD tDynAssign.R
+
+! Descriptor for S
+DEFINE tDynAssign.S
+WORD 0
+WORD 1
+WORD tDynAssign.S.%anc
+WORD tDynAssign.R.Assign
+
+DEFINE tDynAssign.S.%anc
+WORD tDynAssign.R
+WORD tDynAssign.S
+
+! End of file
+]]*)

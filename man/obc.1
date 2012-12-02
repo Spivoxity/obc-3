@@ -1,0 +1,95 @@
+.\" Copyright (C) 1999 J. M. Spivey
+.TH OBC 1
+.SH NAME
+obc \- Oberon\-2 compiler
+.SH SYNOPSIS
+.B obc
+[options] file ...
+.SH DESCRIPTION
+.B Obc 
+is the Oxford Oberon compiler.
+It translates source files written in a language that is almost (but
+not quite) Oberon\-2, translates them into a portable bytecode
+form, and links the bytecode with library code to produce an
+executable program.
+
+Files with extension
+.B .m
+are assumed to contain the source code of Oberon\-2 modules.  They are
+translated into bytecodes before linking.
+Files with extension
+.B .k
+are assumed to be bytecode files produced by earlier compilations.
+These bytecode files also contain interface information about the
+module that is used in compiling other modules that import it.
+All the files named on the command line are linked to form an
+executable program, unless the
+.B \-c
+option is specified.  When the program is executed, the bodies of each
+module are executed in the order they appeared on the
+.B obc
+command line; thus each module should be listed before other modules
+that import it.
+
+Bytecode and executable files produced by the compiler are
+machine-independent.  The same executable can be run without change on
+multiple machines of different architectures, provided the Oberon
+run-time system has been installed appropriately on all of them.
+
+.SH OPTIONS
+.TP
+.I \-b
+Suppress the usual run-time checks, sacrificing safety for the sake of
+screaming speed.
+.TP
+.I \-c
+Omit the linking step, and simply compile all arguments ending in
+.B .m
+into bytecode.
+.TP
+.I \-C
+Link in the bytecode interpreter directly during the linking phase,
+rather than finding it at runtime.
+This makes the executable larger, but makes it independent, and
+enables undocumented features for calling C code from Oberon. (Not
+available under Windows.)
+.TP
+.I "\-o file"
+Place the output of the linking step on
+.IR file ,
+instead of the default
+.IR a.out .
+(Under Windows, the default is
+.IR aout.exe .)
+.TP 
+.I \-O
+Use an optimizer to pack the bytecode, resulting in faster and more
+compact code.  (This is the default.)
+.TP
+.I \-O\-
+Turn off the optimizer.
+.TP
+.I \-pl
+Generate instructions for line-count profiling.
+.TP
+.I \-v
+Show version information for all parts of the Oberon system, and print
+the compiling commands as they are executed.
+.SH FILES
+.TP
+.I file.m
+Oberon\-2 source text
+.TP
+.I file.k
+Bytecode and interface definition
+.TP 
+.I /usr/local/lib/obc/obx
+Runtime system
+.TP
+.I /usr/local/lib/obc/*.m
+Library sources
+.SH BUGS
+The language accepted by the compiler has some differences from that
+described in the Oberon\-2 report.  Ask the author for details.
+.SH AUTHOR
+Mike Spivey

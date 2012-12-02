@@ -1,0 +1,64 @@
+Index: debugger/Makefile.in
+===================================================================
+--- debugger/Makefile.in	(revision 1299)
++++ debugger/Makefile.in	(working copy)
+@@ -63,7 +63,7 @@
+ 	    gtkThread.cmo $(YYPARSE) str.cma $(COMMON) guimain.cmo \
+ 	    -cclib "-L../mlgtk" $(MLLINKFLAGS)
+ 
+-obdb1: $(COMMON) debmain.cmo
++obdb1: $(COMMON) debmain.cmo debprims.o
+ 	$(OCAMLC) $(MLFLAGS) -custom -o $@ $(YYPARSE) unix.cma str.cma $^
+ 
+ DEBUGGER  = debparse.cmo deblex.cmo binary.cmo \
+Index: debugger/debprims.c
+===================================================================
+--- debugger/debprims.c	(revision 1299)
++++ debugger/debprims.c	(working copy)
+@@ -48,3 +48,14 @@
+ #endif
+      return Val_unit;
+ }
++
++
++#include <sys/socket.h>
++#include <netinet/in.h>
++#include <netinet/tcp.h>
++
++CAMLprim value ml_set_tcp_nodelay(value conn) {
++     int flag = 1;
++     setsockopt(Int_val(conn), IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
++     return Val_unit;
++}
+Index: debugger/procio.ml
+===================================================================
+--- debugger/procio.ml	(revision 1299)
++++ debugger/procio.ml	(working copy)
+@@ -88,9 +88,13 @@
+   end
+ *)
+ 
++external set_tcp_nodelay : Unix.file_descr -> unit = "ml_set_tcp_nodelay"
++
+ let accept_connection sock =
+   let (conn, _) = accept sock in
+-  if Config.use_inet then setsockopt conn TCP_NODELAY true;
++  if Config.use_inet then 
++     (* setsockopt conn TCP_NODELAY true; *)
++     set_tcp_nodelay conn;
+   deb_in := out_channel_of_descr conn;
+   deb_out := in_channel_of_descr conn
+ 
+Index: mlgtk/gSource.mli
+===================================================================
+--- mlgtk/gSource.mli	(revision 1299)
++++ mlgtk/gSource.mli	(working copy)
+@@ -274,7 +274,7 @@
+   ?cursor_visible:bool ->
+   ?justification:GtkEnums.justification ->
+   ?wrap_mode:GtkEnums.wrap_mode ->
+-  ?accepts_tab:bool ->
++  (* ?accepts_tab:bool -> *)
+   ?border_width:int ->
+   ?width:int ->
+   ?height:int ->
