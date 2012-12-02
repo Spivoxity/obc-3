@@ -320,7 +320,7 @@ IMPORT Bit STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tCDown2.%11.Put 1 5 0
+PROC tCDown2.%11.Put 4 5 0
 !   PROCEDURE Put(c: CHAR);
 SAVELINK
 !     buf[pos] := c; pos := pos+1
@@ -336,7 +336,7 @@ STEW -4
 RETURN
 END
 
-PROC tCDown2.%12.Walk 7 5 0x00100001
+PROC tCDown2.%12.Walk 28 5 0x00100001
 !   PROCEDURE Walk(e: blobptr; p: INTEGER);
 SAVELINK
 !     IF e.op = Const THEN
@@ -468,7 +468,7 @@ LABEL 20
 RETURN
 END
 
-PROC tCDown2.Grind 1 5 0x00300001
+PROC tCDown2.Grind 4 5 0x00300001
 ! PROCEDURE Grind(e0: blobptr; VAR buf: ARRAY OF CHAR);
 !   pos := 0;
 CONST 0
@@ -490,7 +490,7 @@ CALL 1
 RETURN
 END
 
-PROC tCDown2.Add 2 5 0x00608001
+PROC tCDown2.Add 8 5 0x00608001
 ! PROCEDURE Add(op: INTEGER; p, q: blobptr; val, used: INTEGER);
 !   r := htable[val MOD HSIZE];
 LDGW tCDown2.htable
@@ -642,7 +642,7 @@ LABEL 26
 RETURN
 END
 
-PROC tCDown2.Combine 3 6 0x00018001
+PROC tCDown2.Combine 12 6 0x00018001
 ! PROCEDURE Combine(r, s: INTEGER);
 !   used := Bit.Or(r, s);
 LDLW 16
@@ -777,7 +777,7 @@ JNEQZ 30
 RETURN
 END
 
-PROC tCDown2.Search 1035 6 0
+PROC tCDown2.Search 4140 6 0
 ! PROCEDURE Search(n: INTEGER; draw: ARRAY OF INTEGER);
 LOCAL 16
 LDLW 20
@@ -976,7 +976,7 @@ JLEQ 50
 RETURN
 END
 
-PROC tCDown2.Main 13 6 0
+PROC tCDown2.Main 52 6 0
 ! PROCEDURE Main;
 !   n := 6;
 CONST 6

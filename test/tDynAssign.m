@@ -42,7 +42,7 @@ In procedure tDynAssign.R.Assign
 MODULE tDynAssign STAMP 0
 ENDHDR
 
-PROC tDynAssign.R.Assign 1 3 0x00100001
+PROC tDynAssign.R.Assign 4 3 0x00100001
 ! PROCEDURE (VAR r: R) Assign;
 !   r2.x := 3;
 CONST 3
@@ -60,7 +60,7 @@ FIXCOPY
 RETURN
 END
 
-PROC tDynAssign.Assign2 1 3 0x00100001
+PROC tDynAssign.Assign2 4 3 0x00100001
 ! PROCEDURE Assign2(VAR r: R);
 !   r2.x := 3;
 CONST 3

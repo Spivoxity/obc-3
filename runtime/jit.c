@@ -111,18 +111,18 @@ static code_addr prolog(void) {
      g2ri(GETARG, rBP, in);
 
      /* Check for stack overflow */
-     g3rib(BLTU, rBP, (unsigned) stack + SLIMIT + 4*frame, 
+     g3rib(BLTU, rBP, (unsigned) stack + SLIMIT + frame, 
 	   to_addr(stack_oflo));
 
-     if (frame > 6) {
+     if (frame > 24) {
 	  g2ri(MOV, rI0, 0);
-	  g2ri(MOV, rI1, 4*frame);
-	  g3rri(SUB, rI2, rBP, 4*frame);
+	  g2ri(MOV, rI1, frame);
+	  g3rri(SUB, rI2, rBP, frame);
 	  gcall(memset, 3, rI2, rI0, rI1);
      } else if (frame > 0) {
 	  g2ri(MOV, rI0, 0);
-	  for (i = 1; i <= frame; i++)
-	       g3rri(STW, rI0, rBP, -4*i);
+	  for (i = 4; i <= frame; i += 4)
+	       g3rri(STW, rI0, rBP, -i);
      }
 
      return entry;

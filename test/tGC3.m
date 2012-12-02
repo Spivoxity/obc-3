@@ -117,7 +117,7 @@ INC
 RETURNW
 END
 
-PROC tGC3.Build 7 4 0x00000801
+PROC tGC3.Build 28 4 0x00000801
 ! PROCEDURE Build(count: INTEGER);
 !   FOR i := 0 TO count-1 DO
 LDLW 12
@@ -214,7 +214,7 @@ JLEQ 3
 RETURN
 END
 
-PROC tGC3.Print 3 4 0
+PROC tGC3.Print 12 4 0
 ! PROCEDURE Print;
 !   s := 0; r := 0;
 CONST 0

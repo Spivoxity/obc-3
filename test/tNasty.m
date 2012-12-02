@@ -9,7 +9,7 @@ produces 11 as the result.
 *)
 
 (*<<
-7
+OK
 >>*)
 
 VAR x, y, z: INTEGER;
@@ -23,7 +23,7 @@ END Nasty;
 BEGIN
   x := 3; y := 5;
   z := y + Nasty(x);
-  Out.Int(z, 0); Out.Ln
+  IF (z = 7) OR (z = 11) THEN Out.String("OK"); Out.Ln END
 END tNasty.
 
 (*[[
@@ -59,13 +59,21 @@ GLOBAL tNasty.Nasty
 CALLW 1
 PLUS
 STGW tNasty.z
-!   Out.Int(z, 0); Out.Ln
-CONST 0
+!   IF (z = 7) OR (z = 11) THEN Out.String("OK"); Out.Ln END
 LDGW tNasty.z
-GLOBAL Out.Int
+CONST 7
+JEQ 4
+LDGW tNasty.z
+CONST 11
+JNEQ 3
+LABEL 4
+CONST 3
+GLOBAL tNasty.%1
+GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
+LABEL 3
 RETURN
 END
 
@@ -73,6 +81,10 @@ END
 GLOVAR tNasty.x 4
 GLOVAR tNasty.y 4
 GLOVAR tNasty.z 4
+
+! String "OK"
+DEFINE tNasty.%1
+STRING 4F4B00
 
 ! End of file
 ]]*)

@@ -103,7 +103,7 @@ IMPORT Out STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tFibTree4.Cons 1 4 0x00310001
+PROC tFibTree4.Cons 4 4 0x00310001
 ! PROCEDURE Cons(l, r: tree): tree;
 !   NEW(p);
 CONST 2624

@@ -32,7 +32,7 @@ MODULE tANest STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tANest.%1.g 1 4 0
+PROC tANest.%1.g 4 4 0
 !   PROCEDURE g(); BEGIN Out.Int(a[i], 0); Out.Ln END g;
 SAVELINK
 CONST 0
@@ -50,7 +50,7 @@ CALL 0
 RETURN
 END
 
-PROC tANest.f 10 4 0
+PROC tANest.f 40 4 0
 ! PROCEDURE f(i: INTEGER; a: row);
 LOCAL -40
 LDLW 16

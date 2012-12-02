@@ -61,7 +61,7 @@ MODULE tQueens STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tQueens.queens 4 4 0x00200001
+PROC tQueens.queens 16 4 0x00200001
 ! PROCEDURE queens(k: INTEGER; VAR choice: board);
 !   IF k = N THEN
 LDLW 12
@@ -156,7 +156,7 @@ LABEL 10
 RETURN
 END
 
-PROC tQueens.print 1 4 0x00100001
+PROC tQueens.print 4 4 0x00100001
 ! PROCEDURE print(VAR choice: board);
 !   x := 0;
 CONST 0

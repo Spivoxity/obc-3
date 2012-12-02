@@ -140,6 +140,12 @@ test/edtest
 test/errtest
 test/regress
 winport/head.iss
+test/a.out
+test/code
+test/code.0
+test/data
+test/out
+test/out.0
 FINAL
 test/bigtest
 test/edtest

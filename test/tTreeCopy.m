@@ -126,7 +126,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tTreeCopy.NewNode 1 4 0x00010001
+PROC tTreeCopy.NewNode 4 4 0x00010001
 ! PROCEDURE NewNode(x: INTEGER): Tree;
 !   NEW(p); p.data := x; RETURN p
 CONST 12
@@ -142,7 +142,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tTreeCopy.RandTree 1 4 0x00010001
+PROC tTreeCopy.RandTree 4 4 0x00010001
 ! PROCEDURE RandTree(d: INTEGER): Tree;
 !   IF Random.Roll(10) < d THEN
 CONST 10
@@ -214,7 +214,7 @@ CALL 1
 RETURN
 END
 
-PROC tTreeCopy.Copy 2005 4 tTreeCopy.Copy.%map
+PROC tTreeCopy.Copy 8020 4 tTreeCopy.Copy.%map
 ! PROCEDURE Copy(t: Tree): Tree;
 !   IF t = NIL THEN
 LDLW 12
@@ -388,7 +388,7 @@ LABEL 14
 RETURN
 END
 
-PROC tTreeCopy.PrintFlat 1 4 0x00110001
+PROC tTreeCopy.PrintFlat 4 4 0x00110001
 ! PROCEDURE PrintFlat(t: Tree);
 JUMP 17
 LABEL 15
@@ -438,7 +438,7 @@ JNEQZ 15
 RETURN
 END
 
-PROC tTreeCopy.Test 2 4 0x00018001
+PROC tTreeCopy.Test 8 4 0x00018001
 ! PROCEDURE Test;
 !   t := RandTree(0);
 CONST 0

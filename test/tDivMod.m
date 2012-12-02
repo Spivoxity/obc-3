@@ -63,7 +63,7 @@ MODULE tDivMod STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDivMod.Test 5 3 0
+PROC tDivMod.Test 20 3 0
 ! PROCEDURE Test(b: INTEGER);
 !   FOR a := -10 TO 10 DO
 CONST -10

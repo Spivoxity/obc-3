@@ -102,7 +102,7 @@ LABEL 2
 RETURN
 END
 
-PROC tInorder.Traverse2 1002 4 tInorder.Traverse2.%map
+PROC tInorder.Traverse2 4008 4 tInorder.Traverse2.%map
 ! PROCEDURE Traverse2(t: Tree);
 !   u := t; sp := 0;
 LDLW 12
@@ -156,7 +156,7 @@ LABEL 4
 RETURN
 END
 
-PROC tInorder.RandTree 1 4 0x00010001
+PROC tInorder.RandTree 4 4 0x00010001
 ! PROCEDURE RandTree(depth: INTEGER): Tree;
 !   IF Random.Roll(8) < depth THEN RETURN NIL END;
 CONST 8

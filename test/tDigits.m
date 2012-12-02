@@ -87,7 +87,7 @@ CALLW 2
 RETURNW
 END
 
-PROC tDigits.Search 4 4 0x00404001
+PROC tDigits.Search 16 4 0x00404001
 ! PROCEDURE Search(k, n: INTEGER; s: Set);
 !   IF k = 10 THEN
 LDLW 12
@@ -169,7 +169,7 @@ JLEQ 7
 RETURN
 END
 
-PROC tDigits.Main 1 4 0x00010001
+PROC tDigits.Main 4 4 0x00010001
 ! PROCEDURE Main;
 !   NEW(s);
 CONST 0

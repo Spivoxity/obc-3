@@ -112,7 +112,7 @@ STGD tLimits.mymax
 RETURN
 END
 
-PROC tLimits.MaxReal 3 4 0
+PROC tLimits.MaxReal 12 4 0
 ! PROCEDURE MaxReal(): REAL;
 !   i := 0FFFFFFH; j := 800000H;
 CONST 16777215

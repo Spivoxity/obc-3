@@ -72,7 +72,7 @@ MODULE tFlex2 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFlex2.Foo 4 5 0x00100001
+PROC tFlex2.Foo 16 5 0x00100001
 ! PROCEDURE Foo(VAR m: Matrix);
 !   Out.Int(LEN(m), 0); Out.Ln;
 CONST 0

@@ -93,14 +93,14 @@ IMPORT Out STAMP
 IMPORT Strings STAMP
 ENDHDR
 
-PROC tString.StackPtr 1 1 0
+PROC tString.StackPtr 4 1 0
 ! PROCEDURE StackPtr(): INTEGER;
 !   RETURN SYSTEM.VAL(INTEGER, SYSTEM.ADR(x))
 LOCAL -4
 RETURNW
 END
 
-PROC tString.%main 1 7 0
+PROC tString.%main 4 7 0
 !   i := StackPtr();
 GLOBAL tString.StackPtr
 CALLW 0

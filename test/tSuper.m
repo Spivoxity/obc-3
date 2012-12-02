@@ -83,7 +83,7 @@ CALL 3
 RETURN
 END
 
-PROC tSuper.foo.Print 1 5 0x00100001
+PROC tSuper.foo.Print 4 5 0x00100001
 ! PROCEDURE (VAR f: foo) Print(i: INTEGER);
 !   b := (f IS baz);
 LDLW 16

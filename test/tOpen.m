@@ -35,7 +35,7 @@ MODULE tOpen STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOpen.Sum 3 4 0
+PROC tOpen.Sum 12 4 0
 ! PROCEDURE Sum(a: ARRAY OF INTEGER): INTEGER;
 LOCAL 12
 LDLW 16
@@ -71,7 +71,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tOpen.Main 1 4 0
+PROC tOpen.Main 4 4 0
 ! PROCEDURE Main;
 !   FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
 CONST 0

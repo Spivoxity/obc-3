@@ -48,9 +48,9 @@ char *fmt_inst(uchar *pc) {
 
      for (p = ip->i_patt; *p != '\0'; p++) {
 	  switch (*p) {
-	  case '1': 
+	  case '1': case 'K':
 	       s += sprintf(s, " %d", get1(pc)); pc++; break;
-	  case '2': 
+	  case '2': case 'L':
 	       s += sprintf(s, " %d", get2(pc)); pc += 2; break;
 	  case 'R':
 	       s += sprintf(s, " %d", get2(pc)+(args-imem)); pc += 2; break;
@@ -98,7 +98,7 @@ void dump(void) {
 
 #ifdef SPECIALS
  	       if (op == K_CASEJUMP_1) {
- 		    int n = get2(pc-1);
+ 		    int n = pc[-1];
  		    for (i = 0; i < n; i++) {
  			 printf("%6d:   CASEV %d %d\n", pc-imem,
  				get2(pc), get2(pc+2)+(pc-imem));

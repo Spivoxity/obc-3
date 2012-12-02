@@ -89,7 +89,7 @@ MODULE tAck STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tAck.Ack 22 4 0
+PROC tAck.Ack 88 4 0
 ! PROCEDURE Ack(M, N: INTEGER): INTEGER;
 !   arg[0] := 0; val[0] := 1;
 CONST 0
@@ -191,7 +191,7 @@ LDIW
 RETURNW
 END
 
-PROC tAck.Ack2 1 5 0
+PROC tAck.Ack2 4 5 0
 ! PROCEDURE Ack2(M, N: INTEGER): INTEGER;
 !   IF memo[M, N] # 0 THEN RETURN memo[M, N] END;
 GLOBAL tAck.memo

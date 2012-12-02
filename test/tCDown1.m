@@ -287,7 +287,7 @@ IMPORT Conv STAMP
 IMPORT Strings STAMP
 ENDHDR
 
-PROC tCDown1.%9.Put 1 4 0
+PROC tCDown1.%9.Put 4 4 0
 !   PROCEDURE Put(c: CHAR);
 SAVELINK
 !     buf[pos] := c; pos := pos+1
@@ -303,7 +303,7 @@ STEW -4
 RETURN
 END
 
-PROC tCDown1.%10.Walk 8 5 0
+PROC tCDown1.%10.Walk 32 5 0
 !   PROCEDURE Walk(e: INTEGER; p: INTEGER);
 SAVELINK
 !     k := exp[e];
@@ -438,7 +438,7 @@ LABEL 18
 RETURN
 END
 
-PROC tCDown1.Grind 1 5 0x00200001
+PROC tCDown1.Grind 4 5 0x00200001
 ! PROCEDURE Grind(e0: INTEGER; VAR buf: buffer);
 !   pos := 0;
 CONST 0
@@ -460,7 +460,7 @@ CALL 1
 RETURN
 END
 
-PROC tCDown1.Try 5 5 0
+PROC tCDown1.Try 20 5 0
 ! PROCEDURE Try(i: INTEGER; d: INTEGER);
 !   IF d = 1 THEN
 LDLW 16
@@ -964,7 +964,7 @@ LABEL 31
 RETURN
 END
 
-PROC tCDown1.Search 6 5 0
+PROC tCDown1.Search 24 5 0
 ! PROCEDURE Search(n: INTEGER);
 !   Out.String("To make "); Out.Int(target, 0); Out.String(" from");
 CONST 9
@@ -1151,7 +1151,7 @@ CALL 0
 RETURN
 END
 
-PROC tCDown1.Main 1 5 0
+PROC tCDown1.Main 4 5 0
 ! PROCEDURE Main;
 !   n := 6;
 CONST 6

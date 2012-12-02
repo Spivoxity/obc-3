@@ -406,7 +406,7 @@ CALL 2
 RETURN
 END
 
-PROC tSudoku.PrintRow 2 3 0x00110001
+PROC tSudoku.PrintRow 8 3 0x00110001
 ! PROCEDURE PrintRow(p: Cell);
 !   q := p;
 LDLW 12
@@ -488,7 +488,7 @@ CALL 0
 RETURN
 END
 
-PROC tSudoku.ColumnLink 1 4 0x00310001
+PROC tSudoku.ColumnLink 4 4 0x00310001
 ! PROCEDURE ColumnLink(r: Column; VAR p: Cell);
 !   NEW(q);
 CONST 20
@@ -588,7 +588,7 @@ STOREW
 RETURN
 END
 
-PROC tSudoku.MakeArray 5 5 0x00104001
+PROC tSudoku.MakeArray 20 5 0x00104001
 ! PROCEDURE MakeArray(VAR a: ARRAY OF ARRAY OF Column; 
 !   FOR i := 0 TO m-1 DO
 LDLW 28
@@ -711,7 +711,7 @@ JLEQ 16
 RETURN
 END
 
-PROC tSudoku.MakeMove 1 5 0x00010001
+PROC tSudoku.MakeMove 4 5 0x00010001
 ! PROCEDURE MakeMove(i, j, k: INTEGER);
 !   p := NIL;
 CONST 0
@@ -806,7 +806,7 @@ STIW
 RETURN
 END
 
-PROC tSudoku.MakePuzzle 3 7 0
+PROC tSudoku.MakePuzzle 12 7 0
 ! PROCEDURE MakePuzzle;
 !   NEW(root);
 CONST 32
@@ -905,7 +905,7 @@ JLEQ 20
 RETURN
 END
 
-PROC tSudoku.Cover 2 7 0x00118001
+PROC tSudoku.Cover 8 7 0x00118001
 ! PROCEDURE Cover(p: Column);
 !   p.covered := TRUE;
 CONST 1
@@ -999,7 +999,7 @@ JNEQ 26
 RETURN
 END
 
-PROC tSudoku.Uncover 2 7 0x00118001
+PROC tSudoku.Uncover 8 7 0x00118001
 ! PROCEDURE Uncover(p: Column);
 !   p.prev.next := p; p.next.prev := p;
 LDLW 12
@@ -1085,7 +1085,7 @@ STIC
 RETURN
 END
 
-PROC tSudoku.ChooseColumn 2 7 0x00018001
+PROC tSudoku.ChooseColumn 8 7 0x00018001
 ! PROCEDURE ChooseColumn(): Column;
 !   col := root.next;
 LDGW tSudoku.root
@@ -1125,7 +1125,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tSudoku.PrintState 26 7 0x00002001
+PROC tSudoku.PrintState 104 7 0x00002001
 ! PROCEDURE PrintState(level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -1262,7 +1262,7 @@ JLEQ 46
 RETURN
 END
 
-PROC tSudoku.Solve 3 7 0x0001c001
+PROC tSudoku.Solve 12 7 0x0001c001
 ! PROCEDURE Solve(level: INTEGER);
 !   IF root.next = root THEN
 LDGW tSudoku.root
@@ -1392,7 +1392,7 @@ CALL 1
 RETURN
 END
 
-PROC tSudoku.ChooseRow 1 7 0x00310001
+PROC tSudoku.ChooseRow 4 7 0x00310001
 ! PROCEDURE ChooseRow(VAR level: INTEGER; p: Cell);
 !   choice[level] := p; INC(level);
 LDLW 16
@@ -1450,7 +1450,7 @@ JNEQ 58
 RETURN
 END
 
-PROC tSudoku.Input 4 7 0x00100001
+PROC tSudoku.Input 16 7 0x00100001
 ! PROCEDURE Input(VAR level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0

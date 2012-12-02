@@ -74,7 +74,7 @@ IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChain.Cons 1 4 0x00210001
+PROC tChain.Cons 4 4 0x00210001
 ! PROCEDURE Cons(hd: INTEGER; tl: list): list;
 !   NEW(p);
 CONST 12
@@ -102,7 +102,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tChain.Test 3 4 0x00004001
+PROC tChain.Test 12 4 0x00004001
 ! PROCEDURE Test;
 !   xs := NIL;
 CONST 0

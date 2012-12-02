@@ -60,7 +60,7 @@ IMPORT MathL STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSpies.Unit 5 6 0x00010001
+PROC tSpies.Unit 20 6 0x00010001
 ! PROCEDURE Unit(lat, long: R): Vector;
 !   NEW(r);
 CONST 24
@@ -124,7 +124,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSpies.Cross 1 6 0x00310001
+PROC tSpies.Cross 4 6 0x00310001
 ! PROCEDURE Cross(a, b: Vector): Vector;
 !   NEW(r);
 CONST 24
@@ -204,7 +204,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSpies.LatLong 2 6 0x00700001
+PROC tSpies.LatLong 8 6 0x00700001
 ! PROCEDURE LatLong(a: Vector; VAR lat, long: R);
 !   u := M.Sqrt(a.x*a.x + a.y*a.y);
 LDLW 12

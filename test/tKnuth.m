@@ -95,7 +95,7 @@ MODULE tKnuth STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tKnuth.Normalize 1 4 0x00100001
+PROC tKnuth.Normalize 4 4 0x00100001
 ! PROCEDURE Normalize(VAR a: bignum);
 !   FOR i := 0 TO N-2 DO
 CONST 0
@@ -145,7 +145,7 @@ JLEQ 1
 RETURN
 END
 
-PROC tKnuth.Set 1 4 0x00100001
+PROC tKnuth.Set 4 4 0x00100001
 ! PROCEDURE Set(VAR a: bignum; x: INTEGER);
 !   a[0] := x;
 LDLW 16
@@ -174,7 +174,7 @@ CALL 1
 RETURN
 END
 
-PROC tKnuth.Add 11 4 0x00100001
+PROC tKnuth.Add 44 4 0x00100001
 ! PROCEDURE Add(VAR a1: bignum; a2: bignum);
 LOCAL -44
 LDLW 16
@@ -213,7 +213,7 @@ CALL 1
 RETURN
 END
 
-PROC tKnuth.PrintPiece 1 4 0
+PROC tKnuth.PrintPiece 4 4 0
 ! PROCEDURE PrintPiece(x: INTEGER);
 !   m := M;
 CONST 1000000000
@@ -247,7 +247,7 @@ JGT 7
 RETURN
 END
 
-PROC tKnuth.Print 1 4 0x00100001
+PROC tKnuth.Print 4 4 0x00100001
 ! PROCEDURE Print(VAR a: bignum);
 !   i := N-1;
 CONST 9
@@ -293,7 +293,7 @@ JGEQZ 12
 RETURN
 END
 
-PROC tKnuth.Calc 224 4 0x00200001
+PROC tKnuth.Calc 896 4 0x00200001
 ! PROCEDURE Calc(n: INTEGER; VAR ans: bignum);
 !   FOR j := 0 TO K-1 DO arg[j] := 0; Set(val[j], 1) END;
 CONST 0

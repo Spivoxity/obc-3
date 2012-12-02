@@ -139,7 +139,7 @@ PLUS
 RETURNW
 END
 
-PROC tGC5.Cons 1 4 0x00c10001
+PROC tGC5.Cons 4 4 0x00c10001
 ! PROCEDURE Cons(key, value: INTEGER; left, right: tree): tree;
 !   NEW(t);
 CONST 16

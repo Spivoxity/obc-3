@@ -30,7 +30,7 @@ IMPORT Out STAMP
 IMPORT xPrelude STAMP
 ENDHDR
 
-PROC tFib.Main 2 3 0
+PROC tFib.Main 8 3 0
 ! PROCEDURE Main;
 !   n := 10;
 CONST 10

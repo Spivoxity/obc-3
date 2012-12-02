@@ -128,7 +128,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMissing.Partition 3 4 0
+PROC tMissing.Partition 12 4 0
 ! PROCEDURE Partition(m, n: INTEGER; x: INTEGER): INTEGER;
 !   i := m; j := n;
 LDLW 12
@@ -184,7 +184,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMissing.Missing 5 4 0
+PROC tMissing.Missing 20 4 0
 ! PROCEDURE Missing(): INTEGER;
 !   p := 0; q := M; r := N;
 CONST 0
@@ -233,7 +233,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMissing.Swap 1 4 0x00300001
+PROC tMissing.Swap 4 4 0x00300001
 ! PROCEDURE Swap(VAR x, y: INTEGER);
 !   t := x; x := y; y := t
 LDLW 12
@@ -249,7 +249,7 @@ STOREW
 RETURN
 END
 
-PROC tMissing.Bundala 1 4 0
+PROC tMissing.Bundala 4 4 0
 ! PROCEDURE Bundala(): INTEGER;
 !   n := 0;
 CONST 0
@@ -354,7 +354,7 @@ LDNW 4004
 RETURNW
 END
 
-PROC tMissing.Permute 3 4 0
+PROC tMissing.Permute 12 4 0
 ! PROCEDURE Permute(m: INTEGER);
 !   FOR i := m-1 TO 1 BY -1 DO
 LDLW 12
@@ -410,7 +410,7 @@ JGEQ 19
 RETURN
 END
 
-PROC tMissing.Test 3 4 0
+PROC tMissing.Test 12 4 0
 ! PROCEDURE Test;
 !   x := Random.Roll(N);
 CONST 1001

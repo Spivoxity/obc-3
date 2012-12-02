@@ -27,20 +27,14 @@ PROC tInc.%main 0 3 0
 CONST 10
 STGW tInc.i
 !   INC(i);
-GLOBAL tInc.i
-DUP 0
-LOADW
+LDGW tInc.i
 INC
-SWAP
-STOREW
+STGW tInc.i
 !   DEC(i,2);
-GLOBAL tInc.i
-DUP 0
-LOADW
+LDGW tInc.i
 CONST 2
 MINUS
-SWAP
-STOREW
+STGW tInc.i
 !   INC(i,i);
 GLOBAL tInc.i
 DUP 0

@@ -30,7 +30,7 @@ MODULE tLongShort STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLongShort.P 1 3 0
+PROC tLongShort.P 4 3 0
 ! PROCEDURE P* (x: REAL): INTEGER;
 !   p := ENTIER(x);
 LDLD 12

@@ -49,7 +49,7 @@ MODULE tPascal STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPascal.pascal2 3 5 0x00004001
+PROC tPascal.pascal2 12 5 0x00004001
 ! PROCEDURE pascal2();
 !   NEW(a);
 CONST 440

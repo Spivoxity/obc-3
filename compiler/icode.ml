@@ -40,9 +40,9 @@ type check =
 (* icode -- type of intermediate instructions *)
 type icode =
     CONST of integer 	 	(* Push constant (value) *)
-  | CONSTx of integer		(* Push hex constant (value) *)
-  | GLOBAL of symbol		(* Push global addr (value) *)
+  | HEXCONST of integer		(* Push hex constant (value) *)
   | TCONST of kind * value	(* Typed constant *)
+  | GLOBAL of symbol		(* Push global addr (value) *)  
   | LOCAL of int		(* Push address (offset) *)
   | LOAD of kind		(* Load *)
   | STORE of kind		(* Store *)
@@ -76,8 +76,8 @@ type icode =
   | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
   | STL of kind * int		(* LOCAL n/STORE s *)
-  | LDG of kind * symbol	(* GLOBAL x/LOAD s *)
-  | STG of kind * symbol	(* GLOBAL x/STORE s *)
+  | LDG of kind * symbol	(* CONST x/LOAD s *)
+  | STG of kind * symbol	(* CONST x/STORE s *)
   | LDI of kind			(* INDEX s/LOAD s *)
   | STI of kind			(* INDEX s/STORE s *)
   | LDNW of int			(* CONST n/LDI 4 *)
@@ -142,9 +142,9 @@ let fWidth =
 let fInst =
   function
       CONST n ->	fMeta "CONST $" [fInteger n]
-    | CONSTx n ->	fMeta "CONST $" [fHexInteger n]
-    | GLOBAL x ->	fMeta "GLOBAL $" [fSym x]
+    | HEXCONST n ->	fMeta "CONST $" [fHexInteger n]
     | TCONST (k, x) ->	fMeta "$CONST $" [fType k; fVal x]
+    | GLOBAL x ->	fMeta "GLOBAL $" [fSym x]
     | LOCAL o ->	fMeta "LOCAL $" [fNum o]
     | LOAD s ->		fMeta "LOAD$" [fKind s]
     | STORE s ->	fMeta "STORE$" [fKind s]

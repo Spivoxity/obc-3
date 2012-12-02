@@ -164,7 +164,7 @@ static int pdepth = 0;		/* Total size of runtime stack */
 static reg breg;		/* Base register for runtime stack */
 static int base;		/* Offset of stack base from breg */
 
-/* In normal procedures, breg = rBP and base = 4 * frame size.  But some
+/* In normal procedures, breg = rBP and base = frame size.  But some
    procedures require a variable-sized area on the stack for copying
    open array parameters passed by value, and they set breg = rSP and
    base = 0, after generating code to set rSP to the base of the
@@ -173,7 +173,7 @@ static int base;		/* Offset of stack base from breg */
 void init_stack(int frame) {
      sp = 0; 
      pdepth = 0;
-     base = -4*frame;
+     base = -frame;
      breg = rBP;
 }
 

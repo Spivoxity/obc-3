@@ -61,7 +61,7 @@ MODULE tLaminae STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLaminae.Tally 2 4 0
+PROC tLaminae.Tally 8 4 0
 ! PROCEDURE Tally;
 !   FOR a := 3 TO 250001 DO
 CONST 3
@@ -113,7 +113,7 @@ JLEQ 1
 RETURN
 END
 
-PROC tLaminae.Solve 4 4 0
+PROC tLaminae.Solve 16 4 0
 ! PROCEDURE Solve(x: INTEGER): INTEGER;
 !   n := 0;
 CONST 0

@@ -157,7 +157,7 @@ CONST 0
 RETURNW
 END
 
-PROC tDomino.Init 3 5 0
+PROC tDomino.Init 12 5 0
 ! PROCEDURE Init;
 !   FOR i := 0 TO n-1 DO
 CONST 0
@@ -214,15 +214,12 @@ JLEQ 7
 RETURN
 END
 
-PROC tDomino.Compute 2 5 0
+PROC tDomino.Compute 8 5 0
 ! PROCEDURE Compute(i, j: INTEGER; s: SET): INTEGER;
 !   INC(calls);
-GLOBAL tDomino.calls
-DUP 0
-LOADW
+LDGW tDomino.calls
 INC
-SWAP
-STOREW
+STGW tDomino.calls
 !   r := SYSTEM.VAL(INTEGER, s);
 LDLW 20
 STLW -4
@@ -407,21 +404,15 @@ BOUND 125
 PLUS
 STIW
 !   INC(count);
-GLOBAL tDomino.count
-DUP 0
-LOADW
+LDGW tDomino.count
 INC
-SWAP
-STOREW
+STGW tDomino.count
 !   IF z = 0 THEN INC(zero) END;
 LDLW -8
 JNEQZ 23
-GLOBAL tDomino.zero
-DUP 0
-LOADW
+LDGW tDomino.zero
 INC
-SWAP
-STOREW
+STGW tDomino.zero
 LABEL 23
 !   RETURN z
 LDLW -8

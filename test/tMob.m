@@ -34,7 +34,7 @@ MODULE tMob STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMob.%1.B 1 12 0
+PROC tMob.%1.B 4 12 0
 !   PROCEDURE B(): REAL;
 SAVELINK
 !     k := k-1;

@@ -152,9 +152,6 @@ let ruleset1 replace =
 	replace 2 []
     | CONST n :: BINOP (PtrT, PlusA) :: _ when n = integer 0 ->
 	replace 2 []
-
-    | CONST n :: BINOP (IntT, BitAnd) :: _ when n = integer 0 ->
-	replace 2 [CONST n]
     | CONST n :: BINOP (IntT, BitAnd) :: _ when n = integer (-1) ->
 	replace 2 []
 
@@ -183,17 +180,17 @@ let ruleset1 replace =
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
 	replace 7 [LOCAL a; LOAD s; CONST n; 
 	  		BINOP (IntT, Plus); LOCAL a; STORE s]
-    | CONST x :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
+    | GLOBAL x :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
-	replace 7 [CONST x; LOAD s; CONST n; 
-	      		BINOP (IntT, Plus); CONST x; STORE s]
+	replace 7 [GLOBAL x; LOAD s; CONST n; 
+	      		BINOP (IntT, Plus); GLOBAL x; STORE s]
 
     (* For simultaneous assignment *)
-    | (LOCAL _ | CONST _ as i1) :: CONST b :: 
-	  (LOCAL _ | CONST _ as i2) :: STORE s :: _ ->
+    | (LOCAL _ | GLOBAL _ as i1) :: CONST b :: 
+	  (LOCAL _ | GLOBAL _ as i2) :: STORE s :: _ ->
 	replace 4 [CONST b; i2; STORE s; i1]
-    | (LOCAL _ | CONST _ as i1) :: (LOCAL _ | CONST _ as i2) :: 
-	  LOAD s1:: (LOCAL _ | CONST _ as i3) :: STORE s2 :: _ ->
+    | (LOCAL _ | GLOBAL _ as i1) :: (LOCAL _ | GLOBAL _ as i2) :: 
+	  LOAD s1:: (LOCAL _ | GLOBAL _ as i3) :: STORE s2 :: _ ->
 	replace 5 [i2; LOAD s1; i3; STORE s2; i1]
 
     (* Boolean equality comparisons *)

@@ -31,7 +31,7 @@ MODULE tShort STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tShort.Main 3 3 0
+PROC tShort.Main 12 3 0
 ! PROCEDURE Main;
 !   x := 8; y := -1; z := 8;
 CONST 8

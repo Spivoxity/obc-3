@@ -72,7 +72,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tQuicksort.Swap 1 2 0x00300001
+PROC tQuicksort.Swap 4 2 0x00300001
 ! PROCEDURE Swap(VAR x, y: INTEGER);
 !   t := x; x := y; y := t
 LDLW 12
@@ -88,7 +88,7 @@ STOREW
 RETURN
 END
 
-PROC tQuicksort.Partition 3 4 0x00100001
+PROC tQuicksort.Partition 12 4 0x00100001
 ! PROCEDURE Partition(VAR u: vec; a, b: INTEGER): INTEGER;
 !   i := a+1; j := b; pivot := u[a];
 LDLW 16
@@ -180,7 +180,7 @@ DEC
 RETURNW
 END
 
-PROC tQuicksort.Quicksort 1 4 0x00100001
+PROC tQuicksort.Quicksort 4 4 0x00100001
 ! PROCEDURE Quicksort(VAR u: vec; a, b: INTEGER);
 !   IF b - a > 1 THEN
 LDLW 20
@@ -223,7 +223,7 @@ CALL 3
 RETURN
 END
 
-PROC tQuicksort.Test 61 4 0
+PROC tQuicksort.Test 244 4 0
 ! PROCEDURE Test;
 !   FOR i := 0 TO N-1 DO a[i] := Random.Roll(10) END;
 CONST 0

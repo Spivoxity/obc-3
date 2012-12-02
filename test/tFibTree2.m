@@ -98,7 +98,7 @@ IMPORT Out STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tFibTree2.Cons 1 4 0x00310001
+PROC tFibTree2.Cons 4 4 0x00310001
 ! PROCEDURE Cons(l, r: tree): tree;
 !   NEW(p);
 CONST 160

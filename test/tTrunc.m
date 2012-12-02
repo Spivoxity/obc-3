@@ -33,12 +33,9 @@ PROC tTrunc.%main 0 3 0
 CONST 32767
 STGS tTrunc.x
 !         INC(x);
-GLOBAL tTrunc.x
-DUP 0
-LOADS
+LDGS tTrunc.x
 INC
-SWAP
-STORES
+STGS tTrunc.x
 ! 	Out.Int(x, 0); Out.Ln;
 CONST 0
 LDGS tTrunc.x

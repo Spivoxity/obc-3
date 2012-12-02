@@ -30,6 +30,8 @@
 
 defs {
 
+#define NOACC
+
 /* Macros for caching the stack top in an accumulator */
 #define M(k)  		sp += k
 #ifdef NOACC
@@ -37,11 +39,13 @@ defs {
 #define S(k)		
 #define G
 #define A(k)		sp[k]
+#define IFACC(x)
 #else
 #define P(k)		sp[0] = acc; sp += k
 #define S(k)		sp[k] = acc
 #define G		acc = sp[0]
 #define A(k)		acc
+#define IFACC(x)        x
 #endif
 
 #define local(n) 	((uchar *) bp + (n))
@@ -549,10 +553,10 @@ inst SAVELINK 0		S0 {bp[SL].p = statlink;}
 defs {
 #define frame()								\
      bp = sp;								\
-     sp = (value *) bp - cp[CP_FRAME].i - 1;				\
+     sp = (value *) ((uchar *) bp - cp[CP_FRAME].i);			\
      if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);		\
-     memset(sp, 0, 4*(cp[CP_FRAME].i + 1));				\
-     A(0).i = 0;
+     memset(sp, 0, cp[CP_FRAME].i);					\
+     IFACC(A(0).i = 0);
 
 #ifdef OBXDEB
 #define cond_break() \

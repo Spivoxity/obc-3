@@ -270,7 +270,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRand.Greater 1 4 0x00300001
+PROC tRand.Greater 4 4 0x00300001
 ! PROCEDURE Greater(VAR a, b: num): BOOLEAN;
 !   i := N-1;
 CONST 3
@@ -314,7 +314,7 @@ GT
 RETURNW
 END
 
-PROC tRand.Combine 3 5 0x00a00001
+PROC tRand.Combine 12 5 0x00a00001
 ! PROCEDURE Combine(x: INTEGER; VAR a: num; y: INTEGER; VAR b: num);
 !   c := 0;
 CONST 0
@@ -398,7 +398,7 @@ LABEL 11
 RETURN
 END
 
-PROC tRand.next 1 5 0
+PROC tRand.next 4 5 0
 ! PROCEDURE next(): INTEGER;
 !   Combine(a, u, 0, m);
 GLOBAL tRand.m

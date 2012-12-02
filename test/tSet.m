@@ -55,7 +55,7 @@ MODULE tSet STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSet.Print 2 3 0
+PROC tSet.Print 8 3 0
 ! PROCEDURE Print;
 !   FOR i := 0 TO 15 DO
 CONST 0

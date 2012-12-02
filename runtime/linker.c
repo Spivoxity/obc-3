@@ -611,6 +611,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  break;
 
      case D_CONST:
+	  check_inproc(dir);
 	  if (fits(i = const_value(rands[0]), 16))
 	       gen_inst("PUSH %d", i);
 	  else
@@ -618,6 +619,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  break;
 
      case D_GLOBAL:
+	  check_inproc(dir);
 	  gen_inst("LDKW %d", make_const(rands[0]));
 	  break;
 

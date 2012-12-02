@@ -207,7 +207,7 @@ MODULE tBrack STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBrack.MakeExp 1 4 0x00610001
+PROC tBrack.MakeExp 4 4 0x00610001
 ! PROCEDURE MakeExp(rator: INTEGER; left, right: Exp): Exp;
 !   NEW(p);
 CONST 12
@@ -233,7 +233,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tBrack.Reset 1 5 0
+PROC tBrack.Reset 4 5 0
 ! PROCEDURE Reset(a, b: INTEGER);
 !   FOR x := 0 TO 2 DO 
 CONST 0
@@ -286,7 +286,7 @@ JLEQ 22
 RETURN
 END
 
-PROC tBrack.Init 2 5 0x00100001
+PROC tBrack.Init 8 5 0x00100001
 ! PROCEDURE Init(VAR s: ARRAY OF CHAR);
 !   n := 0;
 CONST 0
@@ -368,7 +368,7 @@ STGW tBrack.N
 RETURN
 END
 
-PROC tBrack.Combine 3 7 0
+PROC tBrack.Combine 12 7 0
 ! PROCEDURE Combine(i, j, k: INTEGER);
 !   FOR x := 0 TO 2 DO
 CONST 0
@@ -580,7 +580,7 @@ JLEQ 26
 RETURN
 END
 
-PROC tBrack.Tabulate 7 7 0
+PROC tBrack.Tabulate 28 7 0
 ! PROCEDURE Tabulate(s: ARRAY OF CHAR);
 LOCAL 12
 LDLW 16
@@ -731,7 +731,7 @@ CALL 1
 RETURN
 END
 
-PROC tBrack.Test 1 7 0
+PROC tBrack.Test 4 7 0
 ! PROCEDURE Test(s: ARRAY OF CHAR);
 LOCAL 12
 LDLW 16

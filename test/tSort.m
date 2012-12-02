@@ -82,7 +82,7 @@ MODULE tSort STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSort.FindMin 2 3 0x00118001
+PROC tSort.FindMin 8 3 0x00118001
 ! PROCEDURE FindMin(xs: List): List;
 !   p := xs.next;
 LDLW 12
@@ -129,7 +129,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSort.Sort 1 4 0x00310001
+PROC tSort.Sort 4 4 0x00310001
 ! PROCEDURE Sort(xs: List; VAR ys: List);
 !   NEW(ys);
 CONST 12
@@ -210,7 +210,7 @@ JNEQ 6
 RETURN
 END
 
-PROC tSort.Append 1 4 0x00110001
+PROC tSort.Append 4 4 0x00110001
 ! PROCEDURE Append(xs: List; d: INTEGER);
 !   NEW(p); p.data := d;
 CONST 12
@@ -247,7 +247,7 @@ STNW 4
 RETURN
 END
 
-PROC tSort.Test 5 4 0x00007001
+PROC tSort.Test 20 4 0x00007001
 ! PROCEDURE Test;
 !   NEW(xs);
 CONST 12

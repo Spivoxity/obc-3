@@ -61,9 +61,11 @@ let gen i =
   Stack.simulate i; Peepopt.gen i;
   if !Config.debug > 0 then printf "!& $ ($)\n" [fInst i; Stack.fStack]
 
-
 (* gen_lab -- place a label *)
 let gen_lab l = Peepopt.gen (LABEL l)
+
+let gen_const n = gen (CONST (integer n))
+let gen_symbol s = gen (GLOBAL s)
 
 (* put -- generate a directive *)
 let put fmt args = printf "$\n" [fMeta fmt args]
@@ -118,17 +120,17 @@ let type_map t =
 
 let push_map t =
   if t.t_map = [] then
-    gen (CONST (integer 0))
+    gen_const 0
   else if t.t_map = [GC_Offset 0] then
     (* A pointer type *)
-    gen (CONST (integer 3))
+    gen_const 3
   else begin
-    try gen (CONSTx (make_bitmap t.t_map)) with
+    try gen (HEXCONST (make_bitmap t.t_map)) with
       Not_found ->
 	if t.t_desc <> nosym then
-	  gen (GLOBAL (map_name t.t_desc))
+	  gen_symbol (map_name t.t_desc)
 	else
-	  gen (GLOBAL (make_map (genlab ()) t.t_map))
+	  gen_symbol (make_map (genlab ()) t.t_map)
   end
 
 let gen_stackmap n =
@@ -222,11 +224,11 @@ let gen_local l o =
     gen (LOCAL stat_link);
     gen (LOAD IntT);
     for i = !level-2 downto l do 
-      gen (CONST (integer stat_link));
+      gen_const stat_link;
       gen (BINOP (PtrT, PlusA));
       gen (LOAD IntT)
     done;
-    gen (CONST (integer o));
+    gen_const o;
     gen (BINOP (PtrT, PlusA))
   end
 
@@ -235,7 +237,7 @@ let gen_typematch t =
   (* Expects the location of the descriptor address on the stack. *)
   let r = get_record t in
   gen (LOAD IntT);
-  gen (GLOBAL t.t_desc);
+  gen_symbol t.t_desc;
   gen (TYPETEST r.r_depth)
 
 (* gen_conv -- generate code for type conversion *)
@@ -277,7 +279,7 @@ let gen_call pcount rtype =
   mark_type rtype
 
 let call_proc lab pcount rtype =
-  gen (GLOBAL lab); gen_call pcount rtype
+  gen_symbol lab; gen_call pcount rtype
 
 (* safe -- test if an expression has no side effects or runtime errors *)
 let rec safe e =
@@ -312,8 +314,8 @@ let null_check e =
       Cast (e1, t) -> ()
     | _ -> gen (CHECK (NullPtr, !code_line))
 
-(* gen_const -- generate code to push a constant *)
-let gen_const k v =
+(* gen_constant -- generate code to push a constant *)
+let gen_constant k v =
   match k with
       NumT | ShortT | IntT | CharT | BoolT -> 
 	gen (CONST (int_value v))
@@ -329,7 +331,7 @@ let rec gen_addr v =
 	begin match d.d_kind with
 	    VarDef ->
 	      if d.d_level = 0 then
-	        gen (GLOBAL d.d_lab)
+	        gen_symbol d.d_lab
 	      else
                 gen_local d.d_level d.d_offset
 	  | ParamDef ->
@@ -344,7 +346,7 @@ let rec gen_addr v =
 	  | ProcDef ->
 	      (* This is needed when a proc is passed as a parameter
 		 of type ARRAY OF SYSTEM.BYTE *)
-	      gen (GLOBAL d.d_lab)
+	      gen_symbol d.d_lab
           | _ -> failwith "gen_addr"
 	end
 
@@ -363,11 +365,11 @@ let rec gen_addr v =
 	set_loc x.x_loc;
 	let d = get_def x in
         gen_addr r;
-        gen (CONST (integer d.d_offset));
+        gen_const d.d_offset;
         gen (BINOP (PtrT, PlusA))
 
     | String (lab, n) ->
-	gen (GLOBAL lab)
+	gen_symbol lab
 
     | Cast (e1, tn) ->
 	let d = get_def tn in
@@ -399,7 +401,7 @@ and gen_bound k e0 addr_fun =
     match t1.t_guts with
 	ArrayType (n, t2) -> 
 	  if i < k then bound (i+1) t2
-	  else gen (CONST (integer n))
+	  else gen_const n
       | FlexType t2 ->
 	  if i < k then 
 	    bound (i+1) t2
@@ -413,12 +415,12 @@ and gen_bound k e0 addr_fun =
 	      | Deref p ->
 		  (* Get descriptor address *)
 		  addr_fun ();
-		  gen (CONST (integer (-word_size)));
+		  gen_const (-word_size);
 		  gen (BINOP (PtrT, PlusA));
 		  load_addr ();
 
 		  (* Fetch k'th dimension *)
-		  gen (CONST (integer (bound_offset + (k-1) * word_size)));
+		  gen_const (bound_offset + (k-1) * word_size);
 		  gen (BINOP (PtrT, PlusA));
 		  gen (LOAD IntT)
 	      | _ -> failwith "gen_bound 2"
@@ -431,7 +433,7 @@ and gen_offset e0 us =
     match ys with
 	[] -> 
 	  if not (is_flex t) then begin
-	    gen (CONST (integer t.t_rep.m_size));
+	    gen_const t.t_rep.m_size;
 	    gen (BINOP (IntT, Times))
 	  end
 	  else begin
@@ -450,7 +452,7 @@ and gen_offset e0 us =
 	  gen (BINOP (IntT, Plus));
 	  loop (i+1) xs (base_type t) in
   match us with
-      [] -> gen (CONST (integer 0))
+      [] -> gen_const 0
     | x::xs ->
 	gen_expr x;
 	if !Config.boundchk then begin
@@ -465,13 +467,13 @@ and gen_expr e =
     gen_condval true e
   else begin
     match e.e_guts with
-	Const (v, t) -> gen_const (op_kind t) v
+	Const (v, t) -> gen_constant (op_kind t) v
 
       | Name x ->
 	  let d = get_def x in
 	  begin match d.d_kind with
 	      ProcDef ->
-		gen (GLOBAL d.d_lab)
+		gen_symbol d.d_lab
 	    | _ -> 
 		gen_addr e; 
 		gen (LOAD (mem_kind e.e_type));
@@ -493,14 +495,14 @@ and gen_expr e =
 	    gen_expr e1'; gen_expr e2'; 
 	    gen (MONOP (IntT, BitNot));
 	    gen (BINOP (IntT, BitAnd));
-	    gen (CONST (integer 0));
+	    gen_const 0;
 	    gen (BINOP (IntT, Eq)) in
 
 	  if is_string e1.e_type then begin
 	    gen_flexarg strtype e2;
 	    gen_flexarg strtype e1;
 	    call_proc "COMPARE" 4 boolean;
-	    gen (CONST (integer 0));
+	    gen_const 0;
 	    gen (BINOP (IntT, w))
 	  end
 	  else if w = Leq && same_types e1.e_type settype then
@@ -532,13 +534,13 @@ and gen_expr e =
       | Binop (In, e1, e2) ->
 	  gen_expr e1;
 	  if !Config.boundchk then begin
-	    gen (CONST (integer set_size));
+	    gen_const set_size;
 	    gen (BOUND !code_line)
 	  end;
 	  gen (MONOP (IntT, Bit));
 	  gen_expr e2;
 	  gen (BINOP (IntT, BitAnd));
-	  gen (CONST (integer 0));
+	  gen_const 0;
 	  gen (BINOP (IntT, Neq))
 
       | Binop (w, e1, e2) ->
@@ -552,7 +554,7 @@ and gen_expr e =
 	    gen_it w e1 e2
 
       | Nil ->
-	  gen (CONST (integer 0))
+	  gen_const 0
 
       | Convert e1 ->
 	  gen_expr e1;
@@ -572,7 +574,7 @@ and gen_expr e =
 	    let lab1 = label () in
 	    gen (DUP 0);
 	    null_check e1;
-	    gen (CONST (integer (-word_size)));
+	    gen_const (-word_size);
 	    gen (BINOP (PtrT, PlusA));
 	    gen_typematch (base_type d.d_type);
 	    gen (JUMPB (true, lab1));
@@ -585,7 +587,7 @@ and gen_expr e =
 
       | Set els ->
 	  if els = [] then
-	    gen (CONST (integer 0))
+	    gen_const 0
 	  else begin
 	    gen_element (List.hd els);
 	    List.iter 
@@ -624,12 +626,12 @@ and gen_message r m args =
       | (ParamDef | CParamDef) ->
 	  gen_addr r;				(* addr *)
 	  gen (DUP 0);
-	  gen (CONST (integer (-word_size)));
+	  gen_const (-word_size);
 	  gen (BINOP (PtrT, PlusA));
 	  gen (LOAD IntT)			(* desc *)
       | _ -> failwith "method receiver" 
   end;
-  gen (CONST (integer (method_offset + word_size * d.d_offset)));
+  gen_const (method_offset + word_size * d.d_offset);
   gen (BINOP (PtrT, PlusA));
   gen (LOAD IntT);
   gen_call p.p_pcount p.p_result
@@ -712,11 +714,11 @@ and gen_funarg inst a =
 	begin match d.d_kind with
 	    ProcDef ->
 	      if d.d_level = 0 then
-		gen (CONST (integer 0))
+		gen_const 0
 	      else
 		gen_local d.d_level 0;
 	      gen inst;
-	      gen (GLOBAL d.d_lab)
+	      gen_symbol d.d_lab
 	  | (ParamDef | CParamDef) ->
 	      gen_local d.d_level (d.d_offset + word_size);
 	      load_addr ();
@@ -724,12 +726,12 @@ and gen_funarg inst a =
 	      gen_local d.d_level d.d_offset;
 	      load_addr ()
 	  | _ ->
-	      gen (CONST (integer 0));
+	      gen_const 0;
 	      gen inst;
 	      gen_expr a
 	end
     | _ ->
-	gen (CONST (integer 0));
+	gen_const 0;
 	gen inst;
 	gen_expr a
 
@@ -745,19 +747,19 @@ and gen_recarg a =
 	  load_addr ();
 	end
 	else begin
-	  gen (GLOBAL a.e_type.t_desc);
+	  gen_symbol a.e_type.t_desc;
 	  gen_addr a
 	end
     | Deref p -> 
 	gen_expr p;
 	if !Config.boundchk then null_check p;
 	gen (DUP 0);
-	gen (CONST (integer (-word_size)));
+	gen_const (-word_size);
 	gen (BINOP (PtrT, PlusA));
 	load_addr ();
 	gen SWAP
     | _ -> 
-	gen (GLOBAL a.e_type.t_desc);
+	gen_symbol a.e_type.t_desc;
 	gen_addr a
 
 (* gen_flexarg -- push addr+bound for flex array arg *)
@@ -765,10 +767,10 @@ and gen_flexarg t a =
   if same_types (base_type t) bytetype then begin
     gen_addr a;
     if not (is_flex a.e_type) then 
-      gen (CONST (integer (size_of a)))
+      gen_const (size_of a)
     else begin
       let t1 = flex_base a.e_type in
-      gen (CONST (integer (t1.t_rep.m_size)));
+      gen_const (t1.t_rep.m_size);
       for i = 1 to flexity a.e_type do
 	gen_bound i a (dup 2);
 	gen (BINOP (IntT, Times))
@@ -799,9 +801,9 @@ and gen_builtin q args =
 
     | OddFun, [e1] ->
 	gen_expr e1;
-	gen (CONST (integer 1));
+	gen_const 1;
 	gen (BINOP (IntT, BitAnd));
-	gen (CONST (integer 0));
+	gen_const 0;
 	gen (BINOP (IntT, Neq));
 
     | AshFun, [e1; e2] ->
@@ -820,11 +822,11 @@ and gen_builtin q args =
 	let t = base_type e1.e_type in
 	begin match t.t_guts with
 	    (RecordType _ | ArrayType _) -> 
-	      gen (CONST (integer t.t_rep.m_size));
+	      gen_const t.t_rep.m_size;
 	      if t.t_desc = nosym then 
-		gen (CONST (integer 0)) 
+		gen_const 0 
 	      else 
-		gen (GLOBAL t.t_desc);
+		gen_symbol t.t_desc;
 	      gen_addr e1;
 	      call_proc "NEW" 3 voidtype
 	  | FlexType _ -> 
@@ -833,8 +835,8 @@ and gen_builtin q args =
  	      for i = n downto 1 do
  		gen_expr (List.nth args i)
  	      done;
- 	      gen (CONST (integer n));
-	      gen (CONST (integer t0.t_rep.m_size));
+ 	      gen_const n;
+	      gen_const t0.t_rep.m_size;
 	      push_map t0;
  	      gen_addr e1;
  	      call_proc "NEWFLEX" (n+4) voidtype
@@ -857,7 +859,7 @@ and gen_builtin q args =
 	      gen (DUP 0);
 	      gen (LOAD k);
 	      if List.length args = 1 then
-		gen (CONST (integer 1))
+		gen_const 1
 	      else
 		gen_expr (List.nth args 1);
 	      if q.b_id = IncProc then 
@@ -885,7 +887,7 @@ and gen_builtin q args =
 	gen (LOAD IntT);
 	gen_expr e2;
 	if !Config.boundchk then begin
-	  gen (CONST (integer set_size));
+	  gen_const set_size;
 	  gen (BOUND !code_line)
 	end;
 	gen (MONOP (IntT, Bit));
@@ -923,7 +925,7 @@ and gen_builtin q args =
 	  let lab1 = label () in
 	  gen_cond true lab1 e1;
 	  if List.length args = 1 then
-	    gen (CONST (integer 0))
+	    gen_const 0
 	  else
 	    gen_expr (List.nth args 1);
 	  gen (EASSERT !code_line);
@@ -942,7 +944,7 @@ and gen_builtin q args =
 	gen_expr e2;
 	gen (MONOP (IntT, Bit)); 
 	gen (BINOP (IntT, BitAnd)); 
-	gen (CONST (integer 0));
+	gen_const 0;
 	gen (BINOP (IntT, Neq))
 
     | GetProc, [e1; e2] ->
@@ -1006,7 +1008,7 @@ and gen_condval sense e =
 	(* No need to generate jumping code for e2 *)
 	let lab1 = label () and lab2 = label () in
 	gen_cond true lab1 e1;
-	gen (CONST (integer (if sense then 0 else 1)));
+	gen_const (if sense then 0 else 1);
 	gen (JUMP lab2);
 	gen (LABEL lab1);
 	gen_expr e2;
@@ -1017,7 +1019,7 @@ and gen_condval sense e =
 	(* No need to generate jumping code for e2 *)
 	let lab1 = label () and lab2 = label () in
 	gen_cond false lab1 e1;
-	gen (CONST (integer (if sense then 1 else 0)));
+	gen_const (if sense then 1 else 0);
 	gen (JUMP lab2);
 	gen (LABEL lab1);
 	gen_expr e2;
@@ -1030,10 +1032,10 @@ and gen_condval sense e =
     | _ ->
 	let lab1 = label () and lab2 = label () in
 	gen_cond (not sense) lab1 e;
-	gen (CONST (integer 1));
+	gen_const 1;
 	gen (JUMP lab2);
 	gen_lab lab1;
-	gen (CONST (integer 0));
+	gen_const 0;
 	gen_lab lab2
 
 and gen_typetest e tn =
@@ -1041,7 +1043,7 @@ and gen_typetest e tn =
   if is_pointer d.d_type then begin
     gen_expr e;
     if !Config.boundchk then null_check e;
-    gen (CONST (integer (-word_size)));
+    gen_const (-word_size);
     gen (BINOP (PtrT, PlusA));
     gen_typematch (base_type d.d_type)
   end
@@ -1056,7 +1058,7 @@ and gen_typetest e tn =
       | Deref e1 ->
 	  gen_expr e1;
 	  if !Config.boundchk then null_check e1;
-	  gen (CONST (integer (-word_size)));
+	  gen_const (-word_size);
 	  gen (BINOP (PtrT, PlusA))
       | _ -> 
 	  expr_fail "type test" e
@@ -1071,7 +1073,7 @@ and gen_element =
       Single x ->
 	gen_expr x;
 	if !Config.boundchk then begin
-	  gen (CONST (integer set_size));
+	  gen_const set_size;
 	  gen (BOUND !code_line)
 	end;
 	gen (MONOP (IntT, Bit))
@@ -1083,7 +1085,7 @@ and gen_element =
 	gen_expr y;
 	gen (MONOP (IntT, Inc));	(* y+1 *)
 	if !Config.boundchk then begin
-	  gen (CONST (integer (set_size+1)));
+	  gen_const (set_size+1);
 	  gen (BOUND !code_line)
 	end;
 	gen (MONOP (IntT, Bit));	(* bit(y+1) *)
@@ -1091,7 +1093,7 @@ and gen_element =
 
 	gen_expr x;
 	if !Config.boundchk then begin
-	  gen (CONST (integer (set_size+1)));
+	  gen_const (set_size+1);
 	  gen (BOUND !code_line)
 	end;
 	gen (MONOP (IntT, Bit));	(* bit(x) *)
@@ -1108,7 +1110,7 @@ let gen_rec_addr v desc =
 	  let lab1 = label () in
 	  gen_local d.d_level (d.d_offset + word_size);
 	  gen (LOAD IntT);
-	  gen (GLOBAL desc);
+	  gen_symbol desc;
 	  gen (JUMPC (PtrT, Eq, lab1));
 	  gen (ERROR ("E_ASSIGN", !code_line));
 	  gen_lab lab1
@@ -1120,10 +1122,10 @@ let gen_rec_addr v desc =
 	  let lab1 = label () in
 	  null_check p;
 	  gen (DUP 0);
-	  gen (CONST (integer (-word_size)));
+	  gen_const (-word_size);
 	  gen (BINOP (PtrT, PlusA));
 	  gen (LOAD IntT);
-	  gen (GLOBAL desc);
+	  gen_symbol desc;
 	  gen (JUMPC (PtrT, Eq, lab1));
 	  gen (ERROR ("E_ASSIGN", !code_line));
 	  gen_lab lab1
@@ -1156,8 +1158,8 @@ let rec gen_stmt exit_lab s =
 	  let t0 = flex_base t in
 	  gen_flexarg t v;
 	  gen_flexarg t e;
-	  gen (CONST (integer (flexity t)));
-	  gen (CONST (integer t0.t_rep.m_size));
+	  gen_const (flexity t);
+	  gen_const t0.t_rep.m_size;
 	  call_proc "FLEXASSIGN" 6 voidtype
 	end
 	else begin
@@ -1166,7 +1168,7 @@ let rec gen_stmt exit_lab s =
 	  else
 	    gen_addr v;
 	  gen_addr e;
-	  gen (CONST (integer t.t_rep.m_size));
+	  gen_const t.t_rep.m_size;
 	  gen FIXCOPY 
 	end
 
@@ -1285,7 +1287,7 @@ let rec gen_stmt exit_lab s =
   	gen_stmt exit_lab body;
  
  	(* var := var + inc *)
- 	gen_expr var; gen_const kind (IntVal inc);
+ 	gen_expr var; gen_constant kind (IntVal inc);
 	gen (BINOP (kind, Plus)); gen_addr var; gen (STORE memk);
  
  	(* lab2: if var <= hi goto lab1 *)
@@ -1344,7 +1346,7 @@ let gen_copy fps =
 	  gen (LOAD IntT);
 	  gen (BINOP (IntT, Times))
 	done;
-	gen (CONST (integer (flex_base fp.d_type).t_rep.m_size));
+	gen_const (flex_base fp.d_type).t_rep.m_size;
 	gen (BINOP (IntT, Times));
 	gen FLEXCOPY 
       end
@@ -1352,7 +1354,7 @@ let gen_copy fps =
 	gen (LOCAL fp.d_offset);
 	gen (LOCAL fp.d_param);
 	gen (LOAD IntT);
-	gen (CONST (integer fp.d_type.t_rep.m_size));
+	gen_const fp.d_type.t_rep.m_size;
 	gen FIXCOPY
       end
     end in
@@ -1373,9 +1375,9 @@ let gen_procdef d loc fsize body =
     gen (ERROR ("E_RETURN", line));
 
   Peepopt.reduce ();
-  put "PROC $ $ $ $" 
-    [fSym d.d_lab; fNum (!fsize / 4); 
-      fNum (Stack.max_depth ()); fSym (frame_map d)];
+  let stk = Stack.max_depth () in
+  let map = frame_map d in
+  put "PROC $ $ $ $" [fSym d.d_lab; fNum !fsize; fNum stk; fSym map];
   if loc <> no_loc then Peepopt.put_line line;
   Peepopt.flush ();
   put "END\n" []

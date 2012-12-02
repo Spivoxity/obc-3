@@ -45,7 +45,7 @@ STOREW
 RETURN
 END
 
-PROC tBigLocal.P 100001 4 0
+PROC tBigLocal.P 400004 4 0
 ! PROCEDURE P;
 !   Q(dummy); x := 4;
 LOCAL 0

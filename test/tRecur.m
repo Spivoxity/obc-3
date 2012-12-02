@@ -48,7 +48,7 @@ MODULE tRecur STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRecur.Recip 2007 4 0
+PROC tRecur.Recip 8028 4 0
 ! PROCEDURE Recip(N: INTEGER);
 !   FOR i := 0 TO N-1 DO p[i] := -1 END;
 LDLW 12

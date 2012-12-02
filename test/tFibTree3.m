@@ -117,7 +117,7 @@ IMPORT GC STAMP
 IMPORT Random STAMP
 ENDHDR
 
-PROC tFibTree3.Alloc 4 6 tFibTree3.Alloc.%map
+PROC tFibTree3.Alloc 16 6 tFibTree3.Alloc.%map
 ! PROCEDURE Alloc(a: node; VAR b: node): tree;
 LOCAL 12
 LDLW 16
@@ -189,7 +189,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tFibTree3.Cons 2 6 0x00318001
+PROC tFibTree3.Cons 8 6 0x00318001
 ! PROCEDURE Cons(l, r: tree): tree;
 !   a[0] := l; a[1] := r;
 LDLW 12

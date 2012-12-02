@@ -109,8 +109,8 @@ let rec check_expr i0 e =
 		    let i1 = check_assign i0 (List.hd args) in
 		    let i2 = check_all i0 (List.tl args) in
 		    inijoin i1 i2
-		| _ ->
-		    check_all i0 args
+		| AdrFun -> i0
+		| _ -> check_all i0 args
 	      end
 	  | _ -> failwith "inicheck FuncCall"
 	end

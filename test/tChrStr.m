@@ -42,7 +42,7 @@ MODULE tChrStr STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChrStr.p 1 3 0
+PROC tChrStr.p 4 3 0
 ! PROCEDURE p(u: q);
 LOCAL -2
 LDLW 12
