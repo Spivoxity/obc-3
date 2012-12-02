@@ -39,7 +39,7 @@ AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
-	test/Makefile winport/Makefile yacc/Makefile debugger/Makefile \
+	test/Makefile winport/Makefile debugger/Makefile \
 	lablgtk/Makefile macport/Makefile)
 AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
 AC_CONFIG_FILES(obc:scripts/obc.in, chmod +x obc)
@@ -51,6 +51,7 @@ AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)
 AC_CONFIG_FILES(test/edtest, chmod +x test/edtest)
 AC_CONFIG_FILES(test/errtest, chmod +x test/errtest)
 AC_CONFIG_HEADERS(config.h)
+AC_CONFIG_SUBDIRS(yacc)
 AC_CANONICAL_HOST
 
 : ${AUTOCONF=autoconf} ${AUTOHEADER=autoheader}

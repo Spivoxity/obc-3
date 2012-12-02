@@ -33,7 +33,7 @@
 %token<Lexing.position * string>  SEMACT
 %token                  QUOTE 
 %token                  TOKEN LEFT RIGHT NONASSOC START TYPE PREC
-%token                  PPERCENT COLON SEMI VBAR DOT
+%token                  PPERCENT COLON SEMI VBAR DOT AT
 %token                  BADTOK EOF UNREACHABLE
 
 %start<unit>            grammar
@@ -171,7 +171,7 @@ para :
 	if !Grammar.start_syms = [] then
 	  Grammar.start_syms := [$SYMBOL];
 	List.iter (fun (line, rhs, prec, semact) ->
-	  ignore (make_rule $SYMBOL rhs prec semact line)) $prods } ;
+	  ignore (create_rule $SYMBOL rhs prec semact line)) $prods } ;
 
 prods :
     prod                        { [$1] }
@@ -209,11 +209,12 @@ rhs :
   | rhs SEMACT                  
       { let g = gensym () in
 	let a = make_action $rhs $SEMACT in
-        let r = make_rule g [] None a (fst a) in
+        let r = create_rule g [] None a (fst a) in
 	incr index;
 	r.r_context <- $rhs; 
 	$rhs @ [g] } ;
 
 symbol :
-      SYMBOL			{ ($SYMBOL, $SYMBOL.x_name) }
-    | SYMBOL DOT NUMBER		{ ($SYMBOL, $SYMBOL.x_name ^ "." ^ $NUMBER) } ;
+      SYMBOL@s			{ ($s, $s.x_name) }
+    | SYMBOL@s DOT NUMBER@n	{ ($s, $s.x_name^"."^$n) } 
+    | SYMBOL@s AT SYMBOL@x	{ ($s, $x.x_name) } ;

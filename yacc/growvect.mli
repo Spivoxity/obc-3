@@ -36,6 +36,9 @@ type 'a t
 (* create -- make an empty vector with a specified initial capacity *)
 val create : int -> 'a t
 
+(* make -- make a vector of specified size *)
+val make : int -> 'a -> 'a t
+
 (* get -- fetch element at given index *)
 val get : 'a t -> int -> 'a
 

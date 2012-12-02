@@ -43,8 +43,5 @@ val clone : ('a, 'b) t -> 'c -> ('a, 'c) t
 val get : ('a, 'b) t -> 'a -> 'b
 
 (* Store item in a vector *)
-val put : ('a, 'b) t -> 'a -> 'b -> unit
-
-(* Insert item into a vector of lists *)
-val insert : ('a , 'b list) t -> 'a -> 'b -> unit
+val set : ('a, 'b) t -> 'a -> 'b -> unit
 

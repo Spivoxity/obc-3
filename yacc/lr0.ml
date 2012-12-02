@@ -42,10 +42,13 @@ let make_item r k =
   { z_rule = r; z_index = k; z_lookahead = SymSet.empty }
 
 let fItem z = 
-  let r = z.z_rule and k = z.z_index in
-  fMeta "$ --> $ . $  ($)" 
-    [fSym r.r_lhs; fChain (Util.take k r.r_rhs); 
-      fChain (Util.drop k r.r_rhs); fNum r.r_id]
+  fExt (fun prf ->
+    let r = z.z_rule and k = z.z_index in
+    prf "$ -->" [fSym r.r_lhs];
+    List.iter (fun x -> prf " $" [fSym x]) (Util.take k r.r_rhs);
+    prf " ." [];
+    List.iter (fun x -> prf " $" [fSym x]) (Util.drop k r.r_rhs);
+    prf "  ($)" [fNum r.r_id])
 
 
 (* Sets of items *)
@@ -55,7 +58,7 @@ module ItemSet = Set.Make(struct
 
   let compare z1 z2 =
     (* Compare only the rule numbers and indices *)
-    Util.lexico (compare_rules z1.z_rule z2.z_rule) (z1.z_index - z2.z_index)
+    Util.lexico (z2.z_index - z1.z_index) (compare_rules z1.z_rule z2.z_rule) 
 end)
 
 let itemset_of_list xs =
@@ -125,6 +128,9 @@ and action =
     Shift of state
   | Reduce of rule
   | Error
+
+let fTrans t = 
+  fMeta "($, $)" [fNum t.t_source.p_id; fSym t.t_sym]
 
 let fAction =
   function

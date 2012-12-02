@@ -32,6 +32,9 @@ open Grammar
 open Lr0
 open Print
 
+(* Use array index notation for Vectors *)
+module Array = Vector
+
 (* LALR lookahead *)
 
 (* We follow the method of DeRemer and Penello, 'Efficient Computation
@@ -52,8 +55,6 @@ open Print
    p is the starting state (t.t_source) and A is the symbol consumed
    (t.t_sym). *)
 
-let collect sets = List.fold_left SymSet.union SymSet.empty sets
-
 (* If t = (p, A), then reads t = [ u | u = (q, C) & (p, A) Reads (q, C) ]
    where (p, A) Reads (q, C) <==>
 	    p -A-> q -C-> r  and C ==>* eps  for some r	*)
@@ -62,15 +63,16 @@ let reads t =
   if is_token a then [] else
     List.filter (fun u -> nullable u.t_sym) q.p_trans
 
+let tokens p =
+  List.filter is_token (List.map (fun u -> u.t_sym) p.p_trans)
+
 (* compute_dr returns the vector { (p, A) |--> DR(p, A) }
    where DR(p, A) = { x in T | p -A-> q -x-> r  for some q, r }	*)
 let compute_dr () = 
   let follow = trans_vector SymSet.empty in
   do_transitions (fun t ->
-    let a = t.t_sym and q = t.t_target in
-    if is_nonterm a then
-      Vector.put follow t (symset_of_list
-	(List.filter is_token (List.map (fun u -> u.t_sym) q.p_trans))));
+    if is_nonterm t.t_sym then
+      follow.(t) <- symset_of_list (tokens t.t_target));
   follow
 
 (* compute_includes returns the vector 
@@ -85,7 +87,7 @@ let compute_includes () =
       | y::ys ->
 	  let u = get_trans q y in
 	  if is_nonterm y && List.for_all nullable ys then
-	    Vector.insert includes u t;
+	    includes.(u) <- t :: includes.(u);
 	  loop t u.t_target ys in
   do_transitions (fun t ->
     List.iter (fun r -> loop t t.t_source r.r_rhs) t.t_sym.x_rules);
@@ -101,18 +103,16 @@ let rec trace p xs =
 	    p -A-> r is a transition and  p --omega--> q *)
 let compute_lookback () =
   let lkb = state_vector [] in
-  do_transitions (fun t ->
-    List.iter (fun r -> 
-        let q = trace t.t_source r.r_rhs in Vector.insert lkb q (r, t))
-      t.t_sym.x_rules);
+  let add t r = 
+    let q = trace t.t_source r.r_rhs in 
+    lkb.(q) <- (r, t) :: lkb.(q) in
+  do_transitions (fun t -> List.iter (add t) t.t_sym.x_rules);
   lkb
 
 (* lookback lkb (q, r) = [ t | (q, r) Lookback (p, A) & t = (p, A) ]
      where lkb is the table computed by compute_lookback. *)
 let lookback lkb (q, r) =
-  List.map snd 
-    (List.filter (fun (r', _) -> r.r_id = r'.r_id)
-      (Vector.get lkb q))
+  List.map snd (List.filter (fun (r', _) -> r.r_id = r'.r_id) lkb.(q))
 
 (* For each item z = (q, A --> omega .), we set z.z_lookahead to
 
@@ -121,16 +121,14 @@ let lookback lkb (q, r) =
 
    where Follow is a function computed below. *)
 
-let propagate follow lkb =
+let propagate follow lookb =
   do_states (fun q ->
       ItemSet.iter (fun z ->
 	  let r = z.z_rule and k = z.z_index in
 	  if k = r.r_len then
 	    (* z is an item 'A --> omega .' that will yield a reduction *)
 	    z.z_lookahead <-
-	      collect 
-		(List.map (fun t -> Vector.get follow t) 
-		  (lookback lkb (q, r))))
+	      collect (List.map follow (lookb (q, r))))
         q.p_items)
 
 (* The endgame: begin with the DR sets, then compute Read as the
@@ -150,41 +148,14 @@ let propagate follow lkb =
    Strongly Connected Components in a graph where the nodes are transitions
    and the arcs are given by Includes and Reads respectively. *)
 
-let do_lookahead () =
+let do_lookahead verb =
   let follow = compute_dr () in
+  if verb > 2 then Report.show_follow "DR" follow;
   fixpoint do_transitions follow reads;
-
-  (* Alternative definition of Read:
-  	Read(q, A) = Union { first(beta) | [A' -> alpha . A beta] in q } *)
-(*
-  let follow = trans_vector SymSet.empty in
-  do_states (fun p ->
-      ItemSet.iter (fun z ->
-	  let r = z.z_rule and k = z.z_index in
-	  if k < List.length r.r_rhs then begin
-	    let a = List.nth r.r_rhs k in
-	    if is_nonterm a then begin
-	      let t = get_trans p a in
-	      Vector.put follow t 
-		(SymSet.union (Vector.get follow t) 
-		  (first_seq (Util.drop (k+1) r.r_rhs)))
-	    end
-	  end)
-	p.p_items);
-*)
-
-(*
-  do_transitions (fun t ->
-      let s1 = Vector.get follow t and s2 = Vector.get ffollow t in
-      if not (SymSet.equal s1 s2) then
-	failwith (sprintf "Oops: $ $ $ $" 
-	  [fNum t.t_source.p_id; fSym t.t_sym; fSymSet s1; fSymSet s2]));
-*)
-
+  if verb > 2 then Report.show_follow "Read" follow;
   let includes = compute_includes () in
   fixpoint do_transitions follow (Vector.get includes);
-
+  if verb > 2 then Report.show_follow "Follow" follow;
   let lkb = compute_lookback () in
-  propagate follow lkb
-
-
+  if verb > 2 then Report.show_lkb lkb;
+  propagate (Vector.get follow) (lookback lkb)

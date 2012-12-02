@@ -52,12 +52,15 @@ type state =
     p_items: ItemSet.t;
     mutable p_trans: transition list }
 
-(* transition -- state transition in LR(0) *)
+(* transition -- state transition in LR(0) machine *)
 and transition = 
   { t_id: int;
     t_source: state;
     t_sym: symbol;
     t_target: state }
+
+(* fTrans -- format a transition as (t_source.p_id, t_sym) *)
+val fTrans : transition -> Print.arg
 
 (* action -- potential parser action *)
 type action =

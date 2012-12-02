@@ -71,8 +71,11 @@ let make_token name =
   let x = lookup name in x.x_kind <- Token; x
 
 let fSym x = fStr x.x_name
-let fChain xs = fSeq(fSym, " ") xs
-let fRule r = fMeta "$ --> $" [fSym r.r_lhs; fChain r.r_rhs]
+
+let fRule r = 
+  fExt (fun prf ->
+    prf "$ -->" [fSym r.r_lhs];
+    List.iter (fun x -> prf " $" [fSym x]) r.r_rhs)
 
 let same_syms x y = (x.x_id = y.x_id)
 let compare_syms x1 x2 = x1.x_id - x2.x_id
@@ -94,7 +97,7 @@ let do_nonterms f =
 let do_tokens f =
   do_syms (fun x -> if is_token x then f x)
 
-let num_toks = ref 0
+let num_toks = ref 1
 let num_nts = ref 0
 
 let fix_token name v =
@@ -113,7 +116,7 @@ let assign_values () =
   do_syms (fun x ->
     if x.x_value < 0 then begin
       if x.x_kind = Nonterm then begin
-	if x.x_rules = [] then
+	if x.x_genuine && x.x_rules = [] then
 	  Error.warning "nonterminal '$' has no rules" [fSym x];
 	if not (same_syms x root_sym) then
 	  (x.x_value <- !num_nts; incr num_nts)
@@ -128,19 +131,18 @@ let start_syms = ref []
 
 let rule_vec = Growvect.create 100
 
-let make_rule lhs rhs prspec action pos =
-  if lhs.x_kind <> Nonterm then
-    Error.error "LHS of rule '$ --> $' is a token" [fSym lhs; fChain rhs];
+let create_rule lhs rhs prspec action pos =
   let r = { r_id = Growvect.size rule_vec; r_lhs = lhs; r_rhs = rhs; 
       r_len = List.length rhs;  r_prec = prspec; r_semact = action; 
       r_used = false; r_pos = pos; r_context = rhs } in
+  if lhs.x_kind <> Nonterm then
+    Error.error "LHS of rule '$' is a token" [fRule r];
   Growvect.append rule_vec r;				
   lhs.x_rules <- lhs.x_rules @ [r];
   r
 
-let root_rule = 
-  make_rule root_sym [entry_sym; eof_sym] None 
-    (Lexing.dummy_pos, "") Lexing.dummy_pos
+let make_rule lhs rhs = 
+  ignore (create_rule lhs rhs None (Lexing.dummy_pos, "") Lexing.dummy_pos)
 
 let compare_rules r1 r2 = r1.r_id - r2.r_id
 
@@ -156,6 +158,8 @@ end)
 
 let symset_of_list xs =
   List.fold_left (fun s x -> SymSet.add x s) SymSet.empty xs
+
+let collect sets = List.fold_left SymSet.union SymSet.empty sets
 
 let list_of_symset s = SymSet.elements s
 
@@ -173,8 +177,8 @@ let fSymSet x = fMeta "{$}" [fList(fSym) (SymSet.elements x)]
    popping all the nodes in the SCC off the stack, and making all
    their F values equal. *)
 
-let join a f u v = 
-  Vector.put a u (f (Vector.get a u) (Vector.get a v))
+(* A horrid pun to allow array notation to be used for vectors *)
+module Array = Vector
 
 (* fixpoint -- compute fixpoint by SCC algorithm *)
 let fixpoint iter f kids =
@@ -185,27 +189,32 @@ let fixpoint iter f kids =
 
   (* traverse -- do a DFS traversal from u *)
   let rec traverse u =
-    incr time;
-    let td = !time in
-    Vector.put tstamp u td;
-    stack := u::!stack;
+    if tstamp.(u) = 0 then begin
+      incr time;
+      let td = !time in
+      tstamp.(u) <- td;
+      stack := u::!stack;
 
-    (* traverse the children *)
-    List.iter (fun v ->
-	if Vector.get tstamp v = 0 then traverse v;
-	join tstamp min u v; join f SymSet.union u v)
-      (kids u);
+      (* traverse the children *)
+      List.iter (fun v ->
+          traverse v;
+          tstamp.(u) <- min tstamp.(u) tstamp.(v);
+          f.(u) <- SymSet.union f.(u) f.(v))
+        (kids u);
 
-    (* Perhaps pop a strongly connected component from the stack, 
-       setting all the f values *)
-    let fu = Vector.get f u in
-    let (vs, stack') = 
-      Util.split (fun v -> Vector.get tstamp v = td) !stack in
-    List.iter (fun v -> 
-      Vector.put tstamp v infinity; Vector.put f v fu) vs;
-    stack := stack' in
+      (* Perhaps pop a strongly connected component from the stack, 
+         setting all the f values *)
+      let fu = f.(u) in
+      let rec popscc =
+        function
+            v :: stk' when tstamp.(v) = td ->
+              tstamp.(v) <- infinity; f.(v) <- fu;
+              popscc stk'
+          | stk -> stk in
+      stack := popscc !stack 
+    end in
 
-  iter (fun t -> if Vector.get tstamp t = 0 then traverse t)
+  iter traverse
 
 
 (* PREPROCESSING *)
@@ -229,8 +238,6 @@ let do_nullable () =
 
   loop ()
 
-let addsym v i x = Vector.put v i (SymSet.add x (Vector.get v i))
-
 let first_fun = ref (fun x -> failwith "first_fun")
 
 let first x = !first_fun x
@@ -247,16 +254,16 @@ let rec first_seq =
 let do_first () =
   let first = symbol_vector SymSet.empty in
   let kids = symbol_vector SymSet.empty in
-  do_tokens (fun x -> Vector.put first x (SymSet.singleton x));
+  do_tokens (fun x -> first.(x) <- SymSet.singleton x);
   do_rules (fun r ->
     let rec loop =
       function
 	  [] -> ()
 	| x::xs ->
-	    addsym kids r.r_lhs x;
+	    kids.(r.r_lhs) <- SymSet.add x kids.(r.r_lhs);
 	    if nullable x then loop xs in
     loop r.r_rhs);
-  fixpoint do_syms first (fun x -> list_of_symset (Vector.get kids x));
+  fixpoint do_syms first (fun x -> list_of_symset kids.(x));
   first_fun := Vector.get first  
 
 let follow_fun = ref (fun x -> failwith "follow_fun")
@@ -271,12 +278,12 @@ let do_follow () =
       function
 	  [] -> ()
 	| x::xs ->
-	    Vector.put follow x 
-	      (SymSet.union (Vector.get follow x) (first_seq xs));
-	    if List.for_all nullable xs then addsym kids x r.r_lhs;
+	    follow.(x) <- SymSet.union follow.(x) (first_seq xs);
+	    if List.for_all nullable xs then
+	       kids.(x) <- SymSet.add r.r_lhs kids.(x);
 	    loop xs in
      loop r.r_rhs);
-   fixpoint do_nonterms follow (fun x -> list_of_symset (Vector.get kids x));
+   fixpoint do_nonterms follow (fun x -> list_of_symset kids.(x));
    follow_fun := Vector.get follow
 
 let preprocess () =

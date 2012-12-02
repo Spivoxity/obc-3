@@ -19,6 +19,7 @@ type token =
   | SEMI
   | VBAR
   | DOT
+  | AT
   | BADTOK
   | UNREACHABLE
 

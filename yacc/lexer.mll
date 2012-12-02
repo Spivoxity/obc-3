@@ -56,9 +56,9 @@ let atext = Buffer.create 512
 }
 
 rule token = parse
-    ['A'-'Z''a'-'z']['A'-'Z''a'-'z''0'-'9''_']*
-				{ SYMBOL (lookup (lexeme lexbuf)) }
-  | ['0'-'9']+			{ NUMBER (lexeme lexbuf) }
+    ['A'-'Z''a'-'z']['A'-'Z''a'-'z''0'-'9''_']* as s
+				{ SYMBOL (lookup s) }
+  | ['0'-'9']+ as s		{ NUMBER s }
   | "%token"			{ TOKEN }
   | "%left"			{ LEFT }
   | "%right"			{ RIGHT }
@@ -77,9 +77,8 @@ rule token = parse
   | ":"				{ COLON }
   | "|"				{ VBAR }
   | ";"				{ SEMI }
-  | "<"[^'>''\n']+">"		{ let s = lexeme lexbuf in
-				  let n = String.length s in
-				  TAG (String.sub s 1 (n-2)) }
+  | "@"				{ AT }
+  | "<"([^'>''\n']+ as s)">"	{ TAG s }
   | "%{"			{ add_line Output.user_code lexbuf;
   				  quote lexbuf }
   | "{"				{ Buffer.clear atext; level := 1;

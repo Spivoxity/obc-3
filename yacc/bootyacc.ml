@@ -21,11 +21,12 @@ type token =
   | SEMI
   | VBAR
   | DOT
+  | AT
   | BADTOK
   | UNREACHABLE
 
 
-# 44 "yacc.mly"
+# 41 "yacc.mly"
 
 open Print
 open Grammar
@@ -118,7 +119,7 @@ let make_action rhs (pos, text) =
   let text'' = Str.global_substitute dollar_name (subst2 rhs pos) text' in
   (pos, text'')
 
-# 122 "yacc.ml"
+# 123 "yacc.ml"
 let yyconst = [|
   0; (* EOF *)
   6; (* QUOTE *)
@@ -134,8 +135,9 @@ let yyconst = [|
   16; (* SEMI *)
   17; (* VBAR *)
   18; (* DOT *)
-  19; (* BADTOK *)
-  20; (* UNREACHABLE *)
+  19; (* AT *)
+  20; (* BADTOK *)
+  21; (* UNREACHABLE *)
 |]
 
 let yyblock = [|
@@ -148,65 +150,68 @@ let yyblock = [|
 let yylhs = [|
     -1;     1;     2;     2;     2;     2;     2;     4;     4;     4;
      4;     5;     5;     6;     6;     3;     3;     7;     8;     8;
-     9;    10;    11;    11;    11;    11;    12;    12;     0;
+     9;    10;    11;    11;    11;    11;    12;    12;    12;     0;
 |]
 
 let yyrlen = [|
      2;     3;     0;     4;     4;     4;     2;     1;     1;     1;
      1;     0;     1;     0;     2;     0;     2;     4;     1;     3;
-     3;     0;     0;     2;     3;     2;     1;     3;     2;
+     3;     0;     0;     2;     3;     2;     1;     3;     3;     2;
 |]
 
 let yyaction = [|
-    41;     0;     0;     0;    38;     0;     0;     0;     0;     0;
-    18;    30;     0;    18;     0;    29;    29;    51;    29;    29;
-     0;     0;    19;     0;     0;     0;     0;     7;   -15;     0;
-     0;     0;     4;     0;    -2;     2;    20;     0;    10;     0;
-     0;
+    33;     0;     0;     0;    48;     0;     0;     0;     0;     0;
+    18;    41;     0;    18;     0;    29;    29;    10;    29;    29;
+     0;     0;    31;     0;     0;     0;     0;    17;   -15;     0;
+     0;     0;    40;     0;    -2;     2;    20;     0;    19;    11;
+     0;     0;     0;
 |]
 
 let yydefact = [|
-     0;     0;    -2;   -28;     0;    -6;    -7;    -8;    -9;   -10;
+     0;     0;    -2;   -29;     0;    -6;    -7;    -8;    -9;   -10;
      0;     0;   -15;     0;   -12;     0;     0;     0;     0;     0;
     -4;    -5;     0;   -16;    -3;   -14;   -21;     0;     0;   -22;
-   -17;   -21;     0;   -19;     0;     0;     0;   -23;     0;   -24;
-   -27;
+   -17;   -21;     0;   -19;     0;     0;     0;   -23;     0;     0;
+   -24;   -27;   -28;
 |]
 
 let yygoto = [|
-     0;     0;     0;     0;     0;    -5;    -6;     0;   -26;     0;
-     0;     0;     0;
+     0;     0;     0;     0;     0;     1;   -10;     0;   -26;     0;
+     0;     0;     0;     0;     0;     0;
 |]
 
 let yydefgoto = [|
      1;     3;     4;    17;    13;    15;    20;    23;    27;    28;
-    29;    32;    37;
+    29;    32;    37;     0;     0;     0;
 |]
 
-let yytabsize = 54
+let yytabsize = 63
 
 let yytable = [|
-   -26;   -18;    31;   -26;   -25;    33;    34;   -25;    18;    35;
-    21;   -26;    24;    25;    40;   -25;    38;    36;   -20;   -20;
-   -11;    14;    39;    30;   -11;   -11;   -11;   -11;   -11;   -11;
-   -11;    19;   -11;    16;    26;   -13;   -13;   -13;   -13;   -13;
-   -13;   -13;     2;   -13;     5;     6;     7;     8;     9;    10;
-    11;    -1;    12;    22;
+   -26;   -18;    31;   -26;   -25;    33;    21;   -25;    24;    25;
+    -1;   -26;    22;    42;    18;   -25;    38;    39;   -20;   -20;
+   -11;    14;    40;    41;   -11;   -11;   -11;   -11;   -11;   -11;
+   -11;    19;   -11;    30;     2;   -13;   -13;   -13;   -13;   -13;
+   -13;   -13;    34;   -13;    16;    35;    26;     0;     0;     0;
+     0;     0;     0;    36;     5;     6;     7;     8;     9;    10;
+    11;     0;    12;
 |]
 
 let yycheck = [|
-     2;    16;    17;     5;     2;    31;     2;     5;    13;     5;
-    16;    13;    18;    19;     4;    13;    18;    13;    16;    17;
-     2;     3;     2;    16;     6;     7;     8;     9;    10;    11;
-    12;     2;    14;     3;    15;     6;     7;     8;     9;    10;
-    11;    12;     1;    14;     6;     7;     8;     9;    10;    11;
-    12;     0;    14;     2;
+     2;    16;    17;     5;     2;    31;    16;     5;    18;    19;
+     0;    13;     2;     2;    13;    13;    18;    19;    16;    17;
+     2;     3;     2;     4;     6;     7;     8;     9;    10;    11;
+    12;     2;    14;    16;     1;     6;     7;     8;     9;    10;
+    11;    12;     2;    14;     3;     5;    15;    -1;    -1;    -1;
+    -1;    -1;    -1;    13;     6;     7;     8;     9;    10;    11;
+    12;    -1;    14;
 |]
 
 let yyname = [|
 "EOF"; "*1*"; "SYMBOL"; "TAG"; "NUMBER"; "SEMACT"; "QUOTE"; 
 "TOKEN"; "LEFT"; "RIGHT"; "NONASSOC"; "START"; "TYPE"; "PREC"; 
-"PPERCENT"; "COLON"; "SEMI"; "VBAR"; "DOT"; "BADTOK"; "UNREACHABLE"; 
+"PPERCENT"; "COLON"; "SEMI"; "VBAR"; "DOT"; "AT"; "BADTOK"; 
+"UNREACHABLE"; 
 |]
 
 let yyrule = [|
@@ -238,6 +243,7 @@ let yyrule = [|
 "rhs --> rhs SEMACT";
 "symbol --> SYMBOL";
 "symbol --> SYMBOL DOT NUMBER";
+"symbol --> SYMBOL AT SYMBOL";
 "*entry* --> *1* grammar";
 |]
 
@@ -247,15 +253,15 @@ let yysemact = [|
   let _1 = (yypeek 1 : 't_heading) in
   let _3 = (yypeek 3 : 't_body) in
   Obj.repr (
-# 140 "yacc.mly"
+# 137 "yacc.mly"
                                 ( () )
-# 253 "yacc.ml"
+# 259 "yacc.ml"
 		: unit));
 (fun () ->
   Obj.repr (
-# 143 "yacc.mly"
+# 140 "yacc.mly"
                                 ( () )
-# 259 "yacc.ml"
+# 265 "yacc.ml"
 		: 't_heading));
 (fun () ->
   let _1 = (yypeek 1 : 't_heading) in
@@ -263,155 +269,155 @@ let yysemact = [|
   let _3 = (yypeek 3 : 't_tag) in
   let _4 = (yypeek 4 : 't_symbols) in
   Obj.repr (
-# 145 "yacc.mly"
+# 142 "yacc.mly"
       ( List.iter (dcl_token _2     _3   (rhs_start_pos 2)) _4       )
-# 269 "yacc.ml"
+# 275 "yacc.ml"
 		: 't_heading));
 (fun () ->
   let _1 = (yypeek 1 : 't_heading) in
   let _3 = (yypeek 3 : 't_tag) in
   let _4 = (yypeek 4 : 't_symbols) in
   Obj.repr (
-# 147 "yacc.mly"
+# 144 "yacc.mly"
       ( List.iter (dcl_start _3   (rhs_start_pos 2)) _4       )
-# 278 "yacc.ml"
+# 284 "yacc.ml"
 		: 't_heading));
 (fun () ->
   let _1 = (yypeek 1 : 't_heading) in
   let _3 = (yypeek 3 : string) in
   let _4 = (yypeek 4 : 't_symbols) in
   Obj.repr (
-# 149 "yacc.mly"
+# 146 "yacc.mly"
       ( List.iter (dcl_type _3   (rhs_start_pos 2)) _4       )
-# 287 "yacc.ml"
+# 293 "yacc.ml"
 		: 't_heading));
 (fun () ->
   let _1 = (yypeek 1 : 't_heading) in
   Obj.repr (
-# 150 "yacc.mly"
+# 147 "yacc.mly"
                                 ( () )
-# 294 "yacc.ml"
+# 300 "yacc.ml"
 		: 't_heading));
 (fun () ->
   Obj.repr (
-# 153 "yacc.mly"
+# 150 "yacc.mly"
                                 ( Token )
-# 300 "yacc.ml"
-		: 't_assoc));
-(fun () ->
-  Obj.repr (
-# 154 "yacc.mly"
-                                ( incr prec; Left )
 # 306 "yacc.ml"
 		: 't_assoc));
 (fun () ->
   Obj.repr (
-# 155 "yacc.mly"
-                                ( incr prec; Right )
+# 151 "yacc.mly"
+                                ( incr prec; Left )
 # 312 "yacc.ml"
 		: 't_assoc));
 (fun () ->
   Obj.repr (
-# 156 "yacc.mly"
-                                ( incr prec; Nonassoc )
+# 152 "yacc.mly"
+                                ( incr prec; Right )
 # 318 "yacc.ml"
 		: 't_assoc));
 (fun () ->
   Obj.repr (
-# 159 "yacc.mly"
-                                ( None )
+# 153 "yacc.mly"
+                                ( incr prec; Nonassoc )
 # 324 "yacc.ml"
+		: 't_assoc));
+(fun () ->
+  Obj.repr (
+# 156 "yacc.mly"
+                                ( None )
+# 330 "yacc.ml"
 		: 't_tag));
 (fun () ->
   let _1 = (yypeek 1 : string) in
   Obj.repr (
-# 160 "yacc.mly"
+# 157 "yacc.mly"
                                 ( Some _1   )
-# 331 "yacc.ml"
+# 337 "yacc.ml"
 		: 't_tag));
 (fun () ->
   Obj.repr (
-# 163 "yacc.mly"
+# 160 "yacc.mly"
                                 ( [] )
-# 337 "yacc.ml"
+# 343 "yacc.ml"
 		: 't_symbols));
 (fun () ->
   let _1 = (yypeek 1 : Grammar.symbol) in
   let _2 = (yypeek 2 : 't_symbols) in
   Obj.repr (
-# 164 "yacc.mly"
+# 161 "yacc.mly"
                                 ( _1     ::_2       )
-# 345 "yacc.ml"
+# 351 "yacc.ml"
 		: 't_symbols));
 (fun () ->
   Obj.repr (
-# 167 "yacc.mly"
+# 164 "yacc.mly"
                                 ( () )
-# 351 "yacc.ml"
+# 357 "yacc.ml"
 		: 't_body));
 (fun () ->
   let _1 = (yypeek 1 : 't_body) in
   let _2 = (yypeek 2 : 't_para) in
   Obj.repr (
-# 168 "yacc.mly"
+# 165 "yacc.mly"
                                 ( () )
-# 359 "yacc.ml"
+# 365 "yacc.ml"
 		: 't_body));
 (fun () ->
   let _1 = (yypeek 1 : Grammar.symbol) in
   let _3 = (yypeek 3 : 't_prods) in
   Obj.repr (
-# 172 "yacc.mly"
+# 169 "yacc.mly"
       ( if not (is_nonterm _1     ) then
 	  Error.syntax (rhs_start_pos 1) "left-hand side is a token" [];
 	if !Grammar.start_syms = [] then
 	  Grammar.start_syms := [_1     ];
 	List.iter (fun (line, rhs, prec, semact) ->
-	  ignore (make_rule _1      rhs prec semact line)) _3     )
-# 372 "yacc.ml"
+	  ignore (create_rule _1      rhs prec semact line)) _3     )
+# 378 "yacc.ml"
 		: 't_para));
 (fun () ->
   let _1 = (yypeek 1 : 't_prod) in
   Obj.repr (
-# 180 "yacc.mly"
+# 177 "yacc.mly"
                                 ( [_1] )
-# 379 "yacc.ml"
+# 385 "yacc.ml"
 		: 't_prods));
 (fun () ->
   let _1 = (yypeek 1 : 't_prod) in
   let _3 = (yypeek 3 : 't_prods) in
   Obj.repr (
-# 181 "yacc.mly"
+# 178 "yacc.mly"
                                 ( _1::_3 )
-# 387 "yacc.ml"
+# 393 "yacc.ml"
 		: 't_prods));
 (fun () ->
   let _1 = (yypeek 1 : 't_init) in
   let _2 = (yypeek 2 : 't_rhs) in
   let _3 = (yypeek 3 : Lexing.position * string) in
   Obj.repr (
-# 185 "yacc.mly"
+# 182 "yacc.mly"
       ( let a = make_action _2   _3      in
 	(rhs_start_pos 2, _2  , !pr_sym, a) )
-# 397 "yacc.ml"
+# 403 "yacc.ml"
 		: 't_prod));
 (fun () ->
   Obj.repr (
-# 189 "yacc.mly"
+# 186 "yacc.mly"
                                 ( pr_sym := None )
-# 403 "yacc.ml"
+# 409 "yacc.ml"
 		: 't_init));
 (fun () ->
   Obj.repr (
-# 193 "yacc.mly"
+# 190 "yacc.mly"
       ( index := 0; rhsmap := []; [] )
-# 409 "yacc.ml"
+# 415 "yacc.ml"
 		: 't_rhs));
 (fun () ->
   let _1 = (yypeek 1 : 't_rhs) in
   let _2 = (yypeek 2 : 't_symbol) in
   Obj.repr (
-# 195 "yacc.mly"
+# 192 "yacc.mly"
       ( let (x, y) = _2      in
 	if is_token x then begin
 	  pr_sym := Some x;
@@ -419,13 +425,13 @@ let yysemact = [|
         end;
 	incr index; rhsmap := !rhsmap @ [(y, !index)];
         _1   @ [x] )
-# 423 "yacc.ml"
+# 429 "yacc.ml"
 		: 't_rhs));
 (fun () ->
   let _1 = (yypeek 1 : 't_rhs) in
   let _3 = (yypeek 3 : Grammar.symbol) in
   Obj.repr (
-# 203 "yacc.mly"
+# 200 "yacc.mly"
       ( let x = _3      in
         if not (is_token x) then 
           Error.syntax (rhs_start_pos 2)
@@ -435,35 +441,43 @@ let yysemact = [|
             "%prec must be followed by a token with defined precedence" [];
         pr_sym := Some x;
         _1   )
-# 439 "yacc.ml"
+# 445 "yacc.ml"
 		: 't_rhs));
 (fun () ->
   let _1 = (yypeek 1 : 't_rhs) in
   let _2 = (yypeek 2 : Lexing.position * string) in
   Obj.repr (
-# 213 "yacc.mly"
+# 210 "yacc.mly"
       ( let g = gensym () in
 	let a = make_action _1   _2      in
-        let r = make_rule g [] None a (fst a) in
+        let r = create_rule g [] None a (fst a) in
 	incr index;
 	r.r_context <- _1  ; 
 	_1   @ [g] )
-# 452 "yacc.ml"
+# 458 "yacc.ml"
 		: 't_rhs));
 (fun () ->
   let _1 = (yypeek 1 : Grammar.symbol) in
   Obj.repr (
-# 221 "yacc.mly"
-               ( (_1     , _1     .x_name) )
-# 459 "yacc.ml"
+# 218 "yacc.mly"
+                 ( (_1, _1.x_name) )
+# 465 "yacc.ml"
 		: 't_symbol));
 (fun () ->
   let _1 = (yypeek 1 : Grammar.symbol) in
   let _3 = (yypeek 3 : string) in
   Obj.repr (
-# 222 "yacc.mly"
-                         ( (_1     , _1     .x_name ^ "." ^ _3     ) )
-# 467 "yacc.ml"
+# 219 "yacc.mly"
+                            ( (_1, _1.x_name^"."^_3) )
+# 473 "yacc.ml"
+		: 't_symbol));
+(fun () ->
+  let _1 = (yypeek 1 : Grammar.symbol) in
+  let _3 = (yypeek 3 : Grammar.symbol) in
+  Obj.repr (
+# 220 "yacc.mly"
+                           ( (_1, _3.x_name) )
+# 481 "yacc.ml"
 		: 't_symbol));
 (* Entry grammar *)
 (fun () -> raise (YYexit (yypeek 2)));

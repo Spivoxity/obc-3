@@ -76,9 +76,9 @@ let parse_error2 msg loc1 =
 let missing_semi loc =
   syn_error "missing ';'" [] loc
 
+(*
 let _ = Random.self_init ()
 
-(*
 let shown = ref false
 
 let unmatched loc = 
@@ -314,8 +314,8 @@ stmt1 :
   | REPEAT stmts UNTIL expr	{ RepeatStmt ($stmts, $expr) }
   | LOOP stmts END		{ LoopStmt $stmts }
   | EXIT			{ ExitStmt }
-  | FOR desig ASSIGN expr.1 TO expr.2 step DO stmts END
-      { ForStmt ($desig, $expr.1, $expr.2, $step, $stmts, ref dummy_def) } 
+  | FOR desig ASSIGN expr@e1 TO expr@e2 step DO stmts END
+      { ForStmt ($desig, $e1, $e2, $step, $stmts, ref dummy_def) } 
   | WITH branches else END	{ WithStmt ($branches, $else) }
   | VAR vdecls BEGIN stmts END	{ LocalStmt ($vdecls, $stmts) }
   | error			{ ErrStmt } ;
@@ -348,7 +348,7 @@ elements :
 
 element :
     expr			{ Single $expr }
-  | expr.1 DOTDOT expr.2	{ Range ($expr.1, $expr.2) } ;
+  | expr@e1 DOTDOT expr@e2	{ Range ($e1, $e2) } ;
 
 branches :
     branch			{ [$branch] }
@@ -368,11 +368,10 @@ step :
 
 expr :
     simple %prec error		{ $simple }
-  | simple.1 RELOP simple.2	{ exp (Binop ($RELOP, $simple.1, $simple.2)) }
-  | simple.1 EQUAL simple.2	{ exp (Binop (Eq, $simple.1, $simple.2)) } 
+  | simple@e1 RELOP simple@e2	{ exp (Binop ($RELOP, $e1, $e2)) }
+  | simple@e1 EQUAL simple@e2	{ exp (Binop (Eq, $e1, $e2)) } 
   | simple IS qualid		{ exp (TypeTest ($simple, $qualid)) } 
-  | IF expr.1 THEN expr.2 ELSE expr.3
-      { exp (IfExpr ($expr.1, $expr.2, $expr.3)) } ;
+  | IF expr@e1 THEN expr@e2 ELSE expr@e3  { exp (IfExpr ($e1, $e2, $e3)) } ;
 
 simple :
     term %prec error		{ $term }
@@ -434,7 +433,7 @@ exprs :
 
 qualid :	
     IDENT %prec DOT		{ makeName (anon, $IDENT, lloc ()) }
-  | IDENT.1 DOT IDENT.2		{ makeName ($IDENT.1, $IDENT.2, lloc ()) };
+  | IDENT@x1 DOT IDENT@x2	{ makeName ($x1, $x2, lloc ()) };
 
 name :	
     IDENT			{ makeName (anon, $IDENT, lloc ()) } ;

@@ -54,14 +54,14 @@ let line = ref 1
 }
 
 rule token = parse
-    ['A'-'Z']+		{ lookup (lexeme lexbuf) }
-  | '#'['A'-'Z''a'-'z''0'-'9''%''.']+	
-			{ let s = lexeme lexbuf in
-			  TAG (String.sub s 1 (String.length s - 1)) }
-  | '-'?['0'-'9']+	{ NUM (lexeme lexbuf) }
-  | '-'?['0'-'9']+'.'['0'-'9']*('e'['+''-']?['0'-'9']+)?
-			{ FLO (lexeme lexbuf) }
-  | "0x"['0'-'9''a'-'f']+ { HEX (lexeme lexbuf) }
+    ['A'-'Z']+ as s	{ lookup s }
+  | '#'(['A'-'Z''a'-'z''0'-'9''%''.']+ as s)
+			{ TAG s }
+  | '-'?['0'-'9']+ as s	{ NUM s }
+  | '-'?['0'-'9']+'.'['0'-'9']*('e'['+''-']?['0'-'9']+)? as s
+			{ FLO s }
+  | "0x"['0'-'9''a'-'f']+ as s
+    			{ HEX s }
   | "["			{ BRA }
   | "]"			{ KET }
   | ";"			{ SEMI }

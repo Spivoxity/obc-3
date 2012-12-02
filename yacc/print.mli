@@ -28,25 +28,21 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-type arg =
-    Str of string 		(* String *)
-  | Chr of char 		(* Character *)
-  | Ext of ((string -> arg list -> unit) -> unit)  (* Extension *)
+type arg
 
-val fNum: int -> arg		(* Decimal number *)
-val fFlo: float -> arg		(* Floating-point number *)
-val fStr: string -> arg		(* String *)
-val fChr: char -> arg 		(* Character *)
-val fExt: ((string -> arg list -> unit) -> unit) -> arg  (* Extension *)
-
-(* |fFixNum| -- Fixed-width number (val, width) *)
-val fFixNum : int * int -> arg
+(* Basic formats *)
+val fNum : int -> arg		(* Decimal number *)
+val fFix : int * int -> arg	(* Fixed-width number (val, width) *)
+val fFlo : float -> arg		(* Floating-point number *)
+val fStr : string -> arg	(* String *)
+val fChr : char -> arg		(* Character *)
+val fBool : bool -> arg		(* Boolean *)
 
 (* |fMeta| -- insert output of recursive call to |printf| *)
 val fMeta : string -> arg list -> arg
 
-(* |fSeq| -- print a list of items with a separator *)
-val fSeq : ('a -> arg) * string -> 'a list -> arg
+(* |fExt| -- higher-order extension *)
+val fExt : ((string -> arg list -> unit) -> unit) -> arg
 
 (* |fList| -- format a comma-separated list *)
 val fList : ('a -> arg) -> 'a list -> arg
@@ -60,5 +56,7 @@ val fprintf : out_channel -> string -> arg list -> unit
 (* |sprintf| -- print to a string *)
 val sprintf : string -> arg list -> string
 
-(* |do_print| -- print with a function that accepts characters *)
+(* |fgrindf| -- pretty-printer *)
+val fgrindf : out_channel -> string -> arg list -> unit
+
 val do_print : (char -> unit) -> string -> arg list -> unit

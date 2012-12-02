@@ -50,11 +50,25 @@ let start name =
 
 let show_rules () =
   lprintf "Rules:\n" [];
-  do_rules (fun r -> lprintf "$:  $\n" [fFixNum (r.r_id, 4); fRule r]);
+  do_rules (fun r -> lprintf "$:  $\n" [fFix (r.r_id, 4); fRule r]);
   lprintf "\n" [];
   do_nonterms (fun x ->			(* Undefined nonterminals *)
-    if x.x_rules = [] then
+    if x.x_genuine && x.x_rules = [] then
       lprintf "Nonterminal '$' has no rules\n" [fSym x]);
+  lprintf "\n" []
+
+module Array = Vector
+
+let show_follow fn tbl =
+  let print t s =
+     lprintf "$$ = $\n" [fStr fn; fTrans t; fSymSet s] in
+  do_transitions (fun t -> if is_nonterm t.t_sym then print t tbl.(t));
+  lprintf "\n" []
+
+let show_lkb lkb =
+  let print p (r, t) =
+    lprintf "($, $) lookback $\n" [fNum p.p_id; fRule r; fTrans t] in
+  do_states (fun p -> List.iter (print p) lkb.(p));
   lprintf "\n" []
 
 let show_firsts () =
@@ -77,20 +91,31 @@ let report_conflict p x a1 a2 =
 	    [fNum p.p_id; fNum r1.r_id; fNum r2.r_id; fSym x]
     | (_, _) -> failwith "report_conflict"
 
-let show_state p actions defred gotos show_la =
+let core z =
+  let r = z.z_rule and k = z.z_index in
+  r.r_len = 0 || k > 0 || same_syms r.r_lhs root_sym
+  
+let show_state p actions defred gotos vflag =
   lprintf "\nState $\n\n" [fNum p.p_id];
-  (* Print items: just do core items (starting rule or dot not at the start),
-     null items (rhs is empty) and rules for the root *)
-  ItemSet.iter 
-    (fun z ->
-      let r = z.z_rule and k = z.z_index in
-      if r.r_len = 0 || k > 0 || same_syms r.r_lhs root_sym then begin
+  (* Print items: just do core items unless verbose *)
+  ItemSet.iter (fun z -> 
+      if core z then begin
+	let r = z.z_rule and k = z.z_index in
 	lprintf "\t$" [fItem z];
-	if show_la && k = r.r_len then
+	if vflag && k = r.r_len then
 	  lprintf "  $" [fSymSet z.z_lookahead];
 	lprintf "\n" []
       end)
     p.p_items;
+  let foo = ref true in
+  if vflag then
+    ItemSet.iter (fun z -> 
+	if not (core z) then begin
+	  if !foo then lprintf "\t-----\n" [];
+	  lprintf "\t$\n" [fItem z];
+	  foo := false
+	end) 
+      p.p_items;
   lprintf "\n" [];
 
   (* Print parser actions *)

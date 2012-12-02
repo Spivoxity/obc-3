@@ -58,13 +58,13 @@ let errtok = -1
 let yydebug = ref false
 let stacksize = ref 100
 
-let s_stack = ref (Array.create !stacksize 0)
+let s_stack = ref (Array.make !stacksize 0)
   (* Stack of parser states *)	
-and v_stack = ref (Array.create !stacksize (Obj.repr 0))
+and v_stack = ref (Array.make !stacksize (Obj.repr 0))
   (* Stack of semantic values *)	
-and l_stack = ref (Array.create !stacksize dummy_pos)
+and l_stack = ref (Array.make !stacksize dummy_pos)
   (* Stack of starting positions *)	
-and r_stack = ref (Array.create !stacksize dummy_pos)
+and r_stack = ref (Array.make !stacksize dummy_pos)
   (* Stack of ending positions *)	
 
 let sp = ref (-1)			(* Stack pointer *)
@@ -74,7 +74,7 @@ and errstate = ref 0			(* Count tokens to shift after error *)
 (* double -- double the size of a stack *)
 let double v x0 =
   let n = Array.length !v in
-  let new_v = Array.create (2*n) x0 in
+  let new_v = Array.make (2*n) x0 in
   Array.blit !v 0 new_v 0 n; v := new_v
 
 (* yyparse -- parser engine *)
@@ -148,8 +148,9 @@ let yyparse tables start lexfun lexbuf =
       let newst = 
 	unpack tables.yyaction tables.yydefact st errtok in
       if newst > 0 then begin
+        let pos = !r_stack.(!sp) in
 	if !yydebug then debug "recover %d\n" newst;
-	push newst dummy dummy_pos dummy_pos;
+	push newst dummy pos pos;
 	errstate := 3
       end
       else begin
@@ -264,6 +265,8 @@ let rhs_end n = let p = rhs_end_pos n in p.pos_cnum
 let parse_error s = ()
 
 let yyerrok () = errstate := 0
+
+let yyerrstate () = !errstate
 
 let clear_parser () =
   Array.fill !v_stack 0 !stacksize dummy

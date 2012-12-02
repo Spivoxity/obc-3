@@ -80,17 +80,20 @@ let main () =
     stem := Filename.basename (if Filename.check_suffix in_file ".mly" then
 		  	Filename.chop_suffix in_file ".mly" else in_file);
 
+  (* Rule 0: *start* --> *entry* EOF *)
+  make_rule root_sym [entry_sym; eof_sym];
+
   let chan = open_in in_file in
   let lexbuf = Lexing.from_channel chan in
   Lexer.init lexbuf;
   begin
     try Yacc.grammar Lexer.token lexbuf with
-      Parsing.Parse_error -> 
+      Yyparse.Parse_error -> 
 	Error.syntax (Lexing.lexeme_start_p lexbuf) "syntax error" [];
 	exit 1 
   end;
 
-  (* Make rules '*entry* --> *i*, s' for each start symbol s *)
+  (* Make rules *entry* --> *i*, s for each start symbol s *)
   let i = ref 0 in
   List.iter (fun s ->
       if s.x_kind <> Nonterm then 
@@ -101,8 +104,7 @@ let main () =
 	Error.error "start symbol '$' has a polymorphic type" [fSym s];
       incr i;
       let tok = Grammar.fix_token (sprintf "*$*" [fNum !i]) !i in
-      ignore (make_rule entry_sym [tok; s] None 
-	  (Lexing.dummy_pos, "") Lexing.dummy_pos))
+      make_rule entry_sym [tok; s])
     !Grammar.start_syms;
 
   (* Give up if errors were found in the grammar *)
@@ -127,10 +129,13 @@ let main () =
   let t2 = Sys.time () in
 
   (* Perform LALR(1) lookahead computation *)
-  if !sflag then
-    (do_slr_lookahead (); if !verbosity > 1 then Report.show_firsts ())
-  else
-    Lalr.do_lookahead ();
+  if !sflag then begin
+    do_slr_lookahead (); 
+    if !verbosity > 1 then Report.show_firsts ();
+  end 
+  else begin
+    Lalr.do_lookahead !verbosity
+  end;
 
   let t3 = Sys.time () in
 
@@ -148,8 +153,8 @@ let main () =
 
     (* Compute action vector and default reduction *)
     let (actlist, defr) = Compile.compile actions' in
-    Vector.put actvec p (Table.make_row actlist); 
-    Vector.put defred p defr;
+    Vector.set actvec p (Table.make_row actlist); 
+    Vector.set defred p defr;
 
     (* Accumulate all gotos into a list by nonterminal *)
     let gotos = Lr0.gotos_for p in
@@ -180,8 +185,8 @@ let main () =
   List.iter (fun (x, gotos) -> 
       let d = Util.commonest compare (List.map snd gotos) in
       let entries = List.filter (fun (_, q) -> q <> d) gotos in
-      Vector.put gotovec x (Table.make_row entries);
-      Vector.put defgoto x d)
+      Vector.set gotovec x (Table.make_row entries);
+      Vector.set defgoto x d)
     (Util.group_sort compare_syms !allgotos);
 
   (* Pack rows into a compact table *)

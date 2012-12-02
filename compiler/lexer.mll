@@ -35,6 +35,8 @@ open Error
 open Lexing
 open Eval
 
+let lex_error fmt args = syn_error fmt args (here ())
+
 let idtable = Hashtbl.create 1009
 
 let init () = 
@@ -63,21 +65,24 @@ let lookup s =
 (* hexval -- convert a hex number *)
 let hexval s =
   let hex = "0123456789ABCDEF" in
-  let i = ref 0 and v = ref (integer 0) in
-  begin try 
-      while true do 
-	let d = String.index hex s.[!i] in 
-	v := integer_add (integer_mul !v (integer 16)) (integer d); 
-	incr i 
-      done 
-  with Not_found -> ()
-  end;
+  let v = ref (integer 0) in
+  for i = 0 to String.length s - 1 do
+    let d = String.index hex s.[i] in 
+    v := integer_add (integer_mul !v (integer 16)) (integer d); 
+  done;
   !v
+
+let char_val n =
+  if n < integer 256 then 
+    char_of_integer n 
+  else begin
+    lex_error "character constant is too large" []; 
+    '\000'
+  end
 
 let location lexbuf =
  (lexeme_start lexbuf, lexeme_end lexbuf)
 
-let clevel = ref 0
 let cstart = ref (0, 0)
 let in_docstring = ref false
 
@@ -97,92 +102,88 @@ let unget n lexbuf =
   lexbuf.lex_curr_pos <- lexbuf.lex_curr_pos - n;
   lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with 
     pos_cnum = lexbuf.lex_abs_pos + lexbuf.lex_curr_pos }
-
-let lex_error fmt args = syn_error fmt args (here ())
 }
 
-rule token = parse
-    ['A'-'Z''a'-'z']['A'-'Z''a'-'z''0'-'9']*
-			{ lookup (lexeme lexbuf) }
-  | ['0'-'9']+		{ DECIMAL (lexeme lexbuf) }
-  | ['0'-'9']+'.'['0'-'9']*('E'['+''-']?['0'-'9']+)?
-			{ FLOCON (float_of_string (lexeme lexbuf)) }
-  | ['0'-'9']+'.'['0'-'9']*'D'['+''-']?['0'-'9']+
-			{ let s = lexeme lexbuf in
-			  s.[String.index s 'D'] <- 'E';
-			  DBLCON (float_of_string s) }
-  | ['0'-'9']+".."	{ unget 2 lexbuf; 
-			  DECIMAL (lexeme lexbuf) }
-  | "'"[^'\'''\n']"'"|'"'[^'"''\n']'"'
-			{ CHAR (lexeme_char lexbuf 1) }
-  | "'"[^'\'''\n']*"'"|'"'[^'"''\n']*'"' 
-			{ let s = lexeme lexbuf in
-			  STRING (String.sub s 1 (String.length s - 2)) }
-  | "'"[^'\'''\n']*'\n'|'"'[^'"''\n']*'\n'
-		        { unget 1 lexbuf;
-			  lex_error "unterminated string constant" [];
-			  raise Yyparse.Parse_error }
-  | ['0'-'9']['0'-'9''A'-'F']*'X' 
-			{ let n = hexval (lexeme lexbuf) in
-			  if n < integer 256 then
-			    CHAR (char_of_integer n)
-			  else begin
-			    lex_error "character constant is too large" [];
-			    CHAR '\000'
-			  end }
-  | ['0'-'9']['0'-'9''A'-'F']*'H' 
-			{ NUMBER (hexval (lexeme lexbuf)) }
-  | ";"			{ SEMI }
-  | "."			{ DOT }
-  | ":"			{ COLON }
-  | "("			{ LPAR }
-  | ")"			{ RPAR }
-  | ","			{ COMMA }
-  | "["			{ SUB }
-  | "]"			{ BUS }
-  | "{"			{ LBRACE }
-  | "}"			{ RBRACE }
-  | "="			{ EQUAL }
-  | "/"			{ MULOP Over }
-  | "+"			{ PLUS }
-  | "-"			{ MINUS }
-  | "*"			{ STAR }
-  | "^"			{ UPARROW }
-  | "~"			{ NOT }
-  | "&"			{ MULOP And }
-  | "|"			{ VBAR }
-  | ".."		{ DOTDOT }
-  | "<"			{ RELOP Lt }
-  | ">"			{ RELOP Gt }
-  | "#"			{ RELOP Neq }
-  | ("<>"|"!=")		{ lex_error "please use # for inequality" []; 
-			  RELOP Neq }
-  | "/="		{ lex_error ("I see that you are a Haskell programmer"
-					^ " at heart; try # instead") [];
-			  RELOP Neq }
-  | "<="		{ RELOP Leq }
-  | ">="		{ RELOP Geq }
-  | ":="		{ ASSIGN }
-  | [' ''\t']+		{ token lexbuf }
-  | "(*"		{ in_docstring := false; cstart := location lexbuf;
-			  incr clevel; comment lexbuf; token lexbuf }
-  | "(**"		{ in_docstring := true; cstart := location lexbuf;
-			  incr clevel; comment lexbuf; token lexbuf }
-  | '\r'		{ token lexbuf }
-  | '\n'		{ inc_line lexbuf; token lexbuf }
-  | "#line"[^'\n']*'\n'	{ set_line lexbuf; token lexbuf }
-  | _			{ BADTOK }
-  | eof			{ lex_error "unexpected end of file" []; exit 1 }
+let letter = ['A'-'Z''a'-'z']
+let digit = ['0'-'9']
+let hexdigit = ['0'-'9''A'-'F']
+let q = '\''
+let qq = '"'
+let notq = [^'\'''\n']
+let notqq = [^'"''\n']
 
-and comment = parse
-    "(*"		{ incr clevel; comment lexbuf }
-  | "*)"		{ decr clevel; 
-			  if !clevel > 0 then 
-			    comment lexbuf
-			  else if !in_docstring then
-			    docstring := 
-			      Some (join_locs !cstart (location lexbuf)) }
-  | "\n"		{ inc_line lexbuf; comment lexbuf }
-  | _			{ comment lexbuf }
-  | eof			{ Error.set_loc !cstart;
-			  lex_error "unterminated comment" []; exit 1 }
+rule token = parse
+    letter (letter | digit)* as s	{ lookup s }
+  | digit+ as s				{ DECIMAL s }
+  | digit+ '.' digit* ('E'['+''-']?digit+)? as s
+					{ FLOCON (float_of_string s) }
+  | (digit+ '.' digit* as s1) 'D' (['+''-']?digit+ as s2)
+				        { DBLCON (float_of_string (s1^"E"^s2)) }
+  | (digit+ as s) ".."			{ unget 2 lexbuf; DECIMAL s }
+  | q (notq as c) q 
+      | qq (notqq as c) qq  		{ CHAR c }
+  | q (notq* as s) q 
+      | qq (notqq* as s) qq  		{ STRING s }
+  | q notq* '\n' | qq notqq* '\n'
+      { unget 1 lexbuf; 
+	lex_error "unterminated string constant" [];
+	raise Yyparse.Parse_error }
+  | (digit hexdigit* as s)'X' 		{ CHAR (char_val (hexval s)) }
+  | (digit hexdigit* as s)'H'		{ NUMBER (hexval s) }
+  | ";"					{ SEMI }
+  | "."					{ DOT }
+  | ":"					{ COLON }
+  | "("					{ LPAR }
+  | ")"					{ RPAR }
+  | ","					{ COMMA }
+  | "["					{ SUB }
+  | "]"					{ BUS }
+  | "{"					{ LBRACE }
+  | "}"					{ RBRACE }
+  | "="					{ EQUAL }
+  | "/"					{ MULOP Over }
+  | "+"					{ PLUS }
+  | "-"					{ MINUS }
+  | "*"					{ STAR }
+  | "^"					{ UPARROW }
+  | "~"					{ NOT }
+  | "&"					{ MULOP And }
+  | "|"					{ VBAR }
+  | ".."				{ DOTDOT }
+  | "<"					{ RELOP Lt }
+  | ">"					{ RELOP Gt }
+  | "#"					{ RELOP Neq }
+  | "<>" | "!=" | "/="
+      { lex_error "please use # for inequality" []; RELOP Neq }
+  | "<="				{ RELOP Leq }
+  | ">="				{ RELOP Geq }
+  | ":="				{ ASSIGN }
+  | [' ''\t']+				{ token lexbuf }
+  | "(*"		
+      { in_docstring := false; cstart := location lexbuf;
+	comment 1 lexbuf; token lexbuf }
+  | "(**"		
+      { in_docstring := true; cstart := location lexbuf;
+	comment 1 lexbuf; token lexbuf }
+  | '\r'				{ token lexbuf }
+  | '\n'				{ inc_line lexbuf; token lexbuf }
+  | "#line"[^'\n']*'\n'			{ set_line lexbuf; token lexbuf }
+  | _					{ BADTOK }
+  | eof			
+      { lex_error "unexpected end of file" []; exit 1 }
+
+and comment n = parse
+    "(*"				
+      { comment (n+1) lexbuf }
+  | "*)"				
+      { if n > 1 then 
+	  comment (n-1) lexbuf
+	else if !in_docstring then
+	  docstring := Some (join_locs !cstart (location lexbuf)) }
+  | "\n"		
+      { inc_line lexbuf; comment n lexbuf }
+  | _			
+      { comment n lexbuf }
+  | eof			
+      { Error.set_loc !cstart;
+	lex_error "unterminated comment" []; exit 1 }

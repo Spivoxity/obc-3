@@ -37,4 +37,4 @@ propagate information appropriately around any cycles.  The net effect
 is to set the z_lookahead field of each item. *)
 
 (* do_lookahead -- perform LALR(1) lookahead computation *)
-val do_lookahead : unit -> unit
+val do_lookahead : int -> unit

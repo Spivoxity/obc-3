@@ -84,25 +84,26 @@ let chunk = 10
 let put_table name do_things valfun =
   xprintf "let $ = [|" [fStr name];
   let k = ref 0 in
-  do_things (fun th ->
+  do_things (fun i ->
     if !k mod chunk = 0 then xprintf "\n" [];
-
-    let v = valfun th in
+    let v = valfun i in 
     if v = Compile.yyerr then
       xprintf " yyerr;" []
     else
-      xprintf "$;" [fFixNum (valfun th, 6)];
-
+      xprintf "$;" [fFix (v, 6)];
     incr k);
   xprintf "\n|]\n\n" []
 
-let put_range name n f =
-  put_table name (fun g -> for i = 0 to n-1 do g i done) f
+let put_vect name v =
+  put_table name 
+    (fun put -> for i = 0 to Growvect.size v - 1 do put i done) 
+    (Growvect.get v)
 
 let put_nt_table name f =
-  let tab = Array.create !num_nts 0 in
-  do_nonterms (fun x -> if x.x_value >= 0 then tab.(x.x_value) <- f x);
-  put_range name !num_nts (Array.get tab)
+  let tab = Growvect.make !num_nts 0 in
+  do_nonterms 
+    (fun x -> if x.x_value >= 0 then Growvect.set tab x.x_value (f x));
+  put_vect name tab
 
 let put_rule_table name f =
   put_table name do_rules f
@@ -205,11 +206,11 @@ let put_tables actvec defred gotovec defgoto =
   (* The big table of rows and its check table *)
   let size = Growvect.size Table.table in
   xprintf "let yytabsize = $\n\n" [fNum size];
-  put_range "yytable" size (Growvect.get Table.table);
-  put_range "yycheck" size (Growvect.get Table.check);
+  put_vect "yytable" Table.table;
+  put_vect "yycheck" Table.check;
 
   (* Names of the tokens *)
-  let tok_name = Array.create !num_toks "" in
+  let tok_name = Array.make !num_toks "" in
   do_syms (fun x -> 
       if is_token x && x.x_value >= 0 then 
 	tok_name.(x.x_value) <- x.x_name);
@@ -220,10 +221,12 @@ let put_tables actvec defred gotovec defgoto =
   (* Text of each production *)
   xprintf "let yyrule = [|\n" [];
   do_rules (fun r ->
-      xprintf "\"$ --> $\";\n" 
-	[fSym r.r_lhs; 
-	  if List.length r.r_rhs = 0 then fStr "/* empty */" 
-	    else fChain r.r_rhs]);
+    xprintf "\"$ -->"	[fSym r.r_lhs]; 
+    if List.length r.r_rhs = 0 then 
+      xprintf " []" []
+    else
+      List.iter (fun x -> xprintf " $" [fSym x]) r.r_rhs;
+    xprintf "\";\n" []);
   xprintf "|]\n\n" [];
 
   (* Semantic actions *)

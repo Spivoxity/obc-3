@@ -71,6 +71,9 @@ module SymSet : Set.S with type elt = symbol
 
 val symset_of_list : symbol list -> SymSet.t
 
+(* collect -- union of a list of SymSets *)
+val collect : SymSet.t list -> SymSet.t
+
 (* The grammar is augmented by productions
 
     *start* --> *entry* EOF
@@ -95,8 +98,10 @@ val has_value : symbol -> bool
 
 (* Rules *)
 
-val make_rule : symbol -> symbol list -> symbol option
+val create_rule : symbol -> symbol list -> symbol option
 	-> Lexing.position * string -> Lexing.position -> rule
+
+val make_rule : symbol -> symbol list -> unit
 
 val compare_rules : rule -> rule -> int
 
@@ -106,7 +111,6 @@ val do_rules : (rule -> unit) -> unit
 (* Printf formatting *)
 
 val fSym : symbol -> Print.arg
-val fChain : symbol list -> Print.arg
 val fRule : rule -> Print.arg
 val fSymSet : SymSet.t -> Print.arg
 

@@ -33,15 +33,11 @@ type ('a, 'b) t =
     contents : 'b array }
 
 let create n f y = 
-  { index = f; contents = Array.create n y }
+  { index = f; contents = Array.make n y }
 
 let clone v y = 
-  { index = v.index; contents = Array.create (Array.length v.contents) y }
+  { index = v.index; contents = Array.make (Array.length v.contents) y }
 
 let get v x = v.contents.(v.index x)
 
-let put v x y = v.contents.(v.index x) <- y
-
-let insert v x y = 
-  let i = v.index x in 
-  v.contents.(i) <- y :: v.contents.(i)
+let set v x y = v.contents.(v.index x) <- y

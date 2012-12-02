@@ -69,6 +69,8 @@ val rhs_end_pos : int -> Lexing.position
 
 val parse_error : string -> unit
 
+val yyerrstate : unit -> int
+
 val yyerrok : unit -> unit
 
 val clear_parser : unit -> unit

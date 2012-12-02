@@ -33,26 +33,29 @@ type 'a t =
     mutable elements: 'a array }
 
 let create n = 
-  { size = 0; elements = Array.create n (Obj.magic ()) }
+  { size = 0; elements = Array.make n (Obj.magic ()) }
+
+let make n v =
+  { size = n; elements = Array.make n v }
 
 let size v = v.size
 
 let get v i = 
   if i >= v.size then raise (Invalid_argument "index out of bounds");
-  Array.get v.elements i
+  v.elements.(i)
 
 let set v i x =
   if i >= v.size then raise (Invalid_argument "index out of bounds");
-  Array.set v.elements i x
+  v.elements.(i) <- x
 
 let append v x =
   let n = Array.length v.elements in
   if v.size >= n then begin
-    let newv = Array.create (2*n) (Obj.magic ()) in
+    let newv = Array.make (2*n) (Obj.magic ()) in
     Array.blit v.elements 0 newv 0 n;
     v.elements <- newv
   end;
-  Array.set v.elements v.size x;
+  v.elements.(v.size) <- x;
   v.size <- v.size+1
 
 let iter f v =

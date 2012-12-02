@@ -28,76 +28,91 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-open List
+type arg = vtable -> unit
 
-type arg = 
-    Str of string 		(* String *)
-  | Chr of char 		(* Character *)
-  | Ext of ((string -> arg list -> unit) -> unit)  (* Extension *)
+and vtable = { outch : char -> unit; prf : string -> arg list -> unit }
 
-let fNum n = Str (string_of_int n)
-let fFlo x = Str (string_of_float x)
-let fStr s = Str s
-let fChr c = Chr c
-let fExt f = Ext f
-
-(* do_string -- apply function to each char of a string *)
-let do_string f s =
-  for i = 0 to String.length s - 1 do f s.[i] done
-
-(* do_print -- the guts of printf and friends *)
-let rec do_print out_fun fmt args =
-  let n = String.length fmt in
-  let i, j = ref 0, ref 0 in
-  while !i < n do
-    let c = fmt.[!i] in
-    if c <> '$' then
-      out_fun c
+(* |do_print| -- the guts of printf and friends *)
+let rec do_print outch fmt args0 =
+  let vtab = { outch = outch; prf = do_print outch } in
+  let args = ref args0 in
+  for i = 0 to String.length fmt - 1 do
+    if fmt.[i] <> '$' then
+      outch fmt.[i]
     else begin
-      (try print_arg out_fun (List.nth args !j) 
-	with Failure _ -> do_string out_fun "***");
-      incr j
-    end;
-    incr i
+      try 
+	List.hd !args vtab;
+	args := List.tl !args 
+      with
+        Invalid_argument _ -> 
+	  outch '*'; outch '*'; outch '*'
+    end
   done
 
-(* print_arg -- convert a printf argument *)
-and print_arg out_fun =
-  function
-      Str s -> do_string out_fun s
-    | Chr c -> out_fun c
-    | Ext f -> f (do_print out_fun)
+let fChr ch vtab = vtab.outch ch
 
-let fFixNum (n, w) = 
-  let f prf =
-    let digits = string_of_int n in
-    let w0 = String.length digits in
-    for i = 1 to w - w0 do prf " " [] done;
-    prf "$" [Str digits] in
-  fExt f
+let fStr s vtab = 
+  for i = 0 to String.length s - 1 do vtab.outch s.[i] done
 
-(* fMeta -- insert output of recursive call to printf *)
+let fNum n = fStr (string_of_int n)
+let fFlo x = fStr (string_of_float x)
+let fBool b = fStr (if b then "true" else "false")
+let fExt g vtab = g vtab.prf
+
+let fFix (n, w) =
+  let digits = string_of_int n in
+  let w0 = String.length digits in
+  let padding = if w0 >= w then "" else String.make (w-w0) ' ' in
+  fStr (padding ^ digits)
+
+(* |fMeta| -- insert output of recursive call to printf *)
 let fMeta fmt args = fExt (function prf -> prf fmt args)
 
-let fSeq(cvt, sep) xs =
+(* |fList| -- format a comma-separated list *)
+let fList cvt xs = 
   let f prf =
     if xs <> [] then begin
-      prf "$" [cvt (hd xs)];
-      List.iter (function y -> prf "$$" [Str sep; cvt y]) (tl xs)
+      prf "$" [cvt (List.hd xs)];
+      List.iter (function y -> prf ", $" [cvt y]) (List.tl xs)
     end in
   fExt f
 
-(* fList -- format a comma-separated list *)
-let fList(cvt) xs = fSeq(cvt, ", ") xs
-
-(* fprintf -- print to a file *)
+(* |fprintf| -- print to a file *)
 let fprintf fp fmt args = do_print (output_char fp) fmt args
 
-(* printf -- print on standard output *)
+(* |printf| -- print on standard output *)
 let printf fmt args = fprintf stdout fmt args; flush stdout
 
-(* sprintf -- print to a string *)
+(* |sprintf| -- print to a string *)
 let sprintf fmt args =
-  let sbuf = Buffer.create 20 in
-  do_print (Buffer.add_char sbuf) fmt args;
-  Buffer.contents sbuf
+  let buf = Buffer.create 16 in
+  do_print (Buffer.add_char buf) fmt args;
+  Buffer.contents buf
+
+open Format
+
+let rec do_grind fmt args0 =
+  let vtab = { outch = print_char; prf = do_grind } in
+  let args = ref args0 in
+  for i = 0 to String.length fmt - 1 do
+    begin match fmt.[i] with
+	'$' ->
+	  begin try 
+	    List.hd !args vtab;
+	    args := List.tl !args 
+	  with
+	    Invalid_argument _ -> print_string "***"
+	  end
+      | ' ' -> print_space ()
+      | '_' -> print_char ' '
+      | '(' -> open_hvbox 2; print_char '('
+      | ')' -> print_char ')'; close_box ()
+      | ch -> print_char ch
+    end
+  done
+
+(* |fgrindf| -- pretty-printer *)
+let rec fgrindf fp fmt args =
+  set_formatter_out_channel fp;
+  do_grind fmt args;
+  print_newline ()

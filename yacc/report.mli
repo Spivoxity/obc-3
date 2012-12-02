@@ -34,6 +34,9 @@ open Lr0
 val start : string -> unit
 val show_rules : unit -> unit
 val show_firsts : unit -> unit
+val show_follow : string -> (Lr0.transition, Grammar.SymSet.t) Vector.t -> unit
+val show_lkb : 
+  (Lr0.state, (Grammar.rule * Lr0.transition) list) Vector.t -> unit
 val report_conflict : state -> symbol -> action -> action -> unit
 val show_state : state -> (symbol * action) list -> int -> 
 			(symbol * state) list -> bool -> unit

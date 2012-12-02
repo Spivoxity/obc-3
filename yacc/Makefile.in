@@ -44,8 +44,8 @@ VPATH = @srcdir@
 all: myacc yyparse.cmo
 
 COMMON = yyparse.cmo growvect.cmo vector.cmo print.cmo error.cmo util.cmo \
-	table.cmo grammar.cmo lr0.cmo lalr.cmo \
-	conflict.cmo report.cmo compile.cmo output.cmo
+	table.cmo grammar.cmo lr0.cmo report.cmo lalr.cmo \
+	conflict.cmo compile.cmo output.cmo
 
 bootyacc: $(COMMON) bootlexer.cmo bootyacc.cmo bootmain.cmo
 	ocamlc $(MLFLAGS) -o $@ str.cma $^
@@ -65,8 +65,7 @@ bootlexer.ml bootmain.ml: boot%: %
 %.ml: %.mll
 	ocamllex -o $@ $<
 
-%.mli %.ml: %.mly
-	$(MAKE) bootyacc
+%.mli %.ml: %.mly bootyacc
 	./bootyacc $<
 
 update: force
@@ -89,60 +88,53 @@ distclean: quiteclean
 realclean: distclean
 	rm -f Depend
 
+force:
+
 # Config and dependencies
 
-Makefile: $(srcdir)/Makefile.in ../config.status
-	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
+$(srcdir)/configure: configure.in
+	cd $(srcdir) && $(AUTOCONF)
 
-ML = compile.ml compile.mli conflict.ml conflict.mli error.ml \
-	error.mli grammar.ml grammar.mli growvect.ml growvect.mli \
-	lalr.ml lalr.mli lexer.ml lr0.ml lr0.mli main.ml \
-	output.ml output.mli report.ml report.mli table.ml table.mli \
-	util.ml util.mli yacc.ml yacc.mli yyparse.ml yyparse.mli \
-	print.mli print.ml vector.mli vector.ml
+config.status: configure
+	./config.status --recheck
 
-ifdef DEPEND
-$(srcdir)/Depend: $(ML)
-	$(CAMLDEP) $^ >$@
-endif
-
-# include $(srcdir)/Depend
-
-force:
+Makefile: $(srcdir)/Makefile.in config.status
+	./config.status $@
 
 ###
 
-compile.cmo   : compile.cmi table.cmi util.cmi
+bootlexer.cmo : bootyacc.cmi error.cmi grammar.cmi output.cmi print.cmi
+bootmain.cmo  : bootlexer.cmo bootyacc.cmi compile.cmi conflict.cmi \
+		error.cmi grammar.cmi lalr.cmi lr0.cmi output.cmi print.cmi \
+		report.cmi table.cmi util.cmi vector.cmi yyparse.cmi
+bootyacc.cmo  : bootyacc.cmi error.cmi print.cmi yyparse.cmi
+bootyacc.cmi  : grammar.cmi
+compile.cmo   : compile.cmi util.cmi
 compile.cmi   : grammar.cmi lr0.cmi
 conflict.cmo  : conflict.cmi error.cmi print.cmi util.cmi
 conflict.cmi  : grammar.cmi lr0.cmi
 error.cmo     : error.cmi
 error.cmi     : print.cmi
 grammar.cmo   : error.cmi grammar.cmi growvect.cmi
-grammar.cmi   : print.cmi table.cmi
+grammar.cmi   : print.cmi vector.cmi
 growvect.cmo  : growvect.cmi
-lalr.cmo      : grammar.cmi lalr.cmi lr0.cmi print.cmi
+lalr.cmo      : grammar.cmi lalr.cmi lr0.cmi print.cmi report.cmi vector.cmi
 lexer.cmo     : error.cmi grammar.cmi output.cmi print.cmi yacc.cmi
 lr0.cmo       : growvect.cmi lr0.cmi util.cmi
-lr0.cmi       : grammar.cmi print.cmi table.cmi vector.cmi
+lr0.cmi       : grammar.cmi print.cmi vector.cmi
 main.cmo      : compile.cmi conflict.cmi error.cmi grammar.cmi lalr.cmi \
 		lexer.cmo lr0.cmi output.cmi print.cmi report.cmi table.cmi \
-		util.cmi yacc.cmi
-output.cmo    : compile.cmi error.cmi grammar.cmi growvect.cmi lr0.cmi \
-		output.cmi print.cmi table.cmi yyparse.cmi
-output.cmi    : lr0.cmi
+		util.cmi vector.cmi yacc.cmi yyparse.cmi
+output.cmo    : compile.cmi error.cmi growvect.cmi output.cmi print.cmi \
+		yyparse.cmi
+output.cmi    : grammar.cmi lr0.cmi table.cmi vector.cmi
 print.cmo     : print.cmi
-report.cmi    : lr0.cmi
-report.cmo    : error.cmi grammar.cmi print.cmi report.cmi util.cmi
+report.cmo    : error.cmi print.cmi report.cmi
+report.cmi    : grammar.cmi lr0.cmi vector.cmi
 table.cmo     : table.cmi util.cmi
 table.cmi     : growvect.cmi
 util.cmo      : print.cmi util.cmi
-yacc.cmo      : error.cmi print.cmi yacc.cmi
+vector.cmo    : vector.cmi
+yacc.cmo      : error.cmi print.cmi yacc.cmi yyparse.cmi
 yacc.cmi      : grammar.cmi
 yyparse.cmo   : yyparse.cmi
-vector.cmo    : vector.cmi
-
-bootlexer.cmo : error.cmi grammar.cmi output.cmi print.cmi bootyacc.cmi
-bootyacc.cmi  : grammar.cmi
-bootyacc.cmo  : bootyacc.cmi
-bootmain.cmo  : lr0.cmi
