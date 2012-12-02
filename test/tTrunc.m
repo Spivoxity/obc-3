@@ -28,12 +28,12 @@ MODULE tTrunc STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tTrunc.%main 0 12 0
+PROC tTrunc.%main 0 3 0
 !         x := 32767;
 CONST 32767
 STGS tTrunc.x
 !         INC(x);
-CONST tTrunc.x
+GLOBAL tTrunc.x
 DUP 0
 LOADS
 INC
@@ -42,9 +42,9 @@ STORES
 ! 	Out.Int(x, 0); Out.Ln;
 CONST 0
 LDGS tTrunc.x
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !         ASSERT( x = -32768 ); (* here *)
 LDGS tTrunc.x
@@ -61,16 +61,16 @@ STGS tTrunc.x
 ! 	Out.Int(x, 0); Out.Ln;
 CONST 0
 LDGS tTrunc.x
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tTrunc.x 2
-GLOBAL tTrunc.y 4
+GLOVAR tTrunc.x 2
+GLOVAR tTrunc.y 4
 
 ! End of file
 ]]*)

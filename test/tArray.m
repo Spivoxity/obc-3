@@ -29,7 +29,7 @@ MODULE tArray STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tArray.%main 0 16 0
+PROC tArray.%main 0 4 0
 !   FOR i := 0 TO 9 DO 
 CONST 0
 STGW tArray.i
@@ -38,7 +38,7 @@ LABEL 1
 !     a[i] := SHORT(i) 
 LDGW tArray.i
 CONVNS
-CONST tArray.a
+GLOBAL tArray.a
 LDGW tArray.i
 CONST 10
 BOUND 14
@@ -61,7 +61,7 @@ JUMP 4
 LABEL 3
 !     s := s + a[i] 
 LDGW tArray.s
-CONST tArray.a
+GLOBAL tArray.a
 LDGW tArray.i
 CONST 10
 BOUND 19
@@ -79,17 +79,17 @@ JLEQ 3
 !   Out.Int(s, 0); Out.Ln
 CONST 0
 LDGW tArray.s
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tArray.i 4
-GLOBAL tArray.s 4
-GLOBAL tArray.a 20
+GLOVAR tArray.i 4
+GLOVAR tArray.s 4
+GLOVAR tArray.a 20
 
 ! End of file
 ]]*)

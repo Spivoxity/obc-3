@@ -140,5 +140,6 @@ BEGIN
   Max(3);
   WITH q: ptr DO undef; undef END;
   x := 9999999999;
-  f^[0] := f^[long]
+  f^[0] := f^[long];
+  f[0] := f[undecl]
 END SemError.

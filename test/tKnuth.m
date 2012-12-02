@@ -95,7 +95,7 @@ MODULE tKnuth STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tKnuth.Normalize 1 16 0x00100001
+PROC tKnuth.Normalize 1 4 0x00100001
 ! PROCEDURE Normalize(VAR a: bignum);
 !   FOR i := 0 TO N-2 DO
 CONST 0
@@ -145,7 +145,7 @@ JLEQ 1
 RETURN
 END
 
-PROC tKnuth.Set 1 16 0x00100001
+PROC tKnuth.Set 1 4 0x00100001
 ! PROCEDURE Set(VAR a: bignum; x: INTEGER);
 !   a[0] := x;
 LDLW 16
@@ -169,12 +169,12 @@ CONST 9
 JLEQ 3
 !   Normalize(a)
 LDLW 12
-CONST tKnuth.Normalize
+GLOBAL tKnuth.Normalize
 CALL 1
 RETURN
 END
 
-PROC tKnuth.Add 11 16 0x00100001
+PROC tKnuth.Add 11 4 0x00100001
 ! PROCEDURE Add(VAR a1: bignum; a2: bignum);
 LOCAL -44
 LDLW 16
@@ -208,12 +208,12 @@ CONST 9
 JLEQ 5
 !   Normalize(a1)
 LDLW 12
-CONST tKnuth.Normalize
+GLOBAL tKnuth.Normalize
 CALL 1
 RETURN
 END
 
-PROC tKnuth.PrintPiece 1 16 0
+PROC tKnuth.PrintPiece 1 4 0
 ! PROCEDURE PrintPiece(x: INTEGER);
 !   m := M;
 CONST 1000000000
@@ -231,7 +231,7 @@ LDLW 12
 LDLW -4
 ZCHECK 41
 DIV
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     x := x MOD m
 LDLW 12
@@ -247,7 +247,7 @@ JGT 7
 RETURN
 END
 
-PROC tKnuth.Print 1 16 0x00100001
+PROC tKnuth.Print 1 4 0x00100001
 ! PROCEDURE Print(VAR a: bignum);
 !   i := N-1;
 CONST 9
@@ -273,7 +273,7 @@ LDLW -4
 CONST 10
 BOUND 51
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 DECL -4
 JUMP 13
@@ -283,7 +283,7 @@ LDLW -4
 CONST 10
 BOUND 52
 LDIW
-CONST tKnuth.PrintPiece
+GLOBAL tKnuth.PrintPiece
 CALL 1
 DECL -4
 LABEL 13
@@ -293,7 +293,7 @@ JGEQZ 12
 RETURN
 END
 
-PROC tKnuth.Calc 224 16 0x00200001
+PROC tKnuth.Calc 224 4 0x00200001
 ! PROCEDURE Calc(n: INTEGER; VAR ans: bignum);
 !   FOR j := 0 TO K-1 DO arg[j] := 0; Set(val[j], 1) END;
 CONST 0
@@ -314,7 +314,7 @@ BOUND 62
 CONST 40
 TIMES
 PLUSA
-CONST tKnuth.Set
+GLOBAL tKnuth.Set
 CALL 2
 INCL -8
 LABEL 15
@@ -380,7 +380,7 @@ BOUND 72
 CONST 40
 TIMES
 PLUSA
-CONST tKnuth.Add
+GLOBAL tKnuth.Add
 CALL 2
 LABEL 21
 !     WHILE j > 0 DO
@@ -400,23 +400,23 @@ FIXCOPY
 RETURN
 END
 
-PROC tKnuth.%main 0 16 0
+PROC tKnuth.%main 0 4 0
 !   Calc(10000, ans);
-CONST tKnuth.ans
+GLOBAL tKnuth.ans
 CONST 10000
-CONST tKnuth.Calc
+GLOBAL tKnuth.Calc
 CALL 2
 !   Print(ans); Out.Ln
-CONST tKnuth.ans
-CONST tKnuth.Print
+GLOBAL tKnuth.ans
+GLOBAL tKnuth.Print
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tKnuth.ans 40
+GLOVAR tKnuth.ans 40
 
 ! End of file
 ]]*)

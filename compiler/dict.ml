@@ -99,7 +99,7 @@ and def =
     d_comment: docstring;	(* Location of doc comment *)
     mutable d_map: gcmap }	(* Pointer map *)
 
-(* otype -- picoPascal types *)
+(* otype -- Oberon types *)
 and otype = 
   { t_id: int;			(* Serial number *)
     mutable t_name: ident;	(* Name *)
@@ -312,7 +312,7 @@ let boolean = basic_type BoolT bool_rep "BOOLEAN"
 let realtype = basic_type FloatT float_rep "REAL"
 let longreal = basic_type DoubleT double_rep "LONGREAL"
 let settype = basic_type SetT int_rep "SET"
-let niltype = basic_type NilT addr_rep "NIL"
+let niltype = basic_type PtrT addr_rep "NIL"
 let errtype = basic_type ErrT int_rep "*errtype*"
 
 let ptrtype = sys_type PtrT addr_rep "PTR"
@@ -472,8 +472,7 @@ let kind_of t =
   match t.t_guts with 
       BasicType k -> k
     | EnumType n -> IntT
-    | PointerType _ -> PtrT
-    | ProcType _ -> ProcT
+    | (PointerType _ | ProcType _) -> PtrT
     | _ -> failwith (sprintf "kind_of ($)" [fOType t])
 
 let join_type t1 t2 =
@@ -482,8 +481,6 @@ let join_type t1 t2 =
 let is_basic t = match t.t_guts with BasicType _ -> true | _ -> false
 
 let is_errtype t = (t.t_guts = BasicType ErrT)
-
-let is_niltype t = (t.t_guts = BasicType NilT)
 
 let is_enum t =
   match t.t_guts with EnumType _ -> true | _ -> false
@@ -512,6 +509,8 @@ let same_types t1 t2 =
     | (_, BasicType ErrT) -> true
     (* Otherwise, use name equivalence *)
     | _ -> t1.t_module = t2.t_module && t1.t_id = t2.t_id
+
+let is_niltype t = same_types t niltype
 
 (* This is used to match open array parameters *)
 let rec array_match t1 t2 =

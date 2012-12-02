@@ -55,7 +55,7 @@ MODULE tMixIt STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMixIt.%main 0 16 0
+PROC tMixIt.%main 0 4 0
 !   x := +3; r := 3.14;
 CONST 3
 STGS tMixIt.x
@@ -69,9 +69,9 @@ FPLUS
 STGF tMixIt.r
 !   Out.Real(r); Out.Ln;     (* 6.14000 *)
 LDGF tMixIt.r
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   s := x;
 LDGS tMixIt.x
@@ -79,9 +79,9 @@ CONVND
 STGD tMixIt.s
 !   Out.LongReal(s); Out.Ln; (* 3.00000000000 *)
 LDGD tMixIt.s
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   s := LONG(r);
 LDGF tMixIt.r
@@ -89,9 +89,9 @@ CONVFD
 STGD tMixIt.s
 !   Out.LongReal(s); Out.Ln; (* 6.14000034332 *)
 LDGD tMixIt.s
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   s := s + 3;
 LDGD tMixIt.s
@@ -100,9 +100,9 @@ DPLUS
 STGD tMixIt.s
 !   Out.LongReal(s); Out.Ln; (* 9.14000034332 *)
 LDGD tMixIt.s
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   s := s + x;
 LDGD tMixIt.s
@@ -112,9 +112,9 @@ DPLUS
 STGD tMixIt.s
 !   Out.LongReal(s); Out.Ln; (* 12.1400003433 *)
 LDGD tMixIt.s
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   s := r + x;
 LDGF tMixIt.r
@@ -125,9 +125,9 @@ CONVFD
 STGD tMixIt.s
 !   Out.LongReal(s); Out.Ln; (* 9.14000034332 *)
 LDGD tMixIt.s
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   s := LONG(r) + x;
 LDGF tMixIt.r
@@ -138,9 +138,9 @@ DPLUS
 STGD tMixIt.s
 !   Out.LongReal(s); Out.Ln; (* 9.14000034332 *)
 LDGD tMixIt.s
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   x := -3; r := x; Out.Real(r); Out.Ln;
 CONST -3
@@ -149,20 +149,20 @@ LDGS tMixIt.x
 CONVNF
 STGF tMixIt.r
 LDGF tMixIt.r
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   x := SHORT(ENTIER(r)); Out.Int(x, 0); Out.Ln;
 LDGF tMixIt.r
-CONST INTREAL
+GLOBAL INTREAL
 CALLW 1
 STGS tMixIt.x
 CONST 0
 LDGS tMixIt.x
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   y := 65535; r := SHORT(y); Out.Real(r); Out.Ln;
 CONST 65535
@@ -172,26 +172,26 @@ CONVNS
 CONVNF
 STGF tMixIt.r
 LDGF tMixIt.r
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   r := SHORT(65535); Out.Real(r); Out.Ln;
 FCONST -1.
 STGF tMixIt.r
 LDGF tMixIt.r
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tMixIt.x 2
-GLOBAL tMixIt.y 4
-GLOBAL tMixIt.r 4
-GLOBAL tMixIt.s 8
+GLOVAR tMixIt.x 2
+GLOVAR tMixIt.y 4
+GLOVAR tMixIt.r 4
+GLOVAR tMixIt.s 8
 
 ! End of file
 ]]*)

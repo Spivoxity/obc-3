@@ -52,7 +52,6 @@ and float_rep = { m_size = 4; m_align = 4 }
 and double_rep = { m_size = 8; m_align = 4 }
 and void_rep = { m_size = 0; m_align = 4 }
 and addr_rep = { m_size = 4; m_align = 4 }
-and proc_rep = { m_size = 4; m_align = 4 }
 and param_rep = { m_size = 4; m_align = 4 }
 
 let word_size = int_rep.m_size

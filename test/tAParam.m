@@ -36,7 +36,7 @@ MODULE tAParam STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tAParam.Sum 7 16 0
+PROC tAParam.Sum 7 4 0
 ! PROCEDURE Sum(dummy: LONGREAL; a: row): INTEGER;
 LOCAL -28
 LDLW 20
@@ -73,7 +73,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tAParam.%main 0 20 0
+PROC tAParam.%main 0 5 0
 !   FOR j := 0 TO LEN(b)-1 DO 
 CONST 0
 STGW tAParam.j
@@ -82,7 +82,7 @@ LABEL 3
 !     b[j] := j+1
 LDGW tAParam.j
 INC
-CONST tAParam.b
+GLOBAL tAParam.b
 LDGW tAParam.j
 CONST 5
 BOUND 26
@@ -97,20 +97,20 @@ CONST 4
 JLEQ 3
 !   Out.Int(Sum(0, b), 0); Out.Ln;
 CONST 0
-CONST tAParam.b
+GLOBAL tAParam.b
 DCONST 0.
-CONST tAParam.Sum
+GLOBAL tAParam.Sum
 CALLW 3
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tAParam.j 4
-GLOBAL tAParam.b 20
+GLOVAR tAParam.j 4
+GLOVAR tAParam.b 20
 
 ! End of file
 ]]*)

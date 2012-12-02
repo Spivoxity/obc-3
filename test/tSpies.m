@@ -60,22 +60,21 @@ IMPORT MathL STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSpies.Unit 5 24 0x00010001
+PROC tSpies.Unit 5 6 0x00010001
 ! PROCEDURE Unit(lat, long: R): Vector;
 !   NEW(r);
 CONST 24
-CONST tSpies.%2
+GLOBAL tSpies.%2
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   c := M.Cos(M.pi*lat/180);
 LDLD 12
 DCONST 3.14159265359
 DTIMES
 DCONST 180.
-DZCHECK 13
 DDIV
-CONST MathL.Cos
+GLOBAL MathL.Cos
 CALLD 2
 STLD -12
 !   s := M.Sin(M.pi*lat/180);
@@ -83,9 +82,8 @@ LDLD 12
 DCONST 3.14159265359
 DTIMES
 DCONST 180.
-DZCHECK 14
 DDIV
-CONST MathL.Sin
+GLOBAL MathL.Sin
 CALLD 2
 STLD -20
 !   r.x := c * M.Cos(M.pi*long/180);
@@ -94,9 +92,8 @@ LDLD 20
 DCONST 3.14159265359
 DTIMES
 DCONST 180.
-DZCHECK 15
 DDIV
-CONST MathL.Cos
+GLOBAL MathL.Cos
 CALLD 2
 DTIMES
 LDLW -4
@@ -108,9 +105,8 @@ LDLD 20
 DCONST 3.14159265359
 DTIMES
 DCONST 180.
-DZCHECK 16
 DDIV
-CONST MathL.Sin
+GLOBAL MathL.Sin
 CALLD 2
 DTIMES
 LDLW -4
@@ -128,13 +124,13 @@ LDLW -4
 RETURNW
 END
 
-PROC tSpies.Cross 1 24 0x00310001
+PROC tSpies.Cross 1 6 0x00310001
 ! PROCEDURE Cross(a, b: Vector): Vector;
 !   NEW(r);
 CONST 24
-CONST tSpies.%2
+GLOBAL tSpies.%2
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   r.x := a.y*b.z - b.y*a.z;
 LDLW 12
@@ -208,7 +204,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSpies.LatLong 2 24 0x00700001
+PROC tSpies.LatLong 2 6 0x00700001
 ! PROCEDURE LatLong(a: Vector; VAR lat, long: R);
 !   u := M.Sqrt(a.x*a.x + a.y*a.y);
 LDLW 12
@@ -228,7 +224,7 @@ CONST 1
 LDID
 DTIMES
 DPLUS
-CONST MathL.Sqrt
+GLOBAL MathL.Sqrt
 CALLD 2
 STLD -8
 !   lat := M.Arctan2(a.z, u) * 180/M.pi;
@@ -237,12 +233,11 @@ LDLW 12
 NCHECK 35
 CONST 2
 LDID
-CONST MathL.Arctan2
+GLOBAL MathL.Arctan2
 CALLD 4
 DCONST 180.
 DTIMES
 DCONST 3.14159265359
-DZCHECK 35
 DDIV
 LDLW 16
 STORED
@@ -254,82 +249,81 @@ LDLW 12
 NCHECK 36
 CONST 1
 LDID
-CONST MathL.Arctan2
+GLOBAL MathL.Arctan2
 CALLD 4
 DCONST 180.
 DTIMES
 DCONST 3.14159265359
-DZCHECK 36
 DDIV
 LDLW 20
 STORED
 RETURN
 END
 
-PROC tSpies.%main 0 24 0
+PROC tSpies.%main 0 6 0
 !   v1 := Unit(50.313685,-4.223152);	(* Rame Head *)
 DCONST -4.223152
 DCONST 50.313685
-CONST tSpies.Unit
+GLOBAL tSpies.Unit
 CALLW 4
 STGW tSpies.v1
 !   v2 := Unit(52.40025,-4.088076);	(* Near Aberystwyth *)
 DCONST -4.088076
 DCONST 52.40025
-CONST tSpies.Unit
+GLOBAL tSpies.Unit
 CALLW 4
 STGW tSpies.v2
 !   v3 := Unit(51.487304,-0.124317);	(* MI6 HQ *)
 DCONST -0.124317
 DCONST 51.487304
-CONST tSpies.Unit
+GLOBAL tSpies.Unit
 CALLW 4
 STGW tSpies.v3
 !   v4 := Unit(51.99647,-0.74287);	(* Bletchley Park *)
 DCONST -0.74287
 DCONST 51.99647
-CONST tSpies.Unit
+GLOBAL tSpies.Unit
 CALLW 4
 STGW tSpies.v4
 !   LatLong(Cross(Cross(v2, v3), Cross(v1, v4)), lat, long);
-CONST tSpies.long
-CONST tSpies.lat
+GLOBAL tSpies.long
+GLOBAL tSpies.lat
 LDGW tSpies.v4
 LDGW tSpies.v1
-CONST tSpies.Cross
+GLOBAL tSpies.Cross
 CALLW 2
 LDGW tSpies.v3
 LDGW tSpies.v2
-CONST tSpies.Cross
+GLOBAL tSpies.Cross
 STKMAP 0x00000009
 CALLW 2
-CONST tSpies.Cross
+GLOBAL tSpies.Cross
 CALLW 2
-CONST tSpies.LatLong
+GLOBAL tSpies.LatLong
 CALL 3
 !   Out.LongReal(lat); Out.String(", "); Out.LongReal(long); Out.Ln
 LDGD tSpies.lat
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
 CONST 3
-CONST tSpies.%1
-CONST Out.String
+GLOBAL tSpies.%1
+GLOBAL Out.String
 CALL 2
 LDGD tSpies.long
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSpies.lat 8
-GLOBAL tSpies.long 8
-GLOBAL tSpies.v1 4
-GLOBAL tSpies.v2 4
-GLOBAL tSpies.v3 4
-GLOBAL tSpies.v4 4
+GLOVAR tSpies.lat 8
+GLOVAR tSpies.long 8
+GLOVAR tSpies.v1 4
+GLOVAR tSpies.v2 4
+GLOVAR tSpies.v3 4
+GLOVAR tSpies.v4 4
 
 ! Pointer map
 DEFINE tSpies.%gcmap

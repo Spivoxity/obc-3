@@ -47,13 +47,13 @@ MODULE tWith STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tWith.doeval 0 12 0x00100001
+PROC tWith.doeval 0 3 0x00100001
 ! PROCEDURE doeval (ex: Obj): INTEGER;
 !   WITH ex : OpObj DO
 LDLW 12
 NCHECK 19
 LDNW -4
-CONST tWith.OpNode
+GLOBAL tWith.OpNode
 TYPETEST 1
 JUMPF 2
 !     CASE ex.name OF
@@ -66,12 +66,12 @@ JNEQ 3
 LDLW 12
 NCHECK 21
 LDNW 4
-CONST tWith.doeval
+GLOBAL tWith.doeval
 CALLW 1
 LDLW 12
 NCHECK 21
 LDNW 8
-CONST tWith.doeval
+GLOBAL tWith.doeval
 CALLW 1
 PLUS
 RETURNW
@@ -86,17 +86,17 @@ LABEL 1
 ERROR E_RETURN 17
 END
 
-PROC tWith.%main 0 16 0
+PROC tWith.%main 0 4 0
 !   NEW(p); NEW(q);
 CONST 0
-CONST tWith.Empty
-CONST tWith.p
-CONST NEW
+GLOBAL tWith.Empty
+GLOBAL tWith.p
+GLOBAL NEW
 CALL 3
 CONST 12
-CONST tWith.OpNode
-CONST tWith.q
-CONST NEW
+GLOBAL tWith.OpNode
+GLOBAL tWith.q
+GLOBAL NEW
 CALL 3
 !   q.name := "+"; q.left := p; q.right := p;
 CONST 43
@@ -114,18 +114,18 @@ STNW 8
 !   Out.Int(doeval(q), 0); Out.Ln
 CONST 0
 LDGW tWith.q
-CONST tWith.doeval
+GLOBAL tWith.doeval
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tWith.p 4
-GLOBAL tWith.q 4
+GLOVAR tWith.p 4
+GLOVAR tWith.q 4
 
 ! Pointer map
 DEFINE tWith.%gcmap

@@ -20,7 +20,7 @@ END tDivZ64.
 MODULE tDivZ64 STAMP 0
 ENDHDR
 
-PROC tDivZ64.%main 0 16 0
+PROC tDivZ64.%main 0 4 0
 !   x := 0;
 CONST 0
 CONVNQ
@@ -36,7 +36,7 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tDivZ64.x 8
+GLOVAR tDivZ64.x 8
 
 ! End of file
 ]]*)

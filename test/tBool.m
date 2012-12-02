@@ -23,7 +23,7 @@ MODULE tBool STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBool.%main 0 20 0
+PROC tBool.%main 0 5 0
 !   x := 3;
 FCONST 3.
 STGF tBool.x
@@ -43,16 +43,16 @@ CONST 0
 CONST 0
 LDGF tBool.x
 CONVFD
-CONST Out.Fixed
+GLOBAL Out.Fixed
 CALL 4
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tBool.x 4
-GLOBAL tBool.b 1
+GLOVAR tBool.x 4
+GLOVAR tBool.b 1
 
 ! End of file
 ]]*)

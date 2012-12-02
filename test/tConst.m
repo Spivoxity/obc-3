@@ -33,7 +33,7 @@ MODULE tConst STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tConst.Print 0 12 0
+PROC tConst.Print 0 3 0
 ! PROCEDURE Print(s: ARRAY OF CHAR; n: INTEGER);
 LOCAL 12
 LDLW 16
@@ -41,57 +41,57 @@ FLEXCOPY
 !   Out.String(s); Out.Char(' '); Out.Int(n, 0); Out.Ln
 LDLW 16
 LDLW 12
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDLW 20
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tConst.%main 0 16 0
+PROC tConst.%main 0 4 0
 !   Print("127", 127);
 CONST 127
 CONST 4
-CONST tConst.%1
-CONST tConst.Print
+GLOBAL tConst.%1
+GLOBAL tConst.Print
 CALL 3
 !   Print("128", 128);
 CONST 128
 CONST 4
-CONST tConst.%2
-CONST tConst.Print
+GLOBAL tConst.%2
+GLOBAL tConst.Print
 CALL 3
 !   Print("255", 255);
 CONST 255
 CONST 4
-CONST tConst.%3
-CONST tConst.Print
+GLOBAL tConst.%3
+GLOBAL tConst.Print
 CALL 3
 !   Print("-127", -127);
 CONST -127
 CONST 5
-CONST tConst.%4
-CONST tConst.Print
+GLOBAL tConst.%4
+GLOBAL tConst.Print
 CALL 3
 !   Print("-128", -128);
 CONST -128
 CONST 5
-CONST tConst.%5
-CONST tConst.Print
+GLOBAL tConst.%5
+GLOBAL tConst.Print
 CALL 3
 !   Print("-129", -129)
 CONST -129
 CONST 5
-CONST tConst.%6
-CONST tConst.Print
+GLOBAL tConst.%6
+GLOBAL tConst.Print
 CALL 3
 RETURN
 END

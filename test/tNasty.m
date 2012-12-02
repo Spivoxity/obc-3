@@ -34,7 +34,7 @@ MODULE tNasty STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tNasty.Nasty 0 8 0
+PROC tNasty.Nasty 0 2 0
 ! PROCEDURE Nasty(x: INTEGER): INTEGER;
 !   y := 1;
 CONST 1
@@ -46,7 +46,7 @@ TIMES
 RETURNW
 END
 
-PROC tNasty.%main 0 12 0
+PROC tNasty.%main 0 3 0
 !   x := 3; y := 5;
 CONST 3
 STGW tNasty.x
@@ -55,24 +55,24 @@ STGW tNasty.y
 !   z := y + Nasty(x);
 LDGW tNasty.y
 LDGW tNasty.x
-CONST tNasty.Nasty
+GLOBAL tNasty.Nasty
 CALLW 1
 PLUS
 STGW tNasty.z
 !   Out.Int(z, 0); Out.Ln
 CONST 0
 LDGW tNasty.z
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tNasty.x 4
-GLOBAL tNasty.y 4
-GLOBAL tNasty.z 4
+GLOVAR tNasty.x 4
+GLOVAR tNasty.y 4
+GLOVAR tNasty.z 4
 
 ! End of file
 ]]*)

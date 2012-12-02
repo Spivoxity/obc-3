@@ -48,7 +48,7 @@ MODULE tRecur STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRecur.Recip 2007 16 0
+PROC tRecur.Recip 2007 4 0
 ! PROCEDURE Recip(N: INTEGER);
 !   FOR i := 0 TO N-1 DO p[i] := -1 END;
 LDLW 12
@@ -121,16 +121,16 @@ LDIW
 STLW -8
 !   Out.String("1/"); Out.Int(N, 0); Out.String(" = 0.");
 CONST 3
-CONST tRecur.%1
-CONST Out.String
+GLOBAL tRecur.%1
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDLW 12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 6
-CONST tRecur.%2
-CONST Out.String
+GLOBAL tRecur.%2
+GLOBAL Out.String
 CALL 2
 !   FOR i := 0 TO j-1 DO Out.Int(d[i], 0) END;
 LDLW -8
@@ -146,7 +146,7 @@ LDLW -4
 CONST 1000
 BOUND 21
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 INCL -4
 LABEL 9
@@ -155,8 +155,8 @@ LDLW -8024
 JLEQ 8
 !   Out.String("|");
 CONST 2
-CONST tRecur.%3
-CONST Out.String
+GLOBAL tRecur.%3
+GLOBAL Out.String
 CALL 2
 !   FOR i := j TO k-1 DO Out.Int(d[i], 0) END;
 LDLW -12
@@ -172,7 +172,7 @@ LDLW -4
 CONST 1000
 BOUND 23
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 INCL -4
 LABEL 11
@@ -181,34 +181,34 @@ LDLW -8028
 JLEQ 10
 !   Out.String("|"); Out.Ln
 CONST 2
-CONST tRecur.%3
-CONST Out.String
+GLOBAL tRecur.%3
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tRecur.%main 0 16 0
+PROC tRecur.%main 0 4 0
 !   Recip(2);
 CONST 2
-CONST tRecur.Recip
+GLOBAL tRecur.Recip
 CALL 1
 !   Recip(3);
 CONST 3
-CONST tRecur.Recip
+GLOBAL tRecur.Recip
 CALL 1
 !   Recip(12);
 CONST 12
-CONST tRecur.Recip
+GLOBAL tRecur.Recip
 CALL 1
 !   Recip(14);
 CONST 14
-CONST tRecur.Recip
+GLOBAL tRecur.Recip
 CALL 1
 !   Recip(33)
 CONST 33
-CONST tRecur.Recip
+GLOBAL tRecur.Recip
 CALL 1
 RETURN
 END

@@ -54,7 +54,7 @@ let fId x = fStr (extern x)
 let fQual (m, x) = 
    if m = !current || m = anon then fId x else fMeta "$.$" [fId m; fId x]
 
-(* libid -- type of picoPascal library procedures *)
+(* libid -- type of Oberon library procedures *)
 type libid = 
     ChrFun | OrdFun | OddFun | NewProc | LenFun | AbsFun 
   | IncProc | DecProc | Assert | Entier | Short | Long
@@ -120,11 +120,11 @@ let prim_table () = !primtbl
 type kind = 
     NumT | ShortT | IntT | LongT | FloatT | DoubleT  
 				(* Numerics in order of width *)
-  | CharT | BoolT | SetT | PtrT | ByteT | ProcT
+  | CharT | BoolT | SetT | PtrT | ByteT
 				(* Non-numerics *)
-  | VoidT | NilT | ErrT		(* Fictitious types *)
+  | VoidT | ErrT		(* Fictitious types *)
 
-(* op -- type of picoPascal operators *)
+(* op -- type of Oberon operators *)
 type op = 
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
   | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA

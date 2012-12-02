@@ -58,14 +58,14 @@ IMPORT xPrelude STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tHide.spot.one 0 12 0x00100001
+PROC tHide.spot.one 0 3 0x00100001
 ! PROCEDURE (VAR b: spot) one;
 !   Out.String("spot.one"); Out.Ln;
 CONST 9
-CONST tHide.%1
-CONST Out.String
+GLOBAL tHide.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   b.x := 34
 CONST 34
@@ -74,47 +74,47 @@ STNW 8
 RETURN
 END
 
-PROC tHide.spot.two 0 12 0x00100001
+PROC tHide.spot.two 0 3 0x00100001
 ! PROCEDURE (VAR b: spot) two*;
 !   Out.String("spot.two "); Out.Int(b.x, 0); Out.Ln
 CONST 10
-CONST tHide.%2
-CONST Out.String
+GLOBAL tHide.%2
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDLW 12
 LDNW 8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tHide.%main 0 12 0
+PROC tHide.%main 0 3 0
 !   bb.x := 23;
 CONST 23
-CONST tHide.bb
+GLOBAL tHide.bb
 STNW 8
 !   b.proc; bb.proc; bb.one
-CONST xPrelude.blob
-CONST tHide.b
-CONST xPrelude.blob.proc
+GLOBAL xPrelude.blob
+GLOBAL tHide.b
+GLOBAL xPrelude.blob.proc
 CALL 2
-CONST tHide.spot
-CONST tHide.bb
-CONST xPrelude.blob.proc
+GLOBAL tHide.spot
+GLOBAL tHide.bb
+GLOBAL xPrelude.blob.proc
 CALL 2
-CONST tHide.spot
-CONST tHide.bb
-CONST tHide.spot.one
+GLOBAL tHide.spot
+GLOBAL tHide.bb
+GLOBAL tHide.spot.one
 CALL 2
 RETURN
 END
 
 ! Global variables
-GLOBAL tHide.b 8
-GLOBAL tHide.bb 12
+GLOVAR tHide.b 8
+GLOVAR tHide.bb 12
 
 ! String "spot.one"
 DEFINE tHide.%1

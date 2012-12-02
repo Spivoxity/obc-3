@@ -31,7 +31,7 @@
 (*
 This module contains a number of constants that define the layout of
 data in the target machine.  The |metrics| records |int_rep|, etc.,
-define the representation of the primitive types of picoPascal;
+define the representation of the primitive types of Oberon;
 |param_rep| defines the representation of procedure parameters, and
 |proc_rep| defines the representation of closures.
 
@@ -60,7 +60,6 @@ val float_rep : metrics			(* real type *)
 val double_rep : metrics		(* longreal type *)
 val void_rep : metrics			(* void type *)
 val addr_rep : metrics			(* all addresses *)
-val proc_rep : metrics			(* closures *)
 val param_rep : metrics			(* procedure parameters *)
 
 val word_size : int

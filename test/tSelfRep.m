@@ -12,44 +12,44 @@ MODULE tSelfRep STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSelfRep.%main 0 12 0
+PROC tSelfRep.%main 0 3 0
 CONST 40
-CONST tSelfRep.%1
-CONST Out.String
+GLOBAL tSelfRep.%1
+GLOBAL Out.String
 CALL 2
 CONST 34
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 40
-CONST tSelfRep.%1
-CONST Out.String
+GLOBAL tSelfRep.%1
+GLOBAL Out.String
 CALL 2
 CONST 34
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 7
-CONST tSelfRep.%3
-CONST Out.String
+GLOBAL tSelfRep.%3
+GLOBAL Out.String
 CALL 2
 CONST 34
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 171
-CONST tSelfRep.%2
-CONST Out.String
+GLOBAL tSelfRep.%2
+GLOBAL Out.String
 CALL 2
 CONST 34
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 171
-CONST tSelfRep.%2
-CONST Out.String
+GLOBAL tSelfRep.%2
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END

@@ -72,21 +72,21 @@ MODULE tFlex2 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFlex2.Foo 4 20 0x00100001
+PROC tFlex2.Foo 4 5 0x00100001
 ! PROCEDURE Foo(VAR m: Matrix);
 !   Out.Int(LEN(m), 0); Out.Ln;
 CONST 0
 LDLW 16
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(LEN(m, 2), 0); Out.Ln;
 CONST 0
 LDLW 20
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO LEN(m, 1)-1 DO
 LDLW 16
@@ -138,19 +138,19 @@ JLEQ 1
 RETURN
 END
 
-PROC tFlex2.p 0 20 0x00100001
+PROC tFlex2.p 0 5 0x00100001
 ! PROCEDURE p(VAR v: ARRAY OF INTEGER);
 !   Out.Int(LEN(v), 0); Out.Ln
 CONST 0
 LDLW 16
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tFlex2.q 0 20 0x00100001
+PROC tFlex2.q 0 5 0x00100001
 ! PROCEDURE q(VAR m: Matrix);
 !   p(m[0]); 
 LDLW 20
@@ -161,32 +161,32 @@ BOUND 44
 LDLW 20
 TIMES
 INDEXW
-CONST tFlex2.p
+GLOBAL tFlex2.p
 CALL 2
 !   Out.Int(LEN(m[0]), 0); Out.Ln
 CONST 0
 LDLW 20
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tFlex2.%main 0 32 0
+PROC tFlex2.%main 0 8 0
 !   Foo(mm);
 CONST 4
 CONST 3
-CONST tFlex2.mm
-CONST tFlex2.Foo
+GLOBAL tFlex2.mm
+GLOBAL tFlex2.Foo
 CALL 3
 !   Out.Int(mm[1][2], 0); Out.Ln;
 CONST 0
-CONST tFlex2.mm
+GLOBAL tFlex2.mm
 LDNW 24
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   NEW(tt, 4, 5);
 CONST 5
@@ -194,8 +194,8 @@ CONST 4
 CONST 2
 CONST 4
 CONST 0
-CONST tFlex2.tt
-CONST NEWFLEX
+GLOBAL tFlex2.tt
+GLOBAL NEWFLEX
 CALL 6
 !   Foo(tt^);
 LDGW tFlex2.tt
@@ -208,7 +208,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST tFlex2.Foo
+GLOBAL tFlex2.Foo
 CALL 3
 !   Out.Int(LEN(tt^), 0); Out.Ln;
 CONST 0
@@ -216,9 +216,9 @@ LDGW tFlex2.tt
 NCHECK 58
 LDNW -4
 LDNW 4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(LEN(tt^, 2), 0); Out.Ln;
 CONST 0
@@ -226,9 +226,9 @@ LDGW tFlex2.tt
 NCHECK 59
 LDNW -4
 LDNW 8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(tt[3][4], 0); Out.Ln;
 CONST 0
@@ -250,15 +250,15 @@ LDNW 8
 BOUND 60
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   q(mm); q(tt^);
 CONST 4
 CONST 3
-CONST tFlex2.mm
-CONST tFlex2.q
+GLOBAL tFlex2.mm
+GLOBAL tFlex2.q
 CALL 3
 LDGW tFlex2.tt
 NCHECK 62
@@ -270,7 +270,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST tFlex2.q
+GLOBAL tFlex2.q
 CALL 3
 !   NEW(uu, 4, 5, 6); q(uu[1]);
 CONST 6
@@ -279,8 +279,8 @@ CONST 4
 CONST 3
 CONST 4
 CONST 0
-CONST tFlex2.uu
-CONST NEWFLEX
+GLOBAL tFlex2.uu
+GLOBAL NEWFLEX
 CALL 7
 LDGW tFlex2.uu
 NCHECK 64
@@ -306,15 +306,15 @@ LDNW -4
 LDNW 12
 TIMES
 INDEXW
-CONST tFlex2.q
+GLOBAL tFlex2.q
 CALL 3
 RETURN
 END
 
 ! Global variables
-GLOBAL tFlex2.mm 48
-GLOBAL tFlex2.tt 4
-GLOBAL tFlex2.uu 4
+GLOVAR tFlex2.mm 48
+GLOVAR tFlex2.tt 4
+GLOVAR tFlex2.uu 4
 
 ! Pointer map
 DEFINE tFlex2.%gcmap

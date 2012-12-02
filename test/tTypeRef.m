@@ -26,20 +26,20 @@ IMPORT xTypes STAMP
 IMPORT xPrelude STAMP
 ENDHDR
 
-PROC tTypeRef.%main 0 16 0
+PROC tTypeRef.%main 0 4 0
 !   xTypes.r99.x := 345;
 CONST 345
 STGW xTypes.r99
 !   xPrelude.rPrint(xTypes.r99);
-CONST xTypes.rec
-CONST xTypes.r99
-CONST xPrelude.rPrint
+GLOBAL xTypes.rec
+GLOBAL xTypes.r99
+GLOBAL xPrelude.rPrint
 CALL 2
 !   NEW(x); p := x; x := p(xPrelude.xptr)
 CONST 4
-CONST xPrelude.xrec
-CONST tTypeRef.x
-CONST NEW
+GLOBAL xPrelude.xrec
+GLOBAL tTypeRef.x
+GLOBAL NEW
 CALL 3
 LDGW tTypeRef.x
 STGW tTypeRef.p
@@ -47,7 +47,7 @@ LDGW tTypeRef.p
 DUP 0
 NCHECK 13
 LDNW -4
-CONST xPrelude.xrec
+GLOBAL xPrelude.xrec
 TYPETEST 1
 JUMPT 1
 ERROR E_CAST 13
@@ -57,8 +57,8 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tTypeRef.x 4
-GLOBAL tTypeRef.p 4
+GLOVAR tTypeRef.x 4
+GLOVAR tTypeRef.p 4
 
 ! Pointer map
 DEFINE tTypeRef.%gcmap

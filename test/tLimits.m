@@ -90,29 +90,29 @@ IMPORT Out STAMP
 IMPORT xPrelude STAMP
 ENDHDR
 
-PROC tLimits.TestAsh 0 16 0
+PROC tLimits.TestAsh 0 4 0
 ! PROCEDURE TestAsh(x, n: INTEGER);
 !   Out.Int(ASH(x, n), 0); Out.Ln
 CONST 0
 LDLW 16
 LDLW 12
-CONST ASH
+GLOBAL ASH
 CALLW 2
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tLimits.SetMax 0 16 0
+PROC tLimits.SetMax 0 4 0
 ! PROCEDURE SetMax; BEGIN mymax := MAX(LONGREAL) END SetMax;
 DCONST 1.79769313486e+308
 STGD tLimits.mymax
 RETURN
 END
 
-PROC tLimits.MaxReal 3 16 0
+PROC tLimits.MaxReal 3 4 0
 ! PROCEDURE MaxReal(): REAL;
 !   i := 0FFFFFFH; j := 800000H;
 CONST 16777215
@@ -146,69 +146,69 @@ LDLF -12
 RETURNF
 END
 
-PROC tLimits.%main 0 16 0
+PROC tLimits.%main 0 4 0
 !   Out.Int(MIN(SHORTINT), 0); Out.Ln;
 CONST 0
 CONST -32768
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(MAX(SHORTINT), 0); Out.Ln;
 CONST 0
 CONST 32767
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(MIN(INTEGER), 0); Out.Ln;
 CONST 0
 CONST -2147483648
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(MAX(INTEGER), 0); Out.Ln;
 CONST 0
 CONST 2147483647
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(-2147483648, 0); Out.Ln;
 CONST 0
 CONST -2147483648
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Real(MAX(REAL)); Out.Ln;
 FCONST 3.40282346639e+38
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.LongReal(MAX(LONGREAL)); Out.Ln;
 DCONST 1.79769313486e+308
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   IF MAX(REAL) # MaxReal() THEN
-CONST tLimits.MaxReal
+GLOBAL tLimits.MaxReal
 CALLF 0
 FCONST 3.40282346639e+38
 FJEQ 9
 !     Out.String("Fail: MAX(REAL)"); Out.Ln
 CONST 16
-CONST tLimits.%1
-CONST Out.String
+GLOBAL tLimits.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 9
 !   SetMax;
-CONST tLimits.SetMax
+GLOBAL tLimits.SetMax
 CALL 0
 !   IF xPrelude.maxlong # mymax THEN 
 LDGD tLimits.mymax
@@ -216,42 +216,42 @@ DCONST 1.79769313486e+308
 DJEQ 11
 !     Out.String("Fail: MAX(LONG)"); Out.Ln
 CONST 16
-CONST tLimits.%2
-CONST Out.String
+GLOBAL tLimits.%2
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 11
 !   TestAsh(MAX(INTEGER), -1);
 CONST -1
 CONST 2147483647
-CONST tLimits.TestAsh
+GLOBAL tLimits.TestAsh
 CALL 2
 !   TestAsh(MIN(INTEGER), -1);
 CONST -1
 CONST -2147483648
-CONST tLimits.TestAsh
+GLOBAL tLimits.TestAsh
 CALL 2
 !   Out.Int(SIZE(t), 0); Out.Ln;
 CONST 0
 CONST 444
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     -2147483648..0: Out.String("Pass")
 CONST 5
-CONST tLimits.%3
-CONST Out.String
+GLOBAL tLimits.%3
+GLOBAL Out.String
 CALL 2
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tLimits.mymax 8
+GLOVAR tLimits.mymax 8
 
 ! String "Fail: MAX(REAL)"
 DEFINE tLimits.%1

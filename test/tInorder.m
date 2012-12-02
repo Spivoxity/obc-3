@@ -74,7 +74,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tInorder.Traverse1 0 12 0x00100001
+PROC tInorder.Traverse1 0 3 0x00100001
 ! PROCEDURE Traverse1(t: Tree);
 !   IF t # NIL THEN
 LDLW 12
@@ -83,26 +83,26 @@ JEQZ 2
 LDLW 12
 NCHECK 12
 LDNW 4
-CONST tInorder.Traverse1
+GLOBAL tInorder.Traverse1
 CALL 1
 !     Out.Int(t.data, 4);
 CONST 4
 LDLW 12
 NCHECK 13
 LOADW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     Traverse1(t.right)
 LDLW 12
 NCHECK 14
 LDNW 8
-CONST tInorder.Traverse1
+GLOBAL tInorder.Traverse1
 CALL 1
 LABEL 2
 RETURN
 END
 
-PROC tInorder.Traverse2 1002 16 tInorder.Traverse2.%map
+PROC tInorder.Traverse2 1002 4 tInorder.Traverse2.%map
 ! PROCEDURE Traverse2(t: Tree);
 !   u := t; sp := 0;
 LDLW 12
@@ -144,7 +144,7 @@ CONST 4
 LDLW -4
 NCHECK 38
 LOADW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     u := u.right
 LDLW -4
@@ -156,11 +156,11 @@ LABEL 4
 RETURN
 END
 
-PROC tInorder.RandTree 1 16 0x00010001
+PROC tInorder.RandTree 1 4 0x00010001
 ! PROCEDURE RandTree(depth: INTEGER): Tree;
 !   IF Random.Roll(8) < depth THEN RETURN NIL END;
 CONST 8
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 LDLW 12
 JGEQ 10
@@ -169,13 +169,13 @@ RETURNW
 LABEL 10
 !   NEW(t);
 CONST 12
-CONST tInorder.Node
+GLOBAL tInorder.Node
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   t.data := Random.Roll(1000);
 CONST 1000
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 LDLW -4
 NCHECK 49
@@ -183,7 +183,7 @@ STOREW
 !   t.left := RandTree(depth+1);
 LDLW 12
 INC
-CONST tInorder.RandTree
+GLOBAL tInorder.RandTree
 CALLW 1
 LDLW -4
 NCHECK 50
@@ -191,7 +191,7 @@ STNW 4
 !   t.right := RandTree(depth+1);
 LDLW 12
 INC
-CONST tInorder.RandTree
+GLOBAL tInorder.RandTree
 CALLW 1
 LDLW -4
 NCHECK 51
@@ -201,29 +201,29 @@ LDLW -4
 RETURNW
 END
 
-PROC tInorder.%main 0 16 0
+PROC tInorder.%main 0 4 0
 !   t := RandTree(0);
 CONST 0
-CONST tInorder.RandTree
+GLOBAL tInorder.RandTree
 CALLW 1
 STGW tInorder.t
 !   Traverse1(t); Out.Ln;
 LDGW tInorder.t
-CONST tInorder.Traverse1
+GLOBAL tInorder.Traverse1
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Traverse2(t); Out.Ln
 LDGW tInorder.t
-CONST tInorder.Traverse2
+GLOBAL tInorder.Traverse2
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tInorder.t 4
+GLOVAR tInorder.t 4
 
 ! Pointer map
 DEFINE tInorder.%gcmap

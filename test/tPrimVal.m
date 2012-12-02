@@ -22,32 +22,32 @@ IMPORT Out STAMP
 IMPORT Conv STAMP
 ENDHDR
 
-PROC tPrimVal.%main 0 20 0
+PROC tPrimVal.%main 0 5 0
 !   p := Conv.IntVal;
-CONST Conv.IntVal
+GLOBAL Conv.IntVal
 STGW tPrimVal.p
 !   Out.Int(p("24")+p("18"), 0); Out.Ln
 CONST 0
 CONST 3
-CONST tPrimVal.%1
+GLOBAL tPrimVal.%1
 LDGW tPrimVal.p
 NCHECK 9
 CALLW 2
 CONST 3
-CONST tPrimVal.%2
+GLOBAL tPrimVal.%2
 LDGW tPrimVal.p
 NCHECK 9
 CALLW 2
 PLUS
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tPrimVal.p 4
+GLOVAR tPrimVal.p 4
 
 ! String "24"
 DEFINE tPrimVal.%1

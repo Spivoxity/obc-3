@@ -20,7 +20,7 @@ END tDivZero.
 MODULE tDivZero STAMP 0
 ENDHDR
 
-PROC tDivZero.%main 0 8 0
+PROC tDivZero.%main 0 2 0
 !   x := 0;
 CONST 0
 STGW tDivZero.x
@@ -34,7 +34,7 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tDivZero.x 4
+GLOVAR tDivZero.x 4
 
 ! End of file
 ]]*)

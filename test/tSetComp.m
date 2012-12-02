@@ -15,7 +15,7 @@ END tSetComp.
 MODULE tSetComp STAMP 0
 ENDHDR
 
-PROC tSetComp.%main 0 8 0
+PROC tSetComp.%main 0 2 0
 !   b := (x <= y);
 LDGW tSetComp.x
 LDGW tSetComp.y
@@ -47,10 +47,10 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tSetComp.x 4
-GLOBAL tSetComp.y 4
-GLOBAL tSetComp.b 1
-GLOBAL tSetComp.n 4
+GLOVAR tSetComp.x 4
+GLOVAR tSetComp.y 4
+GLOVAR tSetComp.b 1
+GLOVAR tSetComp.n 4
 
 ! End of file
 ]]*)

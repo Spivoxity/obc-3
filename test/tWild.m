@@ -81,7 +81,7 @@ MODULE tWild STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tWild.SegLen 1 12 0x00100001
+PROC tWild.SegLen 1 3 0x00100001
 ! PROCEDURE SegLen(VAR patt: ARRAY OF CHAR; i: INTEGER): INTEGER;
 !   k := 0;
 CONST 0
@@ -114,7 +114,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tWild.MatchSeg 0 16 0x00900001
+PROC tWild.MatchSeg 0 4 0x00900001
 ! PROCEDURE MatchSeg(VAR patt: ARRAY OF CHAR; i: INTEGER;
 LABEL 13
 !     CASE patt[i] OF
@@ -183,7 +183,7 @@ INCL 32
 JUMP 13
 END
 
-PROC tWild.Match 3 28 0
+PROC tWild.Match 3 7 0
 ! PROCEDURE Match(patt, text: ARRAY OF CHAR): BOOLEAN;
 LOCAL 12
 LDLW 16
@@ -198,7 +198,7 @@ LDLW 20
 CONST 0
 LDLW 16
 LDLW 12
-CONST tWild.MatchSeg
+GLOBAL tWild.MatchSeg
 CALLW 6
 JUMPT 27
 CONST 0
@@ -208,7 +208,7 @@ LABEL 27
 CONST 0
 LDLW 16
 LDLW 12
-CONST tWild.SegLen
+GLOBAL tWild.SegLen
 CALLW 3
 STLW -4
 LDLW -4
@@ -239,14 +239,14 @@ LDLW 20
 LDLW -4
 LDLW 16
 LDLW 12
-CONST tWild.MatchSeg
+GLOBAL tWild.MatchSeg
 CALLW 6
 JUMPF 30
 !     t := SegLen(patt, i);
 LDLW -4
 LDLW 16
 LDLW 12
-CONST tWild.SegLen
+GLOBAL tWild.SegLen
 CALLW 3
 STLW -12
 !     i := i+t; j := j+t
@@ -271,7 +271,7 @@ CONST 1
 RETURNW
 END
 
-PROC tWild.Test 1 28 0
+PROC tWild.Test 1 7 0
 ! PROCEDURE Test(patt, text: ARRAY OF CHAR; exp: BOOLEAN);
 LOCAL 12
 LDLW 16
@@ -284,43 +284,43 @@ LDLW 24
 LDLW 20
 LDLW 16
 LDLW 12
-CONST tWild.Match
+GLOBAL tWild.Match
 CALLW 4
 STLC -1
 !   Out.Char('/'); Out.String(patt); Out.Char('/'); 
 CONST 47
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 LDLW 16
 LDLW 12
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 CONST 47
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !   Out.String(text); Out.Char('/'); 
 LDLW 24
 LDLW 20
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 CONST 47
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !   IF res THEN Out.String("TRUE") ELSE Out.String("FALSE") END;
 LDLC -1
 JUMPF 35
 CONST 5
-CONST tWild.%1
-CONST Out.String
+GLOBAL tWild.%1
+GLOBAL Out.String
 CALL 2
 JUMP 34
 LABEL 35
 CONST 6
-CONST tWild.%2
-CONST Out.String
+GLOBAL tWild.%2
+GLOBAL Out.String
 CALL 2
 LABEL 34
 !   IF res # exp THEN Out.String(" (fail)") END;
@@ -328,79 +328,79 @@ LDLC -1
 LDLC 28
 JEQ 37
 CONST 8
-CONST tWild.%3
-CONST Out.String
+GLOBAL tWild.%3
+GLOBAL Out.String
 CALL 2
 LABEL 37
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tWild.%main 0 28 0
+PROC tWild.%main 0 7 0
 !   Test("foo", "foo", TRUE);
 CONST 1
 ALIGNC
 CONST 4
-CONST tWild.%4
+GLOBAL tWild.%4
 CONST 4
-CONST tWild.%4
-CONST tWild.Test
+GLOBAL tWild.%4
+GLOBAL tWild.Test
 CALL 5
 !   Test("foo", "foox", FALSE);
 CONST 0
 ALIGNC
 CONST 5
-CONST tWild.%5
+GLOBAL tWild.%5
 CONST 4
-CONST tWild.%4
-CONST tWild.Test
+GLOBAL tWild.%4
+GLOBAL tWild.Test
 CALL 5
 !   Test("foo.*", "foo.c", TRUE);
 CONST 1
 ALIGNC
 CONST 6
-CONST tWild.%7
+GLOBAL tWild.%7
 CONST 6
-CONST tWild.%6
-CONST tWild.Test
+GLOBAL tWild.%6
+GLOBAL tWild.Test
 CALL 5
 !   Test("foo.*", "foo", FALSE);
 CONST 0
 ALIGNC
 CONST 4
-CONST tWild.%4
+GLOBAL tWild.%4
 CONST 6
-CONST tWild.%6
-CONST tWild.Test
+GLOBAL tWild.%6
+GLOBAL tWild.Test
 CALL 5
 !   Test("", "", TRUE);
 CONST 1
 ALIGNC
 CONST 1
-CONST tWild.%8
+GLOBAL tWild.%8
 CONST 1
-CONST tWild.%8
-CONST tWild.Test
+GLOBAL tWild.%8
+GLOBAL tWild.Test
 CALL 5
 !   Test("x", "", FALSE);
 CONST 0
 ALIGNC
 CONST 1
-CONST tWild.%8
+GLOBAL tWild.%8
 CONST 2
-CONST tWild.%9
-CONST tWild.Test
+GLOBAL tWild.%9
+GLOBAL tWild.Test
 CALL 5
 !   Test("", "x", FALSE);
 CONST 0
 ALIGNC
 CONST 2
-CONST tWild.%9
+GLOBAL tWild.%9
 CONST 1
-CONST tWild.%8
-CONST tWild.Test
+GLOBAL tWild.%8
+GLOBAL tWild.Test
 CALL 5
 RETURN
 END

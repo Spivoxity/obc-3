@@ -26,7 +26,7 @@ MODULE tOdd STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOdd.%main 0 12 0
+PROC tOdd.%main 0 3 0
 !   r := TRUE;
 CONST 1
 STGC tOdd.r
@@ -42,7 +42,7 @@ BITAND
 JEQZ 4
 CONST 0
 LDGW tOdd.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 LABEL 4
 !     b := ODD(i);
@@ -58,7 +58,7 @@ LDGC tOdd.r
 JNEQ 6
 CONST 0
 LDGW tOdd.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 LABEL 6
 !   FOR i := 0 TO 10 DO
@@ -70,15 +70,15 @@ LDGW tOdd.i
 CONST 10
 JLEQ 1
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tOdd.b 1
-GLOBAL tOdd.r 1
-GLOBAL tOdd.i 4
+GLOVAR tOdd.b 1
+GLOVAR tOdd.r 1
+GLOVAR tOdd.i 4
 
 ! End of file
 ]]*)

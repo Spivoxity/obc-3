@@ -763,7 +763,9 @@ static int *map_next(int *p) {
 
      case GC_REPEAT:
      case GC_FLEX:
-	  return map_next(p+4);
+	  p += 4;
+	  while (*p != GC_END) p = map_next(p);
+	  return p+1;
 
      case GC_BLOCK:
 	  return p+3;
@@ -785,7 +787,7 @@ static void redir_map(unsigned map, uchar *base) {
 
      if (map == 0) return;
 
-     if (map % 2 == 1) {
+     if ((map & 0x1) != 0) {
 	  /* A bitmap */
 	  i = 0; map >>= 1;
 
@@ -808,40 +810,39 @@ static void redir_map(unsigned map, uchar *base) {
 	       continue;
 	  }
 
-	  switch (op = *p++) {
+	  switch (op = *p) {
 	  case GC_BASE:
-	       base = (uchar *) *p++;
+	       base = (uchar *) p[1];
 	       break;
 
 	  case GC_REPEAT:
-	       base2 = base + *p++;
-	       count = *p++;
-	       stride = *p++;
+	       base2 = base + p[1];
+	       count = p[2];
+	       stride = p[3];
 
 	       ASSERT(count > 0);
 
 	       for (i = 0; i < count; i++)
-		    redir_map((unsigned) p, base2 + i*stride);
+		    redir_map((unsigned) (p+4), base2 + i*stride);
 
-	       p = map_next(p);
 	       break;
 
 	  case GC_BLOCK:
-	       base2 = base + *p++;
-	       count = *p++;
+	       base2 = base + p[1];
+	       count = p[2];
 
 	       for (i = 0; i < count; i++)
 		    redirect((uchar **) &get_word(base2, i));
 	       break;
 			 
 	  case GC_MAP:
-	       redir_map((unsigned) *p++, base);
+	       redir_map((unsigned) p[1], base);
 	       break;
 
 	  case GC_FLEX:
-	       base2 = base + *p++;
-	       ndim = *p++;
-	       stride = *p++;
+	       base2 = base + p[1];
+	       ndim = p[2];
+	       stride = p[3];
 
 	       count = 1;
 	       for (i = 0; i < ndim; i++) 
@@ -849,9 +850,8 @@ static void redir_map(unsigned map, uchar *base) {
 	       
 	       base2 = (uchar *) get_word(base2, 0);
 	       for (i = 0; i < count; i++)
-		    redir_map((unsigned) p, base2 + i*stride);
+		    redir_map((unsigned) (p+4), base2 + i*stride);
 
-	       p = map_next(p);
 	       break;
 
 	  case GC_END:
@@ -860,6 +860,8 @@ static void redir_map(unsigned map, uchar *base) {
 	  default:
 	       panic("*bad map code %d", op);
 	  }
+
+	  p = map_next(p);
      }
 }
 

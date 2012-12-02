@@ -42,6 +42,7 @@ val char_of_integer : integer -> char
 val integer_of_string : string -> integer
 val float_of_integer : integer -> float
 val fInteger : integer -> Print.arg
+val fHexInteger : integer -> Print.arg
 
 val integer_add : integer -> integer -> integer
 val integer_sub : integer -> integer -> integer
@@ -65,6 +66,8 @@ val signext : int -> integer -> integer
 type value =
     IntVal of integer
   | FloVal of float
+
+exception Bound_error
 
 val do_monop : op -> value -> value
 val do_binop : op -> value -> value -> value

@@ -207,13 +207,13 @@ MODULE tBrack STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBrack.MakeExp 1 16 0x00610001
+PROC tBrack.MakeExp 1 4 0x00610001
 ! PROCEDURE MakeExp(rator: INTEGER; left, right: Exp): Exp;
 !   NEW(p);
 CONST 12
-CONST tBrack.Blob
+GLOBAL tBrack.Blob
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   p.rator := rator; p.left := left; p.right := right;
 LDLW 12
@@ -233,7 +233,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tBrack.Reset 1 20 0
+PROC tBrack.Reset 1 5 0
 ! PROCEDURE Reset(a, b: INTEGER);
 !   FOR x := 0 TO 2 DO 
 CONST 0
@@ -242,7 +242,7 @@ JUMP 23
 LABEL 22
 !     ways[a,b][x] := 0; exp[a,b][x] := NIL
 CONST 0
-CONST tBrack.ways
+GLOBAL tBrack.ways
 LDLW 12
 CONST 30
 BOUND 87
@@ -260,7 +260,7 @@ BOUND 87
 PLUS
 STIW
 CONST 0
-CONST tBrack.exp
+GLOBAL tBrack.exp
 LDLW 12
 CONST 30
 BOUND 87
@@ -286,7 +286,7 @@ JLEQ 22
 RETURN
 END
 
-PROC tBrack.Init 2 20 0x00100001
+PROC tBrack.Init 2 5 0x00100001
 ! PROCEDURE Init(VAR s: ARRAY OF CHAR);
 !   n := 0;
 CONST 0
@@ -297,7 +297,7 @@ LABEL 24
 LDLW -4
 INC
 LDLW -4
-CONST tBrack.Reset
+GLOBAL tBrack.Reset
 CALL 2
 !     x := ORD(s[n]) - ORD('A');
 LDLW 12
@@ -310,7 +310,7 @@ MINUS
 STLW -8
 !     ways[n,n+1][x] := 1; 
 CONST 1
-CONST tBrack.ways
+GLOBAL tBrack.ways
 LDLW -4
 CONST 30
 BOUND 98
@@ -332,9 +332,9 @@ STIW
 CONST 0
 CONST 0
 LDLW -8
-CONST tBrack.MakeExp
+GLOBAL tBrack.MakeExp
 CALLW 3
-CONST tBrack.exp
+GLOBAL tBrack.exp
 LDLW -4
 CONST 30
 BOUND 99
@@ -368,7 +368,7 @@ STGW tBrack.N
 RETURN
 END
 
-PROC tBrack.Combine 3 28 0
+PROC tBrack.Combine 3 7 0
 ! PROCEDURE Combine(i, j, k: INTEGER);
 !   FOR x := 0 TO 2 DO
 CONST 0
@@ -376,7 +376,7 @@ STLW -4
 JUMP 27
 LABEL 26
 !     IF ways[i,j][x] > 0 THEN
-CONST tBrack.ways
+GLOBAL tBrack.ways
 LDLW 12
 CONST 30
 BOUND 111
@@ -400,7 +400,7 @@ STLW -8
 JUMP 31
 LABEL 30
 !         IF ways[j,k][y] > 0 THEN
-CONST tBrack.ways
+GLOBAL tBrack.ways
 LDLW 16
 CONST 30
 BOUND 113
@@ -419,7 +419,7 @@ PLUS
 LDIW
 JLEQZ 33
 ! 	  z := op[x,y];
-CONST tBrack.op
+GLOBAL tBrack.op
 LDLW -4
 CONST 3
 BOUND 114
@@ -432,7 +432,7 @@ PLUS
 LDIW
 STLW -12
 ! 	  INC(ways[i,k][z], ways[i,j][x] * ways[j,k][y]);
-CONST tBrack.ways
+GLOBAL tBrack.ways
 LDLW 12
 CONST 30
 BOUND 115
@@ -451,7 +451,7 @@ PLUS
 INDEXW
 DUP 0
 LOADW
-CONST tBrack.ways
+GLOBAL tBrack.ways
 LDLW 12
 CONST 30
 BOUND 115
@@ -468,7 +468,7 @@ CONST 3
 BOUND 115
 PLUS
 LDIW
-CONST tBrack.ways
+GLOBAL tBrack.ways
 LDLW 16
 CONST 30
 BOUND 115
@@ -490,7 +490,7 @@ PLUS
 SWAP
 STOREW
 ! 	  IF exp[i,k][z] = NIL THEN
-CONST tBrack.exp
+GLOBAL tBrack.exp
 LDLW 12
 CONST 30
 BOUND 116
@@ -509,7 +509,7 @@ PLUS
 LDIW
 JNEQZ 33
 ! 	    exp[i,k][z] := MakeExp(STAR, exp[i,j][x], exp[j,k][y])
-CONST tBrack.exp
+GLOBAL tBrack.exp
 LDLW 16
 CONST 30
 BOUND 117
@@ -526,7 +526,7 @@ CONST 3
 BOUND 117
 PLUS
 LDIW
-CONST tBrack.exp
+GLOBAL tBrack.exp
 LDLW 12
 CONST 30
 BOUND 117
@@ -544,9 +544,9 @@ BOUND 117
 PLUS
 LDIW
 CONST 3
-CONST tBrack.MakeExp
+GLOBAL tBrack.MakeExp
 CALLW 3
-CONST tBrack.exp
+GLOBAL tBrack.exp
 LDLW 12
 CONST 30
 BOUND 117
@@ -580,7 +580,7 @@ JLEQ 26
 RETURN
 END
 
-PROC tBrack.Tabulate 7 28 0
+PROC tBrack.Tabulate 7 7 0
 ! PROCEDURE Tabulate(s: ARRAY OF CHAR);
 LOCAL 12
 LDLW 16
@@ -588,7 +588,7 @@ FLEXCOPY
 !   Init(s);
 LDLW 16
 LDLW 12
-CONST tBrack.Init
+GLOBAL tBrack.Init
 CALL 2
 !   FOR k := 2 TO N DO
 LDGW tBrack.N
@@ -614,7 +614,7 @@ STLW -8
 !       Reset(i, j);
 LDLW -8
 LDLW -4
-CONST tBrack.Reset
+GLOBAL tBrack.Reset
 CALL 2
 !       FOR u := i+1 TO j-1 DO
 LDLW -8
@@ -629,7 +629,7 @@ LABEL 40
 LDLW -8
 LDLW -16
 LDLW -4
-CONST tBrack.Combine
+GLOBAL tBrack.Combine
 CALL 3
 !       FOR u := i+1 TO j-1 DO
 INCL -16
@@ -652,7 +652,7 @@ JLEQ 36
 RETURN
 END
 
-PROC tBrack.Eval 0 28 0x00100001
+PROC tBrack.Eval 0 7 0x00100001
 ! PROCEDURE Eval(e: Exp): INTEGER;
 !   IF e.rator = STAR THEN
 LDLW 12
@@ -661,11 +661,11 @@ LOADW
 CONST 3
 JNEQ 43
 !     RETURN op[Eval(e.left), Eval(e.right)]
-CONST tBrack.op
+GLOBAL tBrack.op
 LDLW 12
 NCHECK 143
 LDNW 4
-CONST tBrack.Eval
+GLOBAL tBrack.Eval
 CALLW 1
 CONST 3
 BOUND 143
@@ -674,7 +674,7 @@ TIMES
 LDLW 12
 NCHECK 143
 LDNW 8
-CONST tBrack.Eval
+GLOBAL tBrack.Eval
 CALLW 1
 CONST 3
 BOUND 143
@@ -689,7 +689,7 @@ LOADW
 RETURNW
 END
 
-PROC tBrack.Print 0 28 0x00100001
+PROC tBrack.Print 0 7 0x00100001
 ! PROCEDURE Print(e: Exp);
 !   IF e.rator = STAR THEN
 LDLW 12
@@ -700,21 +700,21 @@ JNEQ 45
 !     Out.Char('('); Print(e.left); Print(e.right); Out.Char(')')
 CONST 40
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 LDLW 12
 NCHECK 152
 LDNW 4
-CONST tBrack.Print
+GLOBAL tBrack.Print
 CALL 1
 LDLW 12
 NCHECK 152
 LDNW 8
-CONST tBrack.Print
+GLOBAL tBrack.Print
 CALL 1
 CONST 41
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 RETURN
 LABEL 45
@@ -726,12 +726,12 @@ CONST 65
 PLUS
 CONVNC
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 RETURN
 END
 
-PROC tBrack.Test 1 28 0
+PROC tBrack.Test 1 7 0
 ! PROCEDURE Test(s: ARRAY OF CHAR);
 LOCAL 12
 LDLW 16
@@ -739,14 +739,14 @@ FLEXCOPY
 !   Out.String(s); Out.Ln;
 LDLW 16
 LDLW 12
-CONST Out.String
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Tabulate(s);
 LDLW 16
 LDLW 12
-CONST tBrack.Tabulate
+GLOBAL tBrack.Tabulate
 CALL 2
 !   FOR x := 0 TO 2 DO
 CONST 0
@@ -754,7 +754,7 @@ STLW -4
 JUMP 47
 LABEL 46
 !     IF ways[0,N][x] > 0 THEN
-CONST tBrack.ways
+GLOBAL tBrack.ways
 CONST 0
 LDGW tBrack.N
 CONST 30
@@ -770,22 +770,22 @@ LDIW
 JLEQZ 49
 !       Out.String("  "); Out.Char(CHR(x + ORD('A'))); Out.String(" = ");
 CONST 3
-CONST tBrack.%1
-CONST Out.String
+GLOBAL tBrack.%1
+GLOBAL Out.String
 CALL 2
 LDLW -4
 CONST 65
 PLUS
 CONVNC
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 4
-CONST tBrack.%2
-CONST Out.String
+GLOBAL tBrack.%2
+GLOBAL Out.String
 CALL 2
 !       Print(exp[0,N][x]); Out.String(" ("); Out.Int(ways[0,N][x], 0); 
-CONST tBrack.exp
+GLOBAL tBrack.exp
 CONST 0
 LDGW tBrack.N
 CONST 30
@@ -798,14 +798,14 @@ CONST 3
 BOUND 166
 PLUS
 LDIW
-CONST tBrack.Print
+GLOBAL tBrack.Print
 CALL 1
 CONST 3
-CONST tBrack.%3
-CONST Out.String
+GLOBAL tBrack.%3
+GLOBAL Out.String
 CALL 2
 CONST 0
-CONST tBrack.ways
+GLOBAL tBrack.ways
 CONST 0
 LDGW tBrack.N
 CONST 30
@@ -818,15 +818,15 @@ CONST 3
 BOUND 166
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !       Out.String(" ways)"); 
 CONST 7
-CONST tBrack.%4
-CONST Out.String
+GLOBAL tBrack.%4
+GLOBAL Out.String
 CALL 2
 !       IF Eval(exp[0,N][x]) = x THEN
-CONST tBrack.exp
+GLOBAL tBrack.exp
 CONST 0
 LDGW tBrack.N
 CONST 30
@@ -839,25 +839,25 @@ CONST 3
 BOUND 169
 PLUS
 LDIW
-CONST tBrack.Eval
+GLOBAL tBrack.Eval
 CALLW 1
 LDLW -4
 JNEQ 51
 !         Out.String(" OK")
 CONST 4
-CONST tBrack.%5
-CONST Out.String
+GLOBAL tBrack.%5
+GLOBAL Out.String
 CALL 2
 JUMP 50
 LABEL 51
 !         Out.String(" OOOOOOPS!")
 CONST 11
-CONST tBrack.%6
-CONST Out.String
+GLOBAL tBrack.%6
+GLOBAL Out.String
 CALL 2
 LABEL 50
 !       Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 49
 !   FOR x := 0 TO 2 DO
@@ -869,119 +869,119 @@ JLEQ 46
 RETURN
 END
 
-PROC tBrack.%main 0 28 0
+PROC tBrack.%main 0 7 0
 !   op[A,A] := B; op[A,B] := B; op[A,C] := A;
 CONST 1
 STGW tBrack.op
 CONST 1
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 4
 CONST 0
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 8
 !   op[B,A] := C; op[B,B] := B; op[B,C] := A;
 CONST 2
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 12
 CONST 1
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 16
 CONST 0
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 20
 !   op[C,A] := A; op[C,B] := C; op[C,C] := C;
 CONST 0
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 24
 CONST 2
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 28
 CONST 2
-CONST tBrack.op
+GLOBAL tBrack.op
 STNW 32
 !   Test("A");
 CONST 2
-CONST tBrack.%19
-CONST tBrack.Test
+GLOBAL tBrack.%19
+GLOBAL tBrack.Test
 CALL 2
 !   Test("B");
 CONST 2
-CONST tBrack.%20
-CONST tBrack.Test
+GLOBAL tBrack.%20
+GLOBAL tBrack.Test
 CALL 2
 !   Test("C");
 CONST 2
-CONST tBrack.%21
-CONST tBrack.Test
+GLOBAL tBrack.%21
+GLOBAL tBrack.Test
 CALL 2
 !   Test("AC");
 CONST 3
-CONST tBrack.%7
-CONST tBrack.Test
+GLOBAL tBrack.%7
+GLOBAL tBrack.Test
 CALL 2
 !   Test("BA");
 CONST 3
-CONST tBrack.%8
-CONST tBrack.Test
+GLOBAL tBrack.%8
+GLOBAL tBrack.Test
 CALL 2
 !   Test("ABA");
 CONST 4
-CONST tBrack.%9
-CONST tBrack.Test
+GLOBAL tBrack.%9
+GLOBAL tBrack.Test
 CALL 2
 !   Test("BBA");
 CONST 4
-CONST tBrack.%10
-CONST tBrack.Test
+GLOBAL tBrack.%10
+GLOBAL tBrack.Test
 CALL 2
 !   Test("ABBA");
 CONST 5
-CONST tBrack.%11
-CONST tBrack.Test
+GLOBAL tBrack.%11
+GLOBAL tBrack.Test
 CALL 2
 !   Test("ABACAB");
 CONST 7
-CONST tBrack.%12
-CONST tBrack.Test
+GLOBAL tBrack.%12
+GLOBAL tBrack.Test
 CALL 2
 !   Test("ABBCACB");
 CONST 8
-CONST tBrack.%13
-CONST tBrack.Test
+GLOBAL tBrack.%13
+GLOBAL tBrack.Test
 CALL 2
 !   Test("BBCABCA");
 CONST 8
-CONST tBrack.%14
-CONST tBrack.Test
+GLOBAL tBrack.%14
+GLOBAL tBrack.Test
 CALL 2
 !   Test("ABBCABC");
 CONST 8
-CONST tBrack.%15
-CONST tBrack.Test
+GLOBAL tBrack.%15
+GLOBAL tBrack.Test
 CALL 2
 !   Test("BBBBBBBBBB");
 CONST 11
-CONST tBrack.%16
-CONST tBrack.Test
+GLOBAL tBrack.%16
+GLOBAL tBrack.Test
 CALL 2
 !   Test("ABBBBBBBBBBBBC");
 CONST 15
-CONST tBrack.%17
-CONST tBrack.Test
+GLOBAL tBrack.%17
+GLOBAL tBrack.Test
 CALL 2
 !   Test("ABBBBBBBBBBBBBBBBC");
 CONST 19
-CONST tBrack.%18
-CONST tBrack.Test
+GLOBAL tBrack.%18
+GLOBAL tBrack.Test
 CALL 2
 RETURN
 END
 
 ! Global variables
-GLOBAL tBrack.op 36
-GLOBAL tBrack.N 4
-GLOBAL tBrack.ways 10800
-GLOBAL tBrack.exp 10800
+GLOVAR tBrack.op 36
+GLOVAR tBrack.N 4
+GLOVAR tBrack.ways 10800
+GLOVAR tBrack.exp 10800
 
 ! Pointer map
 DEFINE tBrack.%gcmap

@@ -736,7 +736,7 @@ and check_heading kind x (Heading (fparams, result)) doc env fsize =
   end;
   let p = { p_kind = kind; p_fparams = top_block env'; 
 	    p_result = rt; p_pcount = !psize / param_rep.m_size } in
-  let t = new_type !level (ProcType p, proc_rep, []) in
+  let t = new_type !level (ProcType p, addr_rep, []) in
   let d = make_def x ProcDef t doc in
   d.d_env <- env'; d
 

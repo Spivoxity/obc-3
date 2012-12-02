@@ -52,7 +52,7 @@ MODULE tLongInt STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLongInt.Square 0 16 0
+PROC tLongInt.Square 0 4 0
 ! PROCEDURE Square(x: LONGINT): LONGINT;
 !   RETURN x * x
 LDLQ 12
@@ -61,7 +61,7 @@ QTIMES
 RETURNQ
 END
 
-PROC tLongInt.%main 0 24 0
+PROC tLongInt.%main 0 6 0
 !   r := 2;
 CONST 2
 STGW tLongInt.r
@@ -73,7 +73,7 @@ STGQ tLongInt.n
 LDGQ tLongInt.n
 LDGQ tLongInt.n
 QTIMES
-CONST tLongInt.Square
+GLOBAL tLongInt.Square
 CALLQ 2
 STGQ tLongInt.n
 !   Out.LongInt(n + n, 0); Out.Ln;
@@ -81,9 +81,9 @@ CONST 0
 LDGQ tLongInt.n
 LDGQ tLongInt.n
 QPLUS
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   m := 1; k := 0;
 CONST 1
@@ -111,9 +111,9 @@ QJLT 3
 !   Out.LongInt(m, 0); Out.Ln;
 CONST 0
 LDGQ tLongInt.m
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   n := MAX(INTEGER); 
 QCONST 2147483647
@@ -131,9 +131,9 @@ STGQ tLongInt.n
 !   Out.LongInt(n, 0); Out.Ln;
 CONST 0
 LDGQ tLongInt.n
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   n := n - MAX(INTEGER);
 LDGQ tLongInt.n
@@ -144,9 +144,9 @@ STGQ tLongInt.n
 CONST 0
 LDGQ tLongInt.n
 QUMINUS
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   m := MAX(INTEGER);
 QCONST 2147483647
@@ -154,15 +154,15 @@ STGQ tLongInt.m
 !   INC(m);
 CONST 1
 CONVNQ
-CONST tLongInt.m
-CONST INCLONG
+GLOBAL tLongInt.m
+GLOBAL INCLONG
 CALLQ 3
 !   Out.LongInt(m, 0); Out.Ln;
 CONST 0
 LDGQ tLongInt.m
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   IF m >= 0 THEN Out.String("Good!") ELSE Out.String("Bad!") END; Out.Ln
 LDGQ tLongInt.m
@@ -170,26 +170,26 @@ CONST 0
 CONVNQ
 QJLT 6
 CONST 6
-CONST tLongInt.%1
-CONST Out.String
+GLOBAL tLongInt.%1
+GLOBAL Out.String
 CALL 2
 JUMP 5
 LABEL 6
 CONST 5
-CONST tLongInt.%2
-CONST Out.String
+GLOBAL tLongInt.%2
+GLOBAL Out.String
 CALL 2
 LABEL 5
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tLongInt.r 4
-GLOBAL tLongInt.k 4
-GLOBAL tLongInt.m 8
-GLOBAL tLongInt.n 8
+GLOVAR tLongInt.r 4
+GLOVAR tLongInt.k 4
+GLOVAR tLongInt.m 8
+GLOVAR tLongInt.n 8
 
 ! String "Good!"
 DEFINE tLongInt.%1

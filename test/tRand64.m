@@ -17,7 +17,7 @@ BEGIN
   RETURN SHORT(u)
 END next;
 
-VAR x, y, z: INTEGER; r: REAL;
+VAR x, y, z: INTEGER;
 
 BEGIN
   u := 31415926;
@@ -29,25 +29,9 @@ BEGIN
     Out.Int(y, 10); Out.Int(z, 12); Out.Ln;
     ASSERT(y = z)
   END;
-  Out.Ln;
 
   (* A more thorough check *)
   FOR x := 1 TO 100000 DO ASSERT(Random.Random() = next()) END;
-
-  (* Check results of Random.Uniform *)
-  FOR x := 1 TO 20 DO
-    r := Random.Uniform();
-    Out.Real(r); Out.Ln;
-    ASSERT((0.0 <= r) & (r < 1.0))
-  END;
-  Out.Ln;
-
-  (* Check results of Random.Roll *)
-  FOR x := 1 TO 20 DO
-    y := Random.Roll(100000);
-    Out.Int(y, 0); Out.Ln;
-    ASSERT((0 <= y) & (y < 100000))
-  END
 END tRand64.
 
 (*<<
@@ -151,48 +135,6 @@ END tRand64.
 2093756556  2093756556
  699835915   699835915
 1861685655  1861685655
-
-0.226738
-0.864667
-0.354230
-0.0490013
-0.343383
-0.464189
-0.866463
-0.0525061
-0.521613
-0.794844
-0.932708
-0.759232
-0.900341
-0.359484
-0.670408
-0.266190
-0.281766
-0.140336
-0.168203
-0.307730
-
-42085
-12368
-41309
-31702
-21728
-40110
-84853
-64529
-97495
-88840
-95675
-75056
-34716
-18121
-51672
-81322
-7469
-41220
-49226
-16046
 >>*)
 
 (*[[
@@ -204,7 +146,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRand64.next 0 16 0
+PROC tRand64.next 0 4 0
 ! PROCEDURE next(): INTEGER;
 !   u := (a * u) MOD m;
 LDGQ tRand64.u
@@ -219,7 +161,7 @@ CONVQN
 RETURNW
 END
 
-PROC tRand64.%main 0 16 0
+PROC tRand64.%main 0 4 0
 !   u := 31415926;
 QCONST 31415926
 STGQ tRand64.u
@@ -229,23 +171,23 @@ STGW tRand64.x
 JUMP 2
 LABEL 1
 !     y := Random.Random();
-CONST Random.Random
+GLOBAL Random.Random
 CALLW 0
 STGW tRand64.y
 !     z := next();
-CONST tRand64.next
+GLOBAL tRand64.next
 CALLW 0
 STGW tRand64.z
 !     Out.Int(y, 10); Out.Int(z, 12); Out.Ln;
 CONST 10
 LDGW tRand64.y
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 12
 LDGW tRand64.z
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     ASSERT(y = z)
 LDGW tRand64.y
@@ -262,21 +204,18 @@ LABEL 2
 LDGW tRand64.x
 CONST 100
 JLEQ 1
-!   Out.Ln;
-CONST Out.Ln
-CALL 0
 !   FOR x := 1 TO 100000 DO ASSERT(Random.Random() = next()) END;
 CONST 1
 STGW tRand64.x
 JUMP 5
 LABEL 4
-CONST Random.Random
+GLOBAL Random.Random
 CALLW 0
-CONST tRand64.next
+GLOBAL tRand64.next
 CALLW 0
 JEQ 6
 CONST 0
-EASSERT 35
+EASSERT 34
 LABEL 6
 LDGW tRand64.x
 INC
@@ -285,87 +224,14 @@ LABEL 5
 LDGW tRand64.x
 CONST 100000
 JLEQ 4
-!   FOR x := 1 TO 20 DO
-CONST 1
-STGW tRand64.x
-JUMP 8
-LABEL 7
-!     r := Random.Uniform();
-CONST Random.Uniform
-CALLF 0
-STGF tRand64.r
-!     Out.Real(r); Out.Ln;
-LDGF tRand64.r
-CONST Out.Real
-CALL 1
-CONST Out.Ln
-CALL 0
-!     ASSERT((0.0 <= r) & (r < 1.0))
-LDGF tRand64.r
-FCONST 0.
-FJLT 10
-LDGF tRand64.r
-FCONST 1.
-FJLT 9
-LABEL 10
-CONST 0
-EASSERT 41
-LABEL 9
-!   FOR x := 1 TO 20 DO
-LDGW tRand64.x
-INC
-STGW tRand64.x
-LABEL 8
-LDGW tRand64.x
-CONST 20
-JLEQ 7
-!   Out.Ln;
-CONST Out.Ln
-CALL 0
-!   FOR x := 1 TO 20 DO
-CONST 1
-STGW tRand64.x
-JUMP 12
-LABEL 11
-!     y := Random.Roll(100000);
-CONST 100000
-CONST Random.Roll
-CALLW 1
-STGW tRand64.y
-!     Out.Int(y, 0); Out.Ln;
-CONST 0
-LDGW tRand64.y
-CONST Out.Int
-CALL 2
-CONST Out.Ln
-CALL 0
-!     ASSERT((0 <= y) & (y < 100000))
-LDGW tRand64.y
-JLTZ 14
-LDGW tRand64.y
-CONST 100000
-JLT 13
-LABEL 14
-CONST 0
-EASSERT 49
-LABEL 13
-!   FOR x := 1 TO 20 DO
-LDGW tRand64.x
-INC
-STGW tRand64.x
-LABEL 12
-LDGW tRand64.x
-CONST 20
-JLEQ 11
 RETURN
 END
 
 ! Global variables
-GLOBAL tRand64.u 8
-GLOBAL tRand64.x 4
-GLOBAL tRand64.y 4
-GLOBAL tRand64.z 4
-GLOBAL tRand64.r 4
+GLOVAR tRand64.u 8
+GLOVAR tRand64.x 4
+GLOVAR tRand64.y 4
+GLOVAR tRand64.z 4
 
 ! End of file
 ]]*)

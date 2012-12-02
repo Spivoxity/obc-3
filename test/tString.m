@@ -93,16 +93,16 @@ IMPORT Out STAMP
 IMPORT Strings STAMP
 ENDHDR
 
-PROC tString.StackPtr 1 4 0
+PROC tString.StackPtr 1 1 0
 ! PROCEDURE StackPtr(): INTEGER;
 !   RETURN SYSTEM.VAL(INTEGER, SYSTEM.ADR(x))
 LOCAL -4
 RETURNW
 END
 
-PROC tString.%main 1 28 0
+PROC tString.%main 1 7 0
 !   i := StackPtr();
-CONST tString.StackPtr
+GLOBAL tString.StackPtr
 CALLW 0
 STGW tString.i
 !   NEW(s, 3);
@@ -110,11 +110,11 @@ CONST 3
 CONST 1
 CONST 1
 CONST 0
-CONST tString.s
-CONST NEWFLEX
+GLOBAL tString.s
+GLOBAL NEWFLEX
 CALL 5
 !   j := StackPtr();
-CONST tString.StackPtr
+GLOBAL tString.StackPtr
 CALLW 0
 STGW tString.j
 !   ASSERT(i=j);
@@ -161,7 +161,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 !   s[2] := 'c';
 CONST 99
@@ -180,10 +180,10 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO Strings.Length(s^)-2 DO
 LDGW tString.s
@@ -192,7 +192,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST Strings.Length
+GLOBAL Strings.Length
 CALLW 2
 CONST 2
 MINUS
@@ -237,7 +237,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST Strings.Length
+GLOBAL Strings.Length
 STKMAP 0x00000009
 CALLW 2
 DEC
@@ -253,10 +253,10 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO 10 DO
 CONST 0
@@ -265,59 +265,59 @@ JUMP 17
 LABEL 16
 !     Strings.Extract("abcdefghij", 0, i, t);
 CONST 20
-CONST tString.t
+GLOBAL tString.t
 LDGW tString.i
 CONST 0
 CONST 11
-CONST tString.%1
-CONST Strings.Extract
+GLOBAL tString.%1
+GLOBAL Strings.Extract
 CALL 6
 !     Out.Int(Strings.Length(t), 0); Out.Char(' ');
 CONST 0
 CONST 20
-CONST tString.t
-CONST Strings.Length
+GLOBAL tString.t
+GLOBAL Strings.Length
 CALLW 2
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !     Strings.Insert(t, 2, t);
 CONST 20
-CONST tString.t
+GLOBAL tString.t
 CONST 2
 CONST 20
-CONST tString.t
-CONST Strings.Insert
+GLOBAL tString.t
+GLOBAL Strings.Insert
 CALL 5
 !     Strings.Insert('[', 0, t);
 CONST 20
-CONST tString.t
+GLOBAL tString.t
 CONST 0
 CONST 2
-CONST tString.%7
-CONST Strings.Insert
+GLOBAL tString.%7
+GLOBAL Strings.Insert
 CALL 5
 !     Strings.Append(']', t);
 CONST 20
-CONST tString.t
+GLOBAL tString.t
 CONST 2
-CONST tString.%8
-CONST Strings.Append
+GLOBAL tString.%8
+GLOBAL Strings.Append
 CALL 4
 !     Strings.Cap(t);
 CONST 20
-CONST tString.t
-CONST Strings.Cap
+GLOBAL tString.t
+GLOBAL Strings.Cap
 CALL 2
 !     Out.String(t); Out.Ln
 CONST 20
-CONST tString.t
-CONST Out.String
+GLOBAL tString.t
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO 10 DO
 LDGW tString.i
@@ -331,27 +331,27 @@ JLEQ 16
 CONST 0
 CONST 0
 CONST 1
-CONST tString.%2
+GLOBAL tString.%2
 CONST 1
-CONST tString.%2
-CONST Strings.Pos
+GLOBAL tString.%2
+GLOBAL Strings.Pos
 CALLW 5
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   Out.Char(' '); Out.Int(Strings.Pos('abc', '', 0), 0);
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 CONST 0
 CONST 1
-CONST tString.%2
+GLOBAL tString.%2
 CONST 4
-CONST tString.%3
-CONST Strings.Pos
+GLOBAL tString.%3
+GLOBAL Strings.Pos
 CALLW 5
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   FOR i := 0 TO 3 DO
 CONST 0
@@ -361,32 +361,32 @@ LABEL 18
 !     Out.Char(' '); Out.Int(Strings.Pos('', 'abc', i), 0);
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDGW tString.i
 CONST 4
-CONST tString.%3
+GLOBAL tString.%3
 CONST 1
-CONST tString.%2
-CONST Strings.Pos
+GLOBAL tString.%2
+GLOBAL Strings.Pos
 CALLW 5
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     Out.Char(' '); Out.Int(Strings.Pos('b', 'abc', i), 0)
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDGW tString.i
 CONST 4
-CONST tString.%3
+GLOBAL tString.%3
 CONST 2
-CONST tString.%9
-CONST Strings.Pos
+GLOBAL tString.%9
+GLOBAL Strings.Pos
 CALLW 5
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   FOR i := 0 TO 3 DO
 LDGW tString.i
@@ -397,28 +397,28 @@ LDGW tString.i
 CONST 3
 JLEQ 18
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   COPY('abcdefabcdeabfabc', t);
 CONST 20
-CONST tString.t
+GLOBAL tString.t
 CONST 18
-CONST tString.%4
-CONST COPY
+GLOBAL tString.%4
+GLOBAL COPY
 CALL 4
 !   i := Strings.Pos('abc', t, 0);
 CONST 0
 CONST 20
-CONST tString.t
+GLOBAL tString.t
 CONST 4
-CONST tString.%3
-CONST Strings.Pos
+GLOBAL tString.%3
+GLOBAL Strings.Pos
 CALLW 5
 STGW tString.i
 !   Out.Int(i, 0);
 CONST 0
 LDGW tString.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 JUMP 21
 LABEL 20
@@ -426,55 +426,55 @@ LABEL 20
 LDGW tString.i
 INC
 CONST 20
-CONST tString.t
+GLOBAL tString.t
 CONST 4
-CONST tString.%3
-CONST Strings.Pos
+GLOBAL tString.%3
+GLOBAL Strings.Pos
 CALLW 5
 STGW tString.i
 !     Out.Char(' '); Out.Int(i, 0)
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDGW tString.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 LABEL 21
 !   WHILE i >= 0 DO
 LDGW tString.i
 JGEQZ 20
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String('"a"'); Out.String('"'); Out.String("'");
 CONST 4
-CONST tString.%5
-CONST Out.String
+GLOBAL tString.%5
+GLOBAL Out.String
 CALL 2
 CONST 2
-CONST tString.%10
-CONST Out.String
+GLOBAL tString.%10
+GLOBAL Out.String
 CALL 2
 CONST 2
-CONST tString.%11
-CONST Out.String
+GLOBAL tString.%11
+GLOBAL Out.String
 CALL 2
 !   Out.String("'b'"); Out.Ln;
 CONST 4
-CONST tString.%6
-CONST Out.String
+GLOBAL tString.%6
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   NEW(s, 0);
 CONST 0
 CONST 1
 CONST 1
 CONST 0
-CONST tString.s
-CONST NEWFLEX
+GLOBAL tString.s
+GLOBAL NEWFLEX
 CALL 5
 !   Out.Int(LEN(s^), 0); Out.Ln
 CONST 0
@@ -482,18 +482,18 @@ LDGW tString.s
 NCHECK 64
 LDNW -4
 LDNW 4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tString.i 4
-GLOBAL tString.j 4
-GLOBAL tString.s 4
-GLOBAL tString.t 20
+GLOVAR tString.i 4
+GLOVAR tString.j 4
+GLOVAR tString.s 4
+GLOVAR tString.t 20
 
 ! Pointer map
 DEFINE tString.%gcmap

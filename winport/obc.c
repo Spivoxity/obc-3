@@ -188,7 +188,6 @@ void usage(void)
      p("");
      p("  -O0     Turn off peephole optimiser");
      p("  -O      Turn on peephole optimiser (default)");
-     p("  -O2     Turn on tail call optimisation too");
      p("  -b      Disable runtime checks");
      p("  -g      Output debugging symbols");
      p("  -v      Print compiling and linking commands");
@@ -244,7 +243,7 @@ int main(int argc, char *argv[])
 	  }
 	  else if (m("-j0"))
 	       runtime = RUNTIME;
-	  else if (m("-O0") || m("-O") || m("-O2") || m("-w") 
+	  else if (m("-O0") || m("-O") || m("-w") 
 		   || m("-x") || m("-rsb"))
 	       sws[n_sws++] = s;
 	  else if (m("-I")) {

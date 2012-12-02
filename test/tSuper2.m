@@ -49,82 +49,82 @@ IMPORT xPrelude STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuper2.r1.Foo 0 12 0x00100001
+PROC tSuper2.r1.Foo 0 3 0x00100001
 ! PROCEDURE (VAR x: r1) Foo; 
 ! BEGIN Out.String("r1.Foo"); Out.Ln END Foo;
 CONST 7
-CONST tSuper2.%1
-CONST Out.String
+GLOBAL tSuper2.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tSuper2.r3.Foo 0 12 0x00100001
+PROC tSuper2.r3.Foo 0 3 0x00100001
 ! PROCEDURE (VAR x: r3) Foo; 
 ! BEGIN x.Foo^; Out.String("r3.Foo"); Out.Ln END Foo;
 LDLW 16
 LDLW 12
-CONST tSuper2.r1.Foo
+GLOBAL tSuper2.r1.Foo
 CALL 2
 CONST 7
-CONST tSuper2.%2
-CONST Out.String
+GLOBAL tSuper2.%2
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tSuper2.s3.Foo 0 12 0x00100001
+PROC tSuper2.s3.Foo 0 3 0x00100001
 ! PROCEDURE (VAR x: s3) Foo*; 
 ! BEGIN x.Foo^; Out.String("s3.Foo"); Out.Ln END Foo;
 LDLW 16
 LDLW 12
-CONST xPrelude.s1.Foo
+GLOBAL xPrelude.s1.Foo
 CALL 2
 CONST 7
-CONST tSuper2.%3
-CONST Out.String
+GLOBAL tSuper2.%3
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tSuper2.s3.Baz 0 12 0x00100001
+PROC tSuper2.s3.Baz 0 3 0x00100001
 ! PROCEDURE (VAR x: s3) Baz*; END Baz;
 RETURN
 END
 
-PROC tSuper2.%main 0 12 0
+PROC tSuper2.%main 0 3 0
 !   x.Foo^; 
-CONST tSuper2.r3
-CONST tSuper2.x
-CONST tSuper2.r1.Foo
+GLOBAL tSuper2.r3
+GLOBAL tSuper2.x
+GLOBAL tSuper2.r1.Foo
 CALL 2
 !   x.Foo;
-CONST tSuper2.r3
-CONST tSuper2.x
-CONST tSuper2.r3.Foo
+GLOBAL tSuper2.r3
+GLOBAL tSuper2.x
+GLOBAL tSuper2.r3.Foo
 CALL 2
 !   y.Foo^; 
-CONST tSuper2.s3
-CONST tSuper2.y
-CONST xPrelude.s1.Foo
+GLOBAL tSuper2.s3
+GLOBAL tSuper2.y
+GLOBAL xPrelude.s1.Foo
 CALL 2
 !   y.Foo;
-CONST tSuper2.s3
-CONST tSuper2.y
-CONST tSuper2.s3.Foo
+GLOBAL tSuper2.s3
+GLOBAL tSuper2.y
+GLOBAL tSuper2.s3.Foo
 CALL 2
 RETURN
 END
 
 ! Global variables
-GLOBAL tSuper2.x 0
-GLOBAL tSuper2.y 0
+GLOVAR tSuper2.x 0
+GLOVAR tSuper2.y 0
 
 ! String "r1.Foo"
 DEFINE tSuper2.%1

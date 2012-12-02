@@ -32,12 +32,12 @@ MODULE tGloWith STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tGloWith.%main 0 16 0
+PROC tGloWith.%main 0 4 0
 !   NEW(b); b.x := 37; a := b;
 CONST 4
-CONST tGloWith.BB
-CONST tGloWith.b
-CONST NEW
+GLOBAL tGloWith.BB
+GLOBAL tGloWith.b
+GLOBAL NEW
 CALL 3
 CONST 37
 LDGW tGloWith.b
@@ -49,27 +49,27 @@ STGW tGloWith.a
 LDGW tGloWith.a
 NCHECK 14
 LDNW -4
-CONST tGloWith.BB
+GLOBAL tGloWith.BB
 TYPETEST 1
 JUMPF 3
 CONST 0
 LDGW tGloWith.a
 NCHECK 14
 LOADW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 JUMP 2
 LABEL 3
 ERROR E_WITH 14
 LABEL 2
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   NEW(c); a := c;
 CONST 0
-CONST tGloWith.CC
-CONST tGloWith.c
-CONST NEW
+GLOBAL tGloWith.CC
+GLOBAL tGloWith.c
+GLOBAL NEW
 CALL 3
 LDGW tGloWith.c
 STGW tGloWith.a
@@ -77,32 +77,32 @@ STGW tGloWith.a
 LDGW tGloWith.a
 NCHECK 18
 LDNW -4
-CONST tGloWith.BB
+GLOBAL tGloWith.BB
 TYPETEST 1
 JUMPF 5
 CONST 0
 LDGW tGloWith.a
 NCHECK 18
 LOADW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 JUMP 4
 LABEL 5
 CONST 5
-CONST tGloWith.%1
-CONST Out.String
+GLOBAL tGloWith.%1
+GLOBAL Out.String
 CALL 2
 LABEL 4
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tGloWith.a 4
-GLOBAL tGloWith.b 4
-GLOBAL tGloWith.c 4
+GLOVAR tGloWith.a 4
+GLOVAR tGloWith.b 4
+GLOVAR tGloWith.c 4
 
 ! Pointer map
 DEFINE tGloWith.%gcmap

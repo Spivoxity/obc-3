@@ -38,7 +38,6 @@ top_srcdir = @top_srcdir@
 datarootdir = @datarootdir@
 bindir = @bindir@
 libdir = @libdir@
-mandir = @mandir@
 export AUTOCONF = @AUTOCONF@
 export AUTOHEADER = @AUTOHEADER@
 CC = @CC@
@@ -171,6 +170,10 @@ tartan : Tartan.m lib/XYplane.k force
 		Tartan.k -o tartan
 	chmod +x tartan
 
+test: force
+	$(MAKE) -C test all
+	cd test; regress
+
 # Installation stuff:
 # This supports two kinds of installation:
 # (1) building from source, followed by 'make install'
@@ -192,11 +195,8 @@ LIB = runtime/obx.a runtime/obx-j.a runtime/obx-p.a lib/oblib.a lib/dlstub.o \
 	$(srcdir)/lib/Builtin.m lib/_Builtin.k \
 	$(MODULES:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k)
 
-# Man pages
-MAN = $(wildcard $(srcdir)/doc/*.1)
-
 # Installation directories
-DIRS = $(bindir) $(libdir)/obc $(mandir)/man1
+DIRS = $(bindir) $(libdir)/obc
 
 # Inputs for bindist config process
 ETC = $(srcdir)/scripts/obc.in $(srcdir)/scripts/obb.in \
@@ -233,7 +233,6 @@ install:: force
 	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in $(LIB); do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in $(LIBX); do $(INSTALL_PROG) $$f $(libdir)/obc; done
-	for f in $(MAN); do $(INSTALL_DATA) $$f $(mandir)/man1; done
 
 ifdef ENABLE_DEBUGGER
   ifdef MACOS
@@ -243,8 +242,7 @@ ifdef ENABLE_DEBUGGER
 endif
 
 uninstall: force
-	rm -rf $(patsubst %,$(bindir)/%,$(notdir $(BIN))) $(libdir)/obc \
-	    $(patsubst %,$(mandir)/man1/%, $(notdir $(MAN)))
+	rm -rf $(patsubst %,$(bindir)/%,$(notdir $(BIN))) $(libdir)/obc
 
 
 # Binary distribution
@@ -252,7 +250,7 @@ BINDIST = bindist
 
 bindist: force
 	@rm -rf $(BINDIST)
-	for d in bin libexec lib libsrc etc man; \
+	for d in bin libexec lib libsrc etc; \
 		do $(INSTALL) -d $(BINDIST)/$$d; done
 	$(AUTOCONF) $(srcdir)/scripts/bindist.conf.in \
 		| sed -e 's/--VERSION--/$(VERSION)/' \
@@ -266,7 +264,6 @@ bindist: force
 	for f in $(LIBX); do $(INSTALL_PROG) $$f $(BINDIST)/libexec; done
 	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(BINDIST)/libsrc; done
 	for f in $(LIB); do $(INSTALL_DATA) $$f $(BINDIST)/lib; done
-	for f in $(MAN); do $(INSTALL_DATA) $$f $(BINDIST)/man; done
 	for f in $(ETC); do $(INSTALL_DATA) $$f $(BINDIST)/etc; done	
 	for f in $(INST); do $(INSTALL_DATA) $$f $(BINDIST); done
 
@@ -330,7 +327,6 @@ Makefile: Makefile.in config.status
      
 obc obb obdb: %: scripts/%.in config.status
 	./config.status --file=$@:$<
-	chmod +x $@
 
 %0 : scripts/%.in config0
 	sed -e 's:\@configure_input\@:Generated automagically from $(<F):' \

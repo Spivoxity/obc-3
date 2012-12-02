@@ -382,31 +382,31 @@ MODULE tSudoku STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSudoku.PrintCol 0 12 0x00100001
+PROC tSudoku.PrintCol 0 3 0x00100001
 ! PROCEDURE PrintCol(c: Column);
 !   Out.Char(c.name); Out.Int(c.x, 0); Out.Int(c.y, 0)
 LDLW 12
 NCHECK 41
 LOADC
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDLW 12
 NCHECK 41
 LDNW 4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 0
 LDLW 12
 NCHECK 41
 LDNW 8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 RETURN
 END
 
-PROC tSudoku.PrintRow 2 12 0x00110001
+PROC tSudoku.PrintRow 2 3 0x00110001
 ! PROCEDURE PrintRow(p: Cell);
 !   q := p;
 LDLW 12
@@ -414,13 +414,13 @@ STLW -4
 LABEL 11
 !     Out.String(" "); PrintCol(q.column); q := q.right
 CONST 2
-CONST tSudoku.%9
-CONST Out.String
+GLOBAL tSudoku.%9
+GLOBAL Out.String
 CALL 2
 LDLW -4
 NCHECK 51
 LDNW 16
-CONST tSudoku.PrintCol
+GLOBAL tSudoku.PrintCol
 CALL 1
 LDLW -4
 NCHECK 51
@@ -453,16 +453,16 @@ LDLW 12
 JNEQ 12
 !   Out.String("; # "); Out.Int(n,0); Out.String(" of ");
 CONST 5
-CONST tSudoku.%1
-CONST Out.String
+GLOBAL tSudoku.%1
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDLW -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 5
-CONST tSudoku.%2
-CONST Out.String
+GLOBAL tSudoku.%2
+GLOBAL Out.String
 CALL 2
 !   Out.Int(p.column.size, 0); Out.String(" choices for ");
 CONST 0
@@ -471,30 +471,30 @@ NCHECK 58
 LDNW 16
 NCHECK 58
 LDNW 12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 14
-CONST tSudoku.%3
-CONST Out.String
+GLOBAL tSudoku.%3
+GLOBAL Out.String
 CALL 2
 !   PrintCol(p.column); Out.Ln
 LDLW 12
 NCHECK 59
 LDNW 16
-CONST tSudoku.PrintCol
+GLOBAL tSudoku.PrintCol
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tSudoku.ColumnLink 1 16 0x00310001
+PROC tSudoku.ColumnLink 1 4 0x00310001
 ! PROCEDURE ColumnLink(r: Column; VAR p: Cell);
 !   NEW(q);
 CONST 20
-CONST tSudoku.%8
+GLOBAL tSudoku.%8
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   IF p = NIL THEN
 LDLW 16
@@ -588,7 +588,7 @@ STOREW
 RETURN
 END
 
-PROC tSudoku.MakeArray 5 20 0x00104001
+PROC tSudoku.MakeArray 5 5 0x00104001
 ! PROCEDURE MakeArray(VAR a: ARRAY OF ARRAY OF Column; 
 !   FOR i := 0 TO m-1 DO
 LDLW 28
@@ -608,9 +608,9 @@ JUMP 19
 LABEL 18
 !       NEW(p); p.name := name; p.x := i+1; p.y := j+1; 
 CONST 32
-CONST tSudoku.%7
+GLOBAL tSudoku.%7
 LOCAL -12
-CONST NEW
+GLOBAL NEW
 CALL 3
 LDLC 24
 LDLW -12
@@ -638,12 +638,12 @@ CONST 16
 STIC
 !       NEW(p.head); p.head.down := p.head; p.head.up := p.head;
 CONST 20
-CONST tSudoku.%8
+GLOBAL tSudoku.%8
 LDLW -12
 NCHECK 99
 CONST 28
 PLUSA
-CONST NEW
+GLOBAL NEW
 CALL 3
 LDLW -12
 NCHECK 99
@@ -711,14 +711,14 @@ JLEQ 16
 RETURN
 END
 
-PROC tSudoku.MakeMove 1 20 0x00010001
+PROC tSudoku.MakeMove 1 5 0x00010001
 ! PROCEDURE MakeMove(i, j, k: INTEGER);
 !   p := NIL;
 CONST 0
 STLW -4
 !   ColumnLink(boardCell[i, j], p);
 LOCAL -4
-CONST tSudoku.boardCell
+GLOBAL tSudoku.boardCell
 LDLW 12
 CONST 9
 BOUND 111
@@ -729,11 +729,11 @@ CONST 9
 BOUND 111
 PLUS
 LDIW
-CONST tSudoku.ColumnLink
+GLOBAL tSudoku.ColumnLink
 CALL 2
 !   ColumnLink(boardColumn[j, k], p);
 LOCAL -4
-CONST tSudoku.boardColumn
+GLOBAL tSudoku.boardColumn
 LDLW 16
 CONST 9
 BOUND 112
@@ -744,11 +744,11 @@ CONST 9
 BOUND 112
 PLUS
 LDIW
-CONST tSudoku.ColumnLink
+GLOBAL tSudoku.ColumnLink
 CALL 2
 !   ColumnLink(boardRow[i, k], p);
 LOCAL -4
-CONST tSudoku.boardRow
+GLOBAL tSudoku.boardRow
 LDLW 12
 CONST 9
 BOUND 113
@@ -759,11 +759,11 @@ CONST 9
 BOUND 113
 PLUS
 LDIW
-CONST tSudoku.ColumnLink
+GLOBAL tSudoku.ColumnLink
 CALL 2
 !   ColumnLink(boardBlock[sqrtN * (i DIV sqrtN) + j DIV sqrtN, k], p);
 LOCAL -4
-CONST tSudoku.boardBlock
+GLOBAL tSudoku.boardBlock
 LDLW 12
 CONST 3
 DIV
@@ -782,11 +782,11 @@ CONST 9
 BOUND 114
 PLUS
 LDIW
-CONST tSudoku.ColumnLink
+GLOBAL tSudoku.ColumnLink
 CALL 2
 !   boardMove[i, j, k] := p
 LDLW -4
-CONST tSudoku.boardMove
+GLOBAL tSudoku.boardMove
 LDLW 12
 CONST 9
 BOUND 115
@@ -806,13 +806,13 @@ STIW
 RETURN
 END
 
-PROC tSudoku.MakePuzzle 3 28 0
+PROC tSudoku.MakePuzzle 3 7 0
 ! PROCEDURE MakePuzzle;
 !   NEW(root);
 CONST 32
-CONST tSudoku.%7
-CONST tSudoku.root
-CONST NEW
+GLOBAL tSudoku.%7
+GLOBAL tSudoku.root
+GLOBAL NEW
 CALL 3
 !   root.prev := root; root.next := root;
 LDGW tSudoku.root
@@ -830,8 +830,8 @@ CONST 81
 ALIGNC
 CONST 9
 CONST 9
-CONST tSudoku.boardCell
-CONST tSudoku.MakeArray
+GLOBAL tSudoku.boardCell
+GLOBAL tSudoku.MakeArray
 CALL 6
 !   MakeArray(boardColumn, 'C', N, N);
 CONST 9
@@ -840,8 +840,8 @@ CONST 67
 ALIGNC
 CONST 9
 CONST 9
-CONST tSudoku.boardColumn
-CONST tSudoku.MakeArray
+GLOBAL tSudoku.boardColumn
+GLOBAL tSudoku.MakeArray
 CALL 6
 !   MakeArray(boardRow, 'R', N, N);
 CONST 9
@@ -850,8 +850,8 @@ CONST 82
 ALIGNC
 CONST 9
 CONST 9
-CONST tSudoku.boardRow
-CONST tSudoku.MakeArray
+GLOBAL tSudoku.boardRow
+GLOBAL tSudoku.MakeArray
 CALL 6
 !   MakeArray(boardBlock, 'B', N, N);
 CONST 9
@@ -860,8 +860,8 @@ CONST 66
 ALIGNC
 CONST 9
 CONST 9
-CONST tSudoku.boardBlock
-CONST tSudoku.MakeArray
+GLOBAL tSudoku.boardBlock
+GLOBAL tSudoku.MakeArray
 CALL 6
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -882,7 +882,7 @@ LABEL 24
 LDLW -12
 LDLW -8
 LDLW -4
-CONST tSudoku.MakeMove
+GLOBAL tSudoku.MakeMove
 CALL 3
 !       FOR k := 0 TO N-1 DO
 INCL -12
@@ -905,7 +905,7 @@ JLEQ 20
 RETURN
 END
 
-PROC tSudoku.Cover 2 28 0x00118001
+PROC tSudoku.Cover 2 7 0x00118001
 ! PROCEDURE Cover(p: Column);
 !   p.covered := TRUE;
 CONST 1
@@ -999,7 +999,7 @@ JNEQ 26
 RETURN
 END
 
-PROC tSudoku.Uncover 2 28 0x00118001
+PROC tSudoku.Uncover 2 7 0x00118001
 ! PROCEDURE Uncover(p: Column);
 !   p.prev.next := p; p.next.prev := p;
 LDLW 12
@@ -1085,7 +1085,7 @@ STIC
 RETURN
 END
 
-PROC tSudoku.ChooseColumn 2 28 0x00018001
+PROC tSudoku.ChooseColumn 2 7 0x00018001
 ! PROCEDURE ChooseColumn(): Column;
 !   col := root.next;
 LDGW tSudoku.root
@@ -1125,7 +1125,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tSudoku.PrintState 26 28 0x00002001
+PROC tSudoku.PrintState 26 7 0x00002001
 ! PROCEDURE PrintState(level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -1171,7 +1171,7 @@ STLW -12
 JUMP 43
 LABEL 42
 !     p := choice[k];
-CONST tSudoku.choice
+GLOBAL tSudoku.choice
 LDLW -12
 CONST 81
 BOUND 213
@@ -1249,9 +1249,9 @@ BOUND 220
 CONST 9
 TIMES
 PLUSA
-CONST Out.String
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO N-1 DO
 INCL -4
@@ -1262,7 +1262,7 @@ JLEQ 46
 RETURN
 END
 
-PROC tSudoku.Solve 3 28 0x0001c001
+PROC tSudoku.Solve 3 7 0x0001c001
 ! PROCEDURE Solve(level: INTEGER);
 !   IF root.next = root THEN
 LDGW tSudoku.root
@@ -1272,19 +1272,19 @@ LDGW tSudoku.root
 JNEQ 49
 !     Out.String("Solution:"); Out.Ln;
 CONST 10
-CONST tSudoku.%4
-CONST Out.String
+GLOBAL tSudoku.%4
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     PrintState(level); RETURN
 LDLW 12
-CONST tSudoku.PrintState
+GLOBAL tSudoku.PrintState
 CALL 1
 RETURN
 LABEL 49
 !   col := ChooseColumn();
-CONST tSudoku.ChooseColumn
+GLOBAL tSudoku.ChooseColumn
 CALLW 0
 STLW -4
 !   IF col.size = 0 THEN RETURN END;
@@ -1296,7 +1296,7 @@ RETURN
 LABEL 51
 !   Cover(col);
 LDLW -4
-CONST tSudoku.Cover
+GLOBAL tSudoku.Cover
 CALL 1
 !   p := col.head.down;
 LDLW -4
@@ -1309,7 +1309,7 @@ JUMP 53
 LABEL 52
 !     choice[level] := p;
 LDLW -8
-CONST tSudoku.choice
+GLOBAL tSudoku.choice
 LDLW 12
 CONST 81
 BOUND 240
@@ -1317,14 +1317,14 @@ STIW
 !     Out.Int(level, 0); Out.String(":"); PrintRow(p);
 CONST 0
 LDLW 12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 2
-CONST tSudoku.%10
-CONST Out.String
+GLOBAL tSudoku.%10
+GLOBAL Out.String
 CALL 2
 LDLW -8
-CONST tSudoku.PrintRow
+GLOBAL tSudoku.PrintRow
 CALL 1
 !     q := p.right;
 LDLW -8
@@ -1336,7 +1336,7 @@ LABEL 54
 LDLW -12
 NCHECK 246
 LDNW 16
-CONST tSudoku.Cover
+GLOBAL tSudoku.Cover
 CALL 1
 LDLW -12
 NCHECK 246
@@ -1350,7 +1350,7 @@ JNEQ 54
 !     Solve(level+1);
 LDLW 12
 INC
-CONST tSudoku.Solve
+GLOBAL tSudoku.Solve
 CALL 1
 !     q := p.left;
 LDLW -8
@@ -1362,7 +1362,7 @@ LABEL 56
 LDLW -12
 NCHECK 252
 LDNW 16
-CONST tSudoku.Uncover
+GLOBAL tSudoku.Uncover
 CALL 1
 LDLW -12
 NCHECK 252
@@ -1387,16 +1387,16 @@ LDNW 28
 JNEQ 52
 !   Uncover(col)
 LDLW -4
-CONST tSudoku.Uncover
+GLOBAL tSudoku.Uncover
 CALL 1
 RETURN
 END
 
-PROC tSudoku.ChooseRow 1 28 0x00310001
+PROC tSudoku.ChooseRow 1 7 0x00310001
 ! PROCEDURE ChooseRow(VAR level: INTEGER; p: Cell);
 !   choice[level] := p; INC(level);
 LDLW 16
-CONST tSudoku.choice
+GLOBAL tSudoku.choice
 LDLW 12
 LOADW
 CONST 81
@@ -1422,22 +1422,22 @@ LDIC
 JUMPF 60
 !       Out.String("Conflict for "); PrintCol(q.column); Out.Ln
 CONST 14
-CONST tSudoku.%5
-CONST Out.String
+GLOBAL tSudoku.%5
+GLOBAL Out.String
 CALL 2
 LDLW -4
 NCHECK 267
 LDNW 16
-CONST tSudoku.PrintCol
+GLOBAL tSudoku.PrintCol
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 60
 !     Cover(q.column); q := q.right
 LDLW -4
 NCHECK 269
 LDNW 16
-CONST tSudoku.Cover
+GLOBAL tSudoku.Cover
 CALL 1
 LDLW -4
 NCHECK 269
@@ -1450,7 +1450,7 @@ JNEQ 58
 RETURN
 END
 
-PROC tSudoku.Input 4 28 0x00100001
+PROC tSudoku.Input 4 7 0x00100001
 ! PROCEDURE Input(VAR level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -1463,7 +1463,7 @@ STLW -8
 JUMP 64
 LABEL 63
 !       ch := input[10*i+j];
-CONST tSudoku.%6
+GLOBAL tSudoku.%6
 LDLW -4
 CONST 10
 TIMES
@@ -1476,7 +1476,7 @@ STLC -13
 !       Out.Char(ch);
 LDLC -13
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !       IF ch # '.' THEN
 LDLC -13
@@ -1488,7 +1488,7 @@ CONST 49
 MINUS
 STLW -12
 ! 	ChooseRow(level, boardMove[i, j, k])
-CONST tSudoku.boardMove
+GLOBAL tSudoku.boardMove
 LDLW -4
 CONST 9
 BOUND 285
@@ -1506,7 +1506,7 @@ BOUND 285
 PLUS
 LDIW
 LDLW 12
-CONST tSudoku.ChooseRow
+GLOBAL tSudoku.ChooseRow
 CALL 2
 LABEL 66
 !     FOR j := 0 TO N-1 DO
@@ -1516,7 +1516,7 @@ LDLW -8
 CONST 8
 JLEQ 63
 !     Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO N-1 DO
 INCL -4
@@ -1527,33 +1527,33 @@ JLEQ 61
 RETURN
 END
 
-PROC tSudoku.%main 0 28 0
+PROC tSudoku.%main 0 7 0
 !   MakePuzzle;
-CONST tSudoku.MakePuzzle
+GLOBAL tSudoku.MakePuzzle
 CALL 0
 !   level := 0;
 CONST 0
 STGW tSudoku.level
 !   Input(level);
-CONST tSudoku.level
-CONST tSudoku.Input
+GLOBAL tSudoku.level
+GLOBAL tSudoku.Input
 CALL 1
 !   Solve(level)
 LDGW tSudoku.level
-CONST tSudoku.Solve
+GLOBAL tSudoku.Solve
 CALL 1
 RETURN
 END
 
 ! Global variables
-GLOBAL tSudoku.root 4
-GLOBAL tSudoku.boardCell 324
-GLOBAL tSudoku.boardColumn 324
-GLOBAL tSudoku.boardRow 324
-GLOBAL tSudoku.boardBlock 324
-GLOBAL tSudoku.boardMove 2916
-GLOBAL tSudoku.choice 324
-GLOBAL tSudoku.level 4
+GLOVAR tSudoku.root 4
+GLOVAR tSudoku.boardCell 324
+GLOVAR tSudoku.boardColumn 324
+GLOVAR tSudoku.boardRow 324
+GLOVAR tSudoku.boardBlock 324
+GLOVAR tSudoku.boardMove 2916
+GLOVAR tSudoku.choice 324
+GLOVAR tSudoku.level 4
 
 ! Pointer map
 DEFINE tSudoku.%gcmap

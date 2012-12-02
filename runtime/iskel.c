@@ -132,7 +132,6 @@ $$ jump table
 #ifdef TRACE
 	  if (dflag > 1) {
 	       int i;
-	       printf("pc=%p sp=%p bp=%p cp=%p\n", pc, sp, bp, cp);
 	       printf("pc=%s+%d(%p) sp=%p bp=%p cp=%p",
 		      thisproc->p_name, pc - cp[1].x, pc, sp, bp, cp);
 	       fflush(stdout);

@@ -24,26 +24,26 @@ MODULE tCopy STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCopy.%main 0 20 0
+PROC tCopy.%main 0 5 0
 !   COPY("foo", s);
 CONST 10
-CONST tCopy.s
+GLOBAL tCopy.s
 CONST 4
-CONST tCopy.%1
-CONST COPY
+GLOBAL tCopy.%1
+GLOBAL COPY
 CALL 4
 !   Out.String(s); Out.Ln
 CONST 10
-CONST tCopy.s
-CONST Out.String
+GLOBAL tCopy.s
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tCopy.s 10
+GLOVAR tCopy.s 10
 
 ! String "foo"
 DEFINE tCopy.%1

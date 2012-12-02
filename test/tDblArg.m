@@ -28,28 +28,28 @@ MODULE tDblArg STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDblArg.f 0 12 0
+PROC tDblArg.f 0 3 0
 ! PROCEDURE f(b: BOOLEAN; x: LONGREAL); 
 !   IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x) END; 
 LDLC 12
 JUMPF 3
 CONST 12
-CONST tDblArg.%1
-CONST Out.String
+GLOBAL tDblArg.%1
+GLOBAL Out.String
 CALL 2
 JUMP 2
 LABEL 3
 LDLD 16
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
 LABEL 2
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tDblArg.%main 0 16 0
+PROC tDblArg.%main 0 4 0
 !   p := 3; q := 2;
 CONST 3
 STGW tDblArg.p
@@ -85,15 +85,15 @@ CONST 0
 GT
 LABEL 7
 ALIGNC
-CONST tDblArg.f
+GLOBAL tDblArg.f
 CALL 3
 RETURN
 END
 
 ! Global variables
-GLOBAL tDblArg.p 4
-GLOBAL tDblArg.q 4
-GLOBAL tDblArg.m 1
+GLOVAR tDblArg.p 4
+GLOVAR tDblArg.q 4
+GLOVAR tDblArg.m 1
 
 ! String "*** Failed!"
 DEFINE tDblArg.%1

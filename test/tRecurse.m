@@ -47,7 +47,7 @@ MODULE tRecurse STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRecurse.Sum 0 20 0
+PROC tRecurse.Sum 0 5 0
 ! PROCEDURE Sum(n: INTEGER; a: ARRAY OF INTEGER): INTEGER;
 LOCAL 16
 LDLW 20
@@ -72,13 +72,13 @@ LDLW 20
 LDLW 16
 LDLW 12
 DEC
-CONST tRecurse.Sum
+GLOBAL tRecurse.Sum
 CALLW 3
 PLUS
 RETURNW
 END
 
-PROC tRecurse.Sumorial 0 20 0
+PROC tRecurse.Sumorial 0 5 0
 ! PROCEDURE Sumorial(n: INTEGER): INTEGER;
 !   IF n = 0 THEN
 LDLW 12
@@ -91,13 +91,13 @@ LABEL 4
 LDLW 12
 LDLW 12
 DEC
-CONST tRecurse.Sumorial
+GLOBAL tRecurse.Sumorial
 CALLW 1
 PLUS
 RETURNW
 END
 
-PROC tRecurse.%main 0 20 0
+PROC tRecurse.%main 0 5 0
 !   FOR n := 0 TO N-1 DO a[n] := N-n END;
 CONST 0
 STGW tRecurse.n
@@ -106,7 +106,7 @@ LABEL 5
 CONST 200
 LDGW tRecurse.n
 MINUS
-CONST tRecurse.a
+GLOBAL tRecurse.a
 LDGW tRecurse.n
 CONST 200
 BOUND 37
@@ -121,29 +121,29 @@ JLEQ 5
 !   Out.Int(Sum(N, a), 0); Out.Ln;
 CONST 0
 CONST 200
-CONST tRecurse.a
+GLOBAL tRecurse.a
 CONST 200
-CONST tRecurse.Sum
+GLOBAL tRecurse.Sum
 CALLW 3
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(Sumorial(40000), 0); Out.Ln
 CONST 0
 CONST 40000
-CONST tRecurse.Sumorial
+GLOBAL tRecurse.Sumorial
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tRecurse.n 4
-GLOBAL tRecurse.a 800
+GLOVAR tRecurse.n 4
+GLOVAR tRecurse.a 800
 
 ! End of file
 ]]*)

@@ -399,8 +399,12 @@ in type INTEGER
 >        ^^^^^^^^^^
 
 "SemError.m", line 143: sorry, LONGINT subscripts are not implemented
->   f^[0] := f^[long]
+>   f^[0] := f^[long];
 >               ^^^^
+
+"SemError.m", line 144: 'undecl' has not been declared
+>   f[0] := f[undecl]
+>             ^^^^^^
 
 "SemError.m", line 22: warning -- baz is declared but not used or exported
 > PROCEDURE baz(x: INTEGER);

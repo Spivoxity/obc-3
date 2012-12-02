@@ -25,32 +25,32 @@ MODULE tStif STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tStif.%main 0 16 0
+PROC tStif.%main 0 4 0
 !   i := 3;
 CONST 3
 STGW tStif.i
 !   a[i] := 4.5;
 FCONST 4.5
-CONST tStif.a
+GLOBAL tStif.a
 LDGW tStif.i
 CONST 10
 BOUND 11
 STIF
 !   Out.Real(a[3]);
-CONST tStif.a
+GLOBAL tStif.a
 CONST 3
 LDIF
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tStif.i 4
-GLOBAL tStif.a 40
+GLOVAR tStif.i 4
+GLOVAR tStif.a 40
 
 ! End of file
 ]]*)

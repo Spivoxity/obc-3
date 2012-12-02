@@ -30,7 +30,7 @@ MODULE tLongReg STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLongReg.Sum 1 28 0
+PROC tLongReg.Sum 1 7 0
 ! PROCEDURE Sum(a: ARRAY OF LONGINT): LONGINT;
 LOCAL 12
 LDLW 16
@@ -64,7 +64,7 @@ QPLUS
 RETURNQ
 END
 
-PROC tLongReg.%main 0 28 0
+PROC tLongReg.%main 0 7 0
 !   b[0] := 37;
 CONST 37
 CONVNQ
@@ -72,30 +72,30 @@ STGQ tLongReg.b
 !   b[1] := 42;
 CONST 42
 CONVNQ
-CONST tLongReg.b
+GLOBAL tLongReg.b
 CONST 1
 STIQ
 !   b[2] := 76;
 CONST 76
 CONVNQ
-CONST tLongReg.b
+GLOBAL tLongReg.b
 CONST 2
 STIQ
 !   Out.LongInt(Sum(b), 0); Out.Ln
 CONST 0
 CONST 3
-CONST tLongReg.b
-CONST tLongReg.Sum
+GLOBAL tLongReg.b
+GLOBAL tLongReg.Sum
 CALLQ 2
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tLongReg.b 24
+GLOVAR tLongReg.b 24
 
 ! End of file
 ]]*)

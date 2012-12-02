@@ -18,18 +18,18 @@ MODULE tBigReal STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBigReal.%main 0 8 0
+PROC tBigReal.%main 0 2 0
 !   Out.Real(2.0E+32); Out.Ln;
 FCONST 2e+32
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Real(2.2E-20); Out.Ln
 FCONST 2.2e-20
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END

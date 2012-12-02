@@ -25,7 +25,7 @@ MODULE tFJump STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFJump.%main 0 12 0
+PROC tFJump.%main 0 3 0
 !   x := 1.0;
 FCONST 1.
 STGF tFJump.x
@@ -39,17 +39,17 @@ FCONST 0.5
 FJLEQ 3
 !       Out.String("ok"); Out.Ln
 CONST 3
-CONST tFJump.%1
-CONST Out.String
+GLOBAL tFJump.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 3
 RETURN
 END
 
 ! Global variables
-GLOBAL tFJump.x 4
+GLOVAR tFJump.x 4
 
 ! String "ok"
 DEFINE tFJump.%1

@@ -27,7 +27,7 @@ MODULE tCarry STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCarry.Inc 0 16 0
+PROC tCarry.Inc 0 4 0
 ! PROCEDURE Inc(n: LONGINT): LONGINT;
 !   RETURN 1-n
 CONST 1
@@ -37,22 +37,22 @@ QMINUS
 RETURNQ
 END
 
-PROC tCarry.%main 0 16 0
+PROC tCarry.%main 0 4 0
 !   Out.LongInt(X, 0); Out.Ln;
 CONST 0
 QCONST 4294967295
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.LongInt(Inc(X), 0); Out.Ln
 CONST 0
 QCONST 4294967295
-CONST tCarry.Inc
+GLOBAL tCarry.Inc
 CALLQ 2
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END

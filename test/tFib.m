@@ -27,38 +27,38 @@ IMPORT Out STAMP
 IMPORT xPrelude STAMP
 ENDHDR
 
-PROC tFib.%main 2 12 0
+PROC tFib.%main 2 3 0
 !     n := 10;
 CONST 10
 STLW -4
 !     f := FibFun.Fib(n);
 LDLW -4
-CONST xPrelude.Fib
+GLOBAL xPrelude.Fib
 CALLW 1
 STLW -8
 !     Out.String(FibFun.PROC); Out.String("("); Out.Int(n, 0); 
 CONST 4
-CONST xPrelude.%1
-CONST Out.String
+GLOBAL xPrelude.%1
+GLOBAL Out.String
 CALL 2
 CONST 2
-CONST tFib.%2
-CONST Out.String
+GLOBAL tFib.%2
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     Out.String(") = "); Out.Int(f, 0); Out.Ln
 CONST 5
-CONST tFib.%1
-CONST Out.String
+GLOBAL tFib.%1
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDLW -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END

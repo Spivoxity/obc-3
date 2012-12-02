@@ -26,9 +26,9 @@ let arity =
   let f = false and t = true in
   function
       ERROR (_, _) | STKMAP _ -> (0, [])
-    | CONSTn _ | TCONST (FloatT, _) -> (0, [f])
+    | CONST _ | TCONST (FloatT, _) -> (0, [f])
     | TCONST ((DoubleT|LongT), _) -> (0, [f; f])
-    | (LOCAL _ | CONSTx _) -> (0, [f])
+    | (LOCAL _ | GLOBAL _) -> (0, [f])
     | LOAD (LongT|DoubleT) -> (1, [f; f]) | LOAD _ -> (1, [f])
     | CHECK (NullPtr, _) -> (1, [t])
     | ALIGN _ -> (1, [f])

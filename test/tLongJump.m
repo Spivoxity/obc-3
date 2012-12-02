@@ -57,7 +57,7 @@ MODULE tLongJump STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLongJump.%main 0 12 0
+PROC tLongJump.%main 0 3 0
 !   x := 0;
 CONST 0
 STGW tLongJump.x
@@ -422,24 +422,24 @@ LABEL 3
 !     Out.Char(' '); Out.Int(x,0)
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDGW tLongJump.x
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   UNTIL x >= 503;
 LDGW tLongJump.x
 CONST 503
 JLT 1
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tLongJump.x 4
+GLOVAR tLongJump.x 4
 
 ! End of file
 ]]*)

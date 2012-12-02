@@ -25,14 +25,14 @@ MODULE tSysMove STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSysMove.%main 0 20 0
+PROC tSysMove.%main 0 5 0
 !   FOR i := 0 TO 9 DO a[i]:= i END;
 CONST 0
 STGW tSysMove.i
 JUMP 2
 LABEL 1
 LDGW tSysMove.i
-CONST tSysMove.a
+GLOBAL tSysMove.a
 LDGW tSysMove.i
 CONST 10
 BOUND 10
@@ -46,13 +46,13 @@ CONST 9
 JLEQ 1
 !   SYSTEM.MOVE(SYSTEM.ADR(a[2]), SYSTEM.ADR(a[4]), 4*SIZE(INTEGER));
 CONST 16
-CONST tSysMove.a
+GLOBAL tSysMove.a
 CONST 16
 PLUSA
-CONST tSysMove.a
+GLOBAL tSysMove.a
 CONST 8
 PLUSA
-CONST MOVE
+GLOBAL MOVE
 CALL 3
 !   FOR i := 0 TO 9 DO Out.Int(a[i], 2) END;
 CONST 0
@@ -60,12 +60,12 @@ STGW tSysMove.i
 JUMP 4
 LABEL 3
 CONST 2
-CONST tSysMove.a
+GLOBAL tSysMove.a
 LDGW tSysMove.i
 CONST 10
 BOUND 12
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 LDGW tSysMove.i
 INC
@@ -75,14 +75,14 @@ LDGW tSysMove.i
 CONST 9
 JLEQ 3
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSysMove.a 40
-GLOBAL tSysMove.i 4
+GLOVAR tSysMove.a 40
+GLOVAR tSysMove.i 4
 
 ! End of file
 ]]*)

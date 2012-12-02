@@ -128,7 +128,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMissing.Partition 3 16 0
+PROC tMissing.Partition 3 4 0
 ! PROCEDURE Partition(m, n: INTEGER; x: INTEGER): INTEGER;
 !   i := m; j := n;
 LDLW 12
@@ -138,7 +138,7 @@ STLW -8
 JUMP 3
 LABEL 1
 !     IF a[i] < x THEN
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 14
@@ -152,24 +152,24 @@ LABEL 4
 !       j := j-1;
 DECL -8
 !       t := a[i]; a[i] := a[j]; a[j] := t
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 18
 LDIW
 STLW -12
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -8
 CONST 1002
 BOUND 18
 LDIW
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 18
 STIW
 LDLW -12
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -8
 CONST 1002
 BOUND 18
@@ -184,7 +184,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMissing.Missing 5 16 0
+PROC tMissing.Missing 5 4 0
 ! PROCEDURE Missing(): INTEGER;
 !   p := 0; q := M; r := N;
 CONST 0
@@ -206,7 +206,7 @@ STLW -16
 LDLW -16
 LDLW -8
 LDLW -4
-CONST tMissing.Partition
+GLOBAL tMissing.Partition
 CALLW 3
 STLW -20
 !     IF k < m THEN
@@ -233,7 +233,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMissing.Swap 1 16 0x00300001
+PROC tMissing.Swap 1 4 0x00300001
 ! PROCEDURE Swap(VAR x, y: INTEGER);
 !   t := x; x := y; y := t
 LDLW 12
@@ -249,7 +249,7 @@ STOREW
 RETURN
 END
 
-PROC tMissing.Bundala 1 16 0
+PROC tMissing.Bundala 1 4 0
 ! PROCEDURE Bundala(): INTEGER;
 !   n := 0;
 CONST 0
@@ -257,8 +257,8 @@ STLW -4
 JUMP 10
 LABEL 11
 !       Swap(a[n], a[a[n]])
-CONST tMissing.a
-CONST tMissing.a
+GLOBAL tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 56
@@ -266,23 +266,23 @@ LDIW
 CONST 1002
 BOUND 56
 INDEXW
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 56
 INDEXW
-CONST tMissing.Swap
+GLOBAL tMissing.Swap
 CALL 2
 LABEL 12
 !     WHILE (a[n] < M) & (a[n] # n) DO
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 55
 LDIW
 CONST 1000
 JGEQ 13
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 55
@@ -308,7 +308,7 @@ LABEL 15
 LDLW -4
 CONST 1000
 JGEQ 16
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 62
@@ -321,40 +321,40 @@ LDLW -4
 RETURNW
 END
 
-PROC tMissing.Bundala2 0 16 0
+PROC tMissing.Bundala2 0 4 0
 ! PROCEDURE Bundala2(): INTEGER;
 JUMP 18
 LABEL 17
 !     Swap(a[n], a[a[n]])
-CONST tMissing.a
-CONST tMissing.a
+GLOBAL tMissing.a
+GLOBAL tMissing.a
 LDNW 4004
 CONST 1002
 BOUND 70
 INDEXW
-CONST tMissing.a
+GLOBAL tMissing.a
 CONST 4004
 PLUSA
-CONST tMissing.Swap
+GLOBAL tMissing.Swap
 CALL 2
 LABEL 18
 !   WHILE a[a[n]] # a[n] DO
-CONST tMissing.a
-CONST tMissing.a
+GLOBAL tMissing.a
+GLOBAL tMissing.a
 LDNW 4004
 CONST 1002
 BOUND 69
 LDIW
-CONST tMissing.a
+GLOBAL tMissing.a
 LDNW 4004
 JNEQ 17
 !   RETURN a[n]
-CONST tMissing.a
+GLOBAL tMissing.a
 LDNW 4004
 RETURNW
 END
 
-PROC tMissing.Permute 3 16 0
+PROC tMissing.Permute 3 4 0
 ! PROCEDURE Permute(m: INTEGER);
 !   FOR i := m-1 TO 1 BY -1 DO
 LDLW 12
@@ -365,7 +365,7 @@ LABEL 19
 !     j := Random.Roll(i+1);
 LDLW -4
 INC
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 STLW -8
 !     ASSERT((j >= 0) & (j <= i));
@@ -379,24 +379,24 @@ CONST 0
 EASSERT 80
 LABEL 21
 !     t := a[i]; a[i] := a[j]; a[j] := t
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 81
 LDIW
 STLW -12
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -8
 CONST 1002
 BOUND 81
 LDIW
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 81
 STIW
 LDLW -12
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -8
 CONST 1002
 BOUND 81
@@ -410,19 +410,19 @@ JGEQ 19
 RETURN
 END
 
-PROC tMissing.Test 3 16 0
+PROC tMissing.Test 3 4 0
 ! PROCEDURE Test;
 !   x := Random.Roll(N);
 CONST 1001
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 STLW -4
 !   Out.Int(x, 0); Out.Ln;
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   i := 0;
 CONST 0
@@ -437,7 +437,7 @@ LDLW -12
 LDLW -4
 JEQ 26
 LDLW -12
-CONST tMissing.a
+GLOBAL tMissing.a
 LDLW -8
 CONST 1002
 BOUND 92
@@ -452,79 +452,79 @@ CONST 1000
 JLEQ 23
 !   Permute(M);
 CONST 1000
-CONST tMissing.Permute
+GLOBAL tMissing.Permute
 CALL 1
 !   x := Missing();  
-CONST tMissing.Missing
+GLOBAL tMissing.Missing
 CALLW 0
 STLW -4
 !   Out.Int(x, 0); Out.Ln;
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Permute(M);
 CONST 1000
-CONST tMissing.Permute
+GLOBAL tMissing.Permute
 CALL 1
 !   x := Bundala();
-CONST tMissing.Bundala
+GLOBAL tMissing.Bundala
 CALLW 0
 STLW -4
 !   Out.Int(x, 0); Out.Ln;
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   a[M] := x; x := Random.Roll(N); a[M+1] := x;
 LDLW -4
-CONST tMissing.a
+GLOBAL tMissing.a
 STNW 4000
 CONST 1001
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 STLW -4
 LDLW -4
-CONST tMissing.a
+GLOBAL tMissing.a
 STNW 4004
 !   Out.Int(x, 0); Out.Ln;
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Permute(M+2);
 CONST 1002
-CONST tMissing.Permute
+GLOBAL tMissing.Permute
 CALL 1
 !   x := Bundala2();
-CONST tMissing.Bundala2
+GLOBAL tMissing.Bundala2
 CALLW 0
 STLW -4
 !   Out.Int(x, 0); Out.Ln
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tMissing.%main 0 16 0
+PROC tMissing.%main 0 4 0
 !   Test
-CONST tMissing.Test
+GLOBAL tMissing.Test
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tMissing.a 4008
+GLOVAR tMissing.a 4008
 
 ! End of file
 ]]*)

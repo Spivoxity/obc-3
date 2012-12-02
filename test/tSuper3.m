@@ -25,32 +25,32 @@ MODULE tSuper3 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuper3.b.f 0 12 0x00100001
+PROC tSuper3.b.f 0 3 0x00100001
 ! PROCEDURE (p: a) f; BEGIN Out.String("foo"); Out.Ln END f;
 CONST 4
-CONST tSuper3.%1
-CONST Out.String
+GLOBAL tSuper3.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tSuper3.%main 0 16 0
+PROC tSuper3.%main 0 4 0
 !   NEW(p); p.f^ 
 CONST 0
-CONST tSuper3.d
-CONST tSuper3.p
-CONST NEW
+GLOBAL tSuper3.d
+GLOBAL tSuper3.p
+GLOBAL NEW
 CALL 3
 LDGW tSuper3.p
-CONST tSuper3.b.f
+GLOBAL tSuper3.b.f
 CALL 1
 RETURN
 END
 
 ! Global variables
-GLOBAL tSuper3.p 4
+GLOVAR tSuper3.p 4
 
 ! Pointer map
 DEFINE tSuper3.%gcmap

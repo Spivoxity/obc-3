@@ -49,13 +49,13 @@ MODULE tPascal STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPascal.pascal2 3 20 0x00004001
+PROC tPascal.pascal2 3 5 0x00004001
 ! PROCEDURE pascal2();
 !   NEW(a);
 CONST 440
 CONST 0
 LOCAL -12
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   i := 0;
 CONST 0
@@ -84,7 +84,7 @@ BOUND 28
 CONST 11
 TIMES
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 JUMP 4
 LABEL 3
@@ -132,7 +132,7 @@ STIW
 !       Out.Char(' '); Out.Int(a[i, j], 0);
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDLW -12
@@ -147,7 +147,7 @@ CONST 11
 BOUND 31
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !       j := j+1
 INCL -8
@@ -172,7 +172,7 @@ BOUND 34
 PLUS
 STIW
 !     Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     i := i+1
 INCL -4
@@ -184,9 +184,9 @@ JLT 1
 RETURN
 END
 
-PROC tPascal.%main 0 20 0
+PROC tPascal.%main 0 5 0
 !   pascal2()
-CONST tPascal.pascal2
+GLOBAL tPascal.pascal2
 CALL 0
 RETURN
 END

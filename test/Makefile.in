@@ -56,5 +56,4 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 
 %: $(srcdir)/%.in ../config.status
 	cd .. && ./config.status --file=$(subdir)/$@
-	chmod +x $@
 

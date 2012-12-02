@@ -37,7 +37,6 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 libdir = @libdir@
-mandir = @mandir@
 datarootdir = @datarootdir@
 INSTALL = @INSTALL@
 INSTALL_PROG = @INSTALL_PROGRAM@
@@ -53,12 +52,10 @@ bin/obdump: etc/ObDump.k
 	libexec/oblink -i $(libdir)/obc/obx -L lib etc/ObDump.k -o bin/obdump
 
 install: all force
-	for d in $(bindir) $(libdir)/obc $(mandir)/man1; \
-		do $(INSTALL) -d $$d; done
+	for d in $(bindir) $(libdir)/obc; do $(INSTALL) -d $$d; done
 	for f in bin/*; do $(INSTALL_PROG) $$f $(bindir); done
 	for f in libexec/*; do $(INSTALL_PROG) $$f $(libdir)/obc; done
 	for f in libsrc/*; do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in lib/*; do $(INSTALL_DATA) $$f $(libdir)/obc; done
-	for f in man/*; do $(INSTALL_DATA) $$f $(mandir)/man1; done
 
 force:

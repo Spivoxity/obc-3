@@ -28,7 +28,7 @@ IMPORT Out STAMP
 IMPORT Math STAMP
 ENDHDR
 
-PROC tReal.%main 0 20 0
+PROC tReal.%main 0 5 0
 !   r := Math.pi;
 FCONST 3.14159265359
 STGF tReal.r
@@ -38,18 +38,18 @@ CONST 0
 LDGF tReal.r
 FUMINUS
 CONVFD
-CONST Out.Fixed
+GLOBAL Out.Fixed
 CALL 4
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Real(Math.Arctan2(-1.0,0.0)); Out.Ln;
 FCONST 0.
 FCONST -1.
-CONST Math.Arctan2
+GLOBAL Math.Arctan2
 CALLF 2
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   IF 2.0 + r > 5.14 THEN
 LDGF tReal.r
@@ -59,17 +59,17 @@ FCONST 5.14
 FJLEQ 3
 !      Out.String("yes"); Out.Ln
 CONST 4
-CONST tReal.%1
-CONST Out.String
+GLOBAL tReal.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 3
 RETURN
 END
 
 ! Global variables
-GLOBAL tReal.r 4
+GLOVAR tReal.r 4
 
 ! String "yes"
 DEFINE tReal.%1

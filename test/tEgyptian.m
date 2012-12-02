@@ -45,7 +45,7 @@ MODULE tEgyptian STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tEgyptian.Egyptian 7 20 0x00400001
+PROC tEgyptian.Egyptian 7 5 0x00400001
 ! PROCEDURE Egyptian(a, b: INTEGER; VAR d: ARRAY OF LONGINT): INTEGER;
 !   p := a; q := b; n := 0;
 LDLW 12
@@ -100,7 +100,7 @@ LDLW -28
 RETURNW
 END
 
-PROC tEgyptian.%main 1 20 0
+PROC tEgyptian.%main 1 5 0
 !   a := 144; b := 233;
 CONST 144
 STGW tEgyptian.a
@@ -108,29 +108,29 @@ CONST 233
 STGW tEgyptian.b
 !   n := Egyptian(a, b, digits);
 CONST 100
-CONST tEgyptian.digits
+GLOBAL tEgyptian.digits
 LDGW tEgyptian.b
 LDGW tEgyptian.a
-CONST tEgyptian.Egyptian
+GLOBAL tEgyptian.Egyptian
 CALLW 4
 STGW tEgyptian.n
 !   Out.Int(a,0); Out.Char('/'); Out.Int(b,0);
 CONST 0
 LDGW tEgyptian.a
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 47
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LDGW tEgyptian.b
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   Out.String(" = ");
 CONST 4
-CONST tEgyptian.%1
-CONST Out.String
+GLOBAL tEgyptian.%1
+GLOBAL Out.String
 CALL 2
 !   FOR i := 0 TO n-1 DO
 LDGW tEgyptian.n
@@ -144,22 +144,22 @@ LABEL 6
 LDGW tEgyptian.i
 JLEQZ 9
 CONST 4
-CONST tEgyptian.%2
-CONST Out.String
+GLOBAL tEgyptian.%2
+GLOBAL Out.String
 CALL 2
 LABEL 9
 !     Out.String("1/"); Out.LongInt(digits[i], 0);
 CONST 3
-CONST tEgyptian.%3
-CONST Out.String
+GLOBAL tEgyptian.%3
+GLOBAL Out.String
 CALL 2
 CONST 0
-CONST tEgyptian.digits
+GLOBAL tEgyptian.digits
 LDGW tEgyptian.i
 CONST 100
 BOUND 31
 LDIQ
-CONST Out.LongInt
+GLOBAL Out.LongInt
 CALL 3
 !   FOR i := 0 TO n-1 DO
 LDGW tEgyptian.i
@@ -170,17 +170,17 @@ LDGW tEgyptian.i
 LDLW -4
 JLEQ 6
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tEgyptian.digits 800
-GLOBAL tEgyptian.a 4
-GLOBAL tEgyptian.b 4
-GLOBAL tEgyptian.n 4
-GLOBAL tEgyptian.i 4
+GLOVAR tEgyptian.digits 800
+GLOVAR tEgyptian.a 4
+GLOVAR tEgyptian.b 4
+GLOVAR tEgyptian.n 4
+GLOVAR tEgyptian.i 4
 
 ! String " = "
 DEFINE tEgyptian.%1

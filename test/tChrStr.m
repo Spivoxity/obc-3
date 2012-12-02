@@ -42,7 +42,7 @@ MODULE tChrStr STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChrStr.p 1 12 0
+PROC tChrStr.p 1 3 0
 ! PROCEDURE p(u: q);
 LOCAL -2
 LDLW 12
@@ -51,52 +51,52 @@ FIXCOPY
 !   Out.String(u)
 CONST 2
 LOCAL -2
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 RETURN
 END
 
-PROC tChrStr.%main 0 20 0
+PROC tChrStr.%main 0 5 0
 !   s := 'x';
 CONST 2
-CONST tChrStr.s
+GLOBAL tChrStr.s
 CONST 2
-CONST tChrStr.%1
-CONST COPY
+GLOBAL tChrStr.%1
+GLOBAL COPY
 CALL 4
 !   Out.String(s);
 CONST 2
-CONST tChrStr.s
-CONST Out.String
+GLOBAL tChrStr.s
+GLOBAL Out.String
 CALL 2
 !   Out.String(CHR(65));
 CONST 2
-CONST tChrStr.%2
-CONST Out.String
+GLOBAL tChrStr.%2
+GLOBAL Out.String
 CALL 2
 !   t := 'y';
 CONST 3
-CONST tChrStr.t
+GLOBAL tChrStr.t
 CONST 2
-CONST tChrStr.%3
-CONST COPY
+GLOBAL tChrStr.%3
+GLOBAL COPY
 CALL 4
 !   IF t = 'y' THEN Out.String(t) END;
 CONST 2
-CONST tChrStr.%3
+GLOBAL tChrStr.%3
 CONST 3
-CONST tChrStr.t
-CONST COMPARE
+GLOBAL tChrStr.t
+GLOBAL COMPARE
 CALLW 4
 JNEQZ 6
 CONST 3
-CONST tChrStr.t
-CONST Out.String
+GLOBAL tChrStr.t
+GLOBAL Out.String
 CALL 2
 LABEL 6
 !   p('z');
-CONST tChrStr.%4
-CONST tChrStr.p
+GLOBAL tChrStr.%4
+GLOBAL tChrStr.p
 CALL 1
 !   n := ORD('z');
 CONST 122
@@ -105,8 +105,8 @@ STGW tChrStr.n
 LDGW tChrStr.n
 STGC tChrStr.s
 !   p(s);
-CONST tChrStr.s
-CONST tChrStr.p
+GLOBAL tChrStr.s
+GLOBAL tChrStr.p
 CALL 1
 !   n := ORD(t[0]);
 LDGC tChrStr.t
@@ -122,18 +122,18 @@ STGW tChrStr.n
 !   Out.Int(n, 0);
 CONST 0
 LDGW tChrStr.n
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tChrStr.n 4
-GLOBAL tChrStr.s 2
-GLOBAL tChrStr.t 3
+GLOVAR tChrStr.n 4
+GLOVAR tChrStr.s 2
+GLOVAR tChrStr.t 3
 
 ! String "x"
 DEFINE tChrStr.%1

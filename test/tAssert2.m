@@ -20,7 +20,7 @@ In procedure tAssert2.%main
 MODULE tAssert2 STAMP 0
 ENDHDR
 
-PROC tAssert2.%main 0 8 0
+PROC tAssert2.%main 0 2 0
 !   x := 3;
 CONST 3
 STGW tAssert2.x
@@ -35,7 +35,7 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tAssert2.x 4
+GLOVAR tAssert2.x 4
 
 ! End of file
 ]]*)

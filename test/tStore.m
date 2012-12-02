@@ -96,7 +96,7 @@ MODULE tStore STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tStore.Find 8 24 0
+PROC tStore.Find 8 6 0
 ! PROCEDURE Find(s: string): INTEGER;
 LOCAL -32
 LDLW 12
@@ -120,14 +120,14 @@ STLW -12
 CONST 20
 LOCAL -32
 CONST 20
-CONST tStore.name
+GLOBAL tStore.name
 LDLW -12
 CONST 100
 BOUND 32
 CONST 20
 TIMES
 PLUSA
-CONST COMPARE
+GLOBAL COMPARE
 CALLW 4
 JGTZ 9
 !       a := m
@@ -149,7 +149,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tStore.Store 7 24 0
+PROC tStore.Store 7 6 0
 ! PROCEDURE Store(s: string; v: INTEGER);
 LOCAL -28
 LDLW 12
@@ -157,7 +157,7 @@ CONST 20
 FIXCOPY
 !   i := Find(s);
 LOCAL -28
-CONST tStore.Find
+GLOBAL tStore.Find
 CALLW 1
 STLW -4
 !   IF (i >= 0) & (i < N) & (name[i] = s) THEN
@@ -169,19 +169,19 @@ JGEQ 11
 CONST 20
 LOCAL -28
 CONST 20
-CONST tStore.name
+GLOBAL tStore.name
 LDLW -4
 CONST 100
 BOUND 45
 CONST 20
 TIMES
 PLUSA
-CONST COMPARE
+GLOBAL COMPARE
 CALLW 4
 JNEQZ 11
 !     value[i] := v
 LDLW 16
-CONST tStore.value
+GLOBAL tStore.value
 LDLW -4
 CONST 100
 BOUND 46
@@ -197,14 +197,14 @@ STGW tStore.N
 JUMP 13
 LABEL 12
 !       name[j] := name[j-1];
-CONST tStore.name
+GLOBAL tStore.name
 LDLW -8
 CONST 100
 BOUND 50
 CONST 20
 TIMES
 PLUSA
-CONST tStore.name
+GLOBAL tStore.name
 LDLW -8
 DEC
 CONST 100
@@ -215,13 +215,13 @@ PLUSA
 CONST 20
 FIXCOPY
 !       value[j] := value[j-1];
-CONST tStore.value
+GLOBAL tStore.value
 LDLW -8
 DEC
 CONST 100
 BOUND 51
 LDIW
-CONST tStore.value
+GLOBAL tStore.value
 LDLW -8
 CONST 100
 BOUND 51
@@ -235,7 +235,7 @@ LDLW -4
 INC
 JGT 12
 !     name[j] := s;
-CONST tStore.name
+GLOBAL tStore.name
 LDLW -8
 CONST 100
 BOUND 54
@@ -247,7 +247,7 @@ CONST 20
 FIXCOPY
 !     value[j] := v
 LDLW 16
-CONST tStore.value
+GLOBAL tStore.value
 LDLW -8
 CONST 100
 BOUND 55
@@ -255,7 +255,7 @@ STIW
 RETURN
 END
 
-PROC tStore.Recall 6 24 0
+PROC tStore.Recall 6 6 0
 ! PROCEDURE Recall(s: string): INTEGER;
 LOCAL -24
 LDLW 12
@@ -263,7 +263,7 @@ CONST 20
 FIXCOPY
 !   i := Find(s);
 LOCAL -24
-CONST tStore.Find
+GLOBAL tStore.Find
 CALLW 1
 STLW -4
 !   IF (i >= 0) & (i < N) & (name[i] = s) THEN
@@ -275,18 +275,18 @@ JGEQ 15
 CONST 20
 LOCAL -24
 CONST 20
-CONST tStore.name
+GLOBAL tStore.name
 LDLW -4
 CONST 100
 BOUND 63
 CONST 20
 TIMES
 PLUSA
-CONST COMPARE
+GLOBAL COMPARE
 CALLW 4
 JNEQZ 15
 !     RETURN value[i]
-CONST tStore.value
+GLOBAL tStore.value
 LDLW -4
 CONST 100
 BOUND 64
@@ -298,84 +298,84 @@ CONST -1
 RETURNW
 END
 
-PROC tStore.Test 2 24 0
+PROC tStore.Test 2 6 0
 ! PROCEDURE Test;
 !   Out.Int(Recall("mike"), 5); Out.Int(Recall("abel"), 5); Out.Ln;
 CONST 5
-CONST tStore.%1
-CONST tStore.Recall
+GLOBAL tStore.%1
+GLOBAL tStore.Recall
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 5
-CONST tStore.%2
-CONST tStore.Recall
+GLOBAL tStore.%2
+GLOBAL tStore.Recall
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Store("mike", 1234);
 CONST 1234
-CONST tStore.%1
-CONST tStore.Store
+GLOBAL tStore.%1
+GLOBAL tStore.Store
 CALL 2
 !   Out.Int(Recall("mike"), 5); Out.Int(Recall("abel"), 5); Out.Ln; 
 CONST 5
-CONST tStore.%1
-CONST tStore.Recall
+GLOBAL tStore.%1
+GLOBAL tStore.Recall
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 5
-CONST tStore.%2
-CONST tStore.Recall
+GLOBAL tStore.%2
+GLOBAL tStore.Recall
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Store("abel", 2345); Store("mike", 4321);
 CONST 2345
-CONST tStore.%2
-CONST tStore.Store
+GLOBAL tStore.%2
+GLOBAL tStore.Store
 CALL 2
 CONST 4321
-CONST tStore.%1
-CONST tStore.Store
+GLOBAL tStore.%1
+GLOBAL tStore.Store
 CALL 2
 !   Out.Int(Recall("mike"), 5); Out.Int(Recall("abel"), 5); Out.Ln; 
 CONST 5
-CONST tStore.%1
-CONST tStore.Recall
+GLOBAL tStore.%1
+GLOBAL tStore.Recall
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 5
-CONST tStore.%2
-CONST tStore.Recall
+GLOBAL tStore.%2
+GLOBAL tStore.Recall
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Store("zeke", 3456); Store("john", 4567);
 CONST 3456
-CONST tStore.%3
-CONST tStore.Store
+GLOBAL tStore.%3
+GLOBAL tStore.Store
 CALL 2
 CONST 4567
-CONST tStore.%4
-CONST tStore.Store
+GLOBAL tStore.%4
+GLOBAL tStore.Store
 CALL 2
 !   Out.Int(Recall("john"), 5); Out.Ln;
 CONST 5
-CONST tStore.%4
-CONST tStore.Recall
+GLOBAL tStore.%4
+GLOBAL tStore.Recall
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO N-1 DO
 LDGW tStore.N
@@ -387,29 +387,29 @@ JUMP 17
 LABEL 16
 !     Out.String(name[i]); Out.String(" = "); 
 CONST 20
-CONST tStore.name
+GLOBAL tStore.name
 LDLW -4
 CONST 100
 BOUND 82
 CONST 20
 TIMES
 PLUSA
-CONST Out.String
+GLOBAL Out.String
 CALL 2
 CONST 4
-CONST tStore.%5
-CONST Out.String
+GLOBAL tStore.%5
+GLOBAL Out.String
 CALL 2
 !     Out.Int(value[i], 0); Out.Ln
 CONST 0
-CONST tStore.value
+GLOBAL tStore.value
 LDLW -4
 CONST 100
 BOUND 83
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO N-1 DO
 INCL -4
@@ -420,17 +420,17 @@ JLEQ 16
 RETURN
 END
 
-PROC tStore.%main 0 24 0
+PROC tStore.%main 0 6 0
 !   Test
-CONST tStore.Test
+GLOBAL tStore.Test
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tStore.N 4
-GLOBAL tStore.name 2000
-GLOBAL tStore.value 400
+GLOVAR tStore.N 4
+GLOVAR tStore.name 2000
+GLOVAR tStore.value 400
 
 ! String "mike"
 DEFINE tStore.%1

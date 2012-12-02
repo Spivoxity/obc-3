@@ -27,6 +27,7 @@ if [ -z "$lib" ]; then
 fi
 
 compiler="../compiler/obc1 -I $lib -O"
+browser="../compiler/obb1 -I $lib"
 OBC_LIB=../lib
 export OBC_LIB
 
@@ -62,6 +63,9 @@ echo Fib
 	-L $lib FibFun.k FibMain.k -o fib \
     && chmod +x fib \
     && ./fib | $fixup | cmp $srcdir/Fib.out -)
+
+echo Browser
+($browser Files | cmp $srcdir/File.out -)
 
 exit
 

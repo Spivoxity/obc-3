@@ -40,11 +40,11 @@ val fQual : ident * ident -> Print.arg
 
 (* |kind| -- basic types *)
 type kind = 
-    NumT | ShortT | IntT        (* Numerics in order of width *)
-      | LongT | FloatT | DoubleT  
-  | CharT | BoolT | SetT	(* Non-numerics *)
-      | PtrT | ByteT | ProcT
-  | VoidT | NilT | ErrT		(* Fictitious types *)
+    NumT | ShortT | IntT | LongT | FloatT | DoubleT  
+				(* Numerics in order of width *)
+  | CharT | BoolT | SetT | PtrT | ByteT
+				(* Non-numerics *)
+  | VoidT | ErrT		(* Fictitious types *)
 
 (* op -- type of operators *)
 type op = 

@@ -26,7 +26,7 @@ MODULE tSwap STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSwap.%main 2 24 0
+PROC tSwap.%main 2 6 0
 !     x, y := 3, 4;
 CONST 3
 LOCAL -4
@@ -42,19 +42,19 @@ STOREW
 !     Out.Int(x, 0); Out.Int(y, 2); Out.Ln;
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 2
 LDGW tSwap.y
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     x, y, z := 7, 8, 9;
 CONST 7
 LOCAL -4
 CONST 8
-CONST tSwap.y
+GLOBAL tSwap.y
 CONST 9
 STLW -8
 STOREW
@@ -63,7 +63,7 @@ STOREW
 LDGW tSwap.y
 LOCAL -4
 LDLW -8
-CONST tSwap.y
+GLOBAL tSwap.y
 LDLW -4
 STLW -8
 STOREW
@@ -71,23 +71,23 @@ STOREW
 !     Out.Int(x, 0); Out.Int(y, 2); Out.Int(z, 2); Out.Ln
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 2
 LDGW tSwap.y
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 2
 LDLW -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSwap.y 4
+GLOVAR tSwap.y 4
 
 ! End of file
 ]]*)

@@ -22,19 +22,19 @@ MODULE tInc STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tInc.%main 0 12 0
+PROC tInc.%main 0 3 0
 !   i := 10;
 CONST 10
 STGW tInc.i
 !   INC(i);
-CONST tInc.i
+GLOBAL tInc.i
 DUP 0
 LOADW
 INC
 SWAP
 STOREW
 !   DEC(i,2);
-CONST tInc.i
+GLOBAL tInc.i
 DUP 0
 LOADW
 CONST 2
@@ -42,7 +42,7 @@ MINUS
 SWAP
 STOREW
 !   INC(i,i);
-CONST tInc.i
+GLOBAL tInc.i
 DUP 0
 LOADW
 LDGW tInc.i
@@ -52,16 +52,16 @@ STOREW
 !   Out.Int(i,0);
 CONST 0
 LDGW tInc.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tInc.i 4
+GLOVAR tInc.i 4
 
 ! End of file
 ]]*)

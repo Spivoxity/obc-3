@@ -66,7 +66,7 @@ MODULE tQSet STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tQSet.queens 1 24 0x00200001
+PROC tQSet.queens 1 6 0x00200001
 ! PROCEDURE queens(k: INTEGER; VAR choice: board; rows, diagdown, diagup: SET);
 !   IF k = N THEN
 LDLW 12
@@ -74,7 +74,7 @@ CONST 8
 JNEQ 2
 !     print(choice); done := TRUE
 LDLW 16
-CONST tQSet.print
+GLOBAL tQSet.print
 CALL 1
 CONST 1
 STGC tQSet.done
@@ -151,7 +151,7 @@ BITAND
 LDLW 16
 LDLW 12
 INC
-CONST tQSet.queens
+GLOBAL tQSet.queens
 CALL 5
 LABEL 6
 !       y := y+1
@@ -167,7 +167,7 @@ LABEL 7
 RETURN
 END
 
-PROC tQSet.print 1 24 0x00100001
+PROC tQSet.print 1 6 0x00100001
 ! PROCEDURE print(VAR choice: board);
 !   x := 0;
 CONST 0
@@ -179,7 +179,7 @@ LDLW -4
 JLEQZ 11
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 LABEL 11
 !     Out.Int(choice[x]+1, 0);
@@ -190,7 +190,7 @@ CONST 8
 BOUND 49
 LDIW
 INC
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     x := x+1
 INCL -4
@@ -200,26 +200,26 @@ LDLW -4
 CONST 8
 JLT 8
 !   Out.Ln()
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tQSet.%main 0 24 0
+PROC tQSet.%main 0 6 0
 !   queens(0, choice, {0..7}, {0..14}, {0..14})
 CONST 32767
 CONST 32767
 CONST 255
-CONST tQSet.choice
+GLOBAL tQSet.choice
 CONST 0
-CONST tQSet.queens
+GLOBAL tQSet.queens
 CALL 5
 RETURN
 END
 
 ! Global variables
-GLOBAL tQSet.done 1
-GLOBAL tQSet.choice 32
+GLOVAR tQSet.done 1
+GLOVAR tQSet.choice 32
 
 ! End of file
 ]]*)

@@ -22,7 +22,7 @@ MODULE tComp STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tComp.%main 0 12 0
+PROC tComp.%main 0 3 0
 !   x := 3; y := 4;
 FCONST 3.
 STGF tComp.x
@@ -36,17 +36,17 @@ STGC tComp.b
 !   Out.Int(ORD(b), 0); Out.Ln
 CONST 0
 LDGC tComp.b
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tComp.x 4
-GLOBAL tComp.y 4
-GLOBAL tComp.b 1
+GLOVAR tComp.x 4
+GLOVAR tComp.y 4
+GLOVAR tComp.b 1
 
 ! End of file
 ]]*)

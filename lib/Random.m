@@ -48,7 +48,7 @@ With q and r as above and 0 <= x < m, we have
 
 	a * (x - x MOD q) = a * q * (x DIV q) = (m - r) * (x DIV q).
 So
-	a * x == a * (x MOD q) - r * (x DIV q)  (mod m).  	( * )
+	a * x == a * (x MOD q) - r * (x DIV q)  (mod m).  	(**)
 
 Provided r <= q (actually q = 44488 and r = 3399) and m is prime we have 
 
@@ -57,7 +57,7 @@ Provided r <= q (actually q = 44488 and r = 3399) and m is prime we have
 
 	a * (x MOD q) < a * q < m
 
-So the RHS of ( * ) satisfies -m < RHS < m, and there is no risk of overflow.
+So the RHS of (**) satisfies -m < RHS < m, and there is no risk of overflow.
 *)
 
 (** Random -- a random integer in the range [0 .. MAXRAND] *)
@@ -71,13 +71,13 @@ END Random;
 (** Uniform -- a random real uniformly distibuted in [0, 1) *)
 PROCEDURE Uniform*(): REAL;
 BEGIN
-  RETURN Random() / (MAXRAND+1.0)
+  RETURN SHORT(Random() / (MAXRAND + LONG(1.0)))
 END Uniform;
 
 (** Roll -- a random integer uniformly distributed in [0..n) *)
 PROCEDURE Roll*(n: INTEGER): INTEGER;
 BEGIN
-  RETURN ENTIER(Uniform() * n)
+  RETURN ENTIER(n * (Random() / (MAXRAND + LONG(1.0))))
 END Roll;
 
 (* COPY #include <time.h> 

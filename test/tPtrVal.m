@@ -29,13 +29,13 @@ MODULE tPtrVal STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPtrVal.p 0 16 0x00100001
+PROC tPtrVal.p 0 4 0x00100001
 ! PROCEDURE p(x: ptr);
 !   NEW(x); x.x := 3
 CONST 4
-CONST tPtrVal.%1
+GLOBAL tPtrVal.%1
 LOCAL 12
-CONST NEW
+GLOBAL NEW
 CALL 3
 CONST 3
 LDLW 12
@@ -44,12 +44,12 @@ STOREW
 RETURN
 END
 
-PROC tPtrVal.%main 0 16 0
+PROC tPtrVal.%main 0 4 0
 !   NEW(q); q.x := 2; 
 CONST 4
-CONST tPtrVal.%1
-CONST tPtrVal.q
-CONST NEW
+GLOBAL tPtrVal.%1
+GLOBAL tPtrVal.q
+GLOBAL NEW
 CALL 3
 CONST 2
 LDGW tPtrVal.q
@@ -57,22 +57,22 @@ NCHECK 19
 STOREW
 !   p(q);
 LDGW tPtrVal.q
-CONST tPtrVal.p
+GLOBAL tPtrVal.p
 CALL 1
 !   Out.Int(q.x, 0); Out.Ln
 CONST 0
 LDGW tPtrVal.q
 NCHECK 21
 LOADW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tPtrVal.q 4
+GLOVAR tPtrVal.q 4
 
 ! Pointer map
 DEFINE tPtrVal.%gcmap

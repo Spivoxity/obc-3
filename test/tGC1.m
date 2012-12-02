@@ -26,7 +26,7 @@ IMPORT Out STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tGC1.%main 0 16 0
+PROC tGC1.%main 0 4 0
 !   FOR i := 1 TO 128 * 1024 DO
 CONST 1
 STGW tGC1.i
@@ -35,8 +35,8 @@ LABEL 2
 !     NEW(p)
 CONST 1024
 CONST 0
-CONST tGC1.p
-CONST NEW
+GLOBAL tGC1.p
+GLOBAL NEW
 CALL 3
 !   FOR i := 1 TO 128 * 1024 DO
 LDGW tGC1.i
@@ -48,22 +48,22 @@ CONST 131072
 JLEQ 2
 !   Out.String("Done "); Out.Int(GC.HeapSize(), 0); Out.Ln
 CONST 6
-CONST tGC1.%1
-CONST Out.String
+GLOBAL tGC1.%1
+GLOBAL Out.String
 CALL 2
 CONST 0
-CONST GC.HeapSize
+GLOBAL GC.HeapSize
 CALLW 0
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tGC1.i 4
-GLOBAL tGC1.p 4
+GLOVAR tGC1.i 4
+GLOVAR tGC1.p 4
 
 ! Pointer map
 DEFINE tGC1.%gcmap

@@ -31,7 +31,7 @@ MODULE tShort STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tShort.Main 3 12 0
+PROC tShort.Main 3 3 0
 ! PROCEDURE Main;
 !   x := 8; y := -1; z := 8;
 CONST 8
@@ -47,17 +47,17 @@ STLS -8
 !   Out.Int(x, 7); Out.Int(y, 7); Out.Int(z, 7); Out.Ln;
 CONST 7
 LDLS -6
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 7
 LDLS -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 7
 LDLS -10
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   w := 2; x := 8; y := -1; z := 8; 
 CONST 2
@@ -85,24 +85,24 @@ JLEQ 1
 !   Out.Int(x, 7); Out.Int(y, 7); Out.Int(z, 7); Out.Ln;
 CONST 7
 LDLS -6
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 7
 LDLS -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 7
 LDLS -10
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tShort.%main 0 12 0
+PROC tShort.%main 0 3 0
 !   Main
-CONST tShort.Main
+GLOBAL tShort.Main
 CALL 0
 RETURN
 END

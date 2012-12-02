@@ -74,13 +74,13 @@ IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChain.Cons 1 16 0x00210001
+PROC tChain.Cons 1 4 0x00210001
 ! PROCEDURE Cons(hd: INTEGER; tl: list): list;
 !   NEW(p);
 CONST 12
-CONST tChain.cell
+GLOBAL tChain.cell
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   p.head := hd;
 LDLW 12
@@ -102,7 +102,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tChain.Test 3 16 0x00004001
+PROC tChain.Test 3 4 0x00004001
 ! PROCEDURE Test;
 !   xs := NIL;
 CONST 0
@@ -115,7 +115,7 @@ LABEL 3
 !     xs := Cons(3, xs);		    (* Create some garbage *)
 LDLW -12
 CONST 3
-CONST tChain.Cons
+GLOBAL tChain.Cons
 CALLW 2
 STLW -12
 !     xs := Cons(n, xs.tail1) 
@@ -123,7 +123,7 @@ LDLW -12
 NCHECK 43
 LDNW 4
 LDLW -4
-CONST tChain.Cons
+GLOBAL tChain.Cons
 CALLW 2
 STLW -12
 !   FOR n := N TO 1 BY -1 DO 
@@ -156,10 +156,10 @@ LDNW 8
 JEQ 8
 !       Out.String("Fail 1"); Out.Ln; RETURN 
 CONST 7
-CONST tChain.%1
-CONST Out.String
+GLOBAL tChain.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 LABEL 8
@@ -175,25 +175,25 @@ JNEQZ 5
 !   Out.Int(s, 0); Out.Ln;
 CONST 0
 LDLW -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tChain.%main 0 16 0
+PROC tChain.%main 0 4 0
 !   GC.Debug('gs');
 CONST 3
-CONST tChain.%2
-CONST GC.Debug
+GLOBAL tChain.%2
+GLOBAL GC.Debug
 CALL 2
 !   FOR i := 1 TO 10 DO Test END;
 CONST 1
 STGW tChain.i
 JUMP 10
 LABEL 9
-CONST tChain.Test
+GLOBAL tChain.Test
 CALL 0
 LDGW tChain.i
 INC
@@ -205,16 +205,16 @@ JLEQ 9
 !   Out.Int((((((P+1) DIV 2) * (N MOD P)) MOD P) 
 CONST 0
 CONST 2415
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 ! 			* ((N+1) MOD P)) MOD P, 0); Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tChain.i 4
+GLOVAR tChain.i 4
 
 ! String "Fail 1"
 DEFINE tChain.%1

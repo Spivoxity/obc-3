@@ -42,7 +42,7 @@ MODULE tSegSum STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSegSum.f 0 8 0
+PROC tSegSum.f 0 2 0
 ! PROCEDURE f(i: INTEGER): INTEGER;
 !   RETURN i+1
 LDLW 12
@@ -50,7 +50,7 @@ INC
 RETURNW
 END
 
-PROC tSegSum.%main 0 12 0
+PROC tSegSum.%main 0 3 0
 !   u := 0; v := 0; count := 0; sum := 0;
 CONST 0
 STGW tSegSum.u
@@ -73,11 +73,11 @@ STGW tSegSum.count
 !       sum := sum + f(v) - f(u);
 LDGW tSegSum.sum
 LDGW tSegSum.v
-CONST tSegSum.f
+GLOBAL tSegSum.f
 CALLW 1
 PLUS
 LDGW tSegSum.u
-CONST tSegSum.f
+GLOBAL tSegSum.f
 CALLW 1
 MINUS
 STGW tSegSum.sum
@@ -97,7 +97,7 @@ JGEQ 5
 !       sum := sum + f(v);
 LDGW tSegSum.sum
 LDGW tSegSum.v
-CONST tSegSum.f
+GLOBAL tSegSum.f
 CALLW 1
 PLUS
 STGW tSegSum.sum
@@ -110,7 +110,7 @@ LABEL 5
 !       sum := sum - f(u);
 LDGW tSegSum.sum
 LDGW tSegSum.u
-CONST tSegSum.f
+GLOBAL tSegSum.f
 CALLW 1
 MINUS
 STGW tSegSum.sum
@@ -121,25 +121,25 @@ STGW tSegSum.u
 LABEL 3
 !   WHILE f(u) <= A DO
 LDGW tSegSum.u
-CONST tSegSum.f
+GLOBAL tSegSum.f
 CALLW 1
 CONST 120
 JLEQ 1
 !   Out.Int(count, 0); Out.Ln
 CONST 0
 LDGW tSegSum.count
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSegSum.u 4
-GLOBAL tSegSum.v 4
-GLOBAL tSegSum.count 4
-GLOBAL tSegSum.sum 4
+GLOVAR tSegSum.u 4
+GLOVAR tSegSum.v 4
+GLOVAR tSegSum.count 4
+GLOVAR tSegSum.sum 4
 
 ! End of file
 ]]*)

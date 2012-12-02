@@ -89,7 +89,7 @@ MODULE tAck STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tAck.Ack 22 16 0
+PROC tAck.Ack 22 4 0
 ! PROCEDURE Ack(M, N: INTEGER): INTEGER;
 !   arg[0] := 0; val[0] := 1;
 CONST 0
@@ -191,10 +191,10 @@ LDIW
 RETURNW
 END
 
-PROC tAck.Ack2 1 20 0
+PROC tAck.Ack2 1 5 0
 ! PROCEDURE Ack2(M, N: INTEGER): INTEGER;
 !   IF memo[M, N] # 0 THEN RETURN memo[M, N] END;
-CONST tAck.memo
+GLOBAL tAck.memo
 LDLW 12
 CONST 10
 BOUND 48
@@ -206,7 +206,7 @@ BOUND 48
 PLUS
 LDIW
 JEQZ 9
-CONST tAck.memo
+GLOBAL tAck.memo
 LDLW 12
 CONST 10
 BOUND 48
@@ -233,7 +233,7 @@ JNEQZ 12
 CONST 1
 LDLW 12
 DEC
-CONST tAck.Ack2
+GLOBAL tAck.Ack2
 CALLW 2
 STLW -4
 JUMP 10
@@ -242,17 +242,17 @@ LABEL 12
 LDLW 16
 DEC
 LDLW 12
-CONST tAck.Ack2
+GLOBAL tAck.Ack2
 CALLW 2
 LDLW 12
 DEC
-CONST tAck.Ack2
+GLOBAL tAck.Ack2
 CALLW 2
 STLW -4
 LABEL 10
 !   memo[M, N] := val;
 LDLW -4
-CONST tAck.memo
+GLOBAL tAck.memo
 LDLW 12
 CONST 10
 BOUND 55
@@ -268,32 +268,32 @@ LDLW -4
 RETURNW
 END
 
-PROC tAck.%main 0 20 0
+PROC tAck.%main 0 5 0
 !   Out.Int(Ack(4,1), 0); Out.Ln;
 CONST 0
 CONST 1
 CONST 4
-CONST tAck.Ack
+GLOBAL tAck.Ack
 CALLW 2
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Int(Ack2(4,1), 0); Out.Ln
 CONST 0
 CONST 1
 CONST 4
-CONST tAck.Ack2
+GLOBAL tAck.Ack2
 CALLW 2
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tAck.memo 4000000
+GLOVAR tAck.memo 4000000
 
 ! End of file
 ]]*)

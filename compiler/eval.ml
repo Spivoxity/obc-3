@@ -43,6 +43,7 @@ let char_of_integer n = char_of_int (int_of_integer n)
 let integer_of_string s = Int64.of_string s
 let float_of_integer n = Int64.to_float n
 let fInteger n = fStr (Int64.to_string n)
+let fHexInteger n = fStr (Printf.sprintf "%#.8Lx" n)
 
 (* Mathematically correct div and mod *)
 let divmod a b =
@@ -103,6 +104,8 @@ let is_float = function FloVal _ -> true | _ -> false
 
 let integer_of_bool b = if b then Int64.one else Int64.zero
 
+exception Bound_error
+
 (* int_monop -- evaluate unary operators *)
 let int_monop w x =
     match w with
@@ -143,6 +146,12 @@ let int_binop w x y =
     | Lsl -> integer_lsl x (int_of_integer y)
     | Lsr -> integer_lsr x (int_of_integer y)
     | Asr -> integer_asr x (int_of_integer y)
+    | In -> 
+	if x < integer 0 || x >= integer 32 then
+	  raise Bound_error;
+	integer_of_bool 
+	  (integer_bitand y (integer_lsl (integer 1) (int_of_integer x)) 
+	    <> integer 0)
     | _ -> failwith (sprintf "int_binop $" [fOp w])
 
 (* flo_monop -- evaluate unary floating-point operators *)

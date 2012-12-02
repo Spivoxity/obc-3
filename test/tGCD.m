@@ -28,7 +28,7 @@ MODULE tGCD STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tGCD.%main 0 12 0
+PROC tGCD.%main 0 3 0
 !   x := 37 * 123; y := 57 * 123;
 CONST 4551
 STGW tGCD.x
@@ -60,16 +60,16 @@ JNEQ 1
 !   Out.Int(x, 0); Out.Ln
 CONST 0
 LDGW tGCD.x
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tGCD.x 4
-GLOBAL tGCD.y 4
+GLOVAR tGCD.x 4
+GLOVAR tGCD.y 4
 
 ! End of file
 ]]*)

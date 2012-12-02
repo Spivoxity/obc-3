@@ -63,7 +63,7 @@ MODULE tDivMod STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDivMod.Test 5 12 0
+PROC tDivMod.Test 5 3 0
 ! PROCEDURE Test(b: INTEGER);
 !   FOR a := -10 TO 10 DO
 CONST -10
@@ -120,54 +120,54 @@ LABEL 10
 !       Out.Int(a, 0); Out.Char(' ');
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !       Out.Int(b, 0); Out.Char(' ');
 CONST 0
 LDLW 12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !       Out.Int(q, 0); Out.Char(' ');
 CONST 0
 LDLW -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !       Out.Int(r, 0); Out.Char(' ');
 CONST 0
 LDLW -12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !       Out.Int(q1, 0); Out.Char(' ');
 CONST 0
 LDLW -16
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !       Out.Int(r1, 0); Out.Ln;
 CONST 0
 LDLW -20
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !       failed := TRUE
 CONST 1
@@ -182,7 +182,7 @@ JLEQ 6
 RETURN
 END
 
-PROC tDivMod.%main 0 12 0
+PROC tDivMod.%main 0 3 0
 !   failed := FALSE;
 CONST 0
 STGC tDivMod.failed
@@ -193,36 +193,36 @@ CONST 3
 STGW tDivMod.n
 !   Out.String("(-7) DIV 3 = "); Out.Int(m DIV n, 0); Out.Ln;
 CONST 14
-CONST tDivMod.%1
-CONST Out.String
+GLOBAL tDivMod.%1
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tDivMod.m
 LDGW tDivMod.n
 ZCHECK 43
 DIV
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("(-7) MOD 3 = "); Out.Int(m MOD n, 0); Out.Ln;
 CONST 14
-CONST tDivMod.%2
-CONST Out.String
+GLOBAL tDivMod.%2
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tDivMod.m
 LDGW tDivMod.n
 ZCHECK 44
 MOD
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("(-7) DIV (-3) = "); Out.Int(m DIV (-n), 0); Out.Ln;
 CONST 17
-CONST tDivMod.%3
-CONST Out.String
+GLOBAL tDivMod.%3
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tDivMod.m
@@ -230,14 +230,14 @@ LDGW tDivMod.n
 UMINUS
 ZCHECK 45
 DIV
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("(-7) MOD (-3) = "); Out.Int(m MOD (-n), 0); Out.Ln;
 CONST 17
-CONST tDivMod.%4
-CONST Out.String
+GLOBAL tDivMod.%4
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tDivMod.m
@@ -245,53 +245,53 @@ LDGW tDivMod.n
 UMINUS
 ZCHECK 46
 MOD
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("(-7) DIV 3 = "); Out.Int((-7) DIV 3, 0); Out.Ln;
 CONST 14
-CONST tDivMod.%1
-CONST Out.String
+GLOBAL tDivMod.%1
+GLOBAL Out.String
 CALL 2
 CONST 0
 CONST -3
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("(-7) MOD 3 = "); Out.Int((-7) MOD 3, 0); Out.Ln;
 CONST 14
-CONST tDivMod.%2
-CONST Out.String
+GLOBAL tDivMod.%2
+GLOBAL Out.String
 CALL 2
 CONST 0
 CONST 2
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("(-7) DIV (-3) = "); Out.Int((-7) DIV (-3), 0); Out.Ln;
 CONST 17
-CONST tDivMod.%3
-CONST Out.String
+GLOBAL tDivMod.%3
+GLOBAL Out.String
 CALL 2
 CONST 0
 CONST 2
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("(-7) MOD (-3) = "); Out.Int((-7) MOD (-3), 0); Out.Ln;
 CONST 17
-CONST tDivMod.%4
-CONST Out.String
+GLOBAL tDivMod.%4
+GLOBAL Out.String
 CALL 2
 CONST 0
 CONST -1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR n := 1 TO 10 DO Test(n) END;
 CONST 1
@@ -299,7 +299,7 @@ STGW tDivMod.n
 JUMP 12
 LABEL 11
 LDGW tDivMod.n
-CONST tDivMod.Test
+GLOBAL tDivMod.Test
 CALL 1
 LDGW tDivMod.n
 INC
@@ -312,19 +312,19 @@ JLEQ 11
 LDGC tDivMod.failed
 JUMPF 14
 CONST 8
-CONST tDivMod.%5
-CONST Out.String
+GLOBAL tDivMod.%5
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 14
 RETURN
 END
 
 ! Global variables
-GLOBAL tDivMod.failed 1
-GLOBAL tDivMod.m 4
-GLOBAL tDivMod.n 4
+GLOVAR tDivMod.failed 1
+GLOVAR tDivMod.m 4
+GLOVAR tDivMod.n 4
 
 ! String "(-7) DIV 3 = "
 DEFINE tDivMod.%1

@@ -82,7 +82,7 @@ MODULE tSort STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSort.FindMin 2 12 0x00118001
+PROC tSort.FindMin 2 3 0x00118001
 ! PROCEDURE FindMin(xs: List): List;
 !   p := xs.next;
 LDLW 12
@@ -129,13 +129,13 @@ LDLW -4
 RETURNW
 END
 
-PROC tSort.Sort 1 16 0x00310001
+PROC tSort.Sort 1 4 0x00310001
 ! PROCEDURE Sort(xs: List; VAR ys: List);
 !   NEW(ys);
 CONST 12
-CONST tSort.Cell
+GLOBAL tSort.Cell
 LDLW 16
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   ys.prev := ys; ys.next := ys;
 LDLW 16
@@ -154,7 +154,7 @@ JUMP 7
 LABEL 6
 !     p := FindMin(xs);
 LDLW 12
-CONST tSort.FindMin
+GLOBAL tSort.FindMin
 CALLW 1
 STLW -4
 !     p.prev.next := p.next; p.next.prev := p.prev;
@@ -210,13 +210,13 @@ JNEQ 6
 RETURN
 END
 
-PROC tSort.Append 1 16 0x00110001
+PROC tSort.Append 1 4 0x00110001
 ! PROCEDURE Append(xs: List; d: INTEGER);
 !   NEW(p); p.data := d;
 CONST 12
-CONST tSort.Cell
+GLOBAL tSort.Cell
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 LDLW 16
 LDLW -4
@@ -247,13 +247,13 @@ STNW 4
 RETURN
 END
 
-PROC tSort.Test 5 16 0x00007001
+PROC tSort.Test 5 4 0x00007001
 ! PROCEDURE Test;
 !   NEW(xs);
 CONST 12
-CONST tSort.Cell
+GLOBAL tSort.Cell
 LOCAL -16
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   xs.prev := xs; xs.next := xs;
 LDLW -16
@@ -275,12 +275,12 @@ LABEL 8
 !     Out.Int(m, 3);
 CONST 3
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     Append(xs, m);
 LDLW -4
 LDLW -16
-CONST tSort.Append
+GLOBAL tSort.Append
 CALL 2
 !     m := (m + 61) MOD 100
 LDLW -4
@@ -296,12 +296,12 @@ LDLW -8
 CONST 24
 JLEQ 8
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Sort(xs, ys);
 LOCAL -20
 LDLW -16
-CONST tSort.Sort
+GLOBAL tSort.Sort
 CALL 2
 !   p := ys.next;
 LDLW -20
@@ -315,7 +315,7 @@ CONST 3
 LDLW -12
 NCHECK 62
 LOADW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     p := p.next
 LDLW -12
@@ -328,14 +328,14 @@ LDLW -12
 LDLW -20
 JNEQ 10
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tSort.%main 0 16 0
+PROC tSort.%main 0 4 0
 !   Test 
-CONST tSort.Test
+GLOBAL tSort.Test
 CALL 0
 RETURN
 END

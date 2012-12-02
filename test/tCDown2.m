@@ -320,7 +320,7 @@ IMPORT Bit STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tCDown2.%11.Put 1 20 0
+PROC tCDown2.%11.Put 1 5 0
 !   PROCEDURE Put(c: CHAR);
 SAVELINK
 !     buf[pos] := c; pos := pos+1
@@ -336,7 +336,7 @@ STEW -4
 RETURN
 END
 
-PROC tCDown2.%12.Walk 7 20 0x00100001
+PROC tCDown2.%12.Walk 7 5 0x00100001
 !   PROCEDURE Walk(e: blobptr; p: INTEGER);
 SAVELINK
 !     IF e.op = Const THEN
@@ -350,7 +350,7 @@ LOCAL -26
 LDLW 12
 NCHECK 61
 LDNW 12
-CONST Conv.ConvInt
+GLOBAL Conv.ConvInt
 CALL 3
 !       j := 0;
 CONST 0
@@ -365,7 +365,7 @@ LDIC
 ALIGNC
 LDLW -4
 LINK
-CONST tCDown2.%11.Put
+GLOBAL tCDown2.%11.Put
 CALL 1
 INCL -8
 LABEL 16
@@ -379,7 +379,7 @@ JNEQZ 15
 RETURN
 LABEL 14
 !       kp := ORD(pri[e.op]) - ORD('0');
-CONST tCDown2.%2
+GLOBAL tCDown2.%2
 LDLW 12
 NCHECK 66
 LOADW
@@ -390,7 +390,7 @@ CONST 48
 MINUS
 STLW -12
 !       rp := ORD(rpri[e.op]) - ORD('0');
-CONST tCDown2.%3
+GLOBAL tCDown2.%3
 LDLW 12
 NCHECK 67
 LOADW
@@ -408,7 +408,7 @@ CONST 40
 ALIGNC
 LDLW -4
 LINK
-CONST tCDown2.%11.Put
+GLOBAL tCDown2.%11.Put
 CALL 1
 LABEL 18
 !       Walk(e.left, kp);
@@ -418,16 +418,16 @@ NCHECK 69
 LDNW 4
 LDLW -4
 LINK
-CONST tCDown2.%12.Walk
+GLOBAL tCDown2.%12.Walk
 CALL 2
 !       Put(' '); Put(sym[e.op]); Put(' ');
 CONST 32
 ALIGNC
 LDLW -4
 LINK
-CONST tCDown2.%11.Put
+GLOBAL tCDown2.%11.Put
 CALL 1
-CONST tCDown2.%1
+GLOBAL tCDown2.%1
 LDLW 12
 NCHECK 70
 LOADW
@@ -437,13 +437,13 @@ LDIC
 ALIGNC
 LDLW -4
 LINK
-CONST tCDown2.%11.Put
+GLOBAL tCDown2.%11.Put
 CALL 1
 CONST 32
 ALIGNC
 LDLW -4
 LINK
-CONST tCDown2.%11.Put
+GLOBAL tCDown2.%11.Put
 CALL 1
 !       Walk(e.right, rp);
 LDLW -16
@@ -452,7 +452,7 @@ NCHECK 71
 LDNW 8
 LDLW -4
 LINK
-CONST tCDown2.%12.Walk
+GLOBAL tCDown2.%12.Walk
 CALL 2
 !       IF kp < p THEN Put(')') END
 LDLW -12
@@ -462,13 +462,13 @@ CONST 41
 ALIGNC
 LDLW -4
 LINK
-CONST tCDown2.%11.Put
+GLOBAL tCDown2.%11.Put
 CALL 1
 LABEL 20
 RETURN
 END
 
-PROC tCDown2.Grind 1 20 0x00300001
+PROC tCDown2.Grind 1 5 0x00300001
 ! PROCEDURE Grind(e0: blobptr; VAR buf: ARRAY OF CHAR);
 !   pos := 0;
 CONST 0
@@ -478,19 +478,19 @@ CONST 1
 LDLW 12
 LOCAL 0
 LINK
-CONST tCDown2.%12.Walk
+GLOBAL tCDown2.%12.Walk
 CALL 2
 !   Put(0X)
 CONST 0
 ALIGNC
 LOCAL 0
 LINK
-CONST tCDown2.%11.Put
+GLOBAL tCDown2.%11.Put
 CALL 1
 RETURN
 END
 
-PROC tCDown2.Add 2 20 0x00608001
+PROC tCDown2.Add 2 5 0x00608001
 ! PROCEDURE Add(op: INTEGER; p, q: blobptr; val, used: INTEGER);
 !   r := htable[val MOD HSIZE];
 LDGW tCDown2.htable
@@ -511,12 +511,12 @@ LDNW 12
 LDLW 24
 JNEQ 24
 LDLW 28
-CONST Bit.Not
+GLOBAL Bit.Not
 CALLW 1
 LDLW -8
 NCHECK 118
 LDNW 16
-CONST Bit.And
+GLOBAL Bit.And
 CALLW 2
 JNEQZ 24
 !       RETURN
@@ -533,9 +533,9 @@ LDLW -8
 JNEQZ 21
 !   NEW(r);
 CONST 28
-CONST tCDown2.blob
+GLOBAL tCDown2.blob
 LOCAL -8
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   r.op := op; r.left := p; r.right := q; r.val := val; r.used := used;
 LDLW 12
@@ -559,7 +559,7 @@ LDLW -8
 NCHECK 126
 STNW 16
 !   r.next := pool[used]; pool[used] := r;
-CONST tCDown2.pool
+GLOBAL tCDown2.pool
 LDLW 28
 CONST 1024
 BOUND 127
@@ -568,7 +568,7 @@ LDLW -8
 NCHECK 127
 STNW 20
 LDLW -8
-CONST tCDown2.pool
+GLOBAL tCDown2.pool
 LDLW 28
 CONST 1024
 BOUND 127
@@ -598,7 +598,7 @@ STIW
 LDLW 24
 LDGW tCDown2.target
 MINUS
-CONST ABSINT
+GLOBAL ABSINT
 CALLW 1
 STLW -4
 !   IF dist <= bestdist THEN
@@ -607,9 +607,9 @@ LDGW tCDown2.bestdist
 JGT 26
 !     Grind(r, temp);
 CONST 80
-CONST tCDown2.temp
+GLOBAL tCDown2.temp
 LDLW -8
-CONST tCDown2.Grind
+GLOBAL tCDown2.Grind
 CALL 3
 !     IF (dist < bestdist) 
 LDLW -4
@@ -617,12 +617,12 @@ LDGW tCDown2.bestdist
 JLT 29
 !         OR (Strings.Length(temp) < Strings.Length(best)) THEN
 CONST 80
-CONST tCDown2.temp
-CONST Strings.Length
+GLOBAL tCDown2.temp
+GLOBAL Strings.Length
 CALLW 2
 CONST 80
-CONST tCDown2.best
-CONST Strings.Length
+GLOBAL tCDown2.best
+GLOBAL Strings.Length
 CALLW 2
 JGEQ 26
 LABEL 29
@@ -633,25 +633,25 @@ LDLW -4
 STGW tCDown2.bestdist
 !       COPY(temp, best)
 CONST 80
-CONST tCDown2.best
+GLOBAL tCDown2.best
 CONST 80
-CONST tCDown2.temp
-CONST COPY
+GLOBAL tCDown2.temp
+GLOBAL COPY
 CALL 4
 LABEL 26
 RETURN
 END
 
-PROC tCDown2.Combine 3 24 0x00018001
+PROC tCDown2.Combine 3 6 0x00018001
 ! PROCEDURE Combine(r, s: INTEGER);
 !   used := Bit.Or(r, s);
 LDLW 16
 LDLW 12
-CONST Bit.Or
+GLOBAL Bit.Or
 CALLW 2
 STLW -12
 !   p := pool[r];
-CONST tCDown2.pool
+GLOBAL tCDown2.pool
 LDLW 12
 CONST 1024
 BOUND 156
@@ -660,7 +660,7 @@ STLW -4
 JUMP 31
 LABEL 30
 !     q := pool[s];
-CONST tCDown2.pool
+GLOBAL tCDown2.pool
 LDLW 16
 CONST 1024
 BOUND 158
@@ -688,7 +688,7 @@ PLUS
 LDLW -8
 LDLW -4
 CONST 1
-CONST tCDown2.Add
+GLOBAL tCDown2.Add
 CALL 5
 ! 	IF p.val > q.val THEN Add(Minus, p, q, p.val-q.val, used) END;
 LDLW -4
@@ -709,7 +709,7 @@ MINUS
 LDLW -8
 LDLW -4
 CONST 2
-CONST tCDown2.Add
+GLOBAL tCDown2.Add
 CALL 5
 LABEL 37
 ! 	Add(Times, p, q, p.val*q.val, used);
@@ -724,7 +724,7 @@ TIMES
 LDLW -8
 LDLW -4
 CONST 3
-CONST tCDown2.Add
+GLOBAL tCDown2.Add
 CALL 5
 ! 	IF (q.val > 0) & (p.val MOD q.val = 0) THEN
 LDLW -8
@@ -753,7 +753,7 @@ DIV
 LDLW -8
 LDLW -4
 CONST 4
-CONST tCDown2.Add
+GLOBAL tCDown2.Add
 CALL 5
 LABEL 35
 !       q := q.next
@@ -777,7 +777,7 @@ JNEQZ 30
 RETURN
 END
 
-PROC tCDown2.Search 1035 24 0
+PROC tCDown2.Search 1035 6 0
 ! PROCEDURE Search(n: INTEGER; draw: ARRAY OF INTEGER);
 LOCAL 16
 LDLW 20
@@ -860,7 +860,7 @@ STLW -8
 JUMP 47
 LABEL 46
 CONST 0
-CONST tCDown2.pool
+GLOBAL tCDown2.pool
 LDLW -8
 CONST 1024
 BOUND 200
@@ -891,7 +891,7 @@ LDIW
 CONST 0
 CONST 0
 CONST 0
-CONST tCDown2.Add
+GLOBAL tCDown2.Add
 CALL 5
 !     t := 2*t
 LDLW -16
@@ -946,13 +946,13 @@ LDLW -4
 JNEQ 57
 LDLW -12
 LDLW -8
-CONST Bit.And
+GLOBAL Bit.And
 CALLW 2
 JNEQZ 57
 ! 	  Combine(r, s)
 LDLW -12
 LDLW -8
-CONST tCDown2.Combine
+GLOBAL tCDown2.Combine
 CALL 2
 LABEL 57
 !       FOR s := 1 TO t-1 DO
@@ -976,7 +976,7 @@ JLEQ 50
 RETURN
 END
 
-PROC tCDown2.Main 13 24 0
+PROC tCDown2.Main 13 6 0
 ! PROCEDURE Main;
 !   n := 6;
 CONST 6
@@ -1000,16 +1000,16 @@ CONST 999
 STGW tCDown2.target
 !   Out.String("To make "); Out.Int(target, 0); Out.String(" from");
 CONST 9
-CONST tCDown2.%4
-CONST Out.String
+GLOBAL tCDown2.%4
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tCDown2.target
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 6
-CONST tCDown2.%5
-CONST Out.String
+GLOBAL tCDown2.%5
+GLOBAL Out.String
 CALL 2
 !   FOR i := 0 TO n-1 DO Out.Char(' '); Out.Int(draw[i], 0) END;
 LDLW -8
@@ -1021,7 +1021,7 @@ JUMP 59
 LABEL 58
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 CONST 0
 LOCAL -48
@@ -1029,7 +1029,7 @@ LDLW -4
 CONST 10
 BOUND 279
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 INCL -4
 LABEL 59
@@ -1039,96 +1039,96 @@ JLEQ 58
 !   Out.Char(':'); Out.Ln;
 CONST 58
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Search(n, draw);
 CONST 10
 LOCAL -48
 LDLW -8
-CONST tCDown2.Search
+GLOBAL tCDown2.Search
 CALL 3
 !   Out.Ln; Out.String("  "); Out.String(best); 
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 CONST 3
-CONST tCDown2.%6
-CONST Out.String
+GLOBAL tCDown2.%6
+GLOBAL Out.String
 CALL 2
 CONST 80
-CONST tCDown2.best
-CONST Out.String
+GLOBAL tCDown2.best
+GLOBAL Out.String
 CALL 2
 !   Out.String(" = "); Out.Int(bestval, 0);   
 CONST 4
-CONST tCDown2.%7
-CONST Out.String
+GLOBAL tCDown2.%7
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tCDown2.bestval
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   IF bestdist > 0 THEN 
 LDGW tCDown2.bestdist
 JLEQZ 61
 !     Out.String(" (off by "); Out.Int(bestdist, 0); Out.Char(')')
 CONST 10
-CONST tCDown2.%8
-CONST Out.String
+GLOBAL tCDown2.%8
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tCDown2.bestdist
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 41
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 LABEL 61
 !   Out.Ln; Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tCDown2.%main 0 24 0
+PROC tCDown2.%main 0 6 0
 !   GC.Debug("gs");
 CONST 3
-CONST tCDown2.%9
-CONST GC.Debug
+GLOBAL tCDown2.%9
+GLOBAL GC.Debug
 CALL 2
 !   NEW(htable);
 CONST 80000
-CONST tCDown2.%10
-CONST tCDown2.htable
-CONST NEW
+GLOBAL tCDown2.%10
+GLOBAL tCDown2.htable
+GLOBAL NEW
 CALL 3
 !   Main;
-CONST tCDown2.Main
+GLOBAL tCDown2.Main
 CALL 0
 !   htable := NIL;
 CONST 0
 STGW tCDown2.htable
 !   GC.Collect;
-CONST GC.Collect
+GLOBAL GC.Collect
 CALL 0
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tCDown2.pool 4096
-GLOBAL tCDown2.htable 4
-GLOBAL tCDown2.target 4
-GLOBAL tCDown2.temp 80
-GLOBAL tCDown2.best 80
-GLOBAL tCDown2.bestval 4
-GLOBAL tCDown2.bestdist 4
+GLOVAR tCDown2.pool 4096
+GLOVAR tCDown2.htable 4
+GLOVAR tCDown2.target 4
+GLOVAR tCDown2.temp 80
+GLOVAR tCDown2.best 80
+GLOVAR tCDown2.bestval 4
+GLOVAR tCDown2.bestdist 4
 
 ! Pointer map
 DEFINE tCDown2.%gcmap

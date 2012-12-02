@@ -76,6 +76,23 @@ let parse_error2 msg loc1 =
 let missing_semi loc =
   syn_error "missing ';'" [] loc
 
+let _ = Random.self_init ()
+
+(*
+let shown = ref false
+
+let unmatched loc = 
+  let msg =
+    if not !shown && Random.float 1.0 < 0.2 then
+      (shown := true;
+        "\"(an unmatched left parenthesis creates an unresolved"
+	^ " tension that will stay with you all day\"")
+    else
+      "unmatched left parenthesis" in
+  parse_error2 msg loc;
+  raise Parse_error
+*)
+
 let lloc () = (symbol_start (), symbol_end ())
 let rloc n = (rhs_start n, rhs_end n)
 
@@ -385,7 +402,8 @@ factor :
   | LBRACE elements RBRACE	{ exp (Set $elements) }
   | NOT factor			{ exp (Monop (Not, $factor)) }
   | LPAR expr RPAR		{ $expr } 
-  | LPAR expr %prec error	{ parse_error2 "mismatched brackets" (rloc 1);
+  | LPAR expr %prec error	{ parse_error2 
+				    "unmatched left parenthesis" (rloc 1);
 				  raise Parse_error } ;
 
 desig :
@@ -393,7 +411,8 @@ desig :
   | desig UPARROW		{ exp (Deref $desig) }
   | desig SUB exprs BUS		{ let sub a i = exp (Sub (a, i)) in
 				  List.fold_left sub $desig $exprs }
-  | desig SUB exprs %prec error	{ parse_error2 "mismatched brackets" (rloc 2);
+  | desig SUB exprs %prec error	{ parse_error2 
+				    "unmatched subscript bracket" (rloc 2);
     	      	    	  	  raise Parse_error }
   | desig DOT name		{ exp (Select ($desig, $name)) }
   | desig actuals		{ exp (FuncCall ($desig, $actuals)) } ;
@@ -402,8 +421,7 @@ actuals :
     LPAR RPAR			{ [] }
   | LPAR exprs RPAR		{ $exprs }
   | LPAR exprs %prec error	{ parse_error2 
-				    "mismatched brackets in procedure call" 
-				    (rloc 1);
+				    "unmatched left parenthesis" (rloc 1);
 				  raise Parse_error } ;
 
 desigs :

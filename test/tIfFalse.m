@@ -20,14 +20,14 @@ MODULE tIfFalse STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tIfFalse.%main 0 12 0
+PROC tIfFalse.%main 0 3 0
 !   Out.String("Testing:");
 CONST 9
-CONST tIfFalse.%1
-CONST Out.String
+GLOBAL tIfFalse.%1
+GLOBAL Out.String
 CALL 2
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END

@@ -34,7 +34,7 @@ type arg =
   | Ext of ((string -> arg list -> unit) -> unit)  (* Extension *)
 
 val fNum: int -> arg		(* Decimal number *)
-val fHex: int -> arg
+val fHex: int -> arg		(* Hexadecimal number *)
 val fFlo: float -> arg		(* Floating-point number *)
 val fStr: string -> arg		(* String *)
 val fChr: char -> arg 		(* Character *)

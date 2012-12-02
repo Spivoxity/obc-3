@@ -115,16 +115,16 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSelect.Randomize 1 16 0
+PROC tSelect.Randomize 1 4 0
 ! PROCEDURE Randomize;
 !   FOR i := 0 TO N-1 DO a[i] := Random.Random() END;
 CONST 0
 STLW -4
 JUMP 2
 LABEL 1
-CONST Random.Random
+GLOBAL Random.Random
 CALLW 0
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 13
@@ -136,13 +136,13 @@ CONST 99
 JLEQ 1
 !   k := Random.Roll(N)
 CONST 100
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 STGW tSelect.k
 RETURN
 END
 
-PROC tSelect.Sort 3 16 0x00100001
+PROC tSelect.Sort 3 4 0x00100001
 ! PROCEDURE Sort(VAR u: ARRAY OF INTEGER; N: INTEGER);
 !   r := 0;
 CONST 0
@@ -203,7 +203,7 @@ JLT 3
 RETURN
 END
 
-PROC tSelect.Swap 1 16 0x00300001
+PROC tSelect.Swap 1 4 0x00300001
 ! PROCEDURE Swap(VAR a, b: INTEGER);
 !   t := a; a := b; b := t
 LDLW 12
@@ -219,31 +219,31 @@ STOREW
 RETURN
 END
 
-PROC tSelect.Partition 3 16 0
+PROC tSelect.Partition 3 4 0
 ! PROCEDURE Partition(m, n: INTEGER): INTEGER;
 !   i := m + Random.Roll(n-m);
 LDLW 12
 LDLW 16
 LDLW 12
 MINUS
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 PLUS
 STLW -4
 !   pivot := a[i]; a[i] := a[n-1];
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 41
 LDIW
 STLW -12
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW 16
 DEC
 CONST 100
 BOUND 41
 LDIW
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 41
@@ -257,7 +257,7 @@ STLW -8
 JUMP 10
 LABEL 8
 !     IF a[i] < pivot THEN
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 45
@@ -271,17 +271,17 @@ LABEL 11
 !       j := j-1;
 DECL -8
 !       Swap(a[i], a[j])
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -8
 CONST 100
 BOUND 49
 INDEXW
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 49
 INDEXW
-CONST tSelect.Swap
+GLOBAL tSelect.Swap
 CALL 2
 LABEL 10
 !   WHILE i < j DO
@@ -289,19 +289,19 @@ LDLW -4
 LDLW -8
 JLT 8
 !   a[n-1] := a[i]; a[i] := pivot;
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 53
 LDIW
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW 16
 DEC
 CONST 100
 BOUND 53
 STIW
 LDLW -12
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 53
@@ -311,7 +311,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSelect.Select 1 16 0
+PROC tSelect.Select 1 4 0
 ! PROCEDURE Select(k, m, n: INTEGER): INTEGER;
 !   IF n - m = 1 THEN
 LDLW 20
@@ -325,7 +325,7 @@ JEQZ 14
 CONST 0
 EASSERT 61
 LABEL 14
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW 16
 CONST 100
 BOUND 61
@@ -335,7 +335,7 @@ LABEL 13
 !     r := Partition(m, n);
 LDLW 20
 LDLW 16
-CONST tSelect.Partition
+GLOBAL tSelect.Partition
 CALLW 2
 STLW -4
 !     IF r = m+k THEN
@@ -345,7 +345,7 @@ LDLW 12
 PLUS
 JNEQ 16
 !       RETURN a[r]
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 65
@@ -362,7 +362,7 @@ JLEQ 17
 LDLW -4
 LDLW 16
 LDLW 12
-CONST tSelect.Select
+GLOBAL tSelect.Select
 CALLW 3
 RETURNW
 LABEL 17
@@ -376,12 +376,12 @@ PLUS
 LDLW -4
 MINUS
 DEC
-CONST tSelect.Select
+GLOBAL tSelect.Select
 CALLW 3
 RETURNW
 END
 
-PROC tSelect.Select2 1 16 0
+PROC tSelect.Select2 1 4 0
 ! PROCEDURE Select2(k, m, n: INTEGER): INTEGER;
 LABEL 18
 !     IF n - m = 1 THEN
@@ -391,7 +391,7 @@ MINUS
 CONST 1
 JNEQ 21
 !       RETURN a[m]
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW 16
 CONST 100
 BOUND 79
@@ -401,7 +401,7 @@ LABEL 21
 !       r := Partition(m, n);
 LDLW 20
 LDLW 16
-CONST tSelect.Partition
+GLOBAL tSelect.Partition
 CALLW 2
 STLW -4
 !       IF r = k THEN
@@ -409,7 +409,7 @@ LDLW -4
 LDLW 12
 JNEQ 23
 ! 	RETURN a[r]
-CONST tSelect.a
+GLOBAL tSelect.a
 LDLW -4
 CONST 100
 BOUND 83
@@ -432,73 +432,73 @@ STLW 16
 JUMP 18
 END
 
-PROC tSelect.%main 0 20 0
+PROC tSelect.%main 0 5 0
 !   Randomize;
-CONST tSelect.Randomize
+GLOBAL tSelect.Randomize
 CALL 0
 !   Out.Int(Select(k, 0, N), 0); Out.Ln;
 CONST 0
 CONST 100
 CONST 0
 LDGW tSelect.k
-CONST tSelect.Select
+GLOBAL tSelect.Select
 CALLW 3
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Sort(a, N); Out.Int(a[k], 0); Out.Ln;
 CONST 100
 CONST 100
-CONST tSelect.a
-CONST tSelect.Sort
+GLOBAL tSelect.a
+GLOBAL tSelect.Sort
 CALL 3
 CONST 0
-CONST tSelect.a
+GLOBAL tSelect.a
 LDGW tSelect.k
 CONST 100
 BOUND 96
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Randomize;
-CONST tSelect.Randomize
+GLOBAL tSelect.Randomize
 CALL 0
 !   Out.Int(Select2(k, 0, N), 0); Out.Ln;
 CONST 0
 CONST 100
 CONST 0
 LDGW tSelect.k
-CONST tSelect.Select2
+GLOBAL tSelect.Select2
 CALLW 3
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Sort(a, N); Out.Int(a[k], 0); Out.Ln
 CONST 100
 CONST 100
-CONST tSelect.a
-CONST tSelect.Sort
+GLOBAL tSelect.a
+GLOBAL tSelect.Sort
 CALL 3
 CONST 0
-CONST tSelect.a
+GLOBAL tSelect.a
 LDGW tSelect.k
 CONST 100
 BOUND 99
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSelect.k 4
-GLOBAL tSelect.a 400
+GLOVAR tSelect.k 4
+GLOVAR tSelect.a 400
 
 ! End of file
 ]]*)

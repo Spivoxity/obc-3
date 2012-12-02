@@ -24,7 +24,7 @@ MODULE tValReal STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tValReal.%main 0 12 0
+PROC tValReal.%main 0 3 0
 !   x := SYSTEM.VAL(REAL, {0}) + 1.0E-45;
 CONST 1
 FCONST 1e-45
@@ -32,9 +32,9 @@ FPLUS
 STGF tValReal.x
 !   Out.Real(x); Out.Ln;
 LDGF tValReal.x
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   x := 3.14; n := SYSTEM.VAL(INTEGER, x + 0.5) + 3;
 FCONST 3.14
@@ -48,16 +48,16 @@ STGW tValReal.n
 !   Out.Int(n, 0); Out.Ln		
 CONST 0
 LDGW tValReal.n
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tValReal.x 4
-GLOBAL tValReal.n 4
+GLOVAR tValReal.x 4
+GLOVAR tValReal.n 4
 
 ! End of file
 ]]*)

@@ -53,7 +53,7 @@ Aggregated:
 So we take alpha = 6 *)
 
 let rho = 0.5				(* Minimum density of jump table *)
-let maxtable = 255			(* Max size of jump table *)
+let maxtable = 127			(* Max size of jump table *)
 let alpha = 6				(* Equivalent cases for range *)
 
 (* The |merge| function is used twice to merge case labels in
@@ -135,23 +135,23 @@ let gen_range lob hib (lo, hi, lab) deflab =
     gen (JUMP lab)
   end
   else if lo = hi then begin
-    gen (CONSTn lo);
+    gen (CONST lo);
     gen (JUMPC (IntT, Eq, lab));
     gen (JUMP deflab)
   end
   else if hib = hi then begin
-    gen (CONSTn lo);
+    gen (CONST lo);
     gen (JUMPC (IntT, Geq, lab));
     gen (JUMP deflab)
   end
   else if lob = lo then begin
-    gen (CONSTn hi);
+    gen (CONST hi);
     gen (JUMPC (IntT, Leq, lab));
     gen (JUMP deflab)
   end
   else begin
-    gen (CONSTn lo);
-    gen (CONSTn hi);
+    gen (CONST lo);
+    gen (CONST hi);
     gen (JRANGE lab);
     gen (JUMP deflab)
   end
@@ -168,7 +168,7 @@ let gen_table lob hib t deflab =
 	      @ Util.copy (int_of_integer (integer_sub hi lo) + 1) lab 
 	      @ tab (integer_add hi (integer 1)) rs in
     tab t.lowest t.ranges in
-  gen (CONSTn t.lowest);
+  gen (CONST t.lowest);
   gen (BINOP (IntT, Minus));
   gen (JCASE labels);
   gen (JUMP deflab)
@@ -190,7 +190,7 @@ let rec gen_tree lob hib tables deflab =
 	let n = List.length tables in
 	let k = (n+1) / 2 in
 	let m = (List.nth tables k).lowest in
-	gen (CONSTn m);
+	gen (CONST m);
 	gen (TESTGEQ lab);
 	gen_tree lob (integer_sub m (integer 1)) (Util.take k tables) deflab;
 	gen (LABEL lab);

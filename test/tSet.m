@@ -55,7 +55,7 @@ MODULE tSet STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSet.Print 2 12 0
+PROC tSet.Print 2 3 0
 ! PROCEDURE Print;
 !   FOR i := 0 TO 15 DO
 CONST 0
@@ -72,7 +72,7 @@ BITAND
 JEQZ 6
 CONST 3
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 LABEL 6
 !   FOR i := 0 TO 15 DO
@@ -101,7 +101,7 @@ LDLC -5
 JUMPF 10
 CONST 3
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 LABEL 10
 !   FOR i := 16 TO 31 DO
@@ -111,12 +111,12 @@ LDLW -4
 CONST 31
 JLEQ 7
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tSet.%main 0 16 0
+PROC tSet.%main 0 4 0
 !   n := MAX(SET);
 CONST 31
 STGW tSet.n
@@ -126,10 +126,10 @@ STGW tSet.s
 LDGW tSet.s
 JEQZ 12
 CONST 7
-CONST tSet.%1
-CONST Out.String
+GLOBAL tSet.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 12
 !   s := {0..30, 31}; 
@@ -145,10 +145,10 @@ BIT
 DEC
 JEQ 14
 CONST 7
-CONST tSet.%2
-CONST Out.String
+GLOBAL tSet.%2
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 14
 !   n := 5;
@@ -185,7 +185,7 @@ BITAND
 BITOR
 STGW tSet.s
 !   Print;
-CONST tSet.Print
+GLOBAL tSet.Print
 CALL 0
 !   s := s * {3..15} + {14..n+12};	(* 5 6 7 10 11 12 14 15 16 17 *)
 LDGW tSet.s
@@ -203,17 +203,17 @@ BITAND
 BITOR
 STGW tSet.s
 !   Print;
-CONST tSet.Print
+GLOBAL tSet.Print
 CALL 0
 !   INCL(s, 4); EXCL(s, 16);		(* 4 5 6 7 10 11 12 14 15 17 *)
-CONST tSet.s
+GLOBAL tSet.s
 DUP 0
 LOADW
 CONST 16
 BITOR
 SWAP
 STOREW
-CONST tSet.s
+GLOBAL tSet.s
 DUP 0
 LOADW
 CONST -65537
@@ -221,7 +221,7 @@ BITAND
 SWAP
 STOREW
 !   Print;
-CONST tSet.Print
+GLOBAL tSet.Print
 CALL 0
 !   s := s / {12..14};			(* 4 5 6 7 10 11 13 15 17 *)
 LDGW tSet.s
@@ -229,7 +229,7 @@ CONST 28672
 BITXOR
 STGW tSet.s
 !   Print;
-CONST tSet.Print
+GLOBAL tSet.Print
 CALL 0
 !   s := (- s) * ({19..MAX(SET)}/(- {})); (* 0 1 2 3 8 9 12 14 16 18 *)
 LDGW tSet.s
@@ -238,7 +238,7 @@ CONST 524287
 BITAND
 STGW tSet.s
 !   Print;
-CONST tSet.Print
+GLOBAL tSet.Print
 CALL 0
 !   s := s - {1..2};			(* 0 3 8 9 12 14 16 18 *)
 LDGW tSet.s
@@ -246,14 +246,14 @@ CONST -7
 BITAND
 STGW tSet.s
 !   Print
-CONST tSet.Print
+GLOBAL tSet.Print
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSet.s 4
-GLOBAL tSet.n 4
+GLOVAR tSet.s 4
+GLOVAR tSet.n 4
 
 ! String "Fail 1"
 DEFINE tSet.%1

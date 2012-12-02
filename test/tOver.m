@@ -56,20 +56,20 @@ MODULE tOver STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOver.Print 0 20 0
+PROC tOver.Print 0 5 0
 ! PROCEDURE Print(x: LONGREAL);
 !   Out.Fixed(x, 0, 6); Out.Ln
 CONST 6
 CONST 0
 LDLD 12
-CONST Out.Fixed
+GLOBAL Out.Fixed
 CALL 4
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tOver.%main 0 20 0
+PROC tOver.%main 0 5 0
 !   s := 1; n := 2; f := 3; d := 4;
 CONST 1
 STGS tOver.s
@@ -89,7 +89,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := s/n; Print(x);
 LDGS tOver.s
@@ -101,7 +101,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := s/f; Print(x);
 LDGS tOver.s
@@ -112,7 +112,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := s/d; Print(x);
 LDGS tOver.s
@@ -122,7 +122,7 @@ DZCHECK 36
 DDIV
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := n/s; Print(x);
 LDGW tOver.n
@@ -134,7 +134,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := n/n; Print(x);
 LDGW tOver.n
@@ -146,7 +146,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := n/f; Print(x);
 LDGW tOver.n
@@ -157,7 +157,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := n/d; Print(x);
 LDGW tOver.n
@@ -167,7 +167,7 @@ DZCHECK 40
 DDIV
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := f/s; Print(x);
 LDGF tOver.f
@@ -178,7 +178,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := f/n; Print(x);
 LDGF tOver.f
@@ -189,7 +189,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := f/f; Print(x);
 LDGF tOver.f
@@ -199,7 +199,7 @@ FDIV
 CONVFD
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := f/d; Print(x);
 LDGF tOver.f
@@ -209,7 +209,7 @@ DZCHECK 44
 DDIV
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := d/s; Print(x);
 LDGD tOver.d
@@ -219,7 +219,7 @@ DZCHECK 45
 DDIV
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := d/n; Print(x);
 LDGD tOver.d
@@ -229,7 +229,7 @@ DZCHECK 46
 DDIV
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := d/f; Print(x);
 LDGD tOver.d
@@ -239,7 +239,7 @@ DZCHECK 47
 DDIV
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 !   x := d/d; Print(x);
 LDGD tOver.d
@@ -248,17 +248,17 @@ DZCHECK 48
 DDIV
 STGD tOver.x
 LDGD tOver.x
-CONST tOver.Print
+GLOBAL tOver.Print
 CALL 2
 RETURN
 END
 
 ! Global variables
-GLOBAL tOver.s 2
-GLOBAL tOver.n 4
-GLOBAL tOver.f 4
-GLOBAL tOver.d 8
-GLOBAL tOver.x 8
+GLOVAR tOver.s 2
+GLOVAR tOver.n 4
+GLOVAR tOver.f 4
+GLOVAR tOver.d 8
+GLOVAR tOver.x 8
 
 ! End of file
 ]]*)

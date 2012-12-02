@@ -21,20 +21,20 @@ END tLibErr.
 MODULE tLibErr STAMP 0
 ENDHDR
 
-PROC tLibErr.%main 0 20 0
+PROC tLibErr.%main 0 5 0
 !   t[0] := 'a'; t[1] := 'b';
 CONST 97
 STGC tLibErr.t
 CONST 98
-CONST tLibErr.t
+GLOBAL tLibErr.t
 CONST 1
 STIC
 !   b := (t = 'ab')
 CONST 3
-CONST tLibErr.%1
+GLOBAL tLibErr.%1
 CONST 2
-CONST tLibErr.t
-CONST COMPARE
+GLOBAL tLibErr.t
+GLOBAL COMPARE
 CALLW 4
 CONST 0
 EQ
@@ -43,8 +43,8 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tLibErr.t 2
-GLOBAL tLibErr.b 1
+GLOVAR tLibErr.t 2
+GLOVAR tLibErr.b 1
 
 ! String "ab"
 DEFINE tLibErr.%1

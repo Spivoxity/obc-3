@@ -136,16 +136,22 @@ static void data_symbol(symbol s) {
      dloc += 4;
 }
 
-static void data_word(char *s) {
+static int const_value(char *s) {
      /* We must allow both signed and unsigned (especially hex)
 	constants, so negative numbers must be treated separately.
 	Note that strtol is specified to truncate to MAXINT on
 	overflow, not to operate mod 2^32. */
 
-     if (isdigit((int) s[0]))
-	  data_value(strtoul(s, NULL, 0), R_WORD);
-     else if (s[0] == '-')
-	  data_value(strtol(s, NULL, 0), R_WORD);
+     if (s[0] == '-')
+	  return strtol(s, NULL, 0);
+     else
+	  return strtoul(s, NULL, 0);
+}
+     
+
+static void data_word(char *s) {
+     if (isdigit((int) s[0]) || s[0] == '-')
+	  data_value(const_value(s), R_WORD);
      else
 	  data_symbol(find_symbol(s));
 }
@@ -199,12 +205,7 @@ static int find_dconst(int val0, int val1) {
 }
 
 static int make_const(char *s) {
-     if (isdigit((int) s[0]))
-	  return find_const(strtoul(s, NULL, 0), NULL);
-     else if (s[0] == '-')
-	  return find_const(strtol(s, NULL, 0), NULL);
-     else
-	  return find_const(0, find_symbol(s));
+     return find_const(0, find_symbol(s));
 }
 
 
@@ -532,8 +533,8 @@ static void const_head(int prim, int code, int reloc,
      data_value(prim, R_SUBR);	/* Primitive */
      data_value(code, reloc);	/* Entry point */
      data_value(0, R_WORD);	/* Code size */
-     data_value(frame, R_WORD);	/* Frame size */
-     data_value(stack, R_WORD); /* Stack size */
+     data_value(frame, R_WORD);	/* Frame size in words */
+     data_value(stack, R_WORD); /* Stack size in words */
      data_word(map);		/* Frame map */
      data_value(0, R_WORD);	/* Stack map table */
 }
@@ -609,11 +610,14 @@ static void do_directive(char *dir, int n, char *rands[], int nrands) {
 	  break;
 
      case D_CONST:
-	  if ((isdigit((int) rands[0][0]) || rands[0][0] == '-')
-	      && fits(i = strtol(rands[0], NULL, 0), 16))
+	  if (fits(i = const_value(rands[0]), 16))
 	       gen_inst("PUSH %d", i);
 	  else
-	       gen_inst("LDKW %d", make_const(rands[0]));
+	       gen_inst("LDKW %d", find_const(i, NULL));
+	  break;
+
+     case D_GLOBAL:
+	  gen_inst("LDKW %d", make_const(rands[0]));
 	  break;
 
      case D_FCONST:
@@ -655,7 +659,7 @@ static void do_directive(char *dir, int n, char *rands[], int nrands) {
 	  data_value(dcvt.n.hi, R_WORD);
 	  break;
 
-     case D_GLOBAL:
+     case D_GLOVAR:
 	  def_global(find_symbol(rands[0]), BSS, bloc, X_DATA);
 	  bloc = align(bloc + strtoul(rands[1], NULL, 0), 4);
 	  break;

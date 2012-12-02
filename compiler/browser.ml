@@ -175,15 +175,14 @@ let fSeg (lo, hi) =
   if lo = hi then fNum lo else fMeta "$..$" [fNum lo; fNum hi]
 
 let fValExp t v =
-  match t.t_guts with
-      BasicType CharT ->
-	fMeta "'$'" [fChr (char_of_integer (int_value v))]
-    | BasicType BoolT ->
-	if int_value v <> integer 0 then fStr "TRUE" else fStr "FALSE"
-    | BasicType SetT ->
-	fMeta "{$}" [fList(fSeg) (segs 0 (int_value v))]
-    | _ ->
-	fVal v
+  if same_types t character then
+    fMeta "'$'" [fChr (char_of_integer (int_value v))]
+  else if same_types t boolean then
+    if int_value v <> integer 0 then fStr "TRUE" else fStr "FALSE"
+  else if same_types t settype then
+    fMeta "{$}" [fList(fSeg) (segs 0 (int_value v))]
+  else
+    fVal v
 
 let print_def d =
   if d.d_export <> Private then begin

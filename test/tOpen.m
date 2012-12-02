@@ -31,7 +31,7 @@ MODULE tOpen STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOpen.Sum 3 16 0
+PROC tOpen.Sum 3 4 0
 ! PROCEDURE Sum(a: ARRAY OF INTEGER): INTEGER;
 LOCAL 12
 LDLW 16
@@ -67,7 +67,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tOpen.%main 1 16 0
+PROC tOpen.%main 1 4 0
 !     FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
 CONST 0
 STLW -4
@@ -75,7 +75,7 @@ JUMP 4
 LABEL 3
 LDLW -4
 INC
-CONST tOpen.b
+GLOBAL tOpen.b
 LDLW -4
 CONST 5
 BOUND 21
@@ -88,18 +88,18 @@ JLEQ 3
 !   Out.Int(Sum(b), 0); Out.Ln
 CONST 0
 CONST 5
-CONST tOpen.b
-CONST tOpen.Sum
+GLOBAL tOpen.b
+GLOBAL tOpen.Sum
 CALLW 2
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tOpen.b 20
+GLOVAR tOpen.b 20
 
 ! End of file
 ]]*)

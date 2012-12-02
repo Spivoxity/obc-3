@@ -70,7 +70,7 @@ MODULE tSuper STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuper.foo.Reprint 0 20 0x00100001
+PROC tSuper.foo.Reprint 0 5 0x00100001
 ! PROCEDURE (VAR f: foo) Reprint(i: SHORTINT); 
 !   f.Print(i-1)
 LDLS 20
@@ -83,32 +83,32 @@ CALL 3
 RETURN
 END
 
-PROC tSuper.foo.Print 1 20 0x00100001
+PROC tSuper.foo.Print 1 5 0x00100001
 ! PROCEDURE (VAR f: foo) Print(i: INTEGER);
 !   b := (f IS baz);
 LDLW 16
-CONST tSuper.baz
+GLOBAL tSuper.baz
 TYPETEST 1
 STLC -1
 !   Out.String("foo");
 CONST 4
-CONST tSuper.%1
-CONST Out.String
+GLOBAL tSuper.%1
+GLOBAL Out.String
 CALL 2
 !   IF b THEN Out.Char('*') END;
 LDLC -1
 JUMPF 4
 CONST 42
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 LABEL 4
 !   Out.Int(i, 0); Out.Ln;
 CONST 0
 LDLW 20
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   IF i > 0 THEN f.Reprint(SHORT(i)) END;
 LDLW 20
@@ -125,29 +125,29 @@ LABEL 6
 RETURN
 END
 
-PROC tSuper.baz.Print 0 20 0x00100001
+PROC tSuper.baz.Print 0 5 0x00100001
 ! PROCEDURE (VAR b: baz) Print(i: INTEGER);
 !   Out.String("baz"); Out.Int(i, 0); Out.Ln;
 CONST 4
-CONST tSuper.%2
-CONST Out.String
+GLOBAL tSuper.%2
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDLW 20
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   b.Print^(i);
 LDLW 20
 LDLW 16
 LDLW 12
-CONST tSuper.foo.Print
+GLOBAL tSuper.foo.Print
 CALL 3
 RETURN
 END
 
-PROC tSuper.DoPrint 0 20 0x00100001
+PROC tSuper.DoPrint 0 5 0x00100001
 ! PROCEDURE DoPrint(VAR f: foo);
 !   f.Print(2)
 CONST 2
@@ -159,31 +159,31 @@ CALL 3
 RETURN
 END
 
-PROC tSuper.Print2 0 20 0
+PROC tSuper.Print2 0 5 0
 ! PROCEDURE Print2;
 !   f.Print(2)
 CONST 2
-CONST tSuper.foo
+GLOBAL tSuper.foo
 LOCAL 0
-CONST tSuper.foo.Print
+GLOBAL tSuper.foo.Print
 CALL 3
 RETURN
 END
 
-PROC tSuper.%main 0 20 0
+PROC tSuper.%main 0 5 0
 !   DoPrint(bb);
-CONST tSuper.baz
-CONST tSuper.bb
-CONST tSuper.DoPrint
+GLOBAL tSuper.baz
+GLOBAL tSuper.bb
+GLOBAL tSuper.DoPrint
 CALL 2
 !   Print2
-CONST tSuper.Print2
+GLOBAL tSuper.Print2
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSuper.bb 0
+GLOVAR tSuper.bb 0
 
 ! String "foo"
 DEFINE tSuper.%1

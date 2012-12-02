@@ -258,7 +258,7 @@ static void gen_main(void) {
 	  if (!module[i].m_needed) continue;
 	  sprintf(buf, "%s.%%main", module[i].m_name);
 	  if (known(buf)) {
-	       gen_inst("CONST %s", buf);
+	       gen_inst("GLOBAL %s", buf);
 	       gen_inst("CALL 0");
 	  }
      }

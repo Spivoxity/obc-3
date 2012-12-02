@@ -145,7 +145,7 @@ MODULE tDomino STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDomino.Ind 0 4 0
+PROC tDomino.Ind 0 1 0
 ! PROCEDURE Ind(b: BOOLEAN): INTEGER;
 !   IF b THEN RETURN 1 ELSE RETURN 0 END
 LDLC 12
@@ -157,7 +157,7 @@ CONST 0
 RETURNW
 END
 
-PROC tDomino.Init 3 20 0
+PROC tDomino.Init 3 5 0
 ! PROCEDURE Init;
 !   FOR i := 0 TO n-1 DO
 CONST 0
@@ -176,7 +176,7 @@ JUMP 12
 LABEL 11
 ! 	T[i, j, r] := -1
 CONST -1
-CONST tDomino.T
+GLOBAL tDomino.T
 LDLW -4
 CONST 8
 BOUND 88
@@ -214,10 +214,10 @@ JLEQ 7
 RETURN
 END
 
-PROC tDomino.Compute 2 20 0
+PROC tDomino.Compute 2 5 0
 ! PROCEDURE Compute(i, j: INTEGER; s: SET): INTEGER;
 !   INC(calls);
-CONST tDomino.calls
+GLOBAL tDomino.calls
 DUP 0
 LOADW
 INC
@@ -227,7 +227,7 @@ STOREW
 LDLW 20
 STLW -4
 !   IF T[i, j, r] >= 0 THEN RETURN T[i, j, r] END;
-CONST tDomino.T
+GLOBAL tDomino.T
 LDLW 12
 CONST 8
 BOUND 100
@@ -245,7 +245,7 @@ BOUND 100
 PLUS
 LDIW
 JLTZ 14
-CONST tDomino.T
+GLOBAL tDomino.T
 LDLW 12
 CONST 8
 BOUND 100
@@ -275,7 +275,7 @@ LDLW 20
 CONST 255
 EQ
 ALIGNC
-CONST tDomino.Ind
+GLOBAL tDomino.Ind
 CALLW 1
 STLW -8
 JUMP 15
@@ -285,7 +285,7 @@ LDLW 20
 CONST 8
 LDLW 12
 DEC
-CONST tDomino.Compute
+GLOBAL tDomino.Compute
 CALLW 3
 STLW -8
 JUMP 15
@@ -300,7 +300,7 @@ CONST 1
 BITXOR
 CONST 0
 LDLW 12
-CONST tDomino.Compute
+GLOBAL tDomino.Compute
 CALLW 3
 STLW -8
 JUMP 15
@@ -325,7 +325,7 @@ BITXOR
 LDLW 16
 DEC
 LDLW 12
-CONST tDomino.Compute
+GLOBAL tDomino.Compute
 CALLW 3
 STLW -8
 JUMP 15
@@ -359,7 +359,7 @@ LDLW 16
 CONST 2
 MINUS
 LDLW 12
-CONST tDomino.Compute
+GLOBAL tDomino.Compute
 CALLW 3
 STLW -8
 JUMP 15
@@ -370,7 +370,7 @@ LDLW 16
 CONST 2
 MINUS
 LDLW 12
-CONST tDomino.Compute
+GLOBAL tDomino.Compute
 CALLW 3
 LDLW 20
 LDLW 16
@@ -382,14 +382,14 @@ BITXOR
 LDLW 16
 DEC
 LDLW 12
-CONST tDomino.Compute
+GLOBAL tDomino.Compute
 CALLW 3
 PLUS
 STLW -8
 LABEL 15
 !   T[i, j, r] := z;
 LDLW -8
-CONST tDomino.T
+GLOBAL tDomino.T
 LDLW 12
 CONST 8
 BOUND 125
@@ -407,7 +407,7 @@ BOUND 125
 PLUS
 STIW
 !   INC(count);
-CONST tDomino.count
+GLOBAL tDomino.count
 DUP 0
 LOADW
 INC
@@ -416,7 +416,7 @@ STOREW
 !   IF z = 0 THEN INC(zero) END;
 LDLW -8
 JNEQZ 23
-CONST tDomino.zero
+GLOBAL tDomino.zero
 DUP 0
 LOADW
 INC
@@ -428,75 +428,75 @@ LDLW -8
 RETURNW
 END
 
-PROC tDomino.%main 0 20 0
+PROC tDomino.%main 0 5 0
 !   Init;
-CONST tDomino.Init
+GLOBAL tDomino.Init
 CALL 0
 !   Out.Int(Compute(n-1, n, {0..n-1}), 0); Out.Ln;
 CONST 0
 CONST 255
 CONST 8
 CONST 7
-CONST tDomino.Compute
+GLOBAL tDomino.Compute
 CALLW 3
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("["); Out.Int(calls, 0); Out.String(" calls]"); Out.Ln;
 CONST 2
-CONST tDomino.%4
-CONST Out.String
+GLOBAL tDomino.%4
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tDomino.calls
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 8
-CONST tDomino.%1
-CONST Out.String
+GLOBAL tDomino.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("["); Out.Int(count, 0); Out.String(" arguments]"); Out.Ln;
 CONST 2
-CONST tDomino.%4
-CONST Out.String
+GLOBAL tDomino.%4
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tDomino.count
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 12
-CONST tDomino.%2
-CONST Out.String
+GLOBAL tDomino.%2
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.String("["); Out.Int(zero, 0); Out.String(" results were zero]");
 CONST 2
-CONST tDomino.%4
-CONST Out.String
+GLOBAL tDomino.%4
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tDomino.zero
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 20
-CONST tDomino.%3
-CONST Out.String
+GLOBAL tDomino.%3
+GLOBAL Out.String
 CALL 2
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tDomino.T 73728
-GLOBAL tDomino.calls 4
-GLOBAL tDomino.count 4
-GLOBAL tDomino.zero 4
+GLOVAR tDomino.T 73728
+GLOVAR tDomino.calls 4
+GLOVAR tDomino.count 4
+GLOVAR tDomino.zero 4
 
 ! String " calls]"
 DEFINE tDomino.%1

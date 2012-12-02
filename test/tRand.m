@@ -270,7 +270,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRand.Greater 1 16 0x00300001
+PROC tRand.Greater 1 4 0x00300001
 ! PROCEDURE Greater(VAR a, b: num): BOOLEAN;
 !   i := N-1;
 CONST 3
@@ -314,7 +314,7 @@ GT
 RETURNW
 END
 
-PROC tRand.Combine 3 20 0x00a00001
+PROC tRand.Combine 3 5 0x00a00001
 ! PROCEDURE Combine(x: INTEGER; VAR a: num; y: INTEGER; VAR b: num);
 !   c := 0;
 CONST 0
@@ -355,13 +355,13 @@ LDLW -8
 JLEQ 9
 CONST 12
 LDLW -12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 12
 LDLW -8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !       ASSERT(c*B <= t) END;
 LDLW -12
@@ -398,36 +398,36 @@ LABEL 11
 RETURN
 END
 
-PROC tRand.next 1 20 0
+PROC tRand.next 1 5 0
 ! PROCEDURE next(): INTEGER;
 !   Combine(a, u, 0, m);
-CONST tRand.m
+GLOBAL tRand.m
 CONST 0
-CONST tRand.u
+GLOBAL tRand.u
 CONST 48271
-CONST tRand.Combine
+GLOBAL tRand.Combine
 CALL 4
 JUMP 13
 LABEL 12
 !     IF (u[3] > 0) OR (u[2] > m[2]) THEN
-CONST tRand.u
+GLOBAL tRand.u
 LDNW 12
 JGTZ 16
-CONST tRand.u
+GLOBAL tRand.u
 LDNW 8
-CONST tRand.m
+GLOBAL tRand.m
 LDNW 8
 JLEQ 15
 LABEL 16
 ! 	w := (B*u[3] + u[2]) DIV (m[2] + 1)
-CONST tRand.u
+GLOBAL tRand.u
 LDNW 12
 CONST 10000
 TIMES
-CONST tRand.u
+GLOBAL tRand.u
 LDNW 8
 PLUS
-CONST tRand.m
+GLOBAL tRand.m
 LDNW 8
 INC
 ZCHECK 67
@@ -447,26 +447,26 @@ CONST 10000
 STLW -4
 LABEL 18
 !     Combine(1, u, -w, m);
-CONST tRand.m
+GLOBAL tRand.m
 LDLW -4
 UMINUS
-CONST tRand.u
+GLOBAL tRand.u
 CONST 1
-CONST tRand.Combine
+GLOBAL tRand.Combine
 CALL 4
 LABEL 13
 !   WHILE ~ Greater(m, u) DO
-CONST tRand.u
-CONST tRand.m
-CONST tRand.Greater
+GLOBAL tRand.u
+GLOBAL tRand.m
+GLOBAL tRand.Greater
 CALLW 2
 JUMPF 12
 !   RETURN u[2]*B*B + u[1]*B + u[0]
-CONST tRand.u
+GLOBAL tRand.u
 LDNW 8
 CONST 100000000
 TIMES
-CONST tRand.u
+GLOBAL tRand.u
 LDNW 4
 CONST 10000
 TIMES
@@ -476,28 +476,28 @@ PLUS
 RETURNW
 END
 
-PROC tRand.%main 0 20 0
+PROC tRand.%main 0 5 0
 !   u[3] := 0; u[2] := 0; u[1] := 3141; u[0] := 5926;
 CONST 0
-CONST tRand.u
+GLOBAL tRand.u
 STNW 12
 CONST 0
-CONST tRand.u
+GLOBAL tRand.u
 STNW 8
 CONST 3141
-CONST tRand.u
+GLOBAL tRand.u
 STNW 4
 CONST 5926
 STGW tRand.u
 !   m[3] := 0; m[2] := 21; m[1] := 4748; m[0] := 3647; 
 CONST 0
-CONST tRand.m
+GLOBAL tRand.m
 STNW 12
 CONST 21
-CONST tRand.m
+GLOBAL tRand.m
 STNW 8
 CONST 4748
-CONST tRand.m
+GLOBAL tRand.m
 STNW 4
 CONST 3647
 STGW tRand.m
@@ -507,23 +507,23 @@ STGW tRand.x
 JUMP 20
 LABEL 19
 !     y := Random.Random();
-CONST Random.Random
+GLOBAL Random.Random
 CALLW 0
 STGW tRand.y
 !     z := next();
-CONST tRand.next
+GLOBAL tRand.next
 CALLW 0
 STGW tRand.z
 !     Out.Int(y, 10); Out.Int(z, 12); Out.Ln;
 CONST 10
 LDGW tRand.y
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 12
 LDGW tRand.z
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     ASSERT(y = z)
 LDGW tRand.y
@@ -541,16 +541,16 @@ LDGW tRand.x
 CONST 100
 JLEQ 19
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR x := 1 TO 100000 DO ASSERT(Random.Random() = next()) END;
 CONST 1
 STGW tRand.x
 JUMP 23
 LABEL 22
-CONST Random.Random
+GLOBAL Random.Random
 CALLW 0
-CONST tRand.next
+GLOBAL tRand.next
 CALLW 0
 JEQ 24
 CONST 0
@@ -569,14 +569,14 @@ STGW tRand.x
 JUMP 26
 LABEL 25
 !     r := Random.Uniform();
-CONST Random.Uniform
+GLOBAL Random.Uniform
 CALLF 0
 STGF tRand.r
 !     Out.Real(r); Out.Ln;
 LDGF tRand.r
-CONST Out.Real
+GLOBAL Out.Real
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     ASSERT((0.0 <= r) & (r < 1.0))
 LDGF tRand.r
@@ -598,7 +598,7 @@ LDGW tRand.x
 CONST 20
 JLEQ 25
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR x := 1 TO 20 DO
 CONST 1
@@ -607,15 +607,15 @@ JUMP 30
 LABEL 29
 !     y := Random.Roll(100000);
 CONST 100000
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 STGW tRand.y
 !     Out.Int(y, 0); Out.Ln;
 CONST 0
 LDGW tRand.y
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     ASSERT((0 <= y) & (y < 100000))
 LDGW tRand.y
@@ -639,12 +639,12 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tRand.u 16
-GLOBAL tRand.m 16
-GLOBAL tRand.x 4
-GLOBAL tRand.y 4
-GLOBAL tRand.z 4
-GLOBAL tRand.r 4
+GLOVAR tRand.u 16
+GLOVAR tRand.m 16
+GLOVAR tRand.x 4
+GLOVAR tRand.y 4
+GLOVAR tRand.z 4
+GLOVAR tRand.r 4
 
 ! End of file
 ]]*)

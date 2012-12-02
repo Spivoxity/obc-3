@@ -65,7 +65,7 @@ MODULE tQueens STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tQueens.queens 4 16 0x00200001
+PROC tQueens.queens 4 4 0x00200001
 ! PROCEDURE queens(k: INTEGER; VAR choice: board);
 !   IF k = N THEN
 LDLW 12
@@ -73,7 +73,7 @@ CONST 8
 JNEQ 2
 !     print(choice); done := TRUE
 LDLW 16
-CONST tQueens.print
+GLOBAL tQueens.print
 CALL 1
 CONST 1
 STGC tQueens.done
@@ -144,7 +144,7 @@ STIS
 LDLW 16
 LDLW 12
 INC
-CONST tQueens.queens
+GLOBAL tQueens.queens
 CALL 2
 LABEL 9
 !       y := y+1
@@ -160,7 +160,7 @@ LABEL 10
 RETURN
 END
 
-PROC tQueens.print 1 16 0x00100001
+PROC tQueens.print 1 4 0x00100001
 ! PROCEDURE print(VAR choice: board);
 !   x := 0;
 CONST 0
@@ -172,7 +172,7 @@ LDLW -4
 JLEQZ 14
 CONST 32
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 LABEL 14
 !     Out.Int(choice[x]+1, 0);
@@ -183,7 +183,7 @@ CONST 8
 BOUND 48
 LDIS
 INC
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     x := x+1
 INCL -4
@@ -193,22 +193,22 @@ LDLW -4
 CONST 8
 JLT 11
 !   Out.Ln()
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tQueens.%main 4 16 0
+PROC tQueens.%main 4 4 0
 !     queens(0, choice)
 LOCAL -16
 CONST 0
-CONST tQueens.queens
+GLOBAL tQueens.queens
 CALL 2
 RETURN
 END
 
 ! Global variables
-GLOBAL tQueens.done 1
+GLOVAR tQueens.done 1
 
 ! End of file
 ]]*)

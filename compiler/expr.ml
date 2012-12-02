@@ -376,7 +376,7 @@ and check_desig1 env e =
 	      sem_error "a subscript must be an integer" [] e2.e_loc;
 	      sem_type t2
 	    end;
-	    if same_types t2 longint then
+	    if same_types t2 longint && not (is_errtype t2) then
 	      sem_error "sorry, LONGINT subscripts are not implemented" 
 		[] e2.e_loc;
 	    t0
@@ -505,15 +505,20 @@ and check_subexp env e =
 	if not (is_errtype t) then begin
 	  match e1.e_guts, e2.e_guts with
 	      Const (x1, _), Const (x2, _) -> 
-		begin
-		  try 
+	        let v = try 
 		    (* The expression may have been edited, so use new op *)
-		    edit_expr e (Const (do_binop (op_of e) x1 x2, t))
-		  with Division_by_zero ->
-		    sem_error "this expression divides a constant by zero" 
-		      [] e.e_loc;
-		    edit_expr e (Const (make_zero (kind_of t), t))
-		end
+		    do_binop (op_of e) x1 x2
+		  with 
+		      Division_by_zero ->
+			sem_error "this expression divides a constant by zero" 
+			  [] e.e_loc;
+			intval 0
+		    | Bound_error ->
+			sem_error 
+			  "this constant expression causes a bound error"
+			  [] e.e_loc;
+			intval 0 in
+		edit_expr e (Const (v, t))
 	    | _ -> ()
 	end;
 	t
@@ -916,7 +921,7 @@ and check_builtin env p args e loc =
 	      [fStr p.b_name] e1.e_loc;
 	    sem_type t1
 	  end;
-	  if same_types t1 longreal then longint else inttype
+	  inttype
 
       | Short, [e1] ->
 	  let t1 = check_expr env e1 in

@@ -107,56 +107,60 @@ let ruleset1 replace =
       JUMPC (k, w, lab) :: _ ->
 	replace 1 [BINOP (k, w); JUMPB (true, lab)]
     | MONOP (IntT, Inc) :: _ ->
-	replace 1 [CONSTn (integer 1); BINOP (IntT, Plus)]
+	replace 1 [CONST (integer 1); BINOP (IntT, Plus)]
     | MONOP (IntT, Dec) :: _ ->
-	replace 1 [CONSTn (integer 1); BINOP (IntT, Minus)]
+	replace 1 [CONST (integer 1); BINOP (IntT, Minus)]
     | BINOP (IntT, BitSub) :: _ ->
 	replace 1 [MONOP (IntT, BitNot); BINOP (IntT, BitAnd)]
 
     (* Static bounds checks *)
-    | CONSTn n1 :: CONSTn n2 :: BOUND _ :: _ 
+    | CONST n1 :: CONST n2 :: BOUND _ :: _ 
 	  when n1 >= integer 0 && n1 < n2 -> 
-	replace 3 [CONSTn n1]
-    | CONSTn n :: CHECK (DivZero IntT, _) :: _ when n <> integer 0 ->
-	replace 2 [CONSTn n]
+	replace 3 [CONST n1]
+    | CONST n :: CHECK (DivZero IntT, _) :: _ when n <> integer 0 ->
+	replace 2 [CONST n]
     | TCONST (LongT, n) :: CHECK (DivZero LongT, _) :: _ 
 	when int_value n <> integer 0 -> replace 2 [TCONST (LongT, n)]
-    | CONSTn n :: CHECK (GlobProc, _) :: _ ->
+    | TCONST (FloatT, x) :: CHECK (DivZero FloatT, _) :: _
+	when flo_value x <> 0.0 -> replace 2 [TCONST (FloatT, x)]
+    | TCONST (DoubleT, x) :: CHECK (DivZero DoubleT, _) :: _
+	when flo_value x <> 0.0 -> replace 2 [TCONST (DoubleT, x)]
+    | CONST n :: CHECK (GlobProc, _) :: _ ->
 	if n = integer 0 then replace 2 []
-    | CONSTx x :: CHECK (NullPtr, _) :: _ ->
-	replace 2 [CONSTx x]
+    | GLOBAL x :: CHECK (NullPtr, _) :: _ ->
+	replace 2 [GLOBAL x]
 
     (* A little constant folding *)
-    | CONSTn a :: CONSTn b :: BINOP (IntT, w) :: _ ->
-	replace 3 [CONSTn (int_binop w a b)]
-    | LOCAL o :: CONSTn n :: BINOP (PtrT, PlusA) :: _ ->
+    | CONST a :: CONST b :: BINOP (IntT, w) :: _ ->
+	replace 3 [CONST (int_binop w a b)]
+    | LOCAL o :: CONST n :: BINOP (PtrT, PlusA) :: _ ->
 	replace 3 [LOCAL (o + int_of_integer n)]
-    | CONSTn a :: MONOP (IntT, w) :: _ ->
-	replace 2 [CONSTn (int_monop w a)]
-    | CONSTn a :: JUMPB (true, lab) :: _ ->
+    | CONST a :: MONOP (IntT, w) :: _ ->
+	replace 2 [CONST (int_monop w a)]
+    | CONST a :: JUMPB (true, lab) :: _ ->
 	replace 2 (if a <> integer 0 then [JUMP lab] else [])
-    | CONSTn a :: JUMPB (false, lab) :: _ ->
+    | CONST a :: JUMPB (false, lab) :: _ ->
 	replace 2 (if a = integer 0 then [JUMP lab] else [])
 
-    | CONSTn a :: BINOP (IntT, Minus) :: _ ->
-	replace 2 [CONSTn (integer_neg a); BINOP (IntT, Plus)]
-    | CONSTn a :: BINOP (IntT, Plus) :: CONSTn b :: BINOP (k, Plus) :: _ ->
-	replace 4 [CONSTn (integer_add a b); BINOP (IntT, Plus)]
-    | CONSTn a :: BINOP (PtrT, PlusA) :: CONSTn b :: BINOP (PtrT, PlusA) :: _ ->
-	replace 4 [CONSTn (integer_add a b); BINOP (PtrT, PlusA)]
-    | CONSTn n :: BINOP (IntT, Plus) :: _ when n = integer 0 ->
+    | CONST a :: BINOP (IntT, Minus) :: _ ->
+	replace 2 [CONST (integer_neg a); BINOP (IntT, Plus)]
+    | CONST a :: BINOP (IntT, Plus) :: CONST b :: BINOP (k, Plus) :: _ ->
+	replace 4 [CONST (integer_add a b); BINOP (IntT, Plus)]
+    | CONST a :: BINOP (PtrT, PlusA) :: CONST b :: BINOP (PtrT, PlusA) :: _ ->
+	replace 4 [CONST (integer_add a b); BINOP (PtrT, PlusA)]
+    | CONST n :: BINOP (IntT, Plus) :: _ when n = integer 0 ->
 	replace 2 []
-    | CONSTn n :: BINOP (PtrT, PlusA) :: _ when n = integer 0 ->
-	replace 2 []
-
-    | CONSTn n :: BINOP (IntT, BitAnd) :: _ when n = integer 0 ->
-	replace 2 [CONSTn n]
-    | CONSTn n :: BINOP (IntT, BitAnd) :: _ when n = integer (-1) ->
+    | CONST n :: BINOP (PtrT, PlusA) :: _ when n = integer 0 ->
 	replace 2 []
 
-    | CONSTn a :: BINOP (IntT, Times) :: CONSTn b :: BINOP (IntT, Times) :: _ ->
-	replace 4 [CONSTn (integer_mul a b); BINOP (IntT, Times)]
-    | CONSTn n :: BINOP (IntT, Times) :: _ when n = integer 1 ->
+    | CONST n :: BINOP (IntT, BitAnd) :: _ when n = integer 0 ->
+	replace 2 [CONST n]
+    | CONST n :: BINOP (IntT, BitAnd) :: _ when n = integer (-1) ->
+	replace 2 []
+
+    | CONST a :: BINOP (IntT, Times) :: CONST b :: BINOP (IntT, Times) :: _ ->
+	replace 4 [CONST (integer_mul a b); BINOP (IntT, Times)]
+    | CONST n :: BINOP (IntT, Times) :: _ when n = integer 1 ->
 	replace 2 []
 
     | MONOP (BoolT, Not) :: JUMPB (b, lab) :: _ ->
@@ -169,42 +173,42 @@ let ruleset1 replace =
 
     (* Convert int to char or short, then store char *)
     | CONV (IntT, (CharT | ShortT)) 
-	  :: (LOCAL _ | CONSTx _) :: STORE CharT :: _ -> 
+	  :: (LOCAL _ | GLOBAL _) :: STORE CharT :: _ -> 
 	replace 1 []
-    | CONV (IntT, ShortT) :: (LOCAL _ | CONSTx _) :: STORE ShortT :: _ -> 
+    | CONV (IntT, ShortT) :: (LOCAL _ | GLOBAL _) :: STORE ShortT :: _ -> 
 	replace 1 []
 
     (* Specially for INC(local) and INC(global) *)
-    | LOCAL a :: DUP 0 :: LOAD s :: CONSTn n :: BINOP (IntT, Plus)
+    | LOCAL a :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
-	replace 7 [LOCAL a; LOAD s; CONSTn n; 
+	replace 7 [LOCAL a; LOAD s; CONST n; 
 	  		BINOP (IntT, Plus); LOCAL a; STORE s]
-    | CONSTn x :: DUP 0 :: LOAD s :: CONSTn n :: BINOP (IntT, Plus)
+    | CONST x :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
-	replace 7 [CONSTn x; LOAD s; CONSTn n; 
-	      		BINOP (IntT, Plus); CONSTn x; STORE s]
+	replace 7 [CONST x; LOAD s; CONST n; 
+	      		BINOP (IntT, Plus); CONST x; STORE s]
 
     (* For simultaneous assignment *)
-    | (LOCAL _ | CONSTn _ as i1) :: CONSTn b :: 
-	  (LOCAL _ | CONSTn _ as i2) :: STORE s :: _ ->
-	replace 4 [CONSTn b; i2; STORE s; i1]
-    | (LOCAL _ | CONSTn _ as i1) :: (LOCAL _ | CONSTn _ as i2) :: 
-	  LOAD s1:: (LOCAL _ | CONSTn _ as i3) :: STORE s2 :: _ ->
+    | (LOCAL _ | CONST _ as i1) :: CONST b :: 
+	  (LOCAL _ | CONST _ as i2) :: STORE s :: _ ->
+	replace 4 [CONST b; i2; STORE s; i1]
+    | (LOCAL _ | CONST _ as i1) :: (LOCAL _ | CONST _ as i2) :: 
+	  LOAD s1:: (LOCAL _ | CONST _ as i3) :: STORE s2 :: _ ->
 	replace 5 [i2; LOAD s1; i3; STORE s2; i1]
 
     (* Boolean equality comparisons *)
-    | CONSTn n :: BINOP (BoolT, (Eq | Neq as w)) :: _ ->
+    | CONST n :: BINOP (BoolT, (Eq | Neq as w)) :: _ ->
 	let w' = if n = integer 0 then w else opposite w in
 	replace 2 (if w' = Neq then [] else [MONOP (BoolT, Not)])
 
     (* Void returns *)
     | CALL (n, k) :: POP s :: _ when k <> VoidT ->
 	replace 2 [CALL (n, VoidT)]
-    | CONSTn n :: POP 1 :: _ ->
+    | CONST n :: POP 1 :: _ ->
 	replace 2 []
 
     (* Unneeded static links *)
-    | CONSTn n :: LINK :: _ when n = integer 0 ->
+    | CONST n :: LINK :: _ when n = integer 0 ->
 	replace 2 []
 
     (* Tidy up jumps and labels: *)
@@ -238,16 +242,16 @@ let ruleset1 replace =
 
 let simple =
   function
-    CONSTn _ | LOCAL _ | CONSTx _ -> true
+    CONST _ | LOCAL _ | GLOBAL _ -> true
   | LDL ((CharT|ShortT|IntT|FloatT), x) -> true
   | LDG ((CharT|ShortT|IntT|FloatT), x) -> true
   | _ -> false
 
 let width =
   function
-       CharT -> 1 
+       CharT | BoolT | ByteT -> 1 
      | ShortT -> 2
-     | IntT | FloatT -> 4
+     | IntT | FloatT | PtrT -> 4
      | LongT | DoubleT -> 8
      | _ -> failwith "width"
 
@@ -260,12 +264,12 @@ let divide n s =
 let ruleset2 replace =
   function
       (* Introduce specialized instructions *)
-      CONSTn n :: BINOP (IntT, Plus) :: _ when n = integer 1 ->
+      CONST n :: BINOP (IntT, Plus) :: _ when n = integer 1 ->
 	replace 2 [MONOP (IntT, Inc)]
-    | CONSTn n :: BINOP (IntT, Plus) :: _ when n = integer (-1) ->
+    | CONST n :: BINOP (IntT, Plus) :: _ when n = integer (-1) ->
 	replace 2 [MONOP (IntT, Dec)]
-    | CONSTn n :: BINOP (IntT, Plus) :: _ when n < integer 0 ->
-	replace 2 [CONSTn (integer_neg n); BINOP (IntT, Minus)]
+    | CONST n :: BINOP (IntT, Plus) :: _ when n < integer 0 ->
+	replace 2 [CONST (integer_neg n); BINOP (IntT, Minus)]
     | BINOP (k, (Eq|Neq|Gt|Lt|Geq|Leq as w)) :: JUMPB (b, lab) :: _ ->
 	replace 2 [JUMPC (k, (if b then w else opposite w), lab)]
 
@@ -277,28 +281,28 @@ let ruleset2 replace =
     | LDL (IntT, n) :: MONOP (IntT, Dec) :: STL (IntT, n1) :: _ when n = n1 ->
 	replace 3 [DECL n]
 
-    | CONSTn n :: JUMPC (IntT, w, lab) :: _ when n = integer 0 ->
+    | CONST n :: JUMPC (IntT, w, lab) :: _ when n = integer 0 ->
 	replace 2 [JUMPCZ (w, lab)]
-    | DUP 0 :: CONSTn n :: JUMPC (IntT, Geq, lab) :: _ ->
-	replace 3 [CONSTn n; TESTGEQ lab]
+    | DUP 0 :: CONST n :: JUMPC (IntT, Geq, lab) :: _ ->
+	replace 3 [CONST n; TESTGEQ lab]
 
-    | CONSTn s :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: _
+    | CONST s :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: _
 	  when s = integer 2 || s = integer 4 || s = integer 8 ->
 	replace 3 [INDEX (int_of_integer s)]
 
-    | CONSTn n :: BINOP (PtrT, PlusA) :: LOAD s :: _
+    | CONST n :: BINOP (PtrT, PlusA) :: LOAD s :: _
           when divisible n s ->
-        replace 3 [CONSTn (divide n s); LDI s]
-    | CONSTn n :: BINOP (PtrT, PlusA) :: STORE s :: _
+        replace 3 [CONST (divide n s); LDI s]
+    | CONST n :: BINOP (PtrT, PlusA) :: STORE s :: _
           when divisible n s ->
-	replace 3 [CONSTn (divide n s); STI s] 
+	replace 3 [CONST (divide n s); STI s] 
 
-    | CONSTn n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: LOAD s :: _
+    | CONST n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: LOAD s :: _
           when divisible n s ->
-	replace 4 [CONSTn (divide n s); BINOP (IntT, Times); LDI s]
-    | CONSTn n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: STORE s :: _
+	replace 4 [CONST (divide n s); BINOP (IntT, Times); LDI s]
+    | CONST n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: STORE s :: _
           when divisible n s ->
-	replace 4 [CONSTn (divide n s); BINOP (IntT, Times); STI s]
+	replace 4 [CONST (divide n s); BINOP (IntT, Times); STI s]
 
     | BINOP (PtrT, PlusA) :: LOAD CharT :: _ ->
 	replace 2 [LDI CharT]
@@ -309,9 +313,9 @@ let ruleset2 replace =
     | INDEX n :: STORE s :: _ when n = width s ->
 	replace 2 [STI s]
 
-    | CONSTn n :: LDI IntT :: _ -> 
+    | CONST n :: LDI IntT :: _ -> 
 	replace 2 [LDNW (4 * int_of_integer n)]
-    | CONSTn n :: STI IntT :: _ -> 
+    | CONST n :: STI IntT :: _ -> 
 	replace 2 [STNW (4 * int_of_integer n)]
 
     | LDL (IntT, -4) :: LDNW n :: _ ->
@@ -336,19 +340,20 @@ let ruleset3 replace =
   function
       (* Avoid out-of-line constants *)
       TCONST (LongT, x) :: _ when fits64 16 (int_value x) ->
-	replace 1 [CONSTn (int_value x); CONV (IntT, LongT)]
+	replace 1 [CONST (int_value x); CONV (IntT, LongT)]
 
       (* Introduce LDG/STG *)
-    | CONSTx x :: LOAD s :: _ -> replace 2 [LDG (s, x)]
-    | CONSTx x :: STORE s :: _ -> replace 2 [STG (s, x)]
+    | GLOBAL x :: LOAD s :: _ -> replace 2 [LDG (s, x)]
+    | GLOBAL x :: STORE s :: _ -> replace 2 [STG (s, x)]
 
-      (* Boolean results *)
-    | CALL (n, BoolT) :: _ -> replace 1 [CALL (n, IntT)]
-    | RETURN BoolT :: _ -> replace 1 [RETURN IntT]
+      (* Small results *)
+    | CALL (n, (CharT|BoolT|ByteT|ShortT)) :: _ -> 
+	replace 1 [CALL (n, IntT)]
+    | RETURN (CharT|BoolT|ByteT|ShortT) :: _ -> replace 1 [RETURN IntT]
 
       (* Eliminate operands that don't fit in 16 bits *)
     | LOCAL n :: _ when not (fits 16 n) ->
-	replace 1 [LOCAL 0; CONSTn (integer n); BINOP (PtrT, PlusA)]
+	replace 1 [LOCAL 0; CONST (integer n); BINOP (PtrT, PlusA)]
     | LDL (s, n) :: _ when not (fits 16 n) ->
 	replace 1 [LOCAL n; LOAD s]
     | INCL n :: _ when not (fits 16 n) ->
@@ -358,9 +363,9 @@ let ruleset3 replace =
     | STL (s, n) :: _ when not (fits 16 n) ->
 	replace 1 [LOCAL n; STORE s]
     | LDNW n :: _ when not (fits 16 n) ->
-	replace 1 [CONSTn (integer n); BINOP (PtrT, PlusA); LOAD IntT]
+	replace 1 [CONST (integer n); BINOP (PtrT, PlusA); LOAD IntT]
     | STNW n :: _ when not (fits 16 n) ->
-	replace 1 [CONSTn (integer n); BINOP (PtrT, PlusA); STORE IntT]
+	replace 1 [CONST (integer n); BINOP (PtrT, PlusA); STORE IntT]
     | LDEW n :: _ when not (fits 16 n) ->
 	replace 1 [LDL (IntT, -4); LDNW n]
     | STEW n :: _ when not (fits 16 n) ->

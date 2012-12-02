@@ -42,14 +42,14 @@ In procedure tDynAssign.R.Assign
 MODULE tDynAssign STAMP 0
 ENDHDR
 
-PROC tDynAssign.R.Assign 1 12 0x00100001
+PROC tDynAssign.R.Assign 1 3 0x00100001
 ! PROCEDURE (VAR r: R) Assign;
 !   r2.x := 3;
 CONST 3
 STLW -4
 !   r := r2
 LDLW 16
-CONST tDynAssign.R
+GLOBAL tDynAssign.R
 JEQ 1
 ERROR E_ASSIGN 14
 LABEL 1
@@ -60,14 +60,14 @@ FIXCOPY
 RETURN
 END
 
-PROC tDynAssign.Assign2 1 12 0x00100001
+PROC tDynAssign.Assign2 1 3 0x00100001
 ! PROCEDURE Assign2(VAR r: R);
 !   r2.x := 3;
 CONST 3
 STLW -4
 !   r := r2
 LDLW 16
-CONST tDynAssign.R
+GLOBAL tDynAssign.R
 JEQ 2
 ERROR E_ASSIGN 21
 LABEL 2
@@ -78,22 +78,22 @@ FIXCOPY
 RETURN
 END
 
-PROC tDynAssign.%main 0 12 0
+PROC tDynAssign.%main 0 3 0
 !   s.Assign;
-CONST tDynAssign.S
-CONST tDynAssign.s
-CONST tDynAssign.R.Assign
+GLOBAL tDynAssign.S
+GLOBAL tDynAssign.s
+GLOBAL tDynAssign.R.Assign
 CALL 2
 !   Assign2(s)
-CONST tDynAssign.S
-CONST tDynAssign.s
-CONST tDynAssign.Assign2
+GLOBAL tDynAssign.S
+GLOBAL tDynAssign.s
+GLOBAL tDynAssign.Assign2
 CALL 2
 RETURN
 END
 
 ! Global variables
-GLOBAL tDynAssign.s 8
+GLOVAR tDynAssign.s 8
 
 ! Descriptor for R
 DEFINE tDynAssign.R

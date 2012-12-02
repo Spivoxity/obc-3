@@ -39,8 +39,9 @@ type check =
 
 (* icode -- type of intermediate instructions *)
 type icode =
-    CONSTn of integer 	 	(* Push constant (value) *)
-  | CONSTx of symbol		(* Push constant (value) *)
+    CONST of integer 	 	(* Push constant (value) *)
+  | CONSTx of integer		(* Push hex constant (value) *)
+  | GLOBAL of symbol		(* Push global addr (value) *)
   | TCONST of kind * value	(* Typed constant *)
   | LOCAL of int		(* Push address (offset) *)
   | LOAD of kind		(* Load *)
@@ -75,8 +76,8 @@ type icode =
   | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
   | STL of kind * int		(* LOCAL n/STORE s *)
-  | LDG of kind * symbol	(* SYMBOL x/LOAD s *)
-  | STG of kind * symbol	(* SYMBOL x/STORE s *)
+  | LDG of kind * symbol	(* GLOBAL x/LOAD s *)
+  | STG of kind * symbol	(* GLOBAL x/STORE s *)
   | LDI of kind			(* INDEX s/LOAD s *)
   | STI of kind			(* INDEX s/STORE s *)
   | LDNW of int			(* CONST n/LDI 4 *)
@@ -124,9 +125,9 @@ let fType1 =
 let fKind =
   function
       VoidT -> fStr ""
-    | (CharT | BoolT | ByteT) -> fStr "C"
+    | CharT -> fStr "C"
     | ShortT -> fStr "S"
-    | (IntT | PtrT | SetT) -> fStr "W"
+    | IntT -> fStr "W"
     | LongT -> fStr "Q"
     | FloatT -> fStr "F"
     | DoubleT -> fStr "D"
@@ -140,8 +141,9 @@ let fWidth =
 (* Inst -- formatting function for use with printf *)
 let fInst =
   function
-      CONSTn n ->	fMeta "CONST $" [fInteger n]
-    | CONSTx x ->	fMeta "CONST $" [fSym x]
+      CONST n ->	fMeta "CONST $" [fInteger n]
+    | CONSTx n ->	fMeta "CONST $" [fHexInteger n]
+    | GLOBAL x ->	fMeta "GLOBAL $" [fSym x]
     | TCONST (k, x) ->	fMeta "$CONST $" [fType k; fVal x]
     | LOCAL o ->	fMeta "LOCAL $" [fNum o]
     | LOAD s ->		fMeta "LOAD$" [fKind s]

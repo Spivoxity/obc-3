@@ -41,15 +41,15 @@ IMPORT xPrelude STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tEnum.Print 0 12 0
+PROC tEnum.Print 0 3 0
 ! PROCEDURE Print(c: X.colour);
 !   IF c = X.red THEN
 LDLW 12
 JNEQZ 5
 !     Out.String("red")
 CONST 4
-CONST tEnum.%1
-CONST Out.String
+GLOBAL tEnum.%1
+GLOBAL Out.String
 CALL 2
 RETURN
 LABEL 5
@@ -63,15 +63,15 @@ JUMP 6
 LABEL 8
 !         X.blue: Out.String("blue")
 CONST 5
-CONST tEnum.%2
-CONST Out.String
+GLOBAL tEnum.%2
+GLOBAL Out.String
 CALL 2
 JUMP 7
 LABEL 9
 !       | X.green: Out.String("green")
 CONST 6
-CONST tEnum.%3
-CONST Out.String
+GLOBAL tEnum.%3
+GLOBAL Out.String
 CALL 2
 JUMP 7
 LABEL 6
@@ -80,18 +80,18 @@ LABEL 7
 !     Out.Int(ORD(c), 2)
 CONST 2
 LDLW 12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 RETURN
 END
 
-PROC tEnum.%main 0 12 0
+PROC tEnum.%main 0 3 0
 !   Out.Int(SIZE(X.colour), 0); Out.Ln;
 CONST 0
 CONST 4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR x := MIN(X.colour) TO MAX(X.colour) DO
 CONST 0
@@ -102,9 +102,9 @@ LABEL 10
 LDGW tEnum.x
 STGW xPrelude.x
 LDGW tEnum.x
-CONST tEnum.Print
+GLOBAL tEnum.Print
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR x := MIN(X.colour) TO MAX(X.colour) DO
 LDGW tEnum.x
@@ -119,15 +119,15 @@ CONST 0
 LDGW xPrelude.x
 CONST 2
 GT
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tEnum.x 4
+GLOVAR tEnum.x 4
 
 ! String "red"
 DEFINE tEnum.%1

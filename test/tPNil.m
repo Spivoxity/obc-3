@@ -20,7 +20,7 @@ END tPNil.
 MODULE tPNil STAMP 0
 ENDHDR
 
-PROC tPNil.%main 0 8 0
+PROC tPNil.%main 0 2 0
 !   x := NIL;
 CONST 0
 STGW tPNil.x
@@ -32,7 +32,7 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tPNil.x 4
+GLOVAR tPNil.x 4
 
 ! End of file
 ]]*)

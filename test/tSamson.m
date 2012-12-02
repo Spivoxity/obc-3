@@ -36,12 +36,12 @@ MODULE tSamson STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSamson.%main 0 16 0
+PROC tSamson.%main 0 4 0
 !   NEW(b);
 CONST 4
-CONST tSamson.BDesc
-CONST tSamson.b
-CONST NEW
+GLOBAL tSamson.BDesc
+GLOBAL tSamson.b
+GLOBAL NEW
 CALL 3
 !   b^.s := 3;
 CONST 3
@@ -56,7 +56,7 @@ LDGW tSamson.a
 DUP 0
 NCHECK 23
 LDNW -4
-CONST tSamson.BDesc
+GLOBAL tSamson.BDesc
 TYPETEST 1
 JUMPT 5
 ERROR E_CAST 23
@@ -66,26 +66,26 @@ CONST 3
 JNEQ 4
 !     Out.String("OK");
 CONST 3
-CONST tSamson.%1
-CONST Out.String
+GLOBAL tSamson.%1
+GLOBAL Out.String
 CALL 2
 JUMP 3
 LABEL 4
 !     Out.String("EROOR");
 CONST 6
-CONST tSamson.%2
-CONST Out.String
+GLOBAL tSamson.%2
+GLOBAL Out.String
 CALL 2
 LABEL 3
 !   Out.Ln()
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSamson.a 4
-GLOBAL tSamson.b 4
+GLOVAR tSamson.a 4
+GLOVAR tSamson.b 4
 
 ! Pointer map
 DEFINE tSamson.%gcmap

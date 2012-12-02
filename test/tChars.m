@@ -26,47 +26,47 @@ MODULE tChars STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChars.%main 0 16 0
+PROC tChars.%main 0 4 0
 !   Out.Char("c");
 CONST 99
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !   Out.String("");
 CONST 1
-CONST tChars.%1
-CONST Out.String
+GLOBAL tChars.%1
+GLOBAL Out.String
 CALL 2
 !   Out.String("w");
 CONST 2
-CONST tChars.%3
-CONST Out.String
+GLOBAL tChars.%3
+GLOBAL Out.String
 CALL 2
 !   Out.String("xx");
 CONST 3
-CONST tChars.%2
-CONST Out.String
+GLOBAL tChars.%2
+GLOBAL Out.String
 CALL 2
 !   x[0] := 'y'; x[1] := 0X;
 CONST 121
 STGC tChars.x
 CONST 0
-CONST tChars.x
+GLOBAL tChars.x
 CONST 1
 STIC
 !   Out.String(x);
 CONST 3
-CONST tChars.x
-CONST Out.String
+GLOBAL tChars.x
+GLOBAL Out.String
 CALL 2
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tChars.x 3
+GLOVAR tChars.x 3
 
 ! String ""
 DEFINE tChars.%1

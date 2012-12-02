@@ -50,7 +50,7 @@ MODULE tCases STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCases.%main 0 12 0
+PROC tCases.%main 0 3 0
 !   i := 0;
 CONST 0
 STGW tCases.i
@@ -80,10 +80,10 @@ JUMP 5
 LABEL 7
 ! 	Out.String("Fail"); Out.Ln
 CONST 5
-CONST tCases.%1
-CONST Out.String
+GLOBAL tCases.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 JUMP 5
 LABEL 8
@@ -113,9 +113,9 @@ LABEL 5
 !     Out.Int(i, 0); Out.Ln()
 CONST 0
 LDGW tCases.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 3
 !   WHILE i < 10 DO
@@ -140,7 +140,7 @@ LABEL 14
 !        'a'..'z': Out.Char(c)
 LDGC tCases.c
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 LABEL 12
 !   FOR i := 0 TO 127 DO
@@ -152,14 +152,14 @@ LDGW tCases.i
 CONST 127
 JLEQ 10
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tCases.i 4
-GLOBAL tCases.c 1
+GLOVAR tCases.i 4
+GLOVAR tCases.c 1
 
 ! String "Fail"
 DEFINE tCases.%1

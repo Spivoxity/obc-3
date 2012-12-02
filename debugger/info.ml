@@ -49,7 +49,7 @@ let init =
 		p_fparams = []; p_result = voidtype } in
   put_debug
     { d_tag = intern "MAIN"; d_module = intern "%Main"; d_kind = ProcDef;
-      d_type = new_type 0 (ProcType p, proc_rep, []); d_export = Private; 
+      d_type = new_type 0 (ProcType p, addr_rep, []); d_export = Private; 
       d_loc = Error.no_loc; d_line = 0; d_used = true; d_lab = "MAIN"; 
       d_level = 0; d_offset = 0; d_param = 0; d_env = init_env ();
       d_comment = None; d_map = [] }

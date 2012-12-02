@@ -60,19 +60,19 @@ MODULE tNestFunc STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tNestFunc.G 0 12 0
+PROC tNestFunc.G 0 3 0
 ! PROCEDURE G(x: INTEGER); 
 !   Out.Int(x, 0); Out.Ln 
 CONST 0
 LDLW 12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tNestFunc.%1.Q 1 12 0
+PROC tNestFunc.%1.Q 1 3 0
 !   PROCEDURE Q(F: PROCEDURE (x: INTEGER)); 
 SAVELINK
 !     F(y) 
@@ -85,22 +85,22 @@ CALL 1
 RETURN
 END
 
-PROC tNestFunc.P 1 12 0
+PROC tNestFunc.P 1 3 0
 ! PROCEDURE P;
 !   y := 3; 
 CONST 3
 STLW -4
 !   Q(G) 
 CONST 0
-CONST tNestFunc.G
+GLOBAL tNestFunc.G
 LOCAL 0
 LINK
-CONST tNestFunc.%1.Q
+GLOBAL tNestFunc.%1.Q
 CALL 2
 RETURN
 END
 
-PROC tNestFunc.%2.S 1 12 0
+PROC tNestFunc.%2.S 1 3 0
 !   PROCEDURE S;
 SAVELINK
 !     F(8)
@@ -113,17 +113,17 @@ CALL 1
 RETURN
 END
 
-PROC tNestFunc.R 0 12 0
+PROC tNestFunc.R 0 3 0
 ! PROCEDURE R(F: PROCEDURE (x: INTEGER));
 !   S
 LOCAL 0
 LINK
-CONST tNestFunc.%2.S
+GLOBAL tNestFunc.%2.S
 CALL 0
 RETURN
 END
 
-PROC tNestFunc.%3.V 1 12 0
+PROC tNestFunc.%3.V 1 3 0
 !   PROCEDURE V(x: INTEGER);
 SAVELINK
 !     y := x
@@ -132,32 +132,32 @@ STEW -4
 RETURN
 END
 
-PROC tNestFunc.U 1 12 0
+PROC tNestFunc.U 1 3 0
 ! PROCEDURE U;
 !   y := 0;
 CONST 0
 STLW -4
 !   R(V);
 LOCAL 0
-CONST tNestFunc.%3.V
-CONST tNestFunc.R
+GLOBAL tNestFunc.%3.V
+GLOBAL tNestFunc.R
 CALL 2
 !   Out.Int(y, 0); Out.Ln;
 CONST 0
 LDLW -4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tNestFunc.%main 0 12 0
+PROC tNestFunc.%main 0 3 0
 !   P;
-CONST tNestFunc.P
+GLOBAL tNestFunc.P
 CALL 0
 !   U
-CONST tNestFunc.U
+GLOBAL tNestFunc.U
 CALL 0
 RETURN
 END

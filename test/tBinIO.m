@@ -69,7 +69,7 @@ IMPORT Files STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBinIO.Copy 4 20 0x00900001
+PROC tBinIO.Copy 4 5 0x00900001
 ! PROCEDURE Copy(VAR src, dst: ARRAY OF ARRAY OF INTEGER);
 !   FOR i := 0 TO LEN(dst) - 1 DO
 LDLW 28
@@ -125,7 +125,7 @@ JLEQ 4
 RETURN
 END
 
-PROC tBinIO.WriteBin 0 20 0x00300001
+PROC tBinIO.WriteBin 0 5 0x00300001
 ! PROCEDURE WriteBin(f: Files.File; VAR x: ARRAY OF ARRAY OF INTEGER);
 !   Files.Write(f, x)
 LDLW 16
@@ -136,12 +136,12 @@ LDLW 24
 TIMES
 SWAP
 LDLW 12
-CONST Files.Write
+GLOBAL Files.Write
 CALL 3
 RETURN
 END
 
-PROC tBinIO.ReadBin 0 20 0x00300001
+PROC tBinIO.ReadBin 0 5 0x00300001
 ! PROCEDURE ReadBin(f: Files.File; VAR x: ARRAY OF ARRAY OF INTEGER);
 !   Files.Read(f, x)
 LDLW 16
@@ -152,59 +152,59 @@ LDLW 24
 TIMES
 SWAP
 LDLW 12
-CONST Files.Read
+GLOBAL Files.Read
 CALL 3
 RETURN
 END
 
-PROC tBinIO.%main 0 28 0
+PROC tBinIO.%main 0 7 0
 !   i := 12345678; a[0] := 23456789; a[1] := 34567890;
 CONST 12345678
 STGW tBinIO.i
 CONST 23456789
 STGW tBinIO.a
 CONST 34567890
-CONST tBinIO.a
+GLOBAL tBinIO.a
 STNW 4
 !   c[0][0] := 45678901; c[0][1] := 56789012;
 CONST 45678901
 STGW tBinIO.c
 CONST 56789012
-CONST tBinIO.c
+GLOBAL tBinIO.c
 STNW 4
 !   c[1][0] := 67890123; c[1][1] := 78901234;
 CONST 67890123
-CONST tBinIO.c
+GLOBAL tBinIO.c
 STNW 8
 CONST 78901234
-CONST tBinIO.c
+GLOBAL tBinIO.c
 STNW 12
 !   f := Files.Open("data", "wb");
 CONST 3
-CONST tBinIO.%2
+GLOBAL tBinIO.%2
 CONST 5
-CONST tBinIO.%1
-CONST Files.Open
+GLOBAL tBinIO.%1
+GLOBAL Files.Open
 CALLW 4
 STGW tBinIO.f
 !   Files.Write(f, i);
 CONST 4
-CONST tBinIO.i
+GLOBAL tBinIO.i
 LDGW tBinIO.f
-CONST Files.Write
+GLOBAL Files.Write
 CALL 3
 !   Files.Write(f, a);
 CONST 8
-CONST tBinIO.a
+GLOBAL tBinIO.a
 LDGW tBinIO.f
-CONST Files.Write
+GLOBAL Files.Write
 CALL 3
 !   WriteBin(f, c);
 CONST 2
 CONST 2
-CONST tBinIO.c
+GLOBAL tBinIO.c
 LDGW tBinIO.f
-CONST tBinIO.WriteBin
+GLOBAL tBinIO.WriteBin
 CALL 4
 !   NEW(p, 2, 2); Copy(c, p^); WriteBin(f, p^);
 CONST 2
@@ -212,8 +212,8 @@ CONST 2
 CONST 2
 CONST 4
 CONST 0
-CONST tBinIO.p
-CONST NEWFLEX
+GLOBAL tBinIO.p
+GLOBAL NEWFLEX
 CALL 6
 LDGW tBinIO.p
 NCHECK 40
@@ -227,8 +227,8 @@ LDNW 4
 SWAP
 CONST 2
 CONST 2
-CONST tBinIO.c
-CONST tBinIO.Copy
+GLOBAL tBinIO.c
+GLOBAL tBinIO.Copy
 CALL 6
 LDGW tBinIO.p
 NCHECK 40
@@ -241,86 +241,86 @@ LDNW -4
 LDNW 4
 SWAP
 LDGW tBinIO.f
-CONST tBinIO.WriteBin
+GLOBAL tBinIO.WriteBin
 CALL 4
 !   Out.Int(Files.Tell(f), 0); Out.Ln;
 CONST 0
 LDGW tBinIO.f
-CONST Files.Tell
+GLOBAL Files.Tell
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Files.Close(f);
 LDGW tBinIO.f
-CONST Files.Close
+GLOBAL Files.Close
 CALL 1
 !   f := Files.Open("data", "rb");
 CONST 3
-CONST tBinIO.%3
+GLOBAL tBinIO.%3
 CONST 5
-CONST tBinIO.%1
-CONST Files.Open
+GLOBAL tBinIO.%1
+GLOBAL Files.Open
 CALLW 4
 STGW tBinIO.f
 !   Files.Read(f, j);
 CONST 4
-CONST tBinIO.j
+GLOBAL tBinIO.j
 LDGW tBinIO.f
-CONST Files.Read
+GLOBAL Files.Read
 CALL 3
 !   Files.Read(f, b);
 CONST 8
-CONST tBinIO.b
+GLOBAL tBinIO.b
 LDGW tBinIO.f
-CONST Files.Read
+GLOBAL Files.Read
 CALL 3
 !   Out.Int(j, 10); Out.Int(b[0], 10); Out.Int(b[1], 10); Out.Ln;
 CONST 10
 LDGW tBinIO.j
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 10
 LDGW tBinIO.b
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 10
-CONST tBinIO.b
+GLOBAL tBinIO.b
 LDNW 4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   ReadBin(f, d);
 CONST 2
 CONST 2
-CONST tBinIO.d
+GLOBAL tBinIO.d
 LDGW tBinIO.f
-CONST tBinIO.ReadBin
+GLOBAL tBinIO.ReadBin
 CALL 4
 !   Out.Int(d[0][0], 10); Out.Int(d[0][1], 10); 
 CONST 10
 LDGW tBinIO.d
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 10
-CONST tBinIO.d
+GLOBAL tBinIO.d
 LDNW 4
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   Out.Int(d[1][0], 10); Out.Int(d[1][1], 10); Out.Ln;
 CONST 10
-CONST tBinIO.d
+GLOBAL tBinIO.d
 LDNW 8
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 10
-CONST tBinIO.d
+GLOBAL tBinIO.d
 LDNW 12
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   NEW(q, 2, 2); ReadBin(f, q^);
 CONST 2
@@ -328,8 +328,8 @@ CONST 2
 CONST 2
 CONST 4
 CONST 0
-CONST tBinIO.q
-CONST NEWFLEX
+GLOBAL tBinIO.q
+GLOBAL NEWFLEX
 CALL 6
 LDGW tBinIO.q
 NCHECK 51
@@ -342,7 +342,7 @@ LDNW -4
 LDNW 4
 SWAP
 LDGW tBinIO.f
-CONST tBinIO.ReadBin
+GLOBAL tBinIO.ReadBin
 CALL 4
 !   Out.Int(q[0][0], 10); Out.Int(q[0][1], 10); 
 CONST 10
@@ -364,7 +364,7 @@ LDNW 8
 BOUND 52
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 10
 LDGW tBinIO.q
@@ -385,7 +385,7 @@ LDNW 8
 BOUND 52
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   Out.Int(q[1][0], 10); Out.Int(q[1][1], 10); Out.Ln;
 CONST 10
@@ -407,7 +407,7 @@ LDNW 8
 BOUND 53
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 CONST 10
 LDGW tBinIO.q
@@ -428,23 +428,23 @@ LDNW 8
 BOUND 53
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tBinIO.i 4
-GLOBAL tBinIO.j 4
-GLOBAL tBinIO.a 8
-GLOBAL tBinIO.b 8
-GLOBAL tBinIO.c 16
-GLOBAL tBinIO.d 16
-GLOBAL tBinIO.p 4
-GLOBAL tBinIO.q 4
-GLOBAL tBinIO.f 4
+GLOVAR tBinIO.i 4
+GLOVAR tBinIO.j 4
+GLOVAR tBinIO.a 8
+GLOVAR tBinIO.b 8
+GLOVAR tBinIO.c 16
+GLOVAR tBinIO.d 16
+GLOVAR tBinIO.p 4
+GLOVAR tBinIO.q 4
+GLOVAR tBinIO.f 4
 
 ! Pointer map
 DEFINE tBinIO.%gcmap

@@ -695,6 +695,7 @@ zinst CON 0
 # DIRECTIVES
 
 dir CONST ?
+dir GLOBAL ?
 dir FCONST ?
 dir DCONST ?
 dir QCONST ?
@@ -704,7 +705,7 @@ dir END 0
 dir PRIMDEF ????
 dir DEFINE ?
 dir STRING ?
-dir GLOBAL ??
+dir GLOVAR ??
 dir WORD ?
 dir MODULE ???
 dir ENDHDR 0

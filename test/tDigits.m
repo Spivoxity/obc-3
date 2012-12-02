@@ -54,14 +54,14 @@ IMPORT Out STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tDigits.%2.Avail 0 4 0x00100001
+PROC tDigits.%2.Avail 0 1 0x00100001
 ! PROCEDURE (r: UniSet) Avail(x: INTEGER): BOOLEAN;
 ! BEGIN RETURN TRUE END Avail;
 CONST 1
 RETURNW
 END
 
-PROC tDigits.%1.Avail 0 16 0x00100001
+PROC tDigits.%1.Avail 0 4 0x00100001
 ! PROCEDURE (r: DelSet) Avail(x: INTEGER): BOOLEAN;
 ! BEGIN RETURN (x # r.del) & r.parent.Avail(x) END Avail;
 LDLW 16
@@ -84,21 +84,21 @@ CALLW 2
 RETURNW
 END
 
-PROC tDigits.Search 4 16 0x00404001
+PROC tDigits.Search 4 4 0x00404001
 ! PROCEDURE Search(k, n: INTEGER; s: Set);
 !   IF k = 10 THEN
 LDLW 12
 CONST 10
 JNEQ 6
 !     GC.Collect;
-CONST GC.Collect
+GLOBAL GC.Collect
 CALL 0
 !     Out.Int(n, 0); Out.Ln
 CONST 0
 LDLW 16
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 LABEL 6
@@ -132,14 +132,14 @@ JUMPF 10
 LDLW 20
 NCHECK 32
 LDNW -4
-CONST tDigits.%1
+GLOBAL tDigits.%1
 TYPETEST 1
 STLC -13
 ! 	NEW(s1); s1.del := d; s1.parent := s;
 CONST 8
-CONST tDigits.%1
+GLOBAL tDigits.%1
 LOCAL -12
-CONST NEW
+GLOBAL NEW
 CALL 3
 LDLW -4
 LDLW -12
@@ -154,7 +154,7 @@ LDLW -12
 LDLW -8
 LDLW 12
 INC
-CONST tDigits.Search
+GLOBAL tDigits.Search
 CALL 3
 LABEL 10
 !     FOR d := 1 TO 9 DO
@@ -166,18 +166,18 @@ JLEQ 7
 RETURN
 END
 
-PROC tDigits.%main 1 16 0x00010001
+PROC tDigits.%main 1 4 0x00010001
 !     NEW(s);
 CONST 0
-CONST tDigits.%2
+GLOBAL tDigits.%2
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !     Search(1, 0, s)
 LDLW -4
 CONST 0
 CONST 1
-CONST tDigits.Search
+GLOBAL tDigits.Search
 CALL 3
 RETURN
 END

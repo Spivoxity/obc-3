@@ -14,7 +14,7 @@ END tCaseEmpty.
 MODULE tCaseEmpty STAMP 0
 ENDHDR
 
-PROC tCaseEmpty.%main 0 4 0
+PROC tCaseEmpty.%main 0 1 0
 !   CASE 0 OF ELSE END
 RETURN
 END

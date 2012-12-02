@@ -28,7 +28,7 @@ MODULE tSuck STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuck.%main 0 12 0
+PROC tSuck.%main 0 3 0
 !   b := FALSE;
 CONST 0
 STGC tSuck.b
@@ -37,16 +37,16 @@ LABEL 3
 LDGC tSuck.b
 JUMPF 5
 CONST 2
-CONST tSuck.%1
-CONST Out.String
+GLOBAL tSuck.%1
+GLOBAL Out.String
 CALL 2
 LABEL 5
 !     IF b = FALSE THEN Out.String("B") END;
 LDGC tSuck.b
 JUMPT 7
 CONST 2
-CONST tSuck.%2
-CONST Out.String
+GLOBAL tSuck.%2
+GLOBAL Out.String
 CALL 2
 LABEL 7
 !     b := (b = FALSE)
@@ -57,13 +57,13 @@ STGC tSuck.b
 LDGC tSuck.b
 JUMPT 3
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tSuck.b 1
+GLOVAR tSuck.b 1
 
 ! String "A"
 DEFINE tSuck.%1

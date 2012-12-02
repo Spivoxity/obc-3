@@ -38,14 +38,14 @@ IMPORT Out STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tParamGC.P 2 16 0x00018001
+PROC tParamGC.P 2 4 0x00018001
 ! PROCEDURE P(a: arr);
 LOCAL -8
 LDLW 12
 CONST 8
 FIXCOPY
 !   GC.Collect;
-CONST GC.Collect
+GLOBAL GC.Collect
 CALL 0
 !   x.val := 3;
 CONST 3
@@ -57,24 +57,24 @@ CONST 0
 LDLW -8
 NCHECK 18
 LOADW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tParamGC.%main 0 16 0
+PROC tParamGC.%main 0 4 0
 !   NEW(x); NEW(x);
 CONST 8
-CONST tParamGC.blob
-CONST tParamGC.x
-CONST NEW
+GLOBAL tParamGC.blob
+GLOBAL tParamGC.x
+GLOBAL NEW
 CALL 3
 CONST 8
-CONST tParamGC.blob
-CONST tParamGC.x
-CONST NEW
+GLOBAL tParamGC.blob
+GLOBAL tParamGC.x
+GLOBAL NEW
 CALL 3
 !   b[0] := x;
 LDGW tParamGC.x
@@ -85,15 +85,15 @@ LDGW tParamGC.x
 NCHECK 24
 STOREW
 !   P(b)
-CONST tParamGC.b
-CONST tParamGC.P
+GLOBAL tParamGC.b
+GLOBAL tParamGC.P
 CALL 1
 RETURN
 END
 
 ! Global variables
-GLOBAL tParamGC.x 4
-GLOBAL tParamGC.b 8
+GLOVAR tParamGC.x 4
+GLOVAR tParamGC.b 8
 
 ! Pointer map
 DEFINE tParamGC.%gcmap

@@ -38,8 +38,9 @@ type check =
 
 (* icode -- type of intermediate instructions *)
 type icode =
-    CONSTn of integer 	 	(* Push constant (value) *)
-  | CONSTx of symbol		(* Push constant (value) *)
+    CONST of integer 	 	(* Push constant (value) *)
+  | CONSTx of integer		(* Push hex constant (value) *)
+  | GLOBAL of symbol		(* Push global addr (value) *)
   | TCONST of kind * value	(* Typed constant *)
   | LOCAL of int		(* Push address (offset) *)
   | LOAD of kind		(* Load *)

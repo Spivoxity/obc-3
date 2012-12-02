@@ -32,7 +32,7 @@ MODULE tOpen2 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOpen2.Sum 3 20 0x00100001
+PROC tOpen2.Sum 3 5 0x00100001
 ! PROCEDURE Sum(a: flex): INTEGER;
 !   s := 0;
 CONST 0
@@ -69,14 +69,14 @@ LDLW -8
 RETURNW
 END
 
-PROC tOpen2.%main 0 24 0
+PROC tOpen2.%main 0 6 0
 !   NEW(b, 5);
 CONST 5
 CONST 1
 CONST 4
 CONST 0
-CONST tOpen2.b
-CONST NEWFLEX
+GLOBAL tOpen2.b
+GLOBAL NEWFLEX
 CALL 5
 !   FOR j := 0 TO 4 DO b[j] := j+1 END;
 CONST 0
@@ -103,18 +103,18 @@ JLEQ 3
 !   Out.Int(Sum(b), 0); Out.Ln;
 CONST 0
 LDGW tOpen2.b
-CONST tOpen2.Sum
+GLOBAL tOpen2.Sum
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tOpen2.j 4
-GLOBAL tOpen2.b 4
+GLOVAR tOpen2.j 4
+GLOVAR tOpen2.b 4
 
 ! Pointer map
 DEFINE tOpen2.%gcmap

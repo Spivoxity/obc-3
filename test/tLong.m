@@ -31,7 +31,7 @@ IMPORT Out STAMP
 IMPORT MathL STAMP
 ENDHDR
 
-PROC tLong.Mult 0 16 0
+PROC tLong.Mult 0 4 0
 ! PROCEDURE Mult(x, y: LONGREAL): LONGREAL;
 !   RETURN x * y
 LDLD 12
@@ -40,7 +40,7 @@ DTIMES
 RETURND
 END
 
-PROC tLong.%main 0 20 0
+PROC tLong.%main 0 5 0
 !   x := 3.0;
 DCONST 3.
 STGD tLong.x
@@ -49,36 +49,36 @@ LDGD tLong.x
 DCONST 2.
 DJLEQ 3
 CONST 8
-CONST tLong.%1
-CONST Out.String
+GLOBAL tLong.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 LABEL 3
 !   Out.LongReal(Mult(2.0, x)); Out.Ln;
 LDGD tLong.x
 DCONST 2.
-CONST tLong.Mult
+GLOBAL tLong.Mult
 CALLD 4
-CONST Out.LongReal
+GLOBAL Out.LongReal
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   Out.Fixed(MathL.Sqrt(x), 0, 6); Out.Ln
 CONST 6
 CONST 0
 LDGD tLong.x
-CONST MathL.Sqrt
+GLOBAL MathL.Sqrt
 CALLD 2
-CONST Out.Fixed
+GLOBAL Out.Fixed
 CALL 4
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tLong.x 8
+GLOVAR tLong.x 8
 
 ! String "Greater"
 DEFINE tLong.%1

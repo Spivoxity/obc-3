@@ -31,32 +31,32 @@ IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tNewBug.%main 0 16 0
+PROC tNewBug.%main 0 4 0
 !   GC.Debug("z");
 CONST 2
-CONST tNewBug.%3
-CONST GC.Debug
+GLOBAL tNewBug.%3
+GLOBAL GC.Debug
 CALL 2
 !   NEW(p); NEW(q); p := NIL; NEW(q.next);
 CONST 8
-CONST tNewBug.blob
-CONST tNewBug.p
-CONST NEW
+GLOBAL tNewBug.blob
+GLOBAL tNewBug.p
+GLOBAL NEW
 CALL 3
 CONST 8
-CONST tNewBug.blob
-CONST tNewBug.q
-CONST NEW
+GLOBAL tNewBug.blob
+GLOBAL tNewBug.q
+GLOBAL NEW
 CALL 3
 CONST 0
 STGW tNewBug.p
 CONST 8
-CONST tNewBug.blob
+GLOBAL tNewBug.blob
 LDGW tNewBug.q
 NCHECK 12
 CONST 4
 PLUSA
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   IF q.next # NIL THEN
 LDGW tNewBug.q
@@ -65,26 +65,26 @@ LDNW 4
 JEQZ 5
 !     Out.String("Pass")
 CONST 5
-CONST tNewBug.%1
-CONST Out.String
+GLOBAL tNewBug.%1
+GLOBAL Out.String
 CALL 2
 JUMP 4
 LABEL 5
 !     Out.String("Fail")
 CONST 5
-CONST tNewBug.%2
-CONST Out.String
+GLOBAL tNewBug.%2
+GLOBAL Out.String
 CALL 2
 LABEL 4
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tNewBug.p 4
-GLOBAL tNewBug.q 4
+GLOVAR tNewBug.p 4
+GLOVAR tNewBug.q 4
 
 ! Pointer map
 DEFINE tNewBug.%gcmap

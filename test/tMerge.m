@@ -247,13 +247,13 @@ MODULE tMerge STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMerge.NewArrayStream 1 16 0x00110001
+PROC tMerge.NewArrayStream 1 4 0x00110001
 ! PROCEDURE NewArrayStream(a: arrayptr): arraystream;
 !   NEW(s);
 CONST 8
-CONST tMerge.arraystreamrec
+GLOBAL tMerge.arraystreamrec
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   s.a := a;
 LDLW 12
@@ -270,7 +270,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMerge.arraystreamrec.Done 0 16 0x00100001
+PROC tMerge.arraystreamrec.Done 0 4 0x00100001
 ! PROCEDURE (s: arraystream) Done(): BOOLEAN;
 !   RETURN s.i >= LEN(s.a^)
 LDLW 12
@@ -286,7 +286,7 @@ GEQ
 RETURNW
 END
 
-PROC tMerge.arraystreamrec.Current 0 16 0x00100001
+PROC tMerge.arraystreamrec.Current 0 4 0x00100001
 ! PROCEDURE (s: arraystream) Current(): INTEGER;
 !   RETURN s.a[s.i]
 LDLW 12
@@ -304,7 +304,7 @@ LDIW
 RETURNW
 END
 
-PROC tMerge.arraystreamrec.Next 0 16 0x00100001
+PROC tMerge.arraystreamrec.Next 0 4 0x00100001
 ! PROCEDURE (s: arraystream) Next(k: INTEGER);
 !   s.i := s.i + k
 LDLW 12
@@ -318,13 +318,13 @@ STNW 4
 RETURN
 END
 
-PROC tMerge.arraystreamrec.Copy 1 16 0x00110001
+PROC tMerge.arraystreamrec.Copy 1 4 0x00110001
 ! PROCEDURE (s: arraystream) Copy(): stream;
 !   NEW(t);
 CONST 8
-CONST tMerge.arraystreamrec
+GLOBAL tMerge.arraystreamrec
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   t.a := s.a;
 LDLW 12
@@ -345,19 +345,19 @@ LDLW -4
 RETURNW
 END
 
-PROC tMerge.NewHalfStream 1 16 0x00110001
+PROC tMerge.NewHalfStream 1 4 0x00110001
 ! PROCEDURE NewHalfStream(base: stream; odd: BOOLEAN): halfstream;
 !   NEW(s);
 CONST 8
-CONST tMerge.halfstreamrec
+GLOBAL tMerge.halfstreamrec
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   WITH base: halfstream DO
 LDLW 12
 NCHECK 76
 LDNW -4
-CONST tMerge.halfstreamrec
+GLOBAL tMerge.halfstreamrec
 TYPETEST 1
 JUMPF 2
 !     s.base := base.base;
@@ -409,7 +409,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMerge.halfstreamrec.Done 0 16 0x00100001
+PROC tMerge.halfstreamrec.Done 0 4 0x00100001
 ! PROCEDURE (s: halfstream) Done(): BOOLEAN; 
 ! BEGIN RETURN s.base.Done() END Done;
 LDLW 12
@@ -423,7 +423,7 @@ CALLW 1
 RETURNW
 END
 
-PROC tMerge.halfstreamrec.Current 0 16 0x00100001
+PROC tMerge.halfstreamrec.Current 0 4 0x00100001
 ! PROCEDURE (s: halfstream) Current(): INTEGER;
 ! BEGIN RETURN s.base.Current() END Current;
 LDLW 12
@@ -437,7 +437,7 @@ CALLW 1
 RETURNW
 END
 
-PROC tMerge.halfstreamrec.Next 0 16 0x00100001
+PROC tMerge.halfstreamrec.Next 0 4 0x00100001
 ! PROCEDURE (s: halfstream) Next(k: INTEGER);
 !   s.base.Next(2*k*s.inc)
 LDLW 16
@@ -458,13 +458,13 @@ CALL 2
 RETURN
 END
 
-PROC tMerge.halfstreamrec.Copy 1 16 0x00110001
+PROC tMerge.halfstreamrec.Copy 1 4 0x00110001
 ! PROCEDURE (s: halfstream) Copy(): stream;
 !   NEW(r);
 CONST 8
-CONST tMerge.halfstreamrec
+GLOBAL tMerge.halfstreamrec
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   r.base := s.base.Copy();
 LDLW 12
@@ -490,13 +490,13 @@ LDLW -4
 RETURNW
 END
 
-PROC tMerge.NewMergeStream 1 16 0x00310001
+PROC tMerge.NewMergeStream 1 4 0x00310001
 ! PROCEDURE NewMergeStream*(p, q: stream): mergestream;
 !   NEW(s);
 CONST 16
-CONST tMerge.mergestreamrec
+GLOBAL tMerge.mergestreamrec
 LOCAL -4
-CONST NEW
+GLOBAL NEW
 CALL 3
 !   s.p := p;
 LDLW 12
@@ -519,7 +519,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMerge.mergestreamrec.Fix 3 16 0x00100001
+PROC tMerge.mergestreamrec.Fix 3 4 0x00100001
 ! PROCEDURE (s: mergestream) Fix();
 !   lv := 0; rv := 0;
 CONST 0
@@ -631,7 +631,7 @@ LABEL 6
 RETURN
 END
 
-PROC tMerge.mergestreamrec.Done 0 16 0x00100001
+PROC tMerge.mergestreamrec.Done 0 4 0x00100001
 ! PROCEDURE (s: mergestream) Done(): BOOLEAN;
 ! BEGIN s.Fix(); RETURN s.done END Done;
 LDLW 12
@@ -647,7 +647,7 @@ LDIC
 RETURNW
 END
 
-PROC tMerge.mergestreamrec.Current 0 16 0x00100001
+PROC tMerge.mergestreamrec.Current 0 4 0x00100001
 ! PROCEDURE (s: mergestream) Current(): INTEGER;
 !   s.Fix();
 LDLW 12
@@ -663,7 +663,7 @@ LDNW 12
 RETURNW
 END
 
-PROC tMerge.mergestreamrec.Next 1 16 0x00100001
+PROC tMerge.mergestreamrec.Next 1 4 0x00100001
 ! PROCEDURE (s: mergestream) Next(k: INTEGER);
 !   i := 0;
 CONST 0
@@ -720,7 +720,7 @@ JLT 15
 RETURN
 END
 
-PROC tMerge.mergestreamrec.Copy 0 16 0x00100001
+PROC tMerge.mergestreamrec.Copy 0 4 0x00100001
 ! PROCEDURE (s: mergestream) Copy(): stream;
 !   RETURN NewMergeStream(s.p.Copy(), s.q.Copy())
 LDLW 12
@@ -740,12 +740,12 @@ LDNW -4
 LDNW 24
 STKMAP 0x00000005
 CALLW 1
-CONST tMerge.NewMergeStream
+GLOBAL tMerge.NewMergeStream
 CALLW 2
 RETURNW
 END
 
-PROC tMerge.sort 2 16 0x00118001
+PROC tMerge.sort 2 4 0x00118001
 ! PROCEDURE sort(s: stream): stream;
 !   p := NewHalfStream(s.Copy(), FALSE);
 CONST 0
@@ -756,7 +756,7 @@ DUP 0
 LDNW -4
 LDNW 24
 CALLW 1
-CONST tMerge.NewHalfStream
+GLOBAL tMerge.NewHalfStream
 CALLW 2
 STLW -4
 !   q := NewHalfStream(s.Copy(), TRUE);
@@ -768,7 +768,7 @@ DUP 0
 LDNW -4
 LDNW 24
 CALLW 1
-CONST tMerge.NewHalfStream
+GLOBAL tMerge.NewHalfStream
 CALLW 2
 STLW -8
 !   IF q.Done() THEN
@@ -785,18 +785,18 @@ RETURNW
 LABEL 21
 !     RETURN NewMergeStream(sort(p), sort(q))
 LDLW -8
-CONST tMerge.sort
+GLOBAL tMerge.sort
 CALLW 1
 LDLW -4
-CONST tMerge.sort
+GLOBAL tMerge.sort
 STKMAP 0x00000005
 CALLW 1
-CONST tMerge.NewMergeStream
+GLOBAL tMerge.NewMergeStream
 CALLW 2
 RETURNW
 END
 
-PROC tMerge.%main 1 24 0
+PROC tMerge.%main 1 6 0
 !   n := 25;
 CONST 25
 STGW tMerge.n
@@ -805,8 +805,8 @@ LDGW tMerge.n
 CONST 1
 CONST 4
 CONST 0
-CONST tMerge.a
-CONST NEWFLEX
+GLOBAL tMerge.a
+GLOBAL NEWFLEX
 CALL 5
 !   m := 37;
 CONST 37
@@ -846,7 +846,7 @@ LDNW -4
 LDNW 4
 BOUND 195
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !   FOR k := 0 TO n-1 DO 
 LDGW tMerge.k
@@ -857,13 +857,13 @@ LDGW tMerge.k
 LDLW -4
 JLEQ 23
 !   Out.Ln;
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   s := sort(NewArrayStream(a));
 LDGW tMerge.a
-CONST tMerge.NewArrayStream
+GLOBAL tMerge.NewArrayStream
 CALLW 1
-CONST tMerge.sort
+GLOBAL tMerge.sort
 CALLW 1
 STGW tMerge.s
 JUMP 26
@@ -879,7 +879,7 @@ STGW tMerge.k
 !     Out.Int(k, 3);
 CONST 3
 LDGW tMerge.k
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     s.Next(1)
 CONST 1
@@ -899,17 +899,17 @@ LDNW 12
 CALLW 1
 JUMPF 25
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tMerge.a 4
-GLOBAL tMerge.s 4
-GLOBAL tMerge.k 4
-GLOBAL tMerge.n 4
-GLOBAL tMerge.m 4
+GLOVAR tMerge.a 4
+GLOVAR tMerge.s 4
+GLOVAR tMerge.k 4
+GLOVAR tMerge.n 4
+GLOVAR tMerge.m 4
 
 ! Pointer map
 DEFINE tMerge.%gcmap

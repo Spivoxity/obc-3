@@ -36,19 +36,19 @@ MODULE tMeth STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMeth.foo.baz 0 12 0x00100001
+PROC tMeth.foo.baz 0 3 0x00100001
 ! PROCEDURE (VAR f: foo) baz; 
 !   Out.String("Hello!"); Out.Ln 
 CONST 7
-CONST tMeth.%1
-CONST Out.String
+GLOBAL tMeth.%1
+GLOBAL Out.String
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tMeth.foo.doit 0 16 0x00100001
+PROC tMeth.foo.doit 0 4 0x00100001
 ! PROCEDURE (VAR f: foo) doit;
 !   f.baz
 LDLW 16
@@ -59,17 +59,17 @@ CALL 2
 RETURN
 END
 
-PROC tMeth.%main 0 16 0
+PROC tMeth.%main 0 4 0
 !   VAR it: foo; BEGIN it.doit END;
-CONST tMeth.foo
+GLOBAL tMeth.foo
 LOCAL 0
-CONST tMeth.foo.doit
+GLOBAL tMeth.foo.doit
 CALL 2
 !   NEW(p); p.doit
 CONST 0
-CONST tMeth.foo
-CONST tMeth.p
-CONST NEW
+GLOBAL tMeth.foo
+GLOBAL tMeth.p
+GLOBAL NEW
 CALL 3
 LDGW tMeth.p
 NCHECK 28
@@ -83,7 +83,7 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tMeth.p 4
+GLOVAR tMeth.p 4
 
 ! Pointer map
 DEFINE tMeth.%gcmap

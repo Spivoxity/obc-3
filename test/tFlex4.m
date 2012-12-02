@@ -55,7 +55,7 @@ MODULE tFlex4 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFlex4.Print 4 20 0x00100001
+PROC tFlex4.Print 4 5 0x00100001
 ! PROCEDURE Print(VAR m: Matrix);
 !   FOR i := 0 TO LEN(m, 1)-1 DO
 LDLW 16
@@ -86,7 +86,7 @@ LDLW 20
 BOUND 21
 PLUS
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     FOR j := 0 TO LEN(m, 2)-1 DO
 INCL -8
@@ -101,12 +101,12 @@ LDLW -4
 LDLW -12
 JLEQ 1
 !   Out.Ln
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tFlex4.CopyPrint 1 44 0x00110001
+PROC tFlex4.CopyPrint 1 11 0x00110001
 ! PROCEDURE CopyPrint(VAR m: Matrix);
 !   NEW(mm, LEN(m, 1), LEN(m, 2));
 LDLW 20
@@ -115,7 +115,7 @@ CONST 2
 CONST 4
 CONST 0
 LOCAL -4
-CONST NEWFLEX
+GLOBAL NEWFLEX
 CALL 6
 !   mm^ := m;
 LDLW -4
@@ -133,7 +133,7 @@ LDLW 16
 LDLW 12
 CONST 2
 CONST 4
-CONST FLEXASSIGN
+GLOBAL FLEXASSIGN
 CALL 6
 !   Print(mm^);
 LDLW -4
@@ -146,7 +146,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST tFlex4.Print
+GLOBAL tFlex4.Print
 CALL 3
 !   mm[1][1] := 8;
 CONST 8
@@ -184,28 +184,28 @@ LDNW 4
 SWAP
 CONST 2
 CONST 4
-CONST FLEXASSIGN
+GLOBAL FLEXASSIGN
 CALL 6
 RETURN
 END
 
-PROC tFlex4.%main 0 44 0
+PROC tFlex4.%main 0 11 0
 !   NEW(a, 2, 3); NEW(c, 2, 3);
 CONST 3
 CONST 2
 CONST 2
 CONST 4
 CONST 0
-CONST tFlex4.a
-CONST NEWFLEX
+GLOBAL tFlex4.a
+GLOBAL NEWFLEX
 CALL 6
 CONST 3
 CONST 2
 CONST 2
 CONST 4
 CONST 0
-CONST tFlex4.c
-CONST NEWFLEX
+GLOBAL tFlex4.c
+GLOBAL NEWFLEX
 CALL 6
 !   a[0][0] := 2; a[0][1] := 4; a[0][2] := 7;
 CONST 2
@@ -346,7 +346,7 @@ LDNW 4
 SWAP
 CONST 2
 CONST 4
-CONST FLEXASSIGN
+GLOBAL FLEXASSIGN
 CALL 6
 !   Print(c^); 
 LDGW tFlex4.c
@@ -359,7 +359,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST tFlex4.Print
+GLOBAL tFlex4.Print
 CALL 3
 !   CopyPrint(a^);
 LDGW tFlex4.a
@@ -372,7 +372,7 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST tFlex4.CopyPrint
+GLOBAL tFlex4.CopyPrint
 CALL 3
 !   Print(a^)
 LDGW tFlex4.a
@@ -385,14 +385,14 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST tFlex4.Print
+GLOBAL tFlex4.Print
 CALL 3
 RETURN
 END
 
 ! Global variables
-GLOBAL tFlex4.a 4
-GLOBAL tFlex4.c 4
+GLOVAR tFlex4.a 4
+GLOVAR tFlex4.c 4
 
 ! Pointer map
 DEFINE tFlex4.%gcmap

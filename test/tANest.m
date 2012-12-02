@@ -32,7 +32,7 @@ MODULE tANest STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tANest.%1.g 1 16 0
+PROC tANest.%1.g 1 4 0
 !   PROCEDURE g(); BEGIN Out.Int(a[i], 0); Out.Ln END g;
 SAVELINK
 CONST 0
@@ -43,14 +43,14 @@ LDEW 12
 CONST 10
 BOUND 11
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tANest.f 10 16 0
+PROC tANest.f 10 4 0
 ! PROCEDURE f(i: INTEGER; a: row);
 LOCAL -40
 LDLW 16
@@ -59,26 +59,26 @@ FIXCOPY
 !   g()
 LOCAL 0
 LINK
-CONST tANest.%1.g
+GLOBAL tANest.%1.g
 CALL 0
 RETURN
 END
 
-PROC tANest.%main 0 16 0
+PROC tANest.%main 0 4 0
 !   b[3] := 345;
 CONST 345
-CONST tANest.b
+GLOBAL tANest.b
 STNW 12
 !   f(3, b)
-CONST tANest.b
+GLOBAL tANest.b
 CONST 3
-CONST tANest.f
+GLOBAL tANest.f
 CALL 2
 RETURN
 END
 
 ! Global variables
-GLOBAL tANest.b 40
+GLOVAR tANest.b 40
 
 ! End of file
 ]]*)

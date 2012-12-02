@@ -41,7 +41,7 @@ MODULE tFlex STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFlex.PostIncr 1 12 0x00100001
+PROC tFlex.PostIncr 1 3 0x00100001
 ! PROCEDURE PostIncr(VAR x: INTEGER): INTEGER;
 !   y := x;
 LDLW 12
@@ -59,7 +59,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tFlex.Dummy 0 16 0
+PROC tFlex.Dummy 0 4 0
 ! PROCEDURE Dummy(a: ARRAY OF INTEGER); BEGIN a[0] := a[0] END Dummy;
 LOCAL 12
 LDLW 16
@@ -79,33 +79,33 @@ STIW
 RETURN
 END
 
-PROC tFlex.%main 0 28 0
+PROC tFlex.%main 0 7 0
 !   NEW(xxx[0], 5);
 CONST 5
 CONST 1
 CONST 4
 CONST 0
-CONST tFlex.xxx
-CONST NEWFLEX
+GLOBAL tFlex.xxx
+GLOBAL NEWFLEX
 CALL 5
 !   NEW(xxx[1], 5);
 CONST 5
 CONST 1
 CONST 4
 CONST 0
-CONST tFlex.xxx
+GLOBAL tFlex.xxx
 CONST 4
 PLUSA
-CONST NEWFLEX
+GLOBAL NEWFLEX
 CALL 5
 !   i := 0;
 CONST 0
 STGW tFlex.i
 !   xxx[PostIncr(i)][0] := 7;
 CONST 7
-CONST tFlex.xxx
-CONST tFlex.i
-CONST tFlex.PostIncr
+GLOBAL tFlex.xxx
+GLOBAL tFlex.i
+GLOBAL tFlex.PostIncr
 CALLW 1
 CONST 2
 BOUND 28
@@ -120,17 +120,17 @@ STIW
 !   Out.Int(i,0); Out.Ln;
 CONST 0
 LDGW tFlex.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   i := 0;
 CONST 0
 STGW tFlex.i
 !   Dummy(xxx[PostIncr(i)]^);
-CONST tFlex.xxx
-CONST tFlex.i
-CONST tFlex.PostIncr
+GLOBAL tFlex.xxx
+GLOBAL tFlex.i
+GLOBAL tFlex.PostIncr
 CALLW 1
 CONST 2
 BOUND 32
@@ -140,21 +140,21 @@ DUP 0
 LDNW -4
 LDNW 4
 SWAP
-CONST tFlex.Dummy
+GLOBAL tFlex.Dummy
 CALL 2
 !   Out.Int(i,0); Out.Ln
 CONST 0
 LDGW tFlex.i
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tFlex.i 4
-GLOBAL tFlex.xxx 8
+GLOVAR tFlex.i 4
+GLOVAR tFlex.xxx 8
 
 ! Pointer map
 DEFINE tFlex.%gcmap

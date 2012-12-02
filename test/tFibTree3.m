@@ -117,7 +117,7 @@ IMPORT GC STAMP
 IMPORT Random STAMP
 ENDHDR
 
-PROC tFibTree3.Alloc 4 24 tFibTree3.Alloc.%map
+PROC tFibTree3.Alloc 4 6 tFibTree3.Alloc.%map
 ! PROCEDURE Alloc(a: node; VAR b: node): tree;
 LOCAL 12
 LDLW 16
@@ -144,19 +144,19 @@ LDLW -4
 LDLW -12
 JLEQ 3
 !   GC.Collect;
-CONST GC.Collect
+GLOBAL GC.Collect
 CALL 0
 !   NEW(p, LEN(a) + Random.Roll(10));
 LDLW 16
 CONST 10
-CONST Random.Roll
+GLOBAL Random.Roll
 CALLW 1
 PLUS
 CONST 1
 CONST 4
 CONST 3
 LOCAL -8
-CONST NEWFLEX
+GLOBAL NEWFLEX
 CALL 5
 !   FOR i := 0 TO LEN(a)-1 DO p[i] := a[i] END;
 LDLW 16
@@ -189,7 +189,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tFibTree3.Cons 2 24 0x00318001
+PROC tFibTree3.Cons 2 6 0x00318001
 ! PROCEDURE Cons(l, r: tree): tree;
 !   a[0] := l; a[1] := r;
 LDLW 12
@@ -206,12 +206,12 @@ CONST 2
 LOCAL -8
 CONST 2
 LOCAL -8
-CONST tFibTree3.Alloc
+GLOBAL tFibTree3.Alloc
 CALLW 4
 RETURNW
 END
 
-PROC tFibTree3.Build 0 24 0
+PROC tFibTree3.Build 0 6 0
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -224,20 +224,20 @@ LABEL 8
 !     RETURN Cons(Build(n-2), Build(n-1))
 LDLW 12
 DEC
-CONST tFibTree3.Build
+GLOBAL tFibTree3.Build
 CALLW 1
 LDLW 12
 CONST 2
 MINUS
-CONST tFibTree3.Build
+GLOBAL tFibTree3.Build
 STKMAP 0x00000005
 CALLW 1
-CONST tFibTree3.Cons
+GLOBAL tFibTree3.Cons
 CALLW 2
 RETURNW
 END
 
-PROC tFibTree3.Print 0 24 0x00100001
+PROC tFibTree3.Print 0 6 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
@@ -245,14 +245,14 @@ JNEQZ 11
 !     Out.Char('.')
 CONST 46
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 RETURN
 LABEL 11
 !     Out.Char('(');
 CONST 40
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 !     Print(t[0]);
 LDLW 12
@@ -263,7 +263,7 @@ LDNW -4
 LDNW 4
 BOUND 81
 LDIW
-CONST tFibTree3.Print
+GLOBAL tFibTree3.Print
 CALL 1
 !     Print(t[1]);
 LDLW 12
@@ -274,17 +274,17 @@ LDNW -4
 LDNW 4
 BOUND 82
 LDIW
-CONST tFibTree3.Print
+GLOBAL tFibTree3.Print
 CALL 1
 !     Out.Char(')')
 CONST 41
 ALIGNC
-CONST Out.Char
+GLOBAL Out.Char
 CALL 1
 RETURN
 END
 
-PROC tFibTree3.count 0 24 0x00100001
+PROC tFibTree3.count 0 6 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
@@ -302,7 +302,7 @@ LDNW -4
 LDNW 4
 BOUND 92
 LDIW
-CONST tFibTree3.count
+GLOBAL tFibTree3.count
 CALLW 1
 LDLW 12
 NCHECK 92
@@ -312,17 +312,17 @@ LDNW -4
 LDNW 4
 BOUND 92
 LDIW
-CONST tFibTree3.count
+GLOBAL tFibTree3.count
 CALLW 1
 PLUS
 RETURNW
 END
 
-PROC tFibTree3.%main 0 24 0
+PROC tFibTree3.%main 0 6 0
 !   GC.Debug("s");
 CONST 2
-CONST tFibTree3.%2
-CONST GC.Debug
+GLOBAL tFibTree3.%2
+GLOBAL GC.Debug
 CALL 2
 !   FOR i := 0 TO 10 DO
 CONST 0
@@ -331,33 +331,33 @@ JUMP 15
 LABEL 14
 !     p := Build(i);
 LDGW tFibTree3.i
-CONST tFibTree3.Build
+GLOBAL tFibTree3.Build
 CALLW 1
 STGW tFibTree3.p
 !     GC.Collect;
-CONST GC.Collect
+GLOBAL GC.Collect
 CALL 0
 !     Print(p); Out.Ln();
 LDGW tFibTree3.p
-CONST tFibTree3.Print
+GLOBAL tFibTree3.Print
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !     Out.String("Count = "); Out.Int(count(p), 0); 
 CONST 9
-CONST tFibTree3.%1
-CONST Out.String
+GLOBAL tFibTree3.%1
+GLOBAL Out.String
 CALL 2
 CONST 0
 LDGW tFibTree3.p
-CONST tFibTree3.count
+GLOBAL tFibTree3.count
 CALLW 1
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     Out.Ln(); Out.Ln();
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO 10 DO
 LDGW tFibTree3.i
@@ -371,8 +371,8 @@ RETURN
 END
 
 ! Global variables
-GLOBAL tFibTree3.i 4
-GLOBAL tFibTree3.p 4
+GLOVAR tFibTree3.i 4
+GLOVAR tFibTree3.p 4
 
 ! Pointer map
 DEFINE tFibTree3.%gcmap

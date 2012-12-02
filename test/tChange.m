@@ -94,7 +94,7 @@ MODULE tChange STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChange.Normalize 1 16 0x00100001
+PROC tChange.Normalize 1 4 0x00100001
 ! PROCEDURE Normalize(VAR a: bignum);
 !   FOR i := 0 TO N-2 DO
 CONST 0
@@ -144,7 +144,7 @@ JLEQ 1
 RETURN
 END
 
-PROC tChange.Set 1 16 0x00100001
+PROC tChange.Set 1 4 0x00100001
 ! PROCEDURE Set(VAR a: bignum; x: INTEGER);
 !   a[0] := x;
 LDLW 16
@@ -168,12 +168,12 @@ CONST 9
 JLEQ 3
 !   Normalize(a)
 LDLW 12
-CONST tChange.Normalize
+GLOBAL tChange.Normalize
 CALL 1
 RETURN
 END
 
-PROC tChange.Add 11 16 0x00100001
+PROC tChange.Add 11 4 0x00100001
 ! PROCEDURE Add(VAR a1: bignum; a2: bignum);
 LOCAL -44
 LDLW 16
@@ -207,12 +207,12 @@ CONST 9
 JLEQ 5
 !   Normalize(a1)
 LDLW 12
-CONST tChange.Normalize
+GLOBAL tChange.Normalize
 CALL 1
 RETURN
 END
 
-PROC tChange.PrintPiece 1 16 0
+PROC tChange.PrintPiece 1 4 0
 ! PROCEDURE PrintPiece(x: INTEGER);
 !   m := M;
 CONST 1000000000
@@ -230,7 +230,7 @@ LDLW 12
 LDLW -4
 ZCHECK 39
 DIV
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 !     x := x MOD m
 LDLW 12
@@ -246,7 +246,7 @@ JGT 7
 RETURN
 END
 
-PROC tChange.Print 1 16 0x00100001
+PROC tChange.Print 1 4 0x00100001
 ! PROCEDURE Print(VAR a: bignum);
 !   i := N-1;
 CONST 9
@@ -272,7 +272,7 @@ LDLW -4
 CONST 10
 BOUND 49
 LDIW
-CONST Out.Int
+GLOBAL Out.Int
 CALL 2
 DECL -4
 JUMP 13
@@ -282,7 +282,7 @@ LDLW -4
 CONST 10
 BOUND 50
 LDIW
-CONST tChange.PrintPiece
+GLOBAL tChange.PrintPiece
 CALL 1
 DECL -4
 LABEL 13
@@ -292,7 +292,7 @@ JGEQZ 12
 RETURN
 END
 
-PROC tChange.Pay 7 24 0x00802001
+PROC tChange.Pay 7 6 0x00802001
 ! PROCEDURE Pay(goal: INTEGER; coin: ARRAY OF INTEGER; VAR ans: bignum);
 LOCAL 16
 LDLW 20
@@ -306,7 +306,7 @@ CONST 1
 CONST 40
 CONST 0
 LOCAL -16
-CONST NEWFLEX
+GLOBAL NEWFLEX
 CALL 5
 !   Set(ways[0], 1);
 CONST 1
@@ -320,7 +320,7 @@ BOUND 59
 CONST 40
 TIMES
 PLUSA
-CONST tChange.Set
+GLOBAL tChange.Set
 CALL 2
 !   FOR n := 1 TO goal DO Set(ways[n], 0) END;
 LDLW 12
@@ -340,7 +340,7 @@ BOUND 60
 CONST 40
 TIMES
 PLUSA
-CONST tChange.Set
+GLOBAL tChange.Set
 CALL 2
 INCL -4
 LABEL 15
@@ -392,7 +392,7 @@ BOUND 65
 CONST 40
 TIMES
 PLUSA
-CONST tChange.Add
+GLOBAL tChange.Add
 CALL 2
 !     FOR n := c TO goal DO
 INCL -4
@@ -423,7 +423,7 @@ FIXCOPY
 RETURN
 END
 
-PROC tChange.%main 0 24 0
+PROC tChange.%main 0 6 0
 !   goal := 10000;
 CONST 10000
 STGW tChange.goal
@@ -431,44 +431,44 @@ STGW tChange.goal
 CONST 1
 STGW tChange.coin
 CONST 2
-CONST tChange.coin
+GLOBAL tChange.coin
 STNW 4
 CONST 5
-CONST tChange.coin
+GLOBAL tChange.coin
 STNW 8
 CONST 10
-CONST tChange.coin
+GLOBAL tChange.coin
 STNW 12
 !   coin[4] := 20; coin[5] := 50; coin[6] := 100;
 CONST 20
-CONST tChange.coin
+GLOBAL tChange.coin
 STNW 16
 CONST 50
-CONST tChange.coin
+GLOBAL tChange.coin
 STNW 20
 CONST 100
-CONST tChange.coin
+GLOBAL tChange.coin
 STNW 24
 !   Pay(goal, coin, ans);
-CONST tChange.ans
+GLOBAL tChange.ans
 CONST 7
-CONST tChange.coin
+GLOBAL tChange.coin
 LDGW tChange.goal
-CONST tChange.Pay
+GLOBAL tChange.Pay
 CALL 4
 !   Print(ans); Out.Ln
-CONST tChange.ans
-CONST tChange.Print
+GLOBAL tChange.ans
+GLOBAL tChange.Print
 CALL 1
-CONST Out.Ln
+GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
 ! Global variables
-GLOBAL tChange.goal 4
-GLOBAL tChange.ans 40
-GLOBAL tChange.coin 28
+GLOVAR tChange.goal 4
+GLOVAR tChange.ans 40
+GLOVAR tChange.coin 28
 
 ! End of file
 ]]*)
