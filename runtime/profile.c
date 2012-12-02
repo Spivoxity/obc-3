@@ -33,10 +33,10 @@
 
 /* STATE MACHINE */
 
-typedef struct state *state;
-typedef struct trans *trans;
+typedef struct _state *state;
+typedef struct _trans *trans;
 
-struct state {
+struct _state {
      int s_num;			/* Serial number */
      int s_depth;		/* Number of procs in history */
      value **s_history;		/* The history list */
@@ -47,7 +47,7 @@ struct state {
      state s_chain;		/* Next state in chain of all states */
 };
 
-struct trans {			
+struct _trans {			
      state t_from, t_to;
      value *t_addr;
      trans t_hlink;
@@ -62,9 +62,9 @@ struct trans {
 static char *format_count(counter n) {
      static char buf[32];
 #ifdef __MINGW32__
-     char *fmt = "%I64u";
+     const char *fmt = "%I64u";
 #else
-     char *fmt = "%llu";
+     const char *fmt = "%llu";
 #endif
 
      sprintf(buf, fmt, n);
@@ -73,7 +73,7 @@ static char *format_count(counter n) {
 
 #define SPONTANEOUS ((value *) -1)
 
-static struct proc no_proc = {
+static struct _proc no_proc = {
      "*no-proc*",		/* name */
      SPONTANEOUS, 		/* addr */
      0, 0, 0, 0, 0,		/* index calls rec self child */
@@ -88,7 +88,7 @@ static proc find_node(value *p) {
 }
 
 #ifdef DEBUG
-static void dump_state(state s, bool stats) {
+static void dump_state(state s, boolean stats) {
      int i, n = s->s_depth, x = 3;
      value **hist = s->s_history;
      char buf[64];
@@ -143,7 +143,7 @@ static state make_state(value *addr, int n, value **history) {
 
      if (t == NULL) {
 	  /* Create the dummy transition for (NULL, p) */
-	  t = scratch_alloc(sizeof(struct trans), FALSE);
+	  t = (trans) scratch_alloc(sizeof(struct _trans), FALSE);
 	  t->t_from = NULL;
 	  t->t_to = NULL;
 	  t->t_addr = addr;
@@ -157,10 +157,10 @@ static state make_state(value *addr, int n, value **history) {
 	       return s;
 
      /* If all else fails, make a new state */
-     s = scratch_alloc(sizeof(struct state), FALSE);
+     s = (state) scratch_alloc(sizeof(struct _state), FALSE);
      s->s_num = n_states++;
      s->s_depth = n;
-     s->s_history = scratch_alloc(n * sizeof(value *), FALSE);
+     s->s_history = (value **) scratch_alloc(n * sizeof(value *), FALSE);
      memcpy(s->s_history, history, n * sizeof(value *));
      s->s_calls = s->s_rec = s->s_time = 0;
      s->s_next = t->t_to;
@@ -222,7 +222,7 @@ static state next_state(state s0, value *addr) {
      }
 
      /* Create the new transition */
-     t = scratch_alloc(sizeof(struct trans), FALSE);
+     t = (trans) scratch_alloc(sizeof(struct _trans), FALSE);
      t->t_from = s0;
      t->t_to = s;
      t->t_addr = addr;
@@ -336,7 +336,8 @@ void prof_init(void) {
 	  state s;
 
 	  if (pstack == NULL)
-	       pstack = scratch_alloc(PSTACKSIZE * sizeof(state), FALSE);
+	       pstack = 
+		    (state *) scratch_alloc(PSTACKSIZE * sizeof(state), FALSE);
 	  if (trtable == NULL) {
 	       int i;
 	       trtable = 
@@ -360,7 +361,7 @@ void prof_reset(proc p) {
 
 /* ANALYSIS PHASE */
 
-struct arc {
+struct _arc {
      proc a_src;		/* Calling proc */
      proc a_dst;		/* Called proc */
      unsigned a_count;		/* Call count */
@@ -383,7 +384,7 @@ static arc find_arc(value *src, value *dst) {
 	  if (a->a_src == psrc) break;
 
      if (a == NULL) {
-	  a = scratch_alloc(sizeof(struct arc), FALSE);
+	  a = (arc) scratch_alloc(sizeof(struct _arc), FALSE);
 	  a->a_count = a->a_self1 = a->a_child1 = a->a_self2 = a->a_child2 = 0;
 	  a->a_src = psrc;
 	  a->a_dst = pdst;
@@ -545,7 +546,7 @@ static void flat_profile(FILE *fp) {
 static void graph_profile(FILE *fp) {
      int i, j, n;
      char buf1[64], buf2[64];
-     arc *abuf = scratch_alloc(256 * sizeof(arc), FALSE);
+     arc *abuf = (arc *) scratch_alloc(256 * sizeof(arc), FALSE);
 
      /* Finished executing, so we can sort the proc table into
 	a different order. */

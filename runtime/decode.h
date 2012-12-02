@@ -39,8 +39,8 @@
    and if the first element is zero then there is no expansion for the
    instruction.  Expansions may be recursive. */
 
-struct inst {
-     char *i_name;		/* Name of the instruction */
+struct _inst {
+     const char *i_name;	/* Name of the instruction */
      int i_equiv[MAXEQ];	/* Expansion into simpler instructions */
 };
 
@@ -48,7 +48,7 @@ struct inst {
 #define IARG 0x10000
 #define ICON 0x20000
 
-extern struct inst instrs[];
+extern struct _inst instrs[];
 
 /* Opcodes: this table is indexed by opcodes such as K_LDLW_1 (meaning
    the LDLW instruction with a 1-byte offset). The entry for this opcode
@@ -56,11 +56,11 @@ extern struct inst instrs[];
    that use a pattern of "N" (opcode contains argument), the d_arg field
    contains the integer value of the argument. */
 
-struct decode {
+struct _decode {
      int d_inst;
-     char *d_patt;
+     const char *d_patt;
      int d_arg;
      int d_len;
 };
 
-extern struct decode decode[];
+extern struct _decode decode[];

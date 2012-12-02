@@ -40,7 +40,7 @@ extern int vm_debug;
 /* Helper functions for the loader */
 
 module make_module(char *name, uchar *addr, int chksum, int nlines) {
-     module m = scratch_alloc(sizeof(struct module), FALSE);
+     module m = scratch_alloc(sizeof(struct _module), FALSE);
      m->m_name = name;
      m->m_addr = addr;
 #ifdef PROFILE
@@ -48,7 +48,7 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
      m->m_lcount = NULL;
      if (lflag && nlines > 0) {
 	  m->m_lcount = 
-	       scratch_alloc(nlines * sizeof(unsigned), TRUE);
+	       (unsigned *) scratch_alloc(nlines * sizeof(unsigned), TRUE);
 	  memset(m->m_lcount, 0, nlines * sizeof(int));
      }
 #endif
@@ -59,7 +59,7 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
 }
 
 proc make_proc(char *name, uchar *addr) {
-     proc p = scratch_alloc(sizeof(struct proc), FALSE);
+     proc p = (proc) scratch_alloc(sizeof(struct _proc), FALSE);
      p->p_name = name;
      p->p_addr = (value *) addr;
 #ifdef PROFILE
@@ -73,7 +73,7 @@ proc make_proc(char *name, uchar *addr) {
      return p;
 }
 
-void make_symbol(char *kind, char *name, uchar *addr) {
+void make_symbol(const char *kind, char *name, uchar *addr) {
 #ifdef OBXDEB
      debug_message("%s %s %#x", kind, name, (unsigned) addr);
 #endif
@@ -128,7 +128,7 @@ static void backtrace(value *bp) {
 }
 #endif
 
-static char *message(int code) {
+static const char *message(int code) {
      switch (code) {
      case E_CAST:
 	  return "dynamic type error in cast";
@@ -160,7 +160,7 @@ static char *message(int code) {
 }
 
 /* error_stop -- runtime error with explicit message text */
-void error_stop(char *msg, int line, value *bp, uchar *pc) {
+void error_stop(const char *msg, int line, value *bp, uchar *pc) {
      value *cp = bp[CP].p;
 
 #ifdef OBXDEB
@@ -227,10 +227,10 @@ static void run(value *prog) {
      (*(prog[CP_PRIM].z))(sp);
 }
 
-bool custom_file(char *name) {
+boolean custom_file(char *name) {
      char buf[4];
      FILE *fp;
-     bool result;
+     boolean result;
      int nread;
 
      fp = fopen(name, "rb");
@@ -314,7 +314,7 @@ char *search_path(char *name) {
 static char *progname;
 #ifdef PROFILE
 static char *profout;
-static char *dumpname = "obprof.out";
+static const char *dumpname = "obprof.out";
 #endif
 
 static void usage(void) {

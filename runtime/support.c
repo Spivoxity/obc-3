@@ -32,10 +32,10 @@
 
 /* Assorted runtime support routines */
 
-void panic(char *msg, ...) {
+void panic(const char *msg, ...) {
      va_list va;
 
-     bool bug = FALSE;
+     boolean bug = FALSE;
 
      if (*msg == '*') {
 	  bug = TRUE; msg++;
@@ -132,7 +132,7 @@ double flo_convq(longint x) {
 
 
 /* obcopy -- like strncpy, but guarantees termination with zero */
-void obcopy(char *dst, char *src, int n) {
+void obcopy(char *dst, const char *src, int n) {
      char c;
 
      if (n == 0) return;

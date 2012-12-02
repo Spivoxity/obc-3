@@ -133,9 +133,13 @@ yacc/lexer.ml
 yacc/myacc
 yacc/yacc.ml
 yacc/yacc.mli
-
 debugger/debconf.ml
 test/Files.out
+test/bigtest
+test/edtest
+test/errtest
+test/regress
+winport/head.iss
 FINAL
 test/bigtest
 test/edtest

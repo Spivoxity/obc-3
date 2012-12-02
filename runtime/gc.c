@@ -33,7 +33,7 @@
 /* Define MULTIBLOCKS to allow splitting of multi-page blocks */
 #undef MULTIBLOCKS
 
-static bool debug[256];	/* Debugging flags */
+static boolean debug[256];	/* Debugging flags */
 /* a - print addresses; g - print [GC...];
    b - print chunks allocated; c - print every allocation;
    d - general debugging; l - trace low-level allocator; m - print maps;  
@@ -41,7 +41,7 @@ static bool debug[256];	/* Debugging flags */
 
 /* Assertions are enabled in all programs if DEBUG is defined */
 #ifdef DEBUG
-static char *assert_fmt = "*assertion %s failed on line %d of file %s";
+static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
 #define ASSERT(p) \
      if (! (p)) panic(assert_fmt, #p, __LINE__, __FILE__);
 #else
@@ -183,7 +183,7 @@ static void *get_memory(unsigned size) {
 static uchar *scratch_free = NULL;
 static uchar *scratch_limit = NULL;
 
-void *scratch_alloc(unsigned size, bool atomic) {
+void *scratch_alloc(unsigned size, boolean atomic) {
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
      uchar *p;
 
@@ -193,7 +193,7 @@ void *scratch_alloc(unsigned size, bool atomic) {
 	       /* Avoid discarding a largish piece */
 	       return get_memory(alloc_size);
 
-	  scratch_free = get_memory(SCRATCH_CHUNK);
+	  scratch_free = (uchar *) get_memory(SCRATCH_CHUNK);
 	  scratch_limit = scratch_free + SCRATCH_CHUNK;
      }
 
@@ -220,12 +220,12 @@ void *scratch_alloc(unsigned size, bool atomic) {
    heap blocks are given a timestamp that allows us to identify during
    GC which semispace they belong to. */
 
-typedef struct header {
+typedef struct _header {
      uchar *h_memory;		/* The block itself */
      unsigned h_size;		/* Size of block (bytes) */
      unsigned h_objsize;	/* Size of each object (bytes), or 0 if free */
      unsigned h_epoch;		/* Timestamp to identify semispace */
-     struct header *h_next, *h_prev; /* Adjacent blocks in some list */
+     struct _header *h_next, *h_prev; /* Adjacent blocks in some list */
 } header;
 
 /* Headers can become free when two blocks merge into one, so we keep
@@ -238,7 +238,7 @@ static header *alloc_header(void) {
      header *h;
 
      if (hdr_free == NULL) 
-	  h = scratch_alloc(sizeof(header), FALSE);
+	  h = (header *) scratch_alloc(sizeof(header), FALSE);
      else {
 	  h = hdr_free;
 	  hdr_free = h->h_next;
@@ -344,7 +344,7 @@ static void page_setup(uchar *base, unsigned size, header *h) {
 	  /* Make sure lower index exists */
 	  if (page_table[top_part(p)] == empty_index)
 	       page_table[top_part(p)] = 
-		    scratch_alloc(sizeof(page_index), FALSE);
+		    (page_index *) scratch_alloc(sizeof(page_index), FALSE);
 
 	  get_header(p) = h;
      }
@@ -388,7 +388,7 @@ static void make_free(header *h) {
 }
 
 /* free_block -- free a block, merging it with its neighbours */
-static header *free_block(header *h, bool mapped) {
+static header *free_block(header *h, boolean mapped) {
      /* Mapped is true if this memory is being recycled: it's already
         in the page table, but we'll need to zero it. */
 
@@ -402,10 +402,16 @@ static header *free_block(header *h, bool mapped) {
      if (debug['l']) {
 	  printf("Freeing block at %p, size %#x\n", 
 		 h->h_memory, h->h_size);
-	  if (prev == NULL) printf("prev=null, "); 
-	  else printf("prev=%p, ", prev->h_memory);
-	  if (next == NULL) printf("next=null\n"); 
-	  else printf("next=%p\n", next->h_memory);
+
+	  if (prev == NULL) 
+	       printf("prev=null, "); 
+	  else 
+	       printf("prev=%p, ", prev->h_memory);
+
+	  if (next == NULL) 
+	       printf("next=null\n"); 
+	  else 
+	       printf("next=%p\n", next->h_memory);
      }
 #endif
 
@@ -517,7 +523,7 @@ static header *find_block(unsigned size, unsigned objsize) {
 #endif
 #define MAX_SMALL_BYTES (BYTES_PER_WORD * MAX_SMALL_WORDS)
 
-static int n_sizes;
+static unsigned n_sizes;
 
 static unsigned size_bytes[N_SIZES];
 #define pool_size(i) size_bytes[i]
@@ -562,7 +568,7 @@ static void init_sizes(void) {
 	the biggest multiple of GRANULE that allows the same number
 	of objects in a page. */
 
-     int k, i;
+     unsigned k, i;
 
      n_sizes = 0; 
      new_size(8, PAGESIZE);
@@ -624,7 +630,7 @@ static int free_count[N_SIZES+1]; /* Number of free objects */
 
 #define THRESHOLD 0.5
 
-bool gcflag = TRUE;
+boolean gcflag = TRUE;
 static unsigned alloc_since_gc = 0;
 static unsigned pool_total = 0;	    /* Total size of all pools */
 static unsigned heap_size = 0;	    /* Size of one semispace */
@@ -868,7 +874,7 @@ static void redir_map(unsigned map, uchar *base) {
 /* traverse_stack -- chain down the stack, redirecting in each frame */
 static void traverse_stack(value *xsp) {
      value *f, *r, *sp = NULL;
-     value pc = (value) 0;
+     value pc; pc.i = 0;
 
      for (f = xsp; f != NULL; f = f[BP].p) {
 	  value *c = f[CP].p;
@@ -897,8 +903,7 @@ static void traverse_stack(value *xsp) {
 			 DEBUG_PRINT('m', ("\nEval stack (%#x)", r[1].i));
 			 redir_map(r[1].i, (uchar *) sp);
 		    }
-	       } 
-	       else {
+	       } else {
 		    /* Compiled primitive: f[PC].i is stack map */
 		    DEBUG_PRINT('m', ("\nEval stack (%#x)", pc.i));
 		    redir_map(pc.i, (uchar *) sp);
@@ -913,8 +918,8 @@ static void traverse_stack(value *xsp) {
 static void migrate(void) {
      header *thumb[N_SIZES], *big_thumb = block_pool[n_sizes];
      uchar *finger[N_SIZES], *p;
-     int i;
-     bool changed;
+     unsigned i;
+     boolean changed;
 
      /* For each pool, we keep a 'thumb' pointing to one of the blocks
 	in the pool, and a 'finger' pointing somewhere in that block.
@@ -991,7 +996,7 @@ static void unmask_signals(void) {
 #endif
 
 void gc_dump(void) {
-     int i; header *h;
+     unsigned i; header *h;
      unsigned total, small_total = 0, big_total = 0, free_total = 0;
 
      printf("Active blocks\n");
@@ -1047,7 +1052,7 @@ void gc_dump(void) {
 
 void gc_collect(value *sp) {
      header *h;
-     int i;
+     unsigned i;
 
      if (!gcflag) return;
 
@@ -1083,11 +1088,11 @@ void gc_collect(value *sp) {
 
 /* gc_init -- initialise everything */
 void gc_init(void) {
-     int i;
+     unsigned i;
 
      ASSERT(sizeof(page_index) == PAGESIZE);
 
-     empty_index = scratch_alloc(sizeof(page_index), FALSE);
+     empty_index = (page_index *) scratch_alloc(sizeof(page_index), FALSE);
      for (i = 0; i < TOP_SIZE; i++) page_table[i] = empty_index;
 
      init_sizes();

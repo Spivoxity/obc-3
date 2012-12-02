@@ -53,7 +53,7 @@ static int deb_sock;
 
 #define SPACE 32768
 
-static bool running = FALSE;
+static boolean running = FALSE;
 
 static void debug_exit(void);
 
@@ -135,8 +135,8 @@ static int split_line(char *line, char **words) {
      return nwords;
 }
 
-bool one_shot = FALSE;
-bool intflag = FALSE;
+boolean one_shot = FALSE;
+boolean intflag = FALSE;
 
 /* debug_break -- conduct breakpoint dialogue */
 void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {

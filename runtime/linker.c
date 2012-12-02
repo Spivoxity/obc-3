@@ -61,8 +61,8 @@ static int code_size;		/* Size of bytecode for procedure */
    arguments fit.  The code for a procedure is built up in abuf and output 
    at the end of the procedure. */
 
-struct phrase {			/* An instruction in the assembler */
-     char *q_name;		/* Instruction name */
+struct _phrase {		/* An instruction in the assembler */
+     const char *q_name;	/* Instruction name */
      template q_templ;		/* Best estimate of template */
      int q_arg[MAXARGS];	/* Arguments */
      int q_addr;		/* Estimated address from start of proc */
@@ -79,13 +79,13 @@ phrase abuf;
 mempool pool;
 
 static phrase alloc_phrase(void) {
-     return (phrase) pool_alloc(&pool, sizeof(struct phrase));
+     return (phrase) pool_alloc(&pool, sizeof(struct _phrase));
 }
 
 static void init_abuf(void) {
      pool_reset(&pool);
      abuf = alloc_phrase();
-     abuf->q_name = "*dummy*";
+     abuf->q_name = (char *) "*dummy*";
      abuf->q_templ = NULL;
      abuf->q_addr = 0;
      abuf->q_sym = NULL;
@@ -212,8 +212,8 @@ static int make_const(char *s) {
 /* Instruction templates */
 
 /* find_template -- find first template for instruction */
-static template find_template(char *name) {
-     char *s = name;
+static template find_template(const char *name) {
+     const char *s = name;
      int q = 0;
      char ch;
 
@@ -232,14 +232,14 @@ static template find_template(char *name) {
 }
 
 /* fits -- test if an integer fits in a certain number of bits */
-static bool fits(int x, int n) {
+static boolean fits(int x, int n) {
      int max = 1 << (n-1);
      return (-max <= x && x < max);
 }
 
 /* fix_labels -- compute target for jump */
 static void fix_labels(phrase q) {
-     char *p = q->q_templ->t_pattern;
+     const char *p = q->q_templ->t_pattern;
      int j;
      
      for (j = 0; p[j] != '\0'; j++)
@@ -275,10 +275,10 @@ static int displacement(phrase q) {
 }
 
 /* match -- test whether a template matches its arguments */
-static bool match(phrase q, template t) {
+static boolean match(phrase q, template t) {
      /* Just check the last operand */
      int n = strlen(t->t_pattern);
-     char *p = t->t_pattern;
+     const char *p = t->t_pattern;
      int *a = q->q_arg;
 
      if (n == 0) return TRUE;
@@ -305,7 +305,7 @@ static bool match(phrase q, template t) {
 
 #ifdef DEBUG
 static void print_args(phrase q) {
-     char *patt = q->q_templ->t_pattern;
+     const char *patt = q->q_templ->t_pattern;
      int j;
 
      for (j = 0; patt[j] != '\0'; j++) {
@@ -333,8 +333,9 @@ static phrase expand(phrase q) {
      static char buf[128];
      char *words[10];
      template t = q->q_templ, t1;
-     int i, n;
-     char *s, *u;
+     unsigned int i, n;
+     char *s;
+     const char *u;
      phrase r = q->q_prev, q1;
 
      for (i = 0; t->t_macro[i] != NULL; i++) {
@@ -365,9 +366,9 @@ static phrase expand(phrase q) {
 }     
 
 /* check_matches -- revise choice of templates, return TRUE if ok already */
-static bool check_matches(void) {
+static boolean check_matches(void) {
      phrase q;
-     bool ok = TRUE;
+     boolean ok = TRUE;
 
      for (q = abuf->q_next; q != abuf; ) {
 	  template t = q->q_templ;
@@ -395,7 +396,7 @@ static bool check_matches(void) {
 
 /* assemble -- assemble instructions */
 static void assemble(void) {
-     bool ok;
+     boolean ok;
      int trial = 0;
 
      /* A tentative assignment of templates has already been computed,
@@ -429,7 +430,7 @@ static void make_binary(void) {
 
      for_phrases (q) {
 	  template t = q->q_templ;
-	  char *p = t->t_pattern;
+	  const char *p = t->t_pattern;
 	  int *a = q->q_arg;
 
 #ifdef DEBUG
@@ -501,7 +502,7 @@ static phrase do_template(template t, char *rands[], phrase rgt) {
 
      phrase q = alloc_phrase();
      phrase lft = rgt->q_prev;
-     char *patt = t->t_pattern;
+     const char *patt = t->t_pattern;
      int i;
 
      q->q_name = t->t_name;
@@ -517,7 +518,7 @@ static phrase do_template(template t, char *rands[], phrase rgt) {
 
 /* MARK pseudo-instructions generate no code, and are used to place labels,
    line numbers, etc. */
-struct template mark = {
+struct _template mark = {
      "*MARK*", "", 0, 0, 0, 0, 0, 0, { NULL }
 };
 
@@ -583,13 +584,13 @@ typedef struct {
 } handler;
 
 /* check_inproc -- panic if not in a procedure */
-static void check_inproc(char *opcode) {
+static void check_inproc(const char *opcode) {
      if (this_proc == NULL)
 	  panic("*%s occurs outside any procedure", opcode);
 }
 
 /* do_directive -- process a directive */
-static void do_directive(char *dir, int n, char *rands[], int nrands) {
+static void do_directive(const char *dir, int n, char *rands[], int nrands) {
      int i;
      union { int n; float f; } fcvt;
      dblbuf dcvt;
@@ -771,9 +772,9 @@ static void do_directive(char *dir, int n, char *rands[], int nrands) {
 }
 
 /* put_inst -- process one instruction or directive */
-void put_inst(char *name, char *rands[], int nrands) {
+void put_inst(const char *name, char *rands[], unsigned nrands) {
      template t = find_template(name);
-     int i;
+     unsigned i;
 
      if (nrands != strlen(t->t_pattern)) {
 	  fprintf(stderr, "Instruction: %s", name);
@@ -793,7 +794,7 @@ void put_inst(char *name, char *rands[], int nrands) {
 }
 
 /* gen_inst -- generate an instruction from text */
-void gen_inst(char *fmt, ...) {
+void gen_inst(const char *fmt, ...) {
      char line[80];
      char *words[10];
      int nwords;
@@ -810,7 +811,7 @@ void gen_inst(char *fmt, ...) {
 }
 
 /* save_string -- save a string in the data segment */
-void save_string(char *label, char *str) {
+void save_string(const char *label, char *str) {
      char *p;
 
      def_global(find_symbol(label), DATA, dloc, X_DATA);
@@ -851,7 +852,7 @@ void init_linker(char *outname, char *interp) {
 void end_linking(void) {
      trailer t;
      int fsize, csize, symcount = 0, nwritten;
-     char *magic = MAGIC;
+     const char *magic = MAGIC;
 
      csize = ftell(binfp) - start;
      if (csize != iloc) {
@@ -905,8 +906,8 @@ int get4(uchar *buf) {
      return buf[0] + (buf[1] << 8) + (buf[2] << 16) + (buf[3] << 24);
 }
 
-void write_string(char *s) {
-     binwrite(s, strlen(s)+1);
+void write_string(const char *s) {
+     binwrite((void *) s, strlen(s)+1);
 }
 
 void write_int(int n, int x) { 

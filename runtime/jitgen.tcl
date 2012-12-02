@@ -62,7 +62,7 @@ proc gen_decode {name} {
     puts $f "#include \"keiko.h\""
     puts $f ""
 
-    puts $f "struct inst instrs\[\] = {"
+    puts $f "struct _inst instrs\[\] = {"
     puts $f "     { \"ILLEGAL\", { 0 } },"
     foreach inst $instrs {
 	set m {}
@@ -83,7 +83,7 @@ proc gen_decode {name} {
     puts $f "};"
     puts $f ""
 
-    puts $f "struct decode decode\[\] = {"
+    puts $f "struct _decode decode\[\] = {"
     for {set i 0} {$i < $ncodes} {incr i} {
 	with $opcode($i) {op inst patt arg len} {
 	    puts $f "     { I_$inst, \"$patt\", $arg, $len },"

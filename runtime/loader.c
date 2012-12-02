@@ -57,7 +57,7 @@ static char *read_string() {
 	  buf[n++] = c;
      } while (c != '\0');
 
-     p = scratch_alloc(n, TRUE);
+     p = (char *) scratch_alloc(n, TRUE);
      strcpy(p, buf);
      return p;
 }
@@ -156,10 +156,15 @@ static void read_symbols(int dseg) {
      int kind; char *name; uchar *addr;
      int chksum, nlines;
      int nm = 0, np = 0, i;
-     char *kname;
+#ifdef DEBUG
+     const char *kname;
+#define debug_kind(n) kname = n
+#else
+#define debug_kind(n)
+#endif
 	  
-     modtab = scratch_alloc(nmods * sizeof(module), FALSE);
-     proctab = scratch_alloc(nprocs * sizeof(proc), FALSE);
+     modtab = (module *) scratch_alloc(nmods * sizeof(module), FALSE);
+     proctab = (proc *) scratch_alloc(nprocs * sizeof(proc), FALSE);
 
      for (i = 0; i < nsyms; i++) {
 	  kind = read_int();
@@ -167,7 +172,7 @@ static void read_symbols(int dseg) {
 
 	  switch (kind) {
 	  case X_MODULE:
-	       kname = "Module";
+	       debug_kind("Module");
 	       addr = dmem + read_int(); 
 	       chksum = read_int();
 	       nlines = read_int();
@@ -175,25 +180,26 @@ static void read_symbols(int dseg) {
 	       break;
 
 	  case X_PROC:
-	       kname = "Proc";
+	       debug_kind("Proc");
 	       addr = dmem + read_int(); 
 	       proctab[np++] = make_proc(name, addr);
 	       break;
 		    
 	  case X_DATA:
-	       kname = "Data";
+	       debug_kind("Data");
 	       addr = dmem + read_int(); 
 	       make_symbol("data", name, addr);
 	       break;
 
 	  case X_LINE:
-	       kname = "Line";
+	       debug_kind("Line");
 	       addr = imem + read_int();
 	       make_symbol("line", name, addr);
 	       break;
 
 	  default:
-	       kname = "Unknown"; addr = NULL;
+	       debug_kind("Unknown"); 
+	       addr = NULL;
 	       panic("*bad symbol %s", name);
 	  }
 
@@ -230,8 +236,11 @@ void load_file(FILE *bfp) {
      /* Get trailer */
      fseek(bfp, -sizeof(trailer), SEEK_END);
      nread = fread(&t, 1, sizeof(trailer), bfp);
+     if (nread != sizeof(trailer)) panic("couldn't read trailer");
 
      /* Check magic numbers */
+     if (nread < sizeof(trailer))
+	  panic("couldn't read trailer");
      if (strncmp((char *) t.magic, MAGIC, 4) != 0)
 	  panic("bad magic number\n%s",
 		"[The program you are running is not a valid"
@@ -240,7 +249,7 @@ void load_file(FILE *bfp) {
 	  panic("bad signature %#0.8x\n%s\n%s", get_int(t.sig),
 		"[Although this appears to be an Oberon bytecode file,",
 		"  it needs a different version of the runtime system]");
-     if (prim_check != 0 && get_int(t.primsig) != prim_check)
+     if (prim_check != 0 && (unsigned) get_int(t.primsig) != prim_check)
 	  panic("bad primitive checksum\n%s\n%s",
 		"[This program uses a different set of primitives",
 		"  from the ones built into the runtime system]");

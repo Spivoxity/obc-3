@@ -43,14 +43,14 @@ static void gargs(int n, va_list va) {
      reg arg[6];
 
      for (i = 0; i < n; i++)
-	  arg[i] = va_arg(va, reg);
+	  arg[i] = (reg) va_arg(va, int);
 
      vm_gen1i(PREP, n);
      for (i = n-1; i >= 0; i--)
 	  vm_gen1r(ARG, regs[arg[i]].r_reg);
 }
 
-static void gcall1(char *fname, int f, int n, ...) {
+static void gcall1(const char *fname, int f, int n, ...) {
      va_list va;
 
 #ifdef DEBUG
@@ -87,7 +87,7 @@ void use_label(code_addr loc, codepoint lab) {
 static value *context;		/* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
 static int frame;		/* Size of local variable frame */
-static bool cmpflag = FALSE;	/* Flag for FCMP or DCMP */
+static boolean cmpflag = FALSE;	/* Flag for FCMP or DCMP */
 
 #define konst(i) context[CP_CONST+i]
 
@@ -140,7 +140,7 @@ static int stack_map(uchar *pc) {
 }
 
 /* gmonop -- generic unary operation */
-static void gmonop(int op, int rclass1, int rclass2, int s) {
+static void gmonop(operation op, int rclass1, int rclass2, int s) {
      reg r1, r2;
 
      /* Try to reallocate the input register for the result of
@@ -165,7 +165,7 @@ static void coerce(int s) {
 #define dmonop(op) gmonop(op, FLO, FLO, 2)
 
 /* ibinop -- binary integer operation */
-static void ibinop(int op) {
+static void ibinop(operation op) {
      reg r1, r2;
      ctvalue v;
 
@@ -186,7 +186,7 @@ static void ibinop(int op) {
 }
 
 /* fdbinop -- float or double binary operation */
-static void fdbinop(int op, int s) {
+static void fdbinop(operation op, int s) {
      reg r1, r2, r3;
 
      r1 = move_to_reg(2, FLO); r2 = move_to_reg(1, FLO); pop(2);
@@ -199,7 +199,7 @@ static void fdbinop(int op, int s) {
 #define dbinop(op) fdbinop(op, 2)
 
 /* fcomp -- float or double comparison */
-static void fcomp(int op) {
+static void fcomp(operation op) {
      reg r1, r2, r3;
      ctvalue v;
 
@@ -215,7 +215,7 @@ static void fcomp(int op) {
 /* icomp -- integer comparison */
 #define icomp(op) icomp1(op, op##F)
 
-static void icomp1(int op, int opf) {
+static void icomp1(operation op, operation opf) {
      if (cmpflag)
 	  fcomp(opf);
      else
@@ -225,7 +225,7 @@ static void icomp1(int op, int opf) {
 }
 
 /* fcondj -- float or double conditional jump */
-static void fcondj(int op, int lab) {
+static void fcondj(operation op, int lab) {
      reg r1, r2;
      ctvalue v;
 
@@ -275,7 +275,7 @@ static void typejump(int op, ctvalue v, int lab) {
 /* icondj -- integer conditional jump */
 #define icondj(op, lab) icondj1(op, op##F, lab)
 
-static void icondj1(int op, int opf, int lab) {
+static void icondj1(operation op, operation opf, int lab) {
      reg r1; ctvalue v, v2;
 
      if (cmpflag)
@@ -305,7 +305,7 @@ static void icondj1(int op, int opf, int lab) {
 /* callout -- call out-of-line operation */
 #define callout(op, nargs) callout1(#op, op, nargs)
 
-static void callout1(char *name, void (*op)(value *sp), int nargs) {
+static void callout1(const char *name, void (*op)(value *sp), int nargs) {
      reg r;
      flush_stack(0, nargs);
      killregs();
@@ -391,7 +391,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  
      case I_SWAP:
 	  v = move_from_frame(2); v2 = move_from_frame(1);
-	  { struct ctvalue tmp = *v; *v = *v2; *v2 = tmp; }
+	  { struct _ctvalue tmp = *v; *v = *v2; *v2 = tmp; }
 	  break;
 
      case I_POP:
@@ -777,7 +777,9 @@ static void tran_instr(uchar *pc, int inst, int arg1, int arg2, int lev) {
 
 /* map_labels -- determine branch targets in a bytecode routine */
 static void map_labels(void) {
-     uchar *pc; int i, n; char *s;
+     uchar *pc; 
+     int i, n; 
+     const char *s;
 
      /* We need to identify branch targets before translating,
 	because cached values must be flushed at each target,
@@ -786,7 +788,7 @@ static void map_labels(void) {
      for (pc = pcbase; pc < pclimit; ) {
 	  int op = *pc;
 	  uchar *pc1 = pc+1;
-	  struct decode *d = &decode[op];
+	  struct _decode *d = &decode[op];
 
 	  for (s = d->d_patt; *s != '\0'; s++) {
 	       switch (*s) {
@@ -834,13 +836,13 @@ static void map_labels(void) {
 /* translate -- decode a bytecode routine and translate the instructions */
 static void translate(void) {
      uchar *pc; 
-     char *s;
+     const char *s;
      codepoint lab;
 
      for (pc = pcbase; pc < pclimit; ) {
 	  int op = *pc;
 	  uchar *pc1 = pc+1;
-	  struct decode *d = &decode[op];
+	  struct _decode *d = &decode[op];
 	  int args[2];
 	  int nargs = 0;
 	  args[0] = 0; args[1] = 0;

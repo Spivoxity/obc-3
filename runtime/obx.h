@@ -59,16 +59,16 @@ union value {
      primitive *z;
 };
 
-typedef struct proc *proc;
-typedef struct module *module;
-typedef struct arc *arc;
+typedef struct _proc *proc;
+typedef struct _module *module;
+typedef struct _arc *arc;
 
 #ifdef PROFILE
 typedef long long unsigned counter;
 #endif
 
-struct proc {
-     char *p_name;		/* Procedure name */
+struct _proc {
+     const char *p_name;	/* Procedure name */
      value *p_addr;		/* Address of descriptor in data space */
 #ifdef PROFILE
      int p_index;		/* Position in listing */
@@ -81,7 +81,7 @@ struct proc {
 #endif
 };
 
-struct module {
+struct _module {
      char *m_name;		/* Layout must match proc */
      uchar *m_addr;
      int m_length;
@@ -91,9 +91,9 @@ struct module {
 #endif
 };
 
-struct opcode { 
-     char *i_name;		/* Name */
-     char *i_patt;		/* Argument template */
+struct _opcode { 
+     const char *i_name;	/* Name */
+     const char *i_patt;	/* Argument template */
      int i_arg;			/* Argument packed in opcode */
      int i_len;			/* Total length in bytes */
 };
@@ -131,9 +131,9 @@ EXTERN value *prim_bp;		/* Base pointer during primitive call */
 #endif
 
 EXTERN int dflag;
-EXTERN bool gflag;
+EXTERN boolean gflag;
 #ifdef PROFILE
-EXTERN bool lflag;
+EXTERN boolean lflag;
 #endif
 #ifdef TRACE
 EXTERN int qflag;
@@ -167,7 +167,7 @@ void profile(FILE *fp);
 
 /* interp.c */
 primitive interp, dltrap;
-extern struct opcode optable[];
+extern struct _opcode optable[];
 
 /* xmain.c */
 EXTERN int saved_argc;
@@ -212,12 +212,12 @@ void load_file(FILE *bfp);
 
 module make_module(char *name, uchar *addr, int chsum, int nlines);
 proc make_proc(char *name, uchar *addr);
-void make_symbol(char *kind, char *name, uchar *addr);
+void make_symbol(const char *kind, char *name, uchar *addr);
 
-void panic(char *, ...);
-void obcopy(char *dst, char *src, int n);
+void panic(const char *, ...);
+void obcopy(char *dst, const char *src, int n);
 
-void error_stop(char *msg, int line, value *bp, uchar *pc);
+void error_stop(const char *msg, int line, value *bp, uchar *pc);
 void runtime_error(int num, int line, value *bp, uchar *pc);
 void rterror(int num, int line, value *bp);
 #define liberror(msg) error_stop(msg, 0, bp, NULL)
@@ -229,7 +229,7 @@ proc find_symbol(value *p, proc *table, int nelem);
 #ifdef TRACE
 char *fmt_inst(uchar *pc);
 void dump(void);
-char *prim_name(value *p);
+const char *prim_name(value *p);
 #endif
 
 #ifdef i386
@@ -251,7 +251,7 @@ double flo_convq(longint);
 /* gc.c */
 
 /* scratch_alloc -- allocate memory that will not be freed */
-void *scratch_alloc(unsigned bytes, bool atomic);
+void *scratch_alloc(unsigned bytes, boolean atomic);
 
 /* gc_alloc -- allocate an object for the managed heap */
 void *gc_alloc(value *desc, unsigned size, value *sp);
@@ -265,15 +265,15 @@ int gc_alloc_size(void *p);
 /* gc_heap_size -- return size of heap */
 int gc_heap_size(void);
 
-extern bool gcflag;
+extern boolean gcflag;
 void gc_init(void);
 void gc_debug(char *flags);
 void gc_dump(void);
 
 /* debug.c */
 #ifdef OBXDEB
-extern bool one_shot;
-extern bool intflag;
+extern boolean one_shot;
+extern boolean intflag;
 
 void debug_init(void);
 void debug_message(char *fmt, ...);
@@ -285,6 +285,10 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...);
 void jit_compile(value *cp);
 #endif
 
+#ifdef __cplusplus
+#define PRIMDEF extern "C"
+#else
+#define PRIMDEF
 #endif
 
 #ifdef ENABLE_JIT
@@ -293,4 +297,6 @@ void jit_compile(value *cp);
 #define FPINIT asm ("fninit")
 #else
 #define FPINIT
+#endif
+
 #endif

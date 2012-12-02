@@ -278,7 +278,7 @@ equiv QDEC 0		{PUSH 1, CONVNQ, QMINUS}
 
 defs {
 #define jcase(x, n) \
-     if ((unsigned) x < n) { pc0 = pc + 2*x; jump(get2(pc0)); } \
+     if ((unsigned) x < (unsigned) n) { pc0 = pc + 2*x; jump(get2(pc0)); } \
      else pc += 2*n
 }
 inst JCASE 1		S1  {jcase($1.i, $a);}

@@ -58,7 +58,7 @@ static GC fg, bg;
 static XImage *image;
 static int *bitmap;
 
-static void fatal(char *msg) {
+static void fatal(const char *msg) {
      fprintf(stderr, "Fatal error in XYplane: %s\n", msg);
      exit(2);
 }
@@ -157,7 +157,7 @@ PROCEDURE Open* IS "*XYplane_open";
      XMapWindow(display, window);
      XFlush(display);
 
-     bitmap = calloc(H * ((W+NBITS-1)/NBITS), sizeof(int));
+     bitmap = (int * ) calloc(H * ((W+NBITS-1)/NBITS), sizeof(int));
      if (bitmap == NULL) fatal("couldn't allocate bitmap");
      image = XCreateImage(display, visual, 1, XYBitmap, 0, (char * ) bitmap, 
 		          W, H, NBITS, 0);

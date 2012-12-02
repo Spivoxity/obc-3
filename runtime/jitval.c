@@ -82,9 +82,10 @@ static void show(ctvalue v) {
 
 /* dumpregs -- print values cached in all registers */
 void dumpregs(void) {
-     reg r;
+     int ir;
 
-     for (r = 0; r < NREGS; r++) {
+     for (ir = 0; ir < NREGS; ir++) {
+	  reg r = (reg) ir;
 	  if (regs[r].r_class == 0) continue;
 	  if (r == rF0) printf("\n");
 	  printf("  %s(%d)", regs[r].r_name, regs[r].r_refct);
@@ -96,7 +97,7 @@ void dumpregs(void) {
 }
 #endif
 
-static bool same(ctvalue v, ctvalue w) {
+static boolean same(ctvalue v, ctvalue w) {
      return (v->v_op == w->v_op && v->v_val == w->v_val 
 	     && v->v_reg == w->v_reg && v->v_size == w->v_size);
 }
@@ -114,7 +115,7 @@ void set_cache(reg r, ctvalue v) {
 }
 
 /* alias -- conservatively test if two values may be aliases */
-static bool alias(ctvalue v, ctvalue w) {
+static boolean alias(ctvalue v, ctvalue w) {
      /* Assume v is a LOAD */
 
      switch (w->v_op) {
@@ -133,7 +134,7 @@ static bool alias(ctvalue v, ctvalue w) {
 
 /* kill_alias -- forget all cached values that might alias v */
 static void kill_alias(ctvalue v) {
-     reg r;
+     int ir;
 
 #ifdef DEBUG
      if (dflag > 2) {
@@ -143,7 +144,8 @@ static void kill_alias(ctvalue v) {
      }
 #endif
 
-     for (r = 0; r < NREGS; r++) {
+     for (ir = 0; ir < NREGS; ir++) {
+	  reg r = (reg) ir;
 	  if (alias(v, &(regs[r].r_value))) 
 	       kill(r);
      }
@@ -154,7 +156,7 @@ static void kill_alias(ctvalue v) {
 
 #define STACK 32
 
-static struct ctvalue vstack[STACK];  /* Stack of value descriptions */
+static struct _ctvalue vstack[STACK];  /* Stack of value descriptions */
 static int sp = 0;		/* Number of stack items */
 
 static int offset[STACK];       /* Offset of each item from stack base */
@@ -347,17 +349,17 @@ void move_to_frame(int i) {
 }
 
 /* transient -- check if a value is not preserved across a procedure call */
-static bool transient(ctvalue v) {
+static boolean transient(ctvalue v) {
      if (regs[v->v_reg].r_class != 0)
 	  return TRUE;
 
      switch (v->v_op) {
      case I_LOADW:
      case I_LOADF:
-	  return (v->v_val == (unsigned) &ob_res);
+	  return ((unsigned) v->v_val == (unsigned) &ob_res);
      case I_LOADQ:
      case I_LOADD:
-	  return (v->v_val == (unsigned) &ob_dres);
+	  return ((unsigned) v->v_val == (unsigned) &ob_dres);
      default:
 	  return FALSE;
      }
@@ -388,9 +390,9 @@ void spill(reg r) {
 }
 
 /* load -- load from memory into register */
-static reg load(int op, int class, reg r, int val) {
+static reg load(operation op, int cl, reg r, int val) {
      reg r1;
-     rfree(r); r1 = ralloc(class);
+     rfree(r); r1 = ralloc(cl);
      g3rri(op, r1, r, val);
      return r1;
 }
@@ -398,11 +400,13 @@ static reg load(int op, int class, reg r, int val) {
 /* move_to_reg -- move stack item to a register */
 reg move_to_reg(int i, int ty) {
      ctvalue v = &vstack[sp-i];
+     int ir;
      reg r, r2;
      codepoint lab;
 
      if (v->v_op != I_REG) {
-	  for (r = 0; r < NREGS; r++) {
+	  for (ir = 0; ir < NREGS; ir++) {
+	       r = (reg) ir;
 	       if (cached(r) 
 		   && same(&regs[r].r_value, v) 
 		   && member(r, ty)) {
@@ -518,7 +522,7 @@ reg move_to_reg(int i, int ty) {
 }
 
 /* fix_const -- check a stack item is a constant or move it to a register */
-ctvalue fix_const(int i, bool rflag) {
+ctvalue fix_const(int i, boolean rflag) {
      ctvalue v = &vstack[sp-i];
 
      switch (v->v_op) {

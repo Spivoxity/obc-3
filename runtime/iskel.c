@@ -69,7 +69,7 @@
 #endif
 
 #ifdef DISASS
-struct opcode optable[256] = {
+struct _opcode optable[256] = {
 $$ instruction formats
 };
 #endif

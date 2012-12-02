@@ -54,7 +54,9 @@ MODULE DynLink;
 #endif
 
 #ifdef DYNLINK
+#ifndef __USE_GNU
 #define __USE_GNU
+#endif
 #include <dlfcn.h>
 
 extern char *LIB_PATH;

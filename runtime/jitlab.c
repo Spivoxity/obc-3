@@ -37,7 +37,7 @@
    small hash table of targets indexed by address. */
 
 /* A (forward) branch waiting to be patched */
-struct branch {
+struct _branch {
      int b_kind;		/* BRANCH or CASELAB */
      void *b_loc;		/* Branch location */
      branch b_next;		/* Next branch with same target */
@@ -87,7 +87,7 @@ static branch bralloc(void) {
 	  return p;
      }
 
-     return (branch) zalloc(sizeof(struct branch));
+     return (branch) zalloc(sizeof(struct _branch));
 }
 
 static codepoint hashtab[HASH];
@@ -95,7 +95,7 @@ static codepoint hashtab[HASH];
 codepoint new_label(void) {
      codepoint p;
 
-     p = (codepoint) zalloc(sizeof(struct codepoint));
+     p = (codepoint) zalloc(sizeof(struct _codepoint));
      p->l_lab = -1;
      p->l_loc = NULL;
      p->l_depth = -1;
@@ -107,7 +107,7 @@ codepoint new_label(void) {
 }     
 
 /* lookup -- search for a target record for an address */
-static codepoint lookup(int addr, bool create) {
+static codepoint lookup(int addr, boolean create) {
      int h = addr % HASH;
      codepoint p;
 
@@ -219,9 +219,9 @@ void label(codepoint lab) {
    small piece of code that is added at the end of the procedure.
    There's a table of handlers to avoid duplication of the code. */
 
-typedef struct error *error;
+typedef struct _error *error;
 
-struct error {
+struct _error {
      int e_code;		/* Cause of the error */
      int e_line;		/* Line ot be reported in message */
      codepoint e_lab;		/* Branch target for handler */
@@ -239,7 +239,7 @@ codepoint to_error(int code, int line) {
 	       return e->e_lab;
      }
 	  
-     e = (error) zalloc(sizeof(struct error));
+     e = (error) zalloc(sizeof(struct _error));
      e->e_code = code;
      e->e_line = line; 
      e->e_lab = new_label();

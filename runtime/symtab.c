@@ -40,8 +40,8 @@
 
 /* GLOBAL SYMBOLS */
 
-struct symbol {
-     char *s_name;		/* Name of the symbol */
+struct _symbol {
+     const char *s_name;	/* Name of the symbol */
      segment s_seg;		/* Segment, or UNDEFINED */
      int s_kind;		/* Kind of symbol -- X_PROC, etc. */
      int s_value;		/* Numeric value */
@@ -61,9 +61,9 @@ static growdecl(dict);
 #define ndict growsize(dict)
 
 /* make_symbol -- create a symbol, but don't put it in the hash table */
-symbol make_symbol(char *name) {
+symbol make_symbol(const char *name) {
      symbol s = 
-	  (symbol) must_alloc(sizeof(struct symbol), "symbol table entry");
+	  (symbol) must_alloc(sizeof(struct _symbol), "symbol table entry");
      s->s_name = must_strdup(name);
      s->s_seg = UNDEFINED;
      s->s_kind = X_NONE;
@@ -78,10 +78,10 @@ symbol make_symbol(char *name) {
      return s;
 }
 
-static symbol lookup(char *name, bool create) {
+static symbol lookup(const char *name, boolean create) {
      symbol s;
      unsigned h = 0;
-     char *p;
+     const char *p;
 
      if (dict == NULL)
 	  buf_init(dict, INIT_SMEM, 1, symbol, "symbol table");
@@ -103,17 +103,17 @@ static symbol lookup(char *name, bool create) {
 }
 
 /* find_symbol -- find a global symbol, or create one if necessary */
-symbol find_symbol(char *name) {
+symbol find_symbol(const char *name) {
      return lookup(name, TRUE);
 }
 
 /* known -- test if a symbol has been entered */
-bool known(char *name) {
+boolean known(const char *name) {
      symbol s = lookup(name, FALSE);
      return (s != NULL);
 }
 
-char *sym_name(symbol s) {
+const char *sym_name(symbol s) {
      return s->s_name;
 }
 
@@ -131,7 +131,7 @@ int sym_value(symbol s) {
 }
 
 #ifdef DEBUG
-static char *seg_name[] = { 
+static const char *seg_name[] = { 
      "abs", "data", "bss", "code", "undefined"
 };
 #endif
@@ -241,18 +241,18 @@ int write_symtab(void) {
    search to replace each use of a label by the corresponding value.
    The values are turned into offsets as the code is output. */
 
-struct locdef {
+struct _locdef {
      int l_lab;
      phrase l_val;
 };
 
 static growdecl(locdefs);
-#define locdefs growbuf(locdefs, struct locdef)
+#define locdefs growbuf(locdefs, struct _locdef)
 #define n_locs growsize(locdefs)
 
 void init_labels(void) {
      if (locdefs == NULL)
-	  buf_init(locdefs, INIT_LMEM, 1, struct locdef, "labels");
+	  buf_init(locdefs, INIT_LMEM, 1, struct _locdef, "labels");
      n_locs = 0;
 }
 
@@ -263,7 +263,7 @@ void def_label(int n, phrase val) {
      n_locs++;
 }
 
-static int cf_labels(struct locdef *a, struct locdef *b) {
+static int cf_labels(struct _locdef *a, struct _locdef *b) {
      return a->l_lab - b->l_lab;
 }
 
@@ -273,7 +273,7 @@ void sort_labels(void) {
 #endif
 
      /* Sort the definitions into ascending order of l_lab */
-     qsort(locdefs, n_locs, sizeof(struct locdef),
+     qsort(locdefs, n_locs, sizeof(struct _locdef),
 	   (int (*)(const void *, const void *)) cf_labels);
 }
 
@@ -313,8 +313,8 @@ static growdecl(prims);
 unsigned prim_check = 0;
 
 /* make_prim -- enter primitive in table */
-void make_prim(char *name) {
-     char *s;
+void make_prim(const char *name) {
+     const char *s;
 
      if (find_prim(name) >= 0) return;
 
@@ -332,7 +332,7 @@ void make_prim(char *name) {
 }
 
 /* find_prim -- compute index of primitive */
-int find_prim(char *name) {
+int find_prim(const char *name) {
      int i;
 
      /* Names starting '*' refer to symbols in shared libraries */
@@ -354,7 +354,7 @@ void dump_prims(FILE *fp) {
      fprintf(fp, "unsigned prim_check = %#x;\n\n", prim_check);
 
      if (nprims > FIXPRIMS) {
-	  w = fprintf(fp, "EXTERN primitive %s", prims[FIXPRIMS]);
+	  w = fprintf(fp, "PRIMDEF primitive %s", prims[FIXPRIMS]);
 	  for (i = FIXPRIMS+1; i < nprims; i++) {
 	       if (w + 2 + strlen(prims[i]) <= 70) 
 		    w += fprintf(fp, ", %s", prims[i]);
@@ -379,7 +379,7 @@ void dump_prims(FILE *fp) {
      fprintf(fp, ",\n     NULL\n};\n\n");
 
      fprintf(fp, "#ifdef DEBUG\n");
-     fprintf(fp, "char *primname[] = {\n");
+     fprintf(fp, "const char *primname[] = {\n");
      w = fprintf(fp, "     \"INTERP\", \"DLTRAP\"");
      for (i = FIXPRIMS; i < nprims; i++) {
 	  if (w + 4 + strlen(prims[i]) <= 70) 

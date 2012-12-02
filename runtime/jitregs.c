@@ -42,7 +42,7 @@
 
 #define novalue { 0, 0, 0, ZERO, 0 }
 #define __r2__(sym, phys, class) { #sym, phys, class, 0, novalue },
-struct reg regs[] = { __REGS__(__r2__) };
+struct _reg regs[] = { __REGS__(__r2__) };
 
 /* Each register has a reference count, and may also be locked -- this
    is signified by increasing the reference count by OMEGA.  Normally, a
@@ -89,13 +89,16 @@ reg incref(reg r, int inc) {
 
 /* ralloc_avoid -- allocate register, avoiding one previously allocated */
 reg ralloc_avoid(int s, reg r2) {
-     reg best = ZERO, r;
+     reg best = ZERO;
+     unsigned ir;
      int min = 2, cost;
 
-     static bool spilling = FALSE;
+     static boolean spilling = FALSE;
 
      /* See if there is an unused register */
-     for (r = 0; r < NREGS; r++) {
+     for (ir = 0; ir < NREGS; ir++) {
+	  reg r = (reg) ir;
+
 	  /* Locked registers are OK if their refcount is otherwise 0 */
 	  if (member(r, s) && regs[r].r_refct % OMEGA == 0 && r != r2) {
 	       cost = (cached(r));
@@ -114,7 +117,9 @@ reg ralloc_avoid(int s, reg r2) {
 	  min = OMEGA; 
 	  spilling = TRUE;
 
-	  for (r = 0; r < NREGS; r++) {
+	  for (ir = 0; ir < NREGS; ir++) {
+	       reg r = (reg) ir;
+
 	       if (member(r, s) && regs[r].r_refct < min && r != r2) {
 		    best = r; min = regs[r].r_refct;
 	       }
@@ -152,19 +157,21 @@ reg ralloc_suggest(int s, reg r) {
 
 /* killregs -- forget all cached values */
 void killregs(void) {
-     reg r;
+     int ir;
 
 #ifdef DEBUG
      if (dflag > 2) printf("\tKillregs\n");
 #endif
 
-     for (r = 0; r < NREGS; r++)
+     for (ir = 0; ir < NREGS; ir++) {
+	  reg r = (reg) ir;
 	  uncache(r);
+     }
 }
 
 /* kill -- forget a register and all others related to it */
 reg kill(reg r) {
-     reg r1;
+     int ir;
 
 #ifdef DEBUG
      if (dflag > 2) printf("\tKill %s\n", regs[r].r_name);
@@ -172,7 +179,8 @@ reg kill(reg r) {
 
      uncache(r);
 
-     for (r1 = 0; r1 < NREGS; r1++) {
+     for (ir = 0; ir < NREGS; ir++) {
+	  reg r1 = (reg) ir;
 	  if (cached(r1) && regs[r1].r_value.v_reg == r)
 	       uncache(r1);
      }
@@ -182,9 +190,10 @@ reg kill(reg r) {
 
 /* init_regs -- reset registers for new procedure */
 void init_regs(void) {
-     reg r;
+     int ir;
 
-     for (r = 0; r < NREGS; r++) {
+     for (ir = 0; ir < NREGS; ir++) {
+	  reg r = (reg) ir;
 	  regs[r].r_refct = 0;
 	  uncache(r);
      }

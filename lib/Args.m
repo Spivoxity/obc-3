@@ -37,14 +37,14 @@ VAR argc-: INTEGER;
 (** GetArg -- fetch an argument into a string buffer *)
 PROCEDURE GetArg*(n: INTEGER; VAR s: ARRAY OF CHAR) IS "Args_GetArg";
 (* CODE 
-     char *t = (0 <= args[0].i && args[0].i < saved_argc ? 
-		saved_argv[args[0].i] : "");
+     const char *t = (0 <= args[0].i && args[0].i < saved_argc ? 
+	   	      saved_argv[args[0].i] : "");
      obcopy((char * ) args[1].x, t, args[2].i); *)
 
 (** GetEnv -- fetch an environment variable into a string buffer *)
 PROCEDURE GetEnv*(name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR) IS "Args_GetEnv";
 (* CODE 
-     char *t = getenv((char * ) args[0].x);
+     const char *t = getenv((char * ) args[0].x);
      if (t == NULL) t = "";
      obcopy((char * ) args[2].x, t, args[3].i); *)
 

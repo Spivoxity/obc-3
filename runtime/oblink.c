@@ -38,16 +38,16 @@ char *copyright = "Copyright (C) 1999 J. M. Spivey";
    input files.  There's another table kept by the linker itself that
    has one entry for each module actually selected for linking. */
 
-struct moduledata {
+struct _module {
      char *m_file;		/* Name of the file */
      char *m_name;		/* Name of the module */
-     bool m_lib, m_needed;	/* Whether a library module, whether needed */
+     boolean m_lib, m_needed;	/* Whether a library module, whether needed */
      int m_dep;			/* Index of first prerequisite */
      int m_check;		/* Checksum */
 };
 
 static growdecl(module);
-#define module growbuf(module, struct moduledata)
+#define module growbuf(module, struct _module)
 #define nmodules growsize(module)
 
 /* The imports of module m are dep[module[m].m_dep .. module[m+1].m_dep) */
@@ -71,10 +71,10 @@ static char line[MAXLINE];
 static int nwords;
 static char *words[MAXWORDS];
 
-static bool stdlib = TRUE;
-static char *lscript = "lscript";
+static boolean stdlib = TRUE;
+static char *lscript = (char *) "lscript";
 static char *interp = NULL;
-static char *outname = "a.out";
+static char *outname = (char *) "a.out";
 static char *libdir = NULL;
 static char *rtlibdir = NULL;
 
@@ -89,7 +89,7 @@ static int find_module(char *name) {
 }
 
 /* scan -- scan a file for MODULE and IMPORT directives */
-static void scan(char *name, bool islib)  {
+static void scan(char *name, boolean islib)  {
      FILE *fp;
      int m = -1, m2, chksum;
 
@@ -241,7 +241,7 @@ static void gen_main(void) {
 
      if (known("MAIN")) return;
 
-     err_file = "main program";
+     err_file = (char *) "main program";
 
      /* For completeness, generate a header listing all loaded modules. */
      gen_inst("MODULE %%Main 0 0");
@@ -401,7 +401,7 @@ static void get_options(int argc, char **argv) {
 int main(int argc, char **argv) {
      progname = argv[0];
 
-     buf_init(module, INIT_MODS, 1, struct moduledata, "modules");
+     buf_init(module, INIT_MODS, 1, struct _module, "modules");
      buf_init(dep, INIT_MODS, 1, int, "dependencies");
 
      stack_size = STACK_SIZE;

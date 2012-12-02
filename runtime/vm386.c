@@ -1139,7 +1139,7 @@ code_addr *vm_jumptable(int n) {
 
 static void check_space(int space) {
      if (codebuf == NULL || pc + space > limit - MARGIN) {
-	  code_addr p = vm_alloc(CODEPAGE);
+	  code_addr p = (code_addr) vm_alloc(CODEPAGE);
 #ifdef USE_MPROTECT
 	  if (mprotect(p, CODEPAGE, PROT_READ|PROT_WRITE|PROT_EXEC) < 0) {
 	       perror("mprotect failed");

@@ -34,9 +34,10 @@
 
 char *fmt_inst(uchar *pc) {
      uchar *args = pc;
-     struct opcode *ip = &optable[*pc++];
+     struct _opcode *ip = &optable[*pc++];
      static char buf[80];
-     char *p, *s = buf;
+     const char *p;
+     char *s = buf;
 
      if (ip->i_name == NULL) {
 	  strcpy(buf, "UNKNOWN");
@@ -109,7 +110,7 @@ void dump(void) {
      }
 }
 
-char *prim_name(value *p) {
+const char *prim_name(value *p) {
      primitive *z = p[0].z;
      int i;
 

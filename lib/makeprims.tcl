@@ -40,7 +40,7 @@ puts "#define args (bp + HEAD)"
 
 proc make_prim {pname code} {
     puts ""
-    puts "void $pname\(value *sp) {"
+    puts "PRIMDEF void ${pname}(value *sp) {"
     puts "     value UNUSED *bp = sp;"
     puts "     value UNUSED *cp = bp\[CP\].p;"
     puts "     FPINIT;"

@@ -283,11 +283,11 @@ MODULES="DynLink Files Conv In Out Err Args Bit Timer GC \
 AC_SUBST(MODULES)
 
 # These modules contain standard primitives:
-PRIMMODS="Args Conv GC Random Timer DynLink"
+PRIMMODS="Args GC Timer DynLink Files Conv Random"
 AC_SUBST(PRIMMODS)
 
 # These modules have primitives in shared libraries:
-SHLMODS="Files Math MathL $XYPLANE"
+SHLMODS="Math MathL $XYPLANE"
 AC_SUBST(SHLMODS)
 
 # These modules have bounds checks

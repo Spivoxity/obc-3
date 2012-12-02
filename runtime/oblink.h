@@ -58,20 +58,24 @@
 
 typedef enum { ABS, DATA, BSS, CODE, UNDEFINED } segment;
 
-typedef struct phrase *phrase;
+typedef struct _phrase *phrase;
 
-typedef struct template *template;
+#ifdef __cplusplus
+#define template xyzzy
+#endif
+
+typedef struct _template *template;
 
 #define MAXMAC 6
 
-struct template {		/* An encoding of an instruction */
-     char *t_name;		/* The instruction */
-     char *t_pattern;		/* Argument formats */
+struct _template {		/* An encoding of an instruction */
+     const char *t_name;	/* The instruction */
+     const char *t_pattern;	/* Argument formats */
      int t_lo, t_hi, t_step;	/* Pattern of values for 'N' format */
      int t_size;		/* Total length of instruction */
      int t_oplen;		/* Length of opcode */
      uchar t_op;		/* Opcode */
-     char *t_macro[MAXMAC];	/* Macro expansion */
+     const char *t_macro[MAXMAC]; /* Macro expansion */
 };
 
 #define put1(buf, x) put_int(1, buf, x)
@@ -81,28 +85,28 @@ struct template {		/* An encoding of an instruction */
 
 EXTERN int dflag;
 EXTERN int zflag;		/* Whether to compress the bytecode */
-EXTERN bool sflag;		/* Whether to suppress symbol table */
-EXTERN bool gflag;		/* Whether to output extra debugging info */
-EXTERN bool custom;
-EXTERN bool dump;
-EXTERN bool linecount;
+EXTERN boolean sflag;		/* Whether to suppress symbol table */
+EXTERN boolean gflag;		/* Whether to output extra debugging info */
+EXTERN boolean custom;
+EXTERN boolean dump;
+EXTERN boolean linecount;
 EXTERN int stack_size;
 
 /* template.c */
-extern struct template templates[];
+extern struct _template templates[];
 extern short templ_trie[];
 extern uchar templ_check[];
 
 /* symtab.c */
-typedef struct symbol *symbol;
+typedef struct _symbol *symbol;
 
-symbol make_symbol(char *name);
-symbol find_symbol(char *name);
-char *sym_name(symbol s);
+symbol make_symbol(const char *name);
+symbol find_symbol(const char *name);
+const char *sym_name(symbol s);
 void def_global(symbol s, segment seg, int off, int kind);
 void use_global(symbol s, uchar *base, int offset);
 int sym_value(symbol s);
-bool known(char *name);
+boolean known(const char *name);
 void fix_data(uchar *base, int bss);
 int write_symtab(void);
 void module_data(symbol s, unsigned checksum, int nlines);
@@ -112,16 +116,16 @@ void def_label(int n, phrase val);
 void sort_labels(void);
 phrase find_label(int n);
 
-int find_prim(char *name);
-void make_prim(char *name);
+int find_prim(const char *name);
+void make_prim(const char *name);
 void dump_prims(FILE *fp);
 extern unsigned prim_check;
 
 /* linker.c */
 void init_linker(char *outname, char *interp);
-void put_inst(char *name, char *rands[], int nrands);
-void gen_inst(char *fmt, ...);
-void save_string(char *label, char *string);
+void put_inst(const char *name, char *rands[], unsigned nrands);
+void gen_inst(const char *fmt, ...);
+void save_string(const char *label, char *string);
 void open_output(char *name, char *interp);
 void end_linking(void);
 
@@ -129,7 +133,7 @@ void relocate(int loc, int bits);
 
 void put_int(int n, uchar *buf, int x);
 int get4(uchar *buf);
-void write_string(char *s);
+void write_string(const char *s);
 void write_int(int n, int x);
 
 /* util.c */

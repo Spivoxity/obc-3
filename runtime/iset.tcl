@@ -194,7 +194,7 @@ proc gen_template {name} {
 
     set nt 0
     set fmt "{%-12s %-7s%3d, %2d, %2d, %2d, %2d, %s, { %s }},"
-    puts $f "struct template templates\[NTEMPLATES\] = {"
+    puts $f "struct _template templates\[NTEMPLATES\] = {"
     foreach inst [concat $instrs $dirs] {
 	set first($inst) $nt
 	foreach templ $templates($inst) {

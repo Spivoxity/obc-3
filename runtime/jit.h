@@ -34,11 +34,11 @@
 
 /* jitlab.c */
 
-typedef struct codepoint *codepoint;
-typedef struct branch *branch;
+typedef struct _codepoint *codepoint;
+typedef struct _branch *branch;
 
 /* A branch target */
-struct codepoint {
+struct _codepoint {
      int l_lab;			/* Bytecode address */
      code_addr l_loc;		/* Native code address */
      int l_depth;		/* Stack depth */
@@ -97,7 +97,7 @@ extern code_addr *caseptr;
 
 typedef enum { __REGS__(__r1__) NREGS } reg;
 
-typedef struct ctvalue {
+typedef struct _ctvalue {
      int v_op;			/* Operation to fetch value */
      int v_type;		/* INT or FLO */
      int v_val;			/* Constant or offset */
@@ -105,12 +105,12 @@ typedef struct ctvalue {
      int v_size;		/* Size (1 or 2 words) */
 } *ctvalue;;
 
-extern struct reg {
-     char *r_name;	       /* Our name for the register */
+extern struct _reg {
+     const char *r_name;       /* Our name for the register */
      vmreg r_reg;	       /* Physical register */
      int r_class;	       /* INT or FLO, or 0 for if special */
      int r_refct;	       /* No of references on the stack */
-     struct ctvalue r_value;   /* Cached value */
+     struct _ctvalue r_value;  /* Cached value */
 } regs[];
 
 #define cached(r) (regs[r].r_value.v_op != 0)
@@ -160,7 +160,7 @@ ctvalue peek(int n);
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);
 ctvalue move_from_frame(int i);
-ctvalue fix_const(int i, bool rflag);
+ctvalue fix_const(int i, boolean rflag);
 #define move_to_rc(i) fix_const(i, TRUE)
 
 void flush_stack(int a, int b);

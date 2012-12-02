@@ -32,11 +32,11 @@ EXTERN char *progname;
 EXTERN char *err_file;
 EXTERN int status;
 
-void error(char *msg, ...);
-void panic(char *msg, ...);
-void *must_alloc(int n, char *msg);
-void *must_realloc(void *p, int n0, int n, char *msg);
-char *must_strdup(char *s);
+void error(const char *msg, ...);
+void panic(const char *msg, ...);
+void *must_alloc(int n, const char *msg);
+void *must_realloc(void *p, int n0, int n, const char *msg);
+char *must_strdup(const char *s);
 
 /* Auto-grow buffers */
 
@@ -65,23 +65,23 @@ To check that at least |margin| elements remain unused:
 
 #define GROW 1.5		/* Growth ratio when buffer full */
 
-#define growdecl(b) struct growbuf _##b
+#define growdecl(b) struct _growbuf _##b
 #define growbuf(b, type) ((type *) _##b.buf)
 #define growsize(b) _##b.loc
 #define buf_init(b, size, margin, type, name) \
      _buf_init(&_##b, size, margin, sizeof(type), name)
 #define buf_grow(b) _buf_grow(&_##b)
 
-struct growbuf {
+struct _growbuf {
      void *buf;
      int loc, size, margin;
      int elsize;
-     char *name;
+     const char *name;
 };
 
-void _buf_init(struct growbuf *b, int size, int margin, 
-		      int elsize, char *name);
-void _buf_grow(struct growbuf *b);
+void _buf_init(struct _growbuf *b, int size, int margin, 
+		      int elsize, const char *name);
+void _buf_grow(struct _growbuf *b);
 
 
 /* Memory pools */

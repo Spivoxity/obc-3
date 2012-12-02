@@ -42,7 +42,7 @@ EXTERN int dflag;
 
 char *prog_name;
 
-void error(char *msg, ...) {
+void error(const char *msg, ...) {
      va_list va;
 
      va_start(va, msg);
@@ -54,9 +54,9 @@ void error(char *msg, ...) {
      status = 1;
 }
 
-void panic(char *msg, ...) {
+void panic(const char *msg, ...) {
      va_list va;
-     bool bug = FALSE;
+     boolean bug = FALSE;
 
      if (*msg == '*') {
 	  bug = TRUE; msg++;
@@ -76,7 +76,7 @@ void panic(char *msg, ...) {
 }
 
 /* must_alloc -- malloc or die */
-void *must_alloc(int n, char *why) {
+void *must_alloc(int n, const char *why) {
      void *p;
 #ifdef DEBUG
      if (dflag > 1) printf("Allocating %s as %d", why, n);
@@ -91,14 +91,14 @@ void *must_alloc(int n, char *why) {
 }
 
 /* must_strdup -- strdup or die */
-char *must_strdup(char *s) {
-     char *p = must_alloc(strlen(s)+1, s);
+char *must_strdup(const char *s) {
+     char *p = (char *) must_alloc(strlen(s)+1, s);
      strcpy(p, s);
      return p;
 }
 
 /* must_realloc -- realloc or (you guessed it) */
-void *must_realloc(void *p, int n0, int n, char *msg) {
+void *must_realloc(void *p, int n0, int n, const char *msg) {
 #ifdef DEBUG
      if (dflag) {
 	  printf("Growing %s at %p from %d to %d\n", msg, p, n0, n);
@@ -111,8 +111,8 @@ void *must_realloc(void *p, int n0, int n, char *msg) {
      return p;
 }
 
-void _buf_init(struct growbuf *b, int size, int margin, 
-		       int elsize, char *name) {
+void _buf_init(struct _growbuf *b, int size, int margin, 
+		       int elsize, const char *name) {
      b->buf = must_alloc(size * elsize, name);
      b->loc = 0;
      b->size = size;
@@ -121,7 +121,7 @@ void _buf_init(struct growbuf *b, int size, int margin,
      b->name = name;
 }
 
-void _buf_grow(struct growbuf *b) {
+void _buf_grow(struct _growbuf *b) {
      if (b == NULL) panic("*uninitialized growbuf");
 
      /* Ensure space for margin+1 items */
@@ -152,7 +152,8 @@ void *pool_alloc(mempool *pool, int size) {
 				      "pool table");
 		    pool->p_size *= 2;
 	       }
-	       pool->p_pool[pool->p_npools++] = must_alloc(PAGE, "pools");
+	       pool->p_pool[pool->p_npools++] = 
+		    (uchar *) must_alloc(PAGE, "pools");
 	  }
 	  pool->p_alloc = pool->p_pool[pool->p_current];
      }
@@ -166,7 +167,7 @@ void pool_reset(mempool *pool) {
      if (pool->p_pool == NULL) {
 	  pool->p_pool = (unsigned char **)
 	       must_alloc(SIZE * sizeof(void *), "pool table");
-	  pool->p_pool[0] = must_alloc(PAGE, "pools");
+	  pool->p_pool[0] = (uchar *) must_alloc(PAGE, "pools");
 	  pool->p_npools = 1; pool->p_size = SIZE;
      }
 

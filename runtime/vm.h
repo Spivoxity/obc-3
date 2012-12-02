@@ -69,7 +69,7 @@ extern int vm_debug;
 #define __op2__(op) #op,
 
 /* Mnemonics for the RISC-ish interface instructions */
-static char *mnemonic[] = {
+static const char *mnemonic[] = {
      __OP__(__op2__)
 };
 
@@ -77,13 +77,13 @@ int vm_debug;
 
 #ifdef DEBUG
 /* Register names */
-static char *rname[] = {
+static const char *rname[] = {
      __VMREG__(__op2__)
 };
 
 #define vm_dbg(fmt, ...) if (vm_debug > 0) _vm_dbg(fmt, __VA_ARGS__)
 
-static void _vm_dbg(char *fmt, ...) {
+static void _vm_dbg(const char *fmt, ...) {
      va_list va;
 
      va_start(va, fmt);
