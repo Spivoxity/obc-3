@@ -1,8 +1,9 @@
 if [ ! -r configure ]; then autoconf; fi
+
 FOO='-isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5'
 export CC='gcc -m32'
-export CFLAGS="-O2 $FOO"
+export CFLAGS="-g -O2 $FOO"
 export MLLINKFLAGS="-ccopt '$FOO'"
-export CFLAGS='-g -O2 -arch i386 -I/Developer/SDKs/MacOSX10.5.sdk/usr/include -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5'
+export GTKDIR=$HOME/gtk/inst
 
 ./configure --prefix=/usr/local $*

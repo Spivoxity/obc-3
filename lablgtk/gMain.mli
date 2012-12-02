@@ -27,25 +27,25 @@
 open Gtk
 
 (** @gtkdoc gtk gtk-General *)
-module Main : sig
-  val init : ?setlocale:bool -> unit -> string
-    (** [init] also sets the locale and returns its name.
+
+(** [init] also sets the locale and returns its name.
        Either set [~setlocale] to [false] or GTK_SETLOCALE to "0"
        if you don't want to the locale to be set *)
-  val main : unit -> unit
-    (** [main] runs the main loop, until [quit] is called.
-       {e Do not use in multi-threaded programs.} *)
-  val quit : unit -> unit
-    (** quit the main loop *)
-  val version : int * int * int
-    (** [major, minor, micro] *)
-end
-
-(** Direct access to functions of [GMain.Main] *)
-
 val init : ?setlocale:bool -> unit -> string
+
+(** [main] runs the main loop, until [quit] is called.
+       {e Do not use in multi-threaded programs.} *)
 val main : unit -> unit
+
+(** quit the main loop *)
 val quit : unit -> unit
+
+(** [major, minor, micro] *)
+val version : int * int * int
+
+(** Specify a platform-dependent menubar *)
+val set_platform_menubar : GMenu.menu_shell -> GMenu.menu_item -> unit
+
 
 (** Global structures *)
 

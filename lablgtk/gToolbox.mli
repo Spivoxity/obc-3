@@ -154,3 +154,4 @@ val tree_selection_dialog :
 (** Resize the columns of a clist according to the length of the 
    content and the title of each column.*)
 val autosize_clist : 'a GList.clist -> unit
+

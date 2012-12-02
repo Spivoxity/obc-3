@@ -86,7 +86,7 @@ class stackview_impl
 	self#select_frame (List.hd rows)
 
   initializer
-    peer#misc#modify_font_by_name Config.sans_font;
+    peer#misc#modify_font_by_name Debconf.sans_font;
     peer#set_model (Some store#coerce);
     peer#set_headers_visible false;
     peer#selection#set_mode `SINGLE;

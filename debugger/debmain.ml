@@ -26,14 +26,16 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * $Id$
  *)
 
 open Print
 open Binary
 open Symtab
-open Config
-open Guiapp
 open Control
+
+let rcsid = "$Id$"
 
 let args = ref []
 
@@ -76,7 +78,7 @@ class main_window () =
   let statcxt = status#new_context "Status" in
 
   let toolbutton text tooltip ifile =
-    let icon = image_resource ifile in
+    let icon = Debconf.image_resource ifile in
     toolbar#insert_button ~text ~tooltip ~icon:icon#coerce () in
 
   let runbtn = 
@@ -146,7 +148,7 @@ class main_window () =
       end
 
     method pause () =
-      flash_message "Interrupted!" [];
+      Debconf.flash_message "Interrupted!" [];
       interrupt ()
 
     method restart () = 
@@ -173,7 +175,7 @@ class main_window () =
     method quit () =
       if ask_ok "exit" then begin
 	interrupt ();
-	GMain.Main.quit ()
+	GMain.quit ()
       end
 
     method stopped () =
@@ -203,7 +205,7 @@ class main_window () =
     (* Add a module to the menu and load it if not a library module *)
     method add_module m =
       try
-	let fname = find_source m in
+	let fname = Debconf.find_source m in
 	incr modcount;
 	let format = if !modcount < 10 then "_$ $" else "$ $" in
 	let item = 
@@ -237,7 +239,7 @@ class main_window () =
     peer#add contents#coerce;
 
     let flash_cxt = status#new_context "Flash" in
-    flash_msg := (fun msg -> flash_cxt#flash msg);
+    Debconf.flash_msg := (fun msg -> flash_cxt#flash msg);
 
     List.iter (fun (btn, action) -> 
 	ignore (btn#connect#clicked ~callback:(fun ev -> self#run action)))
@@ -253,30 +255,40 @@ class main_window () =
       let menu = GMenu.menu ~packing:item#set_submenu () in
       GToolbox.build_menu menu ~entries:entries in
 
-    make_menu "_File" [`I ("_Quit", self#quit)];
+    if not Debconf.macos then
+      make_menu "_File" [`I ("_Quit", self#quit)];
+
     let moditem = 
       GMenu.menu_item ~label:"_Modules" ~use_mnemonic:true
-	~packing:menubar#append () in
+        ~packing:menubar#append () in
     moditem#set_submenu modmenu;
+
     make_menu "_Options" 
       [`C ("_Uglify syntax", notebook#uglify, notebook#set_uglify)];
-    make_menu "_Help" [`I ("_About", self#about)];
+
+    if not Debconf.macos then
+      make_menu "_Help" [`I ("_About Obdb", self#about)]
+    else begin
+      let about_item = GMenu.menu_item ~label:"About Obdb" () in
+      let _ = about_item#connect#activate self#about in
+      GMain.set_platform_menubar menubar about_item
+    end;
 
     ignore (peer#event#connect#delete 
       ~callback:(fun ev -> self#quit (); true));
   end
 
 let print_version f =
-  fprintf f "Oxford Oberon-2 gui debugger version $\n" [fStr version]
+  fprintf f "Oxford Oberon-2 gui debugger version $\n" [fStr Config.version]
 
 let anon_fun s = args := !args @ [s]
 
 let spec =
   [ "-d", Arg.Set Procio.trace, "Trace process I/O";
     "-i", Arg.String (fun s -> Procio.interp := s), "Specify interpreter";
-    "-I", Arg.String (fun s -> libpath := !libpath @ [s]), 
+    "-I", Arg.String (fun s -> Config.libpath := !Config.libpath @ [s]), 
       "Search directory for imports";
-    "-R", Arg.String (fun s -> resource_dir := s),
+    "-R", Arg.String (fun s -> Debconf.resource_dir := s),
       "Directory for gui resources";
     "-v", Arg.Unit (fun () -> print_version stderr; exit 0), 
 		"Print version and exit";
@@ -289,10 +301,10 @@ let main () =
   Glib.set_application_name "Oxford Oberon-2 debugger";
 
   (let mgr = GSourceView2.source_language_manager ~default:true in
-    mgr#set_search_path (!resource_dir :: mgr#search_path));
+    mgr#set_search_path (!Debconf.resource_dir :: mgr#search_path));
 
   (let mgr = GSourceView2.source_style_scheme_manager ~default:true in
-    mgr#set_search_path (!resource_dir :: mgr#search_path));
+    mgr#set_search_path (!Debconf.resource_dir :: mgr#search_path));
 
   GtkMain.Rc.parse_string 
     "style \"tab-close-button-style\" {
@@ -312,7 +324,7 @@ let main () =
   (* Load symbol tables and source code *)
   List.iter (fun m ->
       Info.import m (Binary.checksum m);
-      if not (List.mem m Config.lib_mods) then gui#add_module m)
+      if not (List.mem m Debconf.lib_mods) then gui#add_module m)
     (Binary.all_modules ());
   flush stderr;
 

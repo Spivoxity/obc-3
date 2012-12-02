@@ -119,13 +119,13 @@ let startup args sock addr =
     (Array.of_list ([!interp; "-p"; addr] @ args))
     Unix.stdin Unix.stdout Unix.stderr;
   let (conn, _) = accept sock in
-  if Config.use_inet then setsockopt conn TCP_NODELAY true;
+  if Debconf.use_inet then setsockopt conn TCP_NODELAY true;
   connection := conn;
   deb_in := out_channel_of_descr conn;
   deb_out := in_channel_of_descr conn
 
 let init args =
-  if Config.use_inet then begin
+  if Debconf.use_inet then begin
     let sock = socket PF_INET SOCK_STREAM 0 in
     bind sock (ADDR_INET (inet_addr_loopback, 0));
     let port = match getsockname sock with ADDR_INET (_, p) -> p 

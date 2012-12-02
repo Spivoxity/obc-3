@@ -26,7 +26,17 @@ open Gtk
 open GtkMain
 open GObj
 
-module Main = Main
+let main = Main.main
+
+let quit = Main.quit
+
+let init = Main.init
+
+let version = Main.version
+
+let set_platform_menubar 
+   (menubar : GMenu.menu_shell) (about : GMenu.menu_item) = 
+  Main.set_platform_menubar menubar#as_widget about#as_widget
 
 module Grab = struct
   open Grab
@@ -44,11 +54,6 @@ module Timeout = Glib.Timeout
 module Idle = Glib.Idle
 
 module Io = Glib.Io
-
-open Main
-let main = main
-let quit = quit
-let init = init
 
 let selection = GData.clipboard Gdk.Atom.primary
 let clipboard = GData.clipboard Gdk.Atom.clipboard

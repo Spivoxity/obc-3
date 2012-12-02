@@ -99,7 +99,7 @@ inst STOREF 0		S2  {indir($2.x, float) = $1.f;}
 # Load/store local
 # LDLs n :: --> mem_s[bp+n]
 # STLs n :: a --> []; mem_s[bp+n] := a
-inst LDLW {[-24,-4,4] [12,32,4] 1 2 } \
+inst LDLW {[-24,-4,4] [12,32,4] 1 2} \
      	  	        V.* {indir(local($a), type($t))}
 inst LDLS {1 2}		V.i {indir(local($a), short)}
 inst LDLC {1 2}		V.i {indir(local($a), uchar)}
@@ -132,9 +132,11 @@ inst STNW {[-16,20,4] 1 2} S2  {indir($2.x + $a, type($u1)) = $1.*;}
 # LDIs :: a, b --> mem_s[a+s*b]
 # STIs :: a, b, c --> []; mem_s[b+s*c] := a
 inst LDIW 0		B.* {subs($1.x, $2.i, type($t))}
+inst LDIF 0		B.f {subs($1.x, $2.i, float)}
 inst LDIS 0		B.i {subs($1.x, $2.i, short)}
 inst LDIC 0		B.i {subs($1.x, $2.i, uchar)}
 inst STIW 0		S3  {subs($2.x, $3.i, type($u1)) = $1.*;}
+inst STIF 0		S3  {subs($2.x, $3.i, float) = $1.f;}
 inst STIS 0		S3  {subs($2.x, $3.i, short) = $1.i;}
 inst STIC 0		S3  {subs($2.x, $3.i, uchar) = $1.i;}
 
@@ -750,10 +752,12 @@ expand INDEXD 0		{PUSH 3, LSL, PLUSA}
 expand LDIC 0		{INDEXC, LOADC}
 expand LDIS 0		{INDEXS, LOADS}
 expand LDIW 0		{INDEXW, LOADW}
+expand LDIF 0		{INDEXW, LOADF}
 expand LDID 0		{INDEXD, LOADD}
 expand STIC 0		{INDEXC, STOREC}
 expand STIS 0		{INDEXS, STORES}
 expand STIW 0		{INDEXW, STOREW}
+expand STIF 0		{INDEXW, STOREF}
 expand STID 0		{INDEXD, STORED}
 
 expand LDEW 1		{LDLW -4, LDNW $a}

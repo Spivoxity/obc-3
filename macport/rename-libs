@@ -1,32 +1,53 @@
 #!/bin/sh
 
-DIR=~/gtk/inst/lib
-DIR2=/usr/local/lib/obc/gtk/lib
-LIBS=`find $DIR -name '*.dylib' -type f`
-SHOBS=`find $DIR -name '*.so' -type f`
+GTKLIB=$1
+ORIG=$2
+NEW="@executable_path/../Resources/lib"
 
-# Find install names of all libraries
+LIBS=`echo $GTKLIB/*.dylib`
+SHOBS=`echo $GTKLIB/*.so`
+
+# Find list of installed libraries 
 NAMES=`otool -D $LIBS \
-      | sed -n -e '/:$/d' -e "\@$DIR@s@.*$DIR/\([^ ]*\).*@\1@p" \
-			  -e "\@$DIR2@s@.*$DIR2/\([^ ]*\).*@\1@p" \
-      | sort -u`
+	| sed -n -e '/:$/d' -e "\@$ORIG@s@.*$ORIG/\([^ ]*\).*@\1@p" \
+	| sort -u`
+
+# Filenames are not reliable, so we can't use this:
+#NAMES=`for f in $LIBS; do basename $f; done`
 
 # Make -change options for each library
 change=
 for name in $NAMES; do
-    change="$change -change $DIR/$name $DIR2/$name"
+    change="$change -change $ORIG/$name $NEW/$name"
 done
 
 # Change install name and dependencies for each dylib
 for lib in $LIBS; do
-    echo $lib
     name=`otool -D $lib | sed -n 2p`
-    name2="$DIR2/`basename $name`"
-    install_name_tool -id $name2 $change $lib
+    install_name_tool -id "$NEW/`basename $name`" $change $lib
 done
 
 # Change dependencies for each so
 for lib in $SHOBS; do
-    echo $lib
     install_name_tool $change $lib
 done
+
+# Make symlinks
+ln -s libatk-1.0.0.dylib $GTKLIB/libatk-1.0.dylib
+ln -s libexpat.1.5.2.dylib $GTKLIB/libexpat.1.5.dylib
+ln -s libgdk-quartz-2.0.0.dylib $GTKLIB/libgdk-quartz-2.0.dylib
+ln -s libgdk_pixbuf-2.0.0.dylib $GTKLIB/libgdk_pixbuf-2.0.dylib
+ln -s libgettextpo.0.4.0.dylib $GTKLIB/libgettextpo.0.4.dylib
+ln -s libgio-2.0.0.dylib $GTKLIB/libgio-2.0.dylib
+ln -s libglib-2.0.0.dylib $GTKLIB/libglib-2.0.dylib
+ln -s libgmodule-2.0.0.dylib $GTKLIB/libgmodule-2.0.dylib
+ln -s libgobject-2.0.0.dylib $GTKLIB/libgobject-2.0.dylib
+ln -s libgthread-2.0.0.dylib $GTKLIB/libgthread-2.0.dylib
+ln -s libgtk-quartz-2.0.0.dylib $GTKLIB/libgtk-quartz-2.0.dylib
+ln -s libgtksourceview-2.0.0.dylib $GTKLIB/libgtksourceview-2.0.dylib
+ln -s libpango-1.0.0.dylib $GTKLIB/libpango-1.0.dylib
+ln -s libpangocairo-1.0.0.dylib $GTKLIB/libpangocairo-1.0.dylib
+ln -s libpangoft2-1.0.0.dylib $GTKLIB/libpangoft2-1.0.dylib
+ln -s libigemacintegration.0.dylib $GTKLIB/libigemacintegration.dylib
+ln -s libcairo.2.dylib $GTKLIB/libcairo.dylib
+ln -s libintl.8.dylib $GTKLIB/libintl.dylib

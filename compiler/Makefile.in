@@ -106,7 +106,7 @@ quiteclean: clean
 
 # distclean: also remove all non-distributed files
 distclean: quiteclean
-	rm -f Makefile config.ml config.mli
+	rm -f Makefile config.ml
 
 realclean: distclean
 	rm -f $(srcdir)/Depend
@@ -119,7 +119,7 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 config.ml: $(srcdir)/config.ml.in ../config.status
 	cd .. && ./config.status --file=$(subdir)/$@
 
-config.mli lexer.mli symlex.mli: %: %.in
+lexer.mli symlex.mli: %: %.in
 	cp $< $@
 
 ML = growvect.ml growvect.mli print.ml print.mli \
@@ -130,7 +130,7 @@ ML = growvect.ml growvect.mli print.ml print.mli \
 	switch.ml symtab.ml peepopt.mli peepopt.ml \
 	symfile.mli symfile.ml symlex.mli browser.ml \
 	lexer.ml parser.mli parser.ml symlex.ml symparse.mli \
-	symparse.ml config.mli config.ml inicheck.mli inicheck.ml \
+	symparse.ml config.ml inicheck.mli inicheck.ml \
 	stack.mli stack.ml
 
 ifdef DEPEND

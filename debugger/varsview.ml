@@ -201,7 +201,7 @@ class varsview_impl (peer : GTree.view) =
     method show_globals () =
       self#clear ();
       List.iter (fun m ->
-	  if not (List.mem m Config.lib_mods) then insert_module m)
+	  if not (List.mem m Debconf.lib_mods) then insert_module m)
         (Binary.all_modules ());
       self#expand_tree GlobCxt
 
@@ -310,7 +310,7 @@ class varsview_impl (peer : GTree.view) =
 
   initializer
     peer#set_model (Some store#coerce);
-    peer#misc#modify_font_by_name Config.sans_font;
+    peer#misc#modify_font_by_name Debconf.sans_font;
 
     let render_name = GTree.cell_renderer_text [] in
     vc_name#pack render_name;

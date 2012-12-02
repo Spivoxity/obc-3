@@ -134,3 +134,4 @@ yacc/myacc
 yacc/yacc.ml
 yacc/yacc.mli
 
+debugger/debconf.ml

@@ -1,8 +1,10 @@
 (*
- * guiapp.ml
+ * @configure_input@
+ *
+ * debconf.ml.in
  * 
  * This file is part of the Oxford Oberon-2 compiler
- * Copyright (c) 2008 J. M. Spivey
+ * Copyright (c) 2006 J. M. Spivey
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +28,18 @@
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * $Id: config.ml.in 936 2009-01-27 10:53:04Z mike $
  *)
 
 open Print
-open Procio
-open Binary
-open Symtab
+
+let use_inet = ("@USE_INET@" <> "")
+let lib_mods = 
+  List.map Symtab.intern (Util.split_string "@MODULES@")
+let mono_font = "@MONOFONT@"
+let sans_font = "@SANSFONT@"
+let macos = ("@MACOS@" <> "")
 
 let resource_dir = ref "/usr/lib/obc"
 
@@ -49,4 +57,4 @@ let flash_msg = ref (fun msg -> ())
 let flash_message fmt args = !flash_msg (sprintf fmt args)
 
 let find_source m =
-  Util.search_path (extern m ^ ".m") !Config.libpath
+  Util.search_path (Symtab.extern m ^ ".m") !Config.libpath

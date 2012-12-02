@@ -41,6 +41,8 @@
 #include "gdk_tags.h"
 #include "gtk_tags.h"
 
+#include <config.h>
+
 void ml_raise_gtk (const char *errmsg)
 {
   static value * exn = NULL;
@@ -982,6 +984,31 @@ ML_0 (gtk_get_current_event_time, copy_int32)
 ML_0 (gtk_get_current_event, Check_null(Val_GdkEvent))
 ML_1 (gtk_get_event_widget, GdkEvent_val, Val_GtkWidget)
 ML_2 (gtk_propagate_event, GtkWidget_val, GdkEvent_val, Unit)
+
+#ifdef MACOS
+#include <gtkosxapplication.h>
+#endif
+
+CAMLprim value ml_gtk_set_platform_menubar(value x, value y)
+{
+#ifdef MACOS
+    GtkMenuShell *menubar = GTK_MENU_SHELL(GtkWidget_val(x));
+    GtkMenuItem *about = GTK_MENU_ITEM(GtkWidget_val(y));
+    GtkOSXApplication *app = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL); 
+    GtkOSXApplicationMenuGroup *group;
+
+    gtk_widget_hide((GtkWidget *) menubar);
+    gtk_osxapplication_set_menu_bar(app, menubar);
+
+    group = gtk_osxapplication_add_app_menu_group(app);
+    gtk_osxapplication_add_app_menu_item(app, group, about);
+
+    gtk_osxapplication_ready(app);
+#endif
+
+    return Val_unit;
+}
+
 
 /* gtkrc.h */
 

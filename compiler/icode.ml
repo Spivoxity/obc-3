@@ -72,7 +72,7 @@ type icode =
   | LINE of int			(* Line number *)
   | NOP				(* No-op *)
 
-  | INDEX of kind		(* CONST s/BINOP Times/BINOP PlusA *)
+  | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
   | STL of kind * int		(* LOCAL n/STORE s *)
   | LDG of kind * symbol	(* SYMBOL x/LOAD s *)
@@ -132,6 +132,11 @@ let fKind =
     | DoubleT -> fStr "D"
     | _ -> fStr "?"
 
+let fWidth =
+  function
+      1 -> fStr "C" | 2 -> fStr "S" | 4 -> fStr "W" | 8 -> fStr "D"
+    | _ -> fStr "?"
+
 (* Inst -- formatting function for use with printf *)
 let fInst =
   function
@@ -180,7 +185,7 @@ let fInst =
     | LINE n -> 	fMeta "LINE $" [fNum n]
     | NOP ->		fStr "NOP"
 
-    | INDEX s ->	fMeta "INDEX$" [fKind s]
+    | INDEX n ->	fMeta "INDEX$" [fWidth n]
     | LDL (s, n) ->	fMeta "LDL$ $" [fKind s; fNum n]
     | STL (s, n) ->	fMeta "STL$ $" [fKind s; fNum n]
     | LDG (s, x) ->	fMeta "LDG$ $" [fKind s; fSym x]

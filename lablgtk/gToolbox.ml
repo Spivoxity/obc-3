@@ -96,10 +96,10 @@ let question_box ~title  ~buttons ?(default=1) ?icon message =
         iter_buttons (n+1) q
   in
   iter_buttons 1 buttons;
-  window#connect#destroy ~callback: GMain.Main.quit;
+  window#connect#destroy ~callback: GMain.quit;
   window#set_position `CENTER;
   window#show ();
-  GMain.Main.main ();
+  GMain.main ();
   !button_nb
 
 
@@ -111,7 +111,7 @@ let input_widget ~widget ~event ~get_text ~bind_ok ~expand
     ~title ?(ok=mOk) ?(cancel=mCancel) message =
   let retour = ref None in
   let window = GWindow.dialog ~title ~modal:true () in
-  window#connect#destroy ~callback: GMain.Main.quit;
+  window#connect#destroy ~callback: GMain.quit;
   let main_box = window#vbox in
   let hbox_boutons = window#action_area in
 
@@ -148,7 +148,7 @@ let input_widget ~widget ~event ~get_text ~bind_ok ~expand
 
   widget#misc#grab_focus ();
   window#show ();
-  GMain.Main.main ();
+  GMain.main ();
 
   !retour
 
@@ -196,7 +196,7 @@ let select_file ~title ?(dir = last_dir) ?(filename="") () =
       GWindow.file_selection ~modal:true ~title ~filename ()
     end
   in
-  fs#connect#destroy ~callback: GMain.Main.quit;
+  fs#connect#destroy ~callback: GMain.quit;
   let file = ref None in 
   fs#ok_button#connect#clicked ~callback:
     begin fun () ->
@@ -206,7 +206,7 @@ let select_file ~title ?(dir = last_dir) ?(filename="") () =
     end;
   fs # cancel_button # connect#clicked ~callback:fs#destroy;
   fs # show ();
-  GMain.Main.main ();
+  GMain.main ();
   !file
 
 
@@ -285,9 +285,9 @@ let tree_selection_dialog ~tree ~label ~info ~title
   bOk#connect#clicked ~callback:window#destroy;
   bCancel#connect#clicked
     ~callback:(fun _ -> ts#clear_selection () ; window#destroy ());
-  window#connect#destroy ~callback: GMain.Main.quit;
+  window#connect#destroy ~callback: GMain.quit;
   window#show ();
-  GMain.Main.main () ;
+  GMain.main () ;
   ts#selection
 
 

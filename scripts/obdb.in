@@ -38,12 +38,9 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 LIBDIR=@libdir@/obc
 VERSION=@VERSION@
-obdb1=$LIBDIR/obdb1
+obdb1=@OBDB1@
 obxdeb=$LIBDIR/obxdeb
 stdlib="-I $LIBDIR"
-resources="-R $LIBDIR"
-MACOS=@MACOS@
-LIVE=1
 # End of config
 
 usage () {
@@ -75,9 +72,4 @@ fi
 
 if [ $# -eq 0 ]; then usage; fi
 
-if [ "$MACOS" = 1 ] && [ "$LIVE" = 1 ]; then
-    export XDG_DATA_DIRS=$LIBDIR/gtk/share
-    export GDK_PIXBUF_MODULE_FILE=$LIBDIR/gtk/etc/gtk-2.0/gdk-pixbuf.loaders
-fi
-
-$obdb1 $resources $flags -i $ROOT$obxdeb $incl $stdlib "$@"
+$obdb1 $flags -i $ROOT$obxdeb $incl $stdlib "$@"

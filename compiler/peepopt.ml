@@ -243,6 +243,20 @@ let simple =
   | LDG ((CharT|ShortT|IntT|FloatT), x) -> true
   | _ -> false
 
+let width =
+  function
+       CharT -> 1 
+     | ShortT -> 2
+     | IntT | FloatT -> 4
+     | LongT | DoubleT -> 8
+     | _ -> failwith "width"
+
+let divisible n s =
+  integer_mod n (integer (width s)) = integer 0
+
+let divide n s =
+  integer_div n (integer (width s))
+
 let ruleset2 replace =
   function
       (* Introduce specialized instructions *)
@@ -269,72 +283,30 @@ let ruleset2 replace =
 	replace 3 [CONSTn n; TESTGEQ lab]
 
     | CONSTn s :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: _
-	  when s = integer 2 ->
-	replace 3 [INDEX ShortT]
-    | CONSTn s :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: _
-	  when s = integer 4 ->
-	replace 3 [INDEX IntT]
-    | CONSTn s :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: _
-	  when s = integer 8 ->
-	replace 3 [INDEX LongT]
+	  when s = integer 2 || s = integer 4 || s = integer 8 ->
+	replace 3 [INDEX (int_of_integer s)]
 
-    | CONSTn n :: BINOP (PtrT, PlusA) :: LOAD ShortT :: _ 
-	  when integer_mod n (integer 2) = integer 0 ->
-	replace 3 [CONSTn (integer_div n (integer 2)); LDI ShortT]
-    | CONSTn n :: BINOP (PtrT, PlusA) :: LOAD (IntT|FloatT as s) :: _ 
-	  when integer_mod n (integer 4) = integer 0 ->
-	replace 3 [CONSTn (integer_div n (integer 4)); LDI s]
-    | CONSTn n :: BINOP (PtrT, PlusA) :: LOAD (LongT|DoubleT as s) :: _ 
-	  when integer_mod n (integer 8) = integer 0 ->
-	replace 3 [CONSTn (integer_div n (integer 8)); LDI s]
-    | CONSTn n :: BINOP (PtrT, PlusA) :: STORE ShortT :: _ 
-	  when integer_mod n (integer 2) = integer 0 ->
-	replace 3 [CONSTn (integer_div n (integer 2)); STI ShortT]
-    | CONSTn n :: BINOP (PtrT, PlusA) :: STORE (IntT|FloatT as s) :: _ 
-	  when integer_mod n (integer 4) = integer 0 ->
-	replace 3 [CONSTn (integer_div n (integer 4)); STI s]
-    | CONSTn n :: BINOP (PtrT, PlusA) :: STORE (LongT|DoubleT as s) :: _ 
-	  when integer_mod n (integer 8) = integer 0 ->
-	replace 3 [CONSTn (integer_div n (integer 8)); STI s]
+    | CONSTn n :: BINOP (PtrT, PlusA) :: LOAD s :: _
+          when divisible n s ->
+        replace 3 [CONSTn (divide n s); LDI s]
+    | CONSTn n :: BINOP (PtrT, PlusA) :: STORE s :: _
+          when divisible n s ->
+	replace 3 [CONSTn (divide n s); STI s] 
 
-    | CONSTn n :: BINOP (IntT, Times) :: 
-	BINOP (PtrT, PlusA) :: LOAD ShortT :: _
-	  when integer_mod n (integer 2) = integer 0 ->
-	replace 4 [CONSTn (integer_div n (integer 2)); 
-	    BINOP (IntT, Times); LDI ShortT]
-    | CONSTn n :: BINOP (IntT, Times) :: 
-	BINOP (PtrT, PlusA) :: LOAD (IntT|FloatT as s) :: _
-	  when integer_mod n (integer 4) = integer 0 ->
-	replace 4 [CONSTn (integer_div n (integer 4)); 
-	    BINOP (IntT, Times); LDI s]
-    | CONSTn n :: BINOP (IntT, Times) :: 
-	BINOP (PtrT, PlusA) :: LOAD (LongT|DoubleT as s) :: _
-	  when integer_mod n (integer 8) = integer 0 ->
-	replace 4 [CONSTn (integer_div n (integer 8)); 
-	    BINOP (IntT, Times); LDI s]
-    | CONSTn n :: BINOP (IntT, Times) :: 
-	BINOP (PtrT, PlusA) :: STORE ShortT :: _
-	  when integer_mod n (integer 2) = integer 0 ->
-	replace 4 [CONSTn (integer_div n (integer 2)); 
-	    BINOP (IntT, Times); STI ShortT]
-    | CONSTn n :: BINOP (IntT, Times) :: 
-	BINOP (PtrT, PlusA) :: STORE (IntT|FloatT as s) :: _
-	  when integer_mod n (integer 4) = integer 0 ->
-	replace 4 [CONSTn (integer_div n (integer 4)); 
-	    BINOP (IntT, Times); STI s]
-    | CONSTn n :: BINOP (IntT, Times) :: 
-	BINOP (PtrT, PlusA) :: STORE (LongT|DoubleT as s) :: _
-	  when integer_mod n (integer 8) = integer 0 ->
-	replace 4 [CONSTn (integer_div n (integer 8)); 
-	    BINOP (IntT, Times); STI s]
+    | CONSTn n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: LOAD s :: _
+          when divisible n s ->
+	replace 4 [CONSTn (divide n s); BINOP (IntT, Times); LDI s]
+    | CONSTn n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: STORE s :: _
+          when divisible n s ->
+	replace 4 [CONSTn (divide n s); BINOP (IntT, Times); STI s]
 
     | BINOP (PtrT, PlusA) :: LOAD CharT :: _ ->
 	replace 2 [LDI CharT]
     | BINOP (PtrT, PlusA) :: STORE CharT :: _ ->
 	replace 2 [STI CharT]
-    | INDEX s :: LOAD s1 :: _ when s = s1 ->
+    | INDEX n :: LOAD s :: _ when n = width s ->
 	replace 2 [LDI s]
-    | INDEX s :: STORE s1 :: _ when s = s1 ->
+    | INDEX n :: STORE s :: _ when n = width s ->
 	replace 2 [STI s]
 
     | CONSTn n :: LDI IntT :: _ -> 

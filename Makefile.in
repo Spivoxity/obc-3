@@ -96,6 +96,9 @@ ifdef ENABLE_DEBUGGER
   SUBDIRS += debugger
   BUILD += obxdeb obdb
   DEBUILD += obdb0
+  ifdef MACOS
+    BUILD += macdebug
+  endif
 endif
 
 predirs : $(PREDIRS)
@@ -113,6 +116,13 @@ $(PREDIRS) $(SUBDIRS) :
 
 lib: compiler
 debugger: compiler lablgtk
+
+ifdef MACOS
+lablgtk: macport/gtklib
+
+macport/gtklib:
+	$(MAKE) -C macport gtklib
+endif
 
 ifndef DYNLINK
   EXTRA_LIBS = $(MATHLIB) $(XLIB)
@@ -145,6 +155,9 @@ else
 	cat $(INTERP).exe obdump.x >$@.exe
 	chmod +x $@.exe
 endif
+
+macdebug : force
+	$(MAKE) -C macport debugger
 
 sanity : Fac.m force
 	compiler/obc1 -x -g -pl -I lib $< >Fac.k
@@ -202,9 +215,12 @@ endif
 
 ifdef ENABLE_DEBUGGER
   BIN += obdb
-  LIB += $(RESOURCES:%=$(RESDIR)/%)
-  LIBX += debugger/obdb1 obxdeb
+  LIBX += obxdeb
   ETC += $(srcdir)/scripts/obdb.in
+  ifndef MACOS
+    LIB += $(RESOURCES:%=$(RESDIR)/%)
+    LIBX += debugger/obdb1 
+  endif
 endif
 
 # We install the library source before the object files, so that the
@@ -222,7 +238,7 @@ install:: force
 ifdef ENABLE_DEBUGGER
   ifdef MACOS
     install:: force
-	$(MAKE) -C macport install-gtk
+	cp -R macport/Obdb.app $(libdir)/obc
   endif
 endif
 
@@ -295,7 +311,7 @@ force:
 
 $(srcdir)/configure: configure.in aclocal.m4
 	cd $(srcdir) && $(AUTOCONF)
-     
+
 config.status: configure
 	./config.status --recheck
 
@@ -303,7 +319,7 @@ $(srcdir)/config.h.in: stamp-h.in
 $(srcdir)/stamp-h.in: configure.in aclocal.m4
 	cd $(srcdir) && $(AUTOHEADER)
 	echo timestamp >$(srcdir)/stamp-h.in
-     
+
 config.h: stamp-h
 stamp-h: config.h.in config.status
 	CONFIG_FILES= CONFIG_HEADERS=config.h ./config.status

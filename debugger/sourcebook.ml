@@ -128,7 +128,7 @@ class debug_view m enabled
 	      (* No break there yet: make one *)
 	      Control.set_break m n true;
 	      self#add_breakmark break;
-	      Guiapp.flash_message "Breakpoint at line $" [fNum n]
+	      Debconf.flash_message "Breakpoint at line $" [fNum n]
 	    end
 	  with Not_found -> ()
 	end;
@@ -136,12 +136,12 @@ class debug_view m enabled
       end
 
   initializer
-    peer#misc#modify_font_by_name Config.mono_font;
+    peer#misc#modify_font_by_name Debconf.mono_font;
     peer#set_mark_category_pixbuf "breakpoint" 
-      (Some (Guiapp.pixbuf_resource "breakpoint.png"));
+      (Some (Debconf.pixbuf_resource "breakpoint.png"));
     peer#set_mark_category_priority "breakpoint" 1;
     peer#set_mark_category_pixbuf "here" 
-      (Some (Guiapp.pixbuf_resource "here.png"));
+      (Some (Debconf.pixbuf_resource "here.png"));
     peer#set_mark_category_priority "here" 2;
     peer#set_mark_category_background "frame" 
       (Some (GDraw.color (`NAME "#FFFF88")));
@@ -149,7 +149,7 @@ class debug_view m enabled
     (* GtkSourceView 2.4.1 doesn't like mark categories that have no
        associated image (see Bugzilla #564714).  Here's a workaround: *)
     peer#set_mark_category_pixbuf "frame"
-      (Some (Guiapp.pixbuf_resource "blank.png"));
+      (Some (Debconf.pixbuf_resource "blank.png"));
 
     ignore (peer#event#connect#button_press self#source_click);
   end
@@ -210,10 +210,10 @@ class sourcebook_impl (peer : GPack.notebook) =
       with Not_found ->
 	(* Page not loaded yet *)
 	try 
-	  let fname = Guiapp.find_source m in self#create_page m fname
+	  let fname = Debconf.find_source m in self#create_page m fname
 	with Not_found ->
 	  (* Can't find the file *)
-	  Guiapp.flash_message "Can't find source for module $" [fId m];
+	  Debconf.flash_message "Can't find source for module $" [fId m];
 	  raise Not_found
 
     method show_module m =

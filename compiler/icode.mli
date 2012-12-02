@@ -71,7 +71,7 @@ type icode =
   | LINE of int			(* Line number *)
   | NOP				(* No-op *)
 
-  | INDEX of kind		(* CONST s/BINOP Times/BINOP PlusA *)
+  | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
   | STL of kind * int		(* LOCAL n/STORE s *)
   | LDG of kind * symbol	(* SYMBOL x/LOAD s *)

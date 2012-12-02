@@ -1,7 +1,0 @@
-# GdkPixbuf Image Loader Modules file
-"@prefix@/lib/obc/gtk/lib/gtk-2.0/2.10.0/loaders/libpixbufloader-png.so"
-"png" 5 "gtk20" "The PNG image format" "LGPL"
-"image/png" ""
-"png" ""
-"\211PNG\r\n\032\n" "" 100
-

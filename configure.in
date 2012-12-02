@@ -33,7 +33,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 2.9.0, mike@comlab.ox.ac.uk)
+AC_INIT(obc, 2.9.1, mike@comlab.ox.ac.uk)
 # Don't forget to update version number in debian/changelog too.
 AC_PREREQ(2.50)
 AC_REVISION($Revision: 1639 $)
@@ -84,11 +84,15 @@ esac
 AC_DEFINE_UNQUOTED(PATHSEP, "$PATHSEP", [Directory separator in file names])
 
 : ${MLFLAGS=-g}
-AC_SUBST(MLFLAGS)
+AC_ARG_VAR(MLFLAGS, [Flags to pass to ocamlc])
 
 if test "$WINDOWS" = 1; then
   AC_SUBST(MLLINKFLAGS, "-ccopt -L/lib/mingw")
 fi
+
+: ${GTKDIR=/usr}
+AC_ARG_VAR(GTKDIR, [Directory to find GTK])
+
 
 # Fonts for debugger
 MONOFONT="Monospace 10"
@@ -100,19 +104,32 @@ fi
 AC_SUBST(MONOFONT)
 AC_SUBST(SANSFONT)
 
+
+# Misc paths
+OBDB1='"$LIBDIR/obdb1 -R $LIBDIR"'
+OBDB1_DEBUG='"$BINDIR/debugger/obdb1 -R $ROOT$TOPDIR/resources"'
+if test "$MACOS" = 1; then
+  OBDB1='"$LIBDIR/Obdb.app/Contents/MacOS/obdb"'
+  OBDB1_DEBUG='"$BINDIR/macport/Obdb.app/Contents/MacOS/obdb"'
+fi
+AC_SUBST(OBDB1)
+AC_SUBST(OBDB1_DEBUG)   
+
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
-AC_CHECK_PROGS(TCLSH, tclsh, none)
-if test "$TCLSH" = none; then
-  AC_MSG_ERROR(tclsh not found)
-fi
-AC_CHECK_PROGS(DIFF, gdiff diff, none)
-if test "$DIFF" = none; then
-  AC_MSG_ERROR(diff not found)
-fi
+
+AC_CHECK_PROGS(TCLSH, tclsh)
+test "$TCLSH" != "" || AC_MSG_ERROR(tclsh not found)
+
+AC_CHECK_PROGS(DIFF, gdiff diff)
+test "$DIFF" != "" || AC_MSG_ERROR(diff not found)
+
+AC_PATH_PROG(PKG_CONFIG, pkg-config, "", $PATH$PATH_SEPARATOR$GTKDIR/bin)
+test "$PKG_CONFIG" != "" || AC_MSG_ERROR(pkg-config not found)
 
 # Disable fancy alias analysis in the runtime system on i386
 # Also on x86_64, where the compiler of choice is 'gcc -m32'

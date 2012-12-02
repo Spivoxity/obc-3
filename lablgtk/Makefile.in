@@ -36,55 +36,78 @@
 srcdir = @srcdir@
 subdir = lablgtk
 abs_top_srcdir = @abs_top_srcdir@
+abs_top_builddir = @abs_top_builddir@
+MLFLAGS = @MLFLAGS@
 RANLIB = @RANLIB@
 WINDOWS = @WINDOWS@
 MACOS = @MACOS@
 VPATH = @srcdir@
-PKGS = gtk+-2.0 gtksourceview-2.0
 DEPEND = @DEPEND@
+PKG_CONFIG = @PKG_CONFIG@
 # End of config
 
 ALL = lablgtk.cma liblablgtk.a gtkThread.cmo
 
-COBJS = ml_gdkpixbuf.o ml_gdk.o ml_glib.o ml_gobject.o \
-	ml_gpointer.o ml_gvaluecaml.o wrappers.o \
-	$(GTKOBJS)
+COBJS = ml_gdkpixbuf.o ml_gdk.o ml_glib.o ml_gobject.o ml_gpointer.o \
+	ml_gvaluecaml.o wrappers.o ml_gtk.o ml_pango.o ml_gtkaction.o \
+	ml_gtkbin.o ml_gtkbroken.o ml_gtkbutton.o ml_gtkedit.o \
+	ml_gtkfile.o ml_gtklist.o ml_gtkmenu.o ml_gtkmisc.o ml_gtkpack.o \
+	ml_gtkstock.o ml_gtktext.o ml_gtktree.o ml_gtksourceview2.o
 
-GTKOBJS = ml_gtk.o ml_pango.o ml_gtkaction.o \
-	ml_gtkbin.o ml_gtkbroken.o ml_gtkbutton.o \
-	ml_gtkedit.o ml_gtkfile.o ml_gtklist.o \
-	ml_gtkmenu.o ml_gtkmisc.o \
-	ml_gtkpack.o ml_gtkstock.o \
-	ml_gtktext.o ml_gtktree.o ml_gtksourceview2.o
-
-GTKPROPS = gtkBase.props gtkBin.props gtkButton.props gtkEdit.props \
+PROPS = gtkBase.props gtkBin.props gtkButton.props gtkEdit.props \
 	gtkList.props gtkMenu.props gtkMisc.props gtkPack.props \
 	gtkText.props gtkTree.props gtkFile.props \
 	gtkAction.props gtkBroken.props \
 	gtkSourceView2.props
-MLOBJS1 =  gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo
-ENUMOBJS = gdkEnums.cmo pangoEnums.cmo gtkEnums.cmo sourceView2Enums.cmo
-MLOBJS2 = pango.cmo gdk.cmo gdkEvent.cmo gdkKeysyms.cmo gdkPixbuf.cmo \
-	gtk.cmo gtkSignal.cmo gtkStock.cmo gtkObject.cmo
-MLOBJS3 = gtkData.cmo gtkBase.cmo gtkPack.cmo gtkButton.cmo \
+
+TAGS = gdkpixbuf_tags.var gdk_tags.var glib_tags.var gobject_tags.var \
+	gtk_tags.var pango_tags.var sourceView2_tags.var
+
+MLOBJS =  gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo \
+	gdkEnums.cmo pangoEnums.cmo gtkEnums.cmo sourceView2Enums.cmo \
+	pango.cmo gdk.cmo gdkEvent.cmo gdkKeysyms.cmo gdkPixbuf.cmo \
+	gtk.cmo gtkSignal.cmo gtkStock.cmo gtkObject.cmo \
+	$(PROPS:.props=Props.cmo) \
+	gtkData.cmo gtkBase.cmo gtkPack.cmo gtkButton.cmo \
 	gtkMenu.cmo gtkMisc.cmo gtkWindow.cmo gtkList.cmo \
 	gtkBin.cmo gtkEdit.cmo gtkText.cmo gtkTree.cmo \
 	gtkFile.cmo gtkMain.cmo gtkBroken.cmo gtkSourceView2.cmo \
-	gPango.cmo gDraw.cmo gObj.cmo gData.cmo gMain.cmo
-MLOBJS4 = gContainer.cmo gPack.cmo gButton.cmo gText.cmo \
+	gDraw.cmo gPango.cmo gObj.cmo gData.cmo \
+	$(PROPS:%.props=o%Props.cmo) \
+	gContainer.cmo gPack.cmo gButton.cmo gText.cmo \
 	gMenu.cmo gMisc.cmo gTree.cmo gList.cmo gFile.cmo gWindow.cmo \
 	gBin.cmo gEdit.cmo gAction.cmo gBroken.cmo \
-	gUtil.cmo gToolbox.cmo gSourceView2.cmo
-MLOBJS =  $(MLOBJS1) $(ENUMOBJS) $(MLOBJS2) $(GTKPROPS:.props=Props.cmo) \
-	$(MLOBJS3) $(GTKPROPS:%.props=o%Props.cmo) $(MLOBJS4)
+	gUtil.cmo gMain.cmo gToolbox.cmo gSourceView2.cmo 
 
 all: $(ALL)
+
+PKGCONF = $(PKG_ENV) $(PKG_CONFIG) $(PKG_FLAGS)
+
+ifdef WINDOWS
+  PKG_PATH = $(abs_top_srcdir)/winport:/cygdrive/c/GTK/lib/pkgconfig
+  PKG_ENV = env PKG_CONFIG_PATH=$(PKG_PATH)
+  PKG_FLAGS = --define-variable=prefix=C:/GTK
+endif
+
+PKGS := gtk+-2.0 gtksourceview-2.0
+
+ifdef MACOS
+  PKGS += ige-mac-integration
+  GTKFLAGS := $(shell $(PKGCONF) --cflags $(PKGS)) -DHAS_GTKQUARTZ
+  GTKLIBS := -L$(abs_top_builddir)/macport/gtklib \
+	$(shell $(PKGCONF) --libs-only-l $(PKGS))
+else
+  GTKFLAGS := $(shell $(PKGCONF) --cflags $(PKGS))
+  GTKLIBS := $(shell $(PKGCONF) --libs-only-L $(PKGS)) \
+	$(shell $(PKGCONF) --libs-only-l $(PKGS))
+endif
 
 lablgtk.cma: $(MLOBJS)
 	ocamlc -a -o $@ $^ -cclib -llablgtk -cclib "$(GTKLIBS)"
 
-liblablgtk.a: $(COBJS) $(SV2OBJS)
-	ar cr $@ $^; $(RANLIB) $@	
+liblablgtk.a: $(COBJS)
+	ar cr $@ $^
+	$(RANLIB) $@	
 
 gtkThread.cmi: gtkThread.mli
 	ocamlc -c -thread -o $@ $<
@@ -92,49 +115,17 @@ gtkThread.cmi: gtkThread.mli
 gtkThread.cmo: gtkThread.ml
 	ocamlc -c -thread -w s -o $@ $<
 
-ifdef WINDOWS
-  PKG_CONFIG = \
-    env PKG_CONFIG_PATH=$(abs_top_srcdir)/winport:/cygdrive/c/GTK/lib/pkgconfig \
-	pkg-config --define-variable=prefix=C:/GTK
-else
-  PKG_CONFIG = pkg-config
-endif
+%.o: %.c
+	ocamlc -c -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' -o $@ $<
 
-GTKFLAGS := $(shell $(PKG_CONFIG) --cflags $(PKGS))
-GTKLIBS := \
-	$(shell $(PKG_CONFIG) --libs-only-L $(PKGS)) \
-	$(shell $(PKG_CONFIG) --libs-only-l $(PKGS))
-
-ifdef MACOS
-  GTKFLAGS += -DHAS_GTKQUARTZ
-endif
-
-$(COBJS): %.o: %.c
-	ocamlc -c -ccopt '-I .' -ccopt '$(GTKFLAGS)' -o $@ $<
-
-$(GTKOBJS): pango_tags.h gtk_tags.h ml_gtk.h gdk_tags.h ml_gdk.h \
-	    ml_gobject.h ml_glib.h wrappers.h
-ml_glib.o: glib_tags.h ml_glib.h wrappers.h
-ml_gobject.o: gobject_tags.h ml_gvaluecaml.h wrappers.h
-ml_gvaluecaml.o: ml_gobject.h wrappers.h
-ml_gdk.o: gdk_tags.h ml_gdk.h ml_gpointer.h \
-	pango_tags.h ml_pango.h wrappers.h
-ml_gtk.o ml_gtktext.o: ml_pango.h gtk_tags.h
-ml_gtkgl.o: gtkgl_tags.h ml_gtk.h ml_gdk.h wrappers.h
-ml_gpointer.o: ml_gpointer.h
-ml_gdkpixbuf.o: ml_gdkpixbuf.h gdkpixbuf_tags.h ml_gdk.h gdk_tags.h \
-	wrappers.h ml_gpointer.h
-ml_pango.o: pango_tags.h ml_pango.h
-
-$(SV2OBJS): ml_glib.h ml_gdk.h ml_gtk.h ml_gobject.h ml_gdkpixbuf.h \
-	ml_pango.h gtk_tags.h gdk_tags.h ml_gtktext.h \
-	sourceView2_tags.h wrappers.h
+$(COBJS): gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
+	gtk_tags.h pango_tags.h sourceView2_tags.h \
+	ml_gdk.h ml_gdkpixbuf.h ml_glib.h \
+	ml_gobject.h ml_gpointer.h ml_gtk.h ml_gvaluecaml.h ml_pango.h \
+	pango_tags.h wrappers.h
 
 %Props.ml o%Props.ml: %.props propcc
 	./propcc $<
-
-TAGS = gdkpixbuf_tags.var gdk_tags.var glib_tags.var gobject_tags.var \
-	gtk_tags.var pango_tags.var sourceView2_tags.var
 
 %_tags.c %_tags.h %Enums.ml: %_tags.var varcc
 	./varcc $<
@@ -152,7 +143,7 @@ clean: force
 	rm -f *.cma *.cmi *.cmo *.o *.a propcc varcc
 
 quiteclean : clean
-	rm -f $(GTKPROPS:%.props=%Props.ml) $(GTKPROPS:%.props=o%Props.ml) \
+	rm -f $(PROPS:%.props=%Props.ml) $(PROPS:%.props=o%Props.ml) \
 		$(TAGS:%.var=%.h) $(TAGS:%.var=%.c) \
 		$(TAGS:%_tags.var=%Enums.ml)
 
