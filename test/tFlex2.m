@@ -24,11 +24,11 @@ TYPE Matrix = ARRAY OF ARRAY OF INTEGER;
 PROCEDURE Foo(VAR m: Matrix);
   VAR i, j: INTEGER;
 BEGIN
-  Out.Int(LEN(m), 0); Out.Ln;
-  Out.Int(LEN(m, 2), 0); Out.Ln;
+  Out.Int(LEN(m, 0), 0); Out.Ln;
+  Out.Int(LEN(m, 1), 0); Out.Ln;
 
-  FOR i := 0 TO LEN(m, 1)-1 DO
-    FOR j := 0 TO LEN(m, 2)-1 DO
+  FOR i := 0 TO LEN(m, 0)-1 DO
+    FOR j := 0 TO LEN(m, 1)-1 DO
       m[i][j] := (i+2)*(j+2)
     END
   END
@@ -55,8 +55,8 @@ BEGIN
 
   NEW(tt, 4, 5);
   Foo(tt^);
-  Out.Int(LEN(tt^), 0); Out.Ln;
-  Out.Int(LEN(tt^, 2), 0); Out.Ln;
+  Out.Int(LEN(tt^, 0), 0); Out.Ln;
+  Out.Int(LEN(tt^, 1), 0); Out.Ln;
   Out.Int(tt[3][4], 0); Out.Ln;
 
   q(mm); q(tt^);
@@ -74,21 +74,21 @@ ENDHDR
 
 PROC tFlex2.Foo 16 5 0x00100001
 ! PROCEDURE Foo(VAR m: Matrix);
-!   Out.Int(LEN(m), 0); Out.Ln;
+!   Out.Int(LEN(m, 0), 0); Out.Ln;
 CONST 0
 LDLW 16
 GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   Out.Int(LEN(m, 2), 0); Out.Ln;
+!   Out.Int(LEN(m, 1), 0); Out.Ln;
 CONST 0
 LDLW 20
 GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   FOR i := 0 TO LEN(m, 1)-1 DO
+!   FOR i := 0 TO LEN(m, 0)-1 DO
 LDLW 16
 DEC
 STLW -12
@@ -96,7 +96,7 @@ CONST 0
 STLW -4
 JUMP 2
 LABEL 1
-!     FOR j := 0 TO LEN(m, 2)-1 DO
+!     FOR j := 0 TO LEN(m, 1)-1 DO
 LDLW 20
 DEC
 STLW -16
@@ -123,13 +123,13 @@ LDLW 20
 BOUND 32
 PLUS
 STIW
-!     FOR j := 0 TO LEN(m, 2)-1 DO
+!     FOR j := 0 TO LEN(m, 1)-1 DO
 INCL -8
 LABEL 4
 LDLW -8
 LDLW -16
 JLEQ 3
-!   FOR i := 0 TO LEN(m, 1)-1 DO
+!   FOR i := 0 TO LEN(m, 0)-1 DO
 INCL -4
 LABEL 2
 LDLW -4
@@ -210,7 +210,7 @@ LDNW 4
 SWAP
 GLOBAL tFlex2.Foo
 CALL 3
-!   Out.Int(LEN(tt^), 0); Out.Ln;
+!   Out.Int(LEN(tt^, 0), 0); Out.Ln;
 CONST 0
 LDGW tFlex2.tt
 NCHECK 58
@@ -220,7 +220,7 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   Out.Int(LEN(tt^, 2), 0); Out.Ln;
+!   Out.Int(LEN(tt^, 1), 0); Out.Ln;
 CONST 0
 LDGW tFlex2.tt
 NCHECK 59

@@ -410,7 +410,7 @@ and gen_bound k e0 addr_fun =
 		Name x ->
 		  (* An open array parameter *)
 		  let d = get_def x in
-		  gen_local d.d_level (d.d_offset + k * word_size);
+		  gen_local d.d_level (d.d_offset + (k+1) * word_size);
 		  gen (LOAD IntT)
 	      | Deref p ->
 		  (* Get descriptor address *)
@@ -420,13 +420,13 @@ and gen_bound k e0 addr_fun =
 		  load_addr ();
 
 		  (* Fetch k'th dimension *)
-		  gen_const (bound_offset + (k-1) * word_size);
+		  gen_const (bound_offset + k * word_size);
 		  gen (BINOP (PtrT, PlusA));
 		  gen (LOAD IntT)
 	      | _ -> failwith "gen_bound 2"
 	  end
       | _ -> failwith "gen_bound" in
-  bound 1 e0.e_type
+  bound 0 e0.e_type
 
 and gen_offset e0 us =
   let rec loop i ys t =
@@ -456,10 +456,10 @@ and gen_offset e0 us =
     | x::xs ->
 	gen_expr x;
 	if !Config.boundchk then begin
-          gen_bound 1 e0 (dup 1);
+          gen_bound 0 e0 (dup 1);
           gen (BOUND !code_line)
         end;
-	loop 2 xs (base_type e0.e_type)
+	loop 1 xs (base_type e0.e_type)
 
 (* gen_expr -- generate code to push the value of an expression *)
 and gen_expr e = 
@@ -771,7 +771,7 @@ and gen_flexarg t a =
     else begin
       let t1 = flex_base a.e_type in
       gen_const (t1.t_rep.m_size);
-      for i = 1 to flexity a.e_type do
+      for i = 0 to flexity a.e_type - 1 do
 	gen_bound i a (dup 2);
 	gen (BINOP (IntT, Times))
       done
@@ -781,7 +781,7 @@ and gen_flexarg t a =
     let e0 = sub_base a in
     let us = subscripts a in
     gen_addr e0;
-    for i = flexity t downto 1 do
+    for i = flexity t - 1 downto 0 do
       gen_bound (List.length us + i) e0 (dup 0);
       gen SWAP
     done;
@@ -844,7 +844,7 @@ and gen_builtin q args =
 	end
 
     | LenFun, v::_ ->
-	let n = if List.length args = 1 then 1
+	let n = if List.length args = 1 then 0
 	  else int_of_integer (int_value (value_of (List.nth args 1))) in
 	let e0 = sub_base v in
 	let us = subscripts v in

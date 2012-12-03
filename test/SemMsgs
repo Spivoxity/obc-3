@@ -71,6 +71,15 @@
 > VAR g: SemError.flex;
 >        ^^^^^^^^^^^^^
 
+"SemError.m", line 88: arrays cannot have open arrays as elements
+> PROCEDURE Lenny(a: ARRAY 999 OF ARRAY OF INTEGER): INTEGER;
+>                                 ^^^^^^^^^^^^^^^^
+
+"SemError.m", line 88: warning -- you should name this parameter type, or
+else no actual parameter will match
+> PROCEDURE Lenny(a: ARRAY 999 OF ARRAY OF INTEGER): INTEGER;
+>                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 "SemError.m", line 43: method 'rec2.m' overrides 'rec.m' with incompatible
 parameters
 > PROCEDURE (VAR r: rec2) m*(q: REAL): REAL; END m;
@@ -116,293 +125,299 @@ procedure value
 >   f := digest
 >        ^^^^^^
 
-"SemError.m", line 89: this case label specifies an empty range
+"SemError.m", line 90: this argument of LEN should be an array of at least 3
+dimensions
+>   RETURN LEN(a, 2)
+>              ^
+> This expression has type ARRAY 999 OF ARRAY OF INTEGER
+
+"SemError.m", line 94: this case label specifies an empty range
 >   CASE x OF 3..2: | 1: | 1: | 'a': END;
 >             ^^^^
 
-"SemError.m", line 89: this case label should have type INTEGER
+"SemError.m", line 94: this case label should have type INTEGER
 >   CASE x OF 3..2: | 1: | 1: | 'a': END;
 >                               ^^^
 > This expression has type CHAR
 
-"SemError.m", line 90: this is a duplicate case label for value 'a'
+"SemError.m", line 95: this is a duplicate case label for value 'a'
 >   CASE 'x' OF 'a': | 'a': END;
 >                      ^^^
 
-"SemError.m", line 91: CASE expects an integer or character expression
+"SemError.m", line 96: CASE expects an integer or character expression
 >   CASE TRUE OF TRUE: END;
 >        ^^^^
 > (Use the -x flag to remove this restriction)
 > This expression has type BOOLEAN
 
-"SemError.m", line 92: the LHS of an assignment must be a variable
+"SemError.m", line 97: the LHS of an assignment must be a variable
 >   N := 3;
 >   ^
 
-"SemError.m", line 93: a call that returns a result cannot be used as a
+"SemError.m", line 98: a call that returns a result cannot be used as a
 statement
 >   foo(3);
 >   ^^^^^^
 > (Use the -x flag to remove this restriction)
 
-"SemError.m", line 94: a RETURN statement is not allowed in a module body
+"SemError.m", line 99: a RETURN statement is not allowed in a module body
 >   RETURN 4;
 >   ^^^^^^^^
 
-"SemError.m", line 95: the test in an IF statement must have type BOOLEAN
+"SemError.m", line 100: the test in an IF statement must have type BOOLEAN
 >   IF 3 THEN END;
 >      ^
 > This expression has type INTEGER
 
-"SemError.m", line 96: the test in a WHILE statement must have type BOOLEAN
+"SemError.m", line 101: the test in a WHILE statement must have type BOOLEAN
 >   WHILE NIL DO END;
 >         ^^^
 > This expression has type NIL
 
-"SemError.m", line 97: the test after UNTIL must have type BOOLEAN
+"SemError.m", line 102: the test after UNTIL must have type BOOLEAN
 >   REPEAT ;;; UNTIL x;
 >                    ^
 > This expression has type INTEGER
 
-"SemError.m", line 98: this EXIT statement is not inside a LOOP statement
+"SemError.m", line 103: this EXIT statement is not inside a LOOP statement
 >   EXIT;
 >   ^^^^
 
-"SemError.m", line 99: the variable after FOR must have a discrete type
+"SemError.m", line 104: the variable after FOR must have a discrete type
 >   FOR y := 2 TO 3 DO END;
 >       ^
 > This expression has type REAL
 
-"SemError.m", line 100: the name after FOR must be a variable
+"SemError.m", line 105: the name after FOR must be a variable
 >   FOR N := 2 TO 3 DO END;
 >       ^
 
-"SemError.m", line 101: type INTEGER is needed as a starting value
+"SemError.m", line 106: type INTEGER is needed as a starting value
 >   FOR x := 2.0 TO 3 DO END;
 >            ^^^
 > This expression has type REAL
 
-"SemError.m", line 102: type INTEGER is needed as a starting value
+"SemError.m", line 107: type INTEGER is needed as a starting value
 >   FOR x := 2.0 TO 3.0 DO END;
 >            ^^^
 > This expression has type REAL
 
-"SemError.m", line 102: type INTEGER is needed as an ending value
+"SemError.m", line 107: type INTEGER is needed as an ending value
 >   FOR x := 2.0 TO 3.0 DO END;
 >                   ^^^
 > This expression has type REAL
 
-"SemError.m", line 103: a step value must be a constant
+"SemError.m", line 108: a step value must be a constant
 >   FOR x := 2 TO 3 BY y DO END;
 >                      ^
 
-"SemError.m", line 103: the step value must be an integer
+"SemError.m", line 108: the step value must be an integer
 >   FOR x := 2 TO 3 BY y DO END;
 >                      ^
 > This expression has type REAL
 
-"SemError.m", line 105: the step value must be an integer
+"SemError.m", line 110: the step value must be an integer
 >   FOR x := 2 TO 3 BY 1.0 DO END;
 >                      ^^^
 > This expression has type REAL
 
-"SemError.m", line 106: a record pointer or VAR parameter is needed here
+"SemError.m", line 111: a record pointer or VAR parameter is needed here
 >   WITH x: REAL DO x := 4.0 END;
 >        ^
 > This expression has type INTEGER
 
-"SemError.m", line 107: type INTEGER is needed as bound of NEW
+"SemError.m", line 112: type INTEGER is needed as bound of NEW
 >   NEW(f, FALSE);
 >          ^^^^^
 > This expression has type BOOLEAN
 
-"SemError.m", line 108: the argument of NEW must be a variable
+"SemError.m", line 113: the argument of NEW must be a variable
 >   NEW(NIL);
 >       ^^^
 
-"SemError.m", line 109: 'qqq' has not been declared
+"SemError.m", line 114: 'qqq' has not been declared
 >   x := qqq^;
 >        ^^^
 
-"SemError.m", line 110: a pointer is needed here
+"SemError.m", line 115: a pointer is needed here
 >   x := x^;
 >        ^
 > This expression has type INTEGER
 
-"SemError.m", line 111: 't1' is not a variable
+"SemError.m", line 116: 't1' is not a variable
 >   x := t1;
 >        ^^
 
-"SemError.m", line 112: an array is needed here
+"SemError.m", line 117: an array is needed here
 >   x := x[y];
 >        ^
 > This expression has type INTEGER
 
-"SemError.m", line 112: a subscript must be an integer
+"SemError.m", line 117: a subscript must be an integer
 >   x := x[y];
 >          ^
 > This expression has type REAL
 
-"SemError.m", line 113: a record or record pointer is needed here
+"SemError.m", line 118: a record or record pointer is needed here
 >   x := x.x;
 >        ^
 > This expression has type INTEGER
 
-"SemError.m", line 114: module 'Out' does not export 'Anything'
+"SemError.m", line 119: module 'Out' does not export 'Anything'
 >   Out.Anything;
 >   ^^^^^^^^^^^^
 
-"SemError.m", line 116: this record does not have a field called 'frown'
+"SemError.m", line 121: this record does not have a field called 'frown'
 >   u.frown;
 >   ^
 > This expression has record type 'SemDefs.fred'
 
-"SemError.m", line 117: this record does not have a field called 'mint'
+"SemError.m", line 122: this record does not have a field called 'mint'
 >   x := u.mint;
 >        ^
 > This expression has record type 'SemDefs.fred'
 
-"SemError.m", line 118: this record does not have a field called 'humbug'
+"SemError.m", line 123: this record does not have a field called 'humbug'
 >   x := u.humbug;
 >        ^
 > This expression has record type 'SemDefs.fred'
 
-"SemError.m", line 119: a function call is not allowed here
+"SemError.m", line 124: a function call is not allowed here
 >   foo(3)^ := 4;
 >   ^^^^^^
 
-"SemError.m", line 120: the operands of - must be both numeric or both sets
+"SemError.m", line 125: the operands of - must be both numeric or both sets
 >   x := x - FALSE;
 >        ^^^^^^^^^
 > The left operand has type INTEGER
 > The right operand has type BOOLEAN
 
-"SemError.m", line 121: the operands of / must be both numeric or both sets
+"SemError.m", line 126: the operands of / must be both numeric or both sets
 >   x := x / FALSE;
 >        ^^^^^^^^^
 > The left operand has type INTEGER
 > The right operand has type BOOLEAN
 
-"SemError.m", line 122: the operand of unary + must be numeric
+"SemError.m", line 127: the operand of unary + must be numeric
 >   x := +FALSE;
 >         ^^^^^
 > This expression has type BOOLEAN
 
-"SemError.m", line 123: the operand of ~ must have type BOOLEAN
+"SemError.m", line 128: the operand of ~ must have type BOOLEAN
 >   x := ~x;
 >         ^
 > This expression has type INTEGER
 
-"SemError.m", line 123: type INTEGER is needed on the RHS of this assignment
+"SemError.m", line 128: type INTEGER is needed on the RHS of this assignment
 >   x := ~x;
 >        ^^
 > This expression has type BOOLEAN
 
-"SemError.m", line 124: the operands of DIV must be integers
+"SemError.m", line 129: the operands of DIV must be integers
 >   x := x DIV y;
 >        ^^^^^^^
 > The left operand has type INTEGER
 > The right operand has type REAL
 
-"SemError.m", line 125: type INTEGER is needed on the RHS of this assignment
+"SemError.m", line 130: type INTEGER is needed on the RHS of this assignment
 >   x := x < y;
 >        ^^^^^
 > This expression has type BOOLEAN
 
-"SemError.m", line 127: the operands of = have incompatible types
+"SemError.m", line 132: the operands of = have incompatible types
 >   b := 'a' = 3;
 >        ^^^^^^^
 > The left operand has type CHAR
 > The right operand has type INTEGER
 
-"SemError.m", line 128: the operands of & must have type BOOLEAN
+"SemError.m", line 133: the operands of & must have type BOOLEAN
 >   b := TRUE & 3;
 >        ^^^^^^^^
 > The left operand has type BOOLEAN
 > The right operand has type INTEGER
 
-"SemError.m", line 129: a record pointer or VAR parameter is needed here
+"SemError.m", line 134: a record pointer or VAR parameter is needed here
 >   b := x IS INTEGER;
 >        ^
 > This expression has type INTEGER
 
-"SemError.m", line 130: a record pointer or VAR parameter is needed here
+"SemError.m", line 135: a record pointer or VAR parameter is needed here
 >   b := u IS rec;
 >        ^
 
-"SemError.m", line 131: a supertype of record type 'rec' is needed here
+"SemError.m", line 136: a supertype of record type 'rec' is needed here
 >   b := p^ IS rec;
 >        ^^
 > This expression has record type 'SemDefs.fred'
 
-"SemError.m", line 132: a supertype of record type 'rec' is needed here
+"SemError.m", line 137: a supertype of record type 'rec' is needed here
 >   b := q IS rec;
 >        ^
 > This expression has type ptr = POINTER TO rec
 
-"SemError.m", line 134: a record pointer or VAR parameter is needed here
+"SemError.m", line 139: a record pointer or VAR parameter is needed here
 >   b := r IS rec;
 >        ^
 
-"SemError.m", line 135: a supertype of record type 'rec2' is needed here
+"SemError.m", line 140: a supertype of record type 'rec2' is needed here
 >   b := q(rec2) IS ptr2;
 >        ^
 > This expression has type ptr = POINTER TO rec
 
-"SemError.m", line 135: a record pointer or VAR parameter is needed here
+"SemError.m", line 140: a record pointer or VAR parameter is needed here
 >   b := q(rec2) IS ptr2;
 >        ^^^^^^^
 
-"SemError.m", line 136: a pointer is needed for this method call
+"SemError.m", line 141: a pointer is needed for this method call
 >   r.m2;
 >   ^
 > This expression has record type 'rec'
 
-"SemError.m", line 137: this method expects no arguments
+"SemError.m", line 142: this method expects no arguments
 >   q.m2(r);
 >   ^^^^
 
-"SemError.m", line 138: open array parameter 'a' should have type ARRAY OF
+"SemError.m", line 143: open array parameter 'a' should have type ARRAY OF
 INTEGER
 >   x := Max(f^);
 >            ^^
 > This expression has type ARRAY OF CHAR
 
-"SemError.m", line 139: VAR parameter 'r' should be a variable
+"SemError.m", line 144: VAR parameter 'r' should be a variable
 >   VP(3);
 >      ^
 
-"SemError.m", line 139: VAR parameter 'r' should have record type 'rec'
+"SemError.m", line 144: VAR parameter 'r' should have record type 'rec'
 >   VP(3);
 >      ^
 > This expression has type INTEGER
 
-"SemError.m", line 140: open array parameter 'a' should have type ARRAY OF
+"SemError.m", line 145: open array parameter 'a' should have type ARRAY OF
 INTEGER
 >   Max(3);
 >       ^
 > This expression has type INTEGER
 
-"SemError.m", line 140: a call that returns a result cannot be used as a
+"SemError.m", line 145: a call that returns a result cannot be used as a
 statement
 >   Max(3);
 >   ^^^^^^
 > (Use the -x flag to remove this restriction)
 
-"SemError.m", line 141: 'undef' has not been declared
+"SemError.m", line 146: 'undef' has not been declared
 >   WITH q: ptr DO undef; undef END;
 >                  ^^^^^
 
-"SemError.m", line 142: warning -- the integer value 9999999999 does not fit
+"SemError.m", line 147: warning -- the integer value 9999999999 does not fit
 in type INTEGER
 >   x := 9999999999;
 >        ^^^^^^^^^^
 
-"SemError.m", line 143: sorry, LONGINT subscripts are not implemented
+"SemError.m", line 148: sorry, LONGINT subscripts are not implemented
 >   f^[0] := f^[long];
 >               ^^^^
 
-"SemError.m", line 144: 'undecl' has not been declared
+"SemError.m", line 149: 'undecl' has not been declared
 >   f[0] := f[undecl]
 >             ^^^^^^
 
@@ -425,3 +440,7 @@ in type INTEGER
 "SemError.m", line 81: warning -- g is declared but not used or exported
 > VAR g: SemError.flex;
 >     ^
+
+"SemError.m", line 88: warning -- Lenny is declared but not used or exported
+> PROCEDURE Lenny(a: ARRAY 999 OF ARRAY OF INTEGER): INTEGER;
+>           ^^^^^

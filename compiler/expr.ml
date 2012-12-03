@@ -1059,42 +1059,45 @@ and check_builtin env p args e loc =
 	  else begin
 	    let e1 = List.nth args 0 in
 	    let t1 = check_expr env e1 in
-	    let rec check i n t =
-	      match t.t_guts with
-		  ArrayType (n, t2) -> 
-		    if i > 1 then
-		      check (i-1) n t2
-		    else begin
-		      (* We treat LEN(array) as a typeless constant *)
-		      edit_expr e (Const (IntVal (integer n), numtype));
-		      numtype
-		    end
-		| FlexType t2 ->
-		    if i > 1 then
-		      check (i-1) n t2
-		    else
-		      inttype
-		| _ -> 
-		    if not (is_errtype t1) then begin
-		      if n = 1 then
-			sem_error "this argument of LEN should be an array"
-			  [] e1.e_loc
+	    let check n t =
+	      let rec loop i t =
+	        match t.t_guts with
+		    ArrayType (n, t2) -> 
+		      if i > 0 then
+			loop (i-1) t2
+		      else begin
+			(* We treat LEN(array) as a typeless constant *)
+			edit_expr e (Const (IntVal (integer n), numtype));
+			numtype
+		      end
+		  | FlexType t2 ->
+		      if i > 0 then
+			loop (i-1) t2
 		      else
-			sem_error ("this argument of LEN should be an array" ^
-			  " of at least $ dimensions") [fNum n] e1.e_loc;
-		      sem_type t1
-		    end;
-		    inttype in
+			inttype
+		  | _ -> 
+		      if not (is_errtype t1) then begin
+			if n = 0 then
+			  sem_error "this argument of LEN should be an array"
+			    [] e1.e_loc
+			else
+			  sem_error ("this argument of LEN should be an array" ^
+			    " of at least $ dimensions") [fNum (n+1)] e1.e_loc;
+			sem_type t1
+		      end;
+		      inttype in
+              loop n t in
 	    if List.length args = 1 then
-	      check 1 1 t1
+	      check 0 t1
 	    else begin
 	      let v = check_tconst env inttype 
 			"this argument of LEN" (List.nth args 1) in
 	      let n = int_of_integer (int_value v) in
-	      if n > 0 then
-		check n n t1
+	      if n >= 0 then
+		check n t1
 	      else begin
-		sem_error "this argument of LEN should be a positive integer"
+		sem_error 
+		  "this argument of LEN should be a non-negative integer"
 		  [] (List.nth args 1).e_loc;
 		inttype
 	      end

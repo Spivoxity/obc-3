@@ -5,8 +5,8 @@ IMPORT Files, Out;
 PROCEDURE Copy(VAR src, dst: ARRAY OF ARRAY OF INTEGER);
   VAR i, j: INTEGER;
 BEGIN
-  FOR i := 0 TO LEN(dst) - 1 DO
-    FOR j := 0 TO LEN(dst, 2) - 1 DO
+  FOR i := 0 TO LEN(dst, 0) - 1 DO
+    FOR j := 0 TO LEN(dst, 1) - 1 DO
       dst[i][j] := src[i][j]
     END
   END
@@ -71,7 +71,7 @@ ENDHDR
 
 PROC tBinIO.Copy 16 5 0x00900001
 ! PROCEDURE Copy(VAR src, dst: ARRAY OF ARRAY OF INTEGER);
-!   FOR i := 0 TO LEN(dst) - 1 DO
+!   FOR i := 0 TO LEN(dst, 0) - 1 DO
 LDLW 28
 DEC
 STLW -12
@@ -79,7 +79,7 @@ CONST 0
 STLW -4
 JUMP 5
 LABEL 4
-!     FOR j := 0 TO LEN(dst, 2) - 1 DO
+!     FOR j := 0 TO LEN(dst, 1) - 1 DO
 LDLW 32
 DEC
 STLW -16
@@ -110,13 +110,13 @@ LDLW 32
 BOUND 10
 PLUS
 STIW
-!     FOR j := 0 TO LEN(dst, 2) - 1 DO
+!     FOR j := 0 TO LEN(dst, 1) - 1 DO
 INCL -8
 LABEL 7
 LDLW -8
 LDLW -16
 JLEQ 6
-!   FOR i := 0 TO LEN(dst) - 1 DO
+!   FOR i := 0 TO LEN(dst, 0) - 1 DO
 INCL -4
 LABEL 5
 LDLW -4

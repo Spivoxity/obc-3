@@ -16,8 +16,8 @@ VAR
 PROCEDURE Print(VAR m: Matrix);
   VAR i, j: INTEGER;
 BEGIN
-  FOR i := 0 TO LEN(m, 1)-1 DO
-    FOR j := 0 TO LEN(m, 2)-1 DO
+  FOR i := 0 TO LEN(m, 0)-1 DO
+    FOR j := 0 TO LEN(m, 1)-1 DO
       Out.Int(m[i,j], 3)
     END
   END;
@@ -27,7 +27,7 @@ END Print;
 PROCEDURE CopyPrint(VAR m: Matrix);
   VAR mm: POINTER TO Matrix;
 BEGIN  
-  NEW(mm, LEN(m, 1), LEN(m, 2));
+  NEW(mm, LEN(m, 0), LEN(m, 1));
   mm^ := m;
   Print(mm^);
   mm[1][1] := 8;
@@ -57,7 +57,7 @@ ENDHDR
 
 PROC tFlex4.Print 16 5 0x00100001
 ! PROCEDURE Print(VAR m: Matrix);
-!   FOR i := 0 TO LEN(m, 1)-1 DO
+!   FOR i := 0 TO LEN(m, 0)-1 DO
 LDLW 16
 DEC
 STLW -12
@@ -65,7 +65,7 @@ CONST 0
 STLW -4
 JUMP 2
 LABEL 1
-!     FOR j := 0 TO LEN(m, 2)-1 DO
+!     FOR j := 0 TO LEN(m, 1)-1 DO
 LDLW 20
 DEC
 STLW -16
@@ -88,13 +88,13 @@ PLUS
 LDIW
 GLOBAL Out.Int
 CALL 2
-!     FOR j := 0 TO LEN(m, 2)-1 DO
+!     FOR j := 0 TO LEN(m, 1)-1 DO
 INCL -8
 LABEL 4
 LDLW -8
 LDLW -16
 JLEQ 3
-!   FOR i := 0 TO LEN(m, 1)-1 DO
+!   FOR i := 0 TO LEN(m, 0)-1 DO
 INCL -4
 LABEL 2
 LDLW -4
@@ -108,7 +108,7 @@ END
 
 PROC tFlex4.CopyPrint 4 11 0x00110001
 ! PROCEDURE CopyPrint(VAR m: Matrix);
-!   NEW(mm, LEN(m, 1), LEN(m, 2));
+!   NEW(mm, LEN(m, 0), LEN(m, 1));
 LDLW 20
 LDLW 16
 CONST 2

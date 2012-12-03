@@ -85,6 +85,11 @@ BEGIN
   RETURN 0;
 END Max;
 
+PROCEDURE Lenny(a: ARRAY 999 OF ARRAY OF INTEGER): INTEGER;
+BEGIN
+  RETURN LEN(a, 2)
+END Lenny;
+
 BEGIN
   CASE x OF 3..2: | 1: | 1: | 'a': END;
   CASE 'x' OF 'a': | 'a': END;
