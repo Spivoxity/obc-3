@@ -139,7 +139,8 @@ test "$TCLSH" != "" || AC_MSG_ERROR(tclsh not found)
 AC_CHECK_PROGS(DIFF, gdiff diff)
 test "$DIFF" != "" || AC_MSG_ERROR(diff not found)
 
-AC_PATH_PROG(PKG_CONFIG, pkg-config, "", $PATH$PATH_SEPARATOR$GTKDIR/bin)
+AC_PATH_PROG(PKG_CONFIG, pkg-config, /usr/bin/pkg-config, 
+  $PATH$PATH_SEPARATOR$GTKDIR/bin)
 test "$PKG_CONFIG" != "" || AC_MSG_ERROR(pkg-config not found)
 
 # Disable fancy alias analysis in the runtime system on i386

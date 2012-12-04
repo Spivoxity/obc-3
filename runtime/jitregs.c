@@ -93,7 +93,7 @@ reg ralloc_avoid(int s, reg r2) {
      unsigned ir;
      int min = 2, cost;
 
-     static boolean spilling = FALSE;
+     static mybool spilling = FALSE;
 
      /* See if there is an unused register */
      for (ir = 0; ir < NREGS; ir++) {

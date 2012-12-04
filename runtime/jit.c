@@ -87,7 +87,7 @@ void use_label(code_addr loc, codepoint lab) {
 static value *context;		/* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
 static int frame;		/* Size of local variable frame */
-static boolean cmpflag = FALSE;	/* Flag for FCMP or DCMP */
+static mybool cmpflag = FALSE;	/* Flag for FCMP or DCMP */
 
 #define konst(i) context[CP_CONST+i]
 

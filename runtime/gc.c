@@ -33,7 +33,7 @@
 /* Define MULTIBLOCKS to allow splitting of multi-page blocks */
 #undef MULTIBLOCKS
 
-static boolean debug[256];	/* Debugging flags */
+static mybool debug[256];	/* Debugging flags */
 /* a - print addresses; g - print [GC...];
    b - print chunks allocated; c - print every allocation;
    d - general debugging; l - trace low-level allocator; m - print maps;  
@@ -183,7 +183,7 @@ static void *get_memory(unsigned size) {
 static uchar *scratch_free = NULL;
 static uchar *scratch_limit = NULL;
 
-void *scratch_alloc(unsigned size, boolean atomic) {
+void *scratch_alloc(unsigned size, mybool atomic) {
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
      uchar *p;
 
@@ -388,7 +388,7 @@ static void make_free(header *h) {
 }
 
 /* free_block -- free a block, merging it with its neighbours */
-static header *free_block(header *h, boolean mapped) {
+static header *free_block(header *h, mybool mapped) {
      /* Mapped is true if this memory is being recycled: it's already
         in the page table, but we'll need to zero it. */
 
@@ -630,7 +630,7 @@ static int free_count[N_SIZES+1]; /* Number of free objects */
 
 #define THRESHOLD 0.5
 
-boolean gcflag = TRUE;
+mybool gcflag = TRUE;
 static unsigned alloc_since_gc = 0;
 static unsigned pool_total = 0;	    /* Total size of all pools */
 static unsigned heap_size = 0;	    /* Size of one semispace */
@@ -919,7 +919,7 @@ static void migrate(void) {
      header *thumb[N_SIZES], *big_thumb = block_pool[n_sizes];
      uchar *finger[N_SIZES], *p;
      unsigned i;
-     boolean changed;
+     mybool changed;
 
      /* For each pool, we keep a 'thumb' pointing to one of the blocks
 	in the pool, and a 'finger' pointing somewhere in that block.

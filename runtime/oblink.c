@@ -41,7 +41,7 @@ const char *copyright = "Copyright (C) 1999 J. M. Spivey";
 struct _module {
      char *m_file;		/* Name of the file */
      char *m_name;		/* Name of the module */
-     boolean m_lib, m_needed;	/* Whether a library module, whether needed */
+     mybool m_lib, m_needed;	/* Whether a library module, whether needed */
      int m_dep;			/* Index of first prerequisite */
      int m_check;		/* Checksum */
 };
@@ -71,7 +71,7 @@ static char line[MAXLINE];
 static int nwords;
 static char *words[MAXWORDS];
 
-static boolean stdlib = TRUE;
+static mybool stdlib = TRUE;
 static char *lscript = (char *) "lscript";
 static char *interp = NULL;
 static char *outname = (char *) "a.out";
@@ -89,7 +89,7 @@ static int find_module(char *name) {
 }
 
 /* scan -- scan a file for MODULE and IMPORT directives */
-static void scan(char *name, boolean islib)  {
+static void scan(char *name, mybool islib)  {
      FILE *fp;
      int m = -1, m2, chksum;
 

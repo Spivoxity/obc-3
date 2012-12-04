@@ -4,9 +4,12 @@ syntax: glob
 *.o
 *.a
 *.k
+*.exe
+*.x
 Depend
-Fac.x
 Makefile
+autom4te.cache
+config.cache
 compiler/Makefile
 compiler/basis.cma
 compiler/compiler.cma

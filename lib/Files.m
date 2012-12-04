@@ -91,7 +91,7 @@ PROCEDURE Eof*(fp: File): BOOLEAN IS "Files_Eof";
 (* CODE 
      FILE *fp = file_arg(args[0]);
      int c = obgetc(fp); 
-     boolean r = (c == EOF);
+     mybool r = (c == EOF);
      if (!r) ungetc(c, fp); 
      ob_res.i = r; *)
 

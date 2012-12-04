@@ -97,7 +97,7 @@ void dumpregs(void) {
 }
 #endif
 
-static boolean same(ctvalue v, ctvalue w) {
+static mybool same(ctvalue v, ctvalue w) {
      return (v->v_op == w->v_op && v->v_val == w->v_val 
 	     && v->v_reg == w->v_reg && v->v_size == w->v_size);
 }
@@ -115,7 +115,7 @@ void set_cache(reg r, ctvalue v) {
 }
 
 /* alias -- conservatively test if two values may be aliases */
-static boolean alias(ctvalue v, ctvalue w) {
+static mybool alias(ctvalue v, ctvalue w) {
      /* Assume v is a LOAD */
 
      switch (w->v_op) {
@@ -349,7 +349,7 @@ void move_to_frame(int i) {
 }
 
 /* transient -- check if a value is not preserved across a procedure call */
-static boolean transient(ctvalue v) {
+static mybool transient(ctvalue v) {
      if (regs[v->v_reg].r_class != 0)
 	  return TRUE;
 
@@ -522,7 +522,7 @@ reg move_to_reg(int i, int ty) {
 }
 
 /* fix_const -- check a stack item is a constant or move it to a register */
-ctvalue fix_const(int i, boolean rflag) {
+ctvalue fix_const(int i, mybool rflag) {
      ctvalue v = &vstack[sp-i];
 
      switch (v->v_op) {

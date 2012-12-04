@@ -78,7 +78,7 @@ symbol make_symbol(const char *name) {
      return s;
 }
 
-static symbol lookup(const char *name, boolean create) {
+static symbol lookup(const char *name, mybool create) {
      symbol s;
      unsigned h = 0;
      const char *p;
@@ -108,7 +108,7 @@ symbol find_symbol(const char *name) {
 }
 
 /* known -- test if a symbol has been entered */
-boolean known(const char *name) {
+mybool known(const char *name) {
      symbol s = lookup(name, FALSE);
      return (s != NULL);
 }

@@ -56,7 +56,7 @@ void error(const char *msg, ...) {
 
 void panic(const char *msg, ...) {
      va_list va;
-     boolean bug = FALSE;
+     mybool bug = FALSE;
 
      if (*msg == '*') {
 	  bug = TRUE; msg++;

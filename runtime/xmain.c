@@ -229,11 +229,11 @@ static void run(value *prog) {
      (*(prog[CP_PRIM].z))(sp);
 }
 
-boolean custom_file(char *name) {
+mybool custom_file(char *name) {
      char buf[4];
      FILE *fp;
      int nread;
-     boolean result;
+     mybool result;
 
      fp = fopen(name, "rb");
      if (fp == NULL) return FALSE;

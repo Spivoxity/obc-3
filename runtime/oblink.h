@@ -85,11 +85,11 @@ struct _template {		/* An encoding of an instruction */
 
 EXTERN int dflag;
 EXTERN int zflag;		/* Whether to compress the bytecode */
-EXTERN boolean sflag;		/* Whether to suppress symbol table */
-EXTERN boolean gflag;		/* Whether to output extra debugging info */
-EXTERN boolean custom;
-EXTERN boolean dump;
-EXTERN boolean linecount;
+EXTERN mybool sflag;		/* Whether to suppress symbol table */
+EXTERN mybool gflag;		/* Whether to output extra debugging info */
+EXTERN mybool custom;
+EXTERN mybool dump;
+EXTERN mybool linecount;
 EXTERN int stack_size;
 
 /* template.c */
@@ -106,7 +106,7 @@ const char *sym_name(symbol s);
 void def_global(symbol s, segment seg, int off, int kind);
 void use_global(symbol s, uchar *base, int offset);
 int sym_value(symbol s);
-boolean known(const char *name);
+mybool known(const char *name);
 void fix_data(uchar *base, int bss);
 int write_symtab(void);
 void module_data(symbol s, unsigned checksum, int nlines);

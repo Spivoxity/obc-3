@@ -131,9 +131,9 @@ EXTERN value *prim_bp;		/* Base pointer during primitive call */
 #endif
 
 EXTERN int dflag;
-EXTERN boolean gflag;
+EXTERN mybool gflag;
 #ifdef PROFILE
-EXTERN boolean lflag;
+EXTERN mybool lflag;
 #endif
 #ifdef TRACE
 EXTERN int qflag;
@@ -251,7 +251,7 @@ double flo_convq(longint);
 /* gc.c */
 
 /* scratch_alloc -- allocate memory that will not be freed */
-void *scratch_alloc(unsigned bytes, boolean atomic);
+void *scratch_alloc(unsigned bytes, mybool atomic);
 
 /* gc_alloc -- allocate an object for the managed heap */
 void *gc_alloc(value *desc, unsigned size, value *sp);
@@ -265,15 +265,15 @@ int gc_alloc_size(void *p);
 /* gc_heap_size -- return size of heap */
 int gc_heap_size(void);
 
-extern boolean gcflag;
+extern mybool gcflag;
 void gc_init(void);
 void gc_debug(char *flags);
 void gc_dump(void);
 
 /* debug.c */
 #ifdef OBXDEB
-extern boolean one_shot;
-extern boolean intflag;
+extern mybool one_shot;
+extern mybool intflag;
 
 void debug_init(void);
 void debug_message(char *fmt, ...);

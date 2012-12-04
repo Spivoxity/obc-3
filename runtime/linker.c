@@ -232,7 +232,7 @@ static template find_template(const char *name) {
 }
 
 /* fits -- test if an integer fits in a certain number of bits */
-static boolean fits(int x, int n) {
+static mybool fits(int x, int n) {
      int max = 1 << (n-1);
      return (-max <= x && x < max);
 }
@@ -275,7 +275,7 @@ static int displacement(phrase q) {
 }
 
 /* match -- test whether a template matches its arguments */
-static boolean match(phrase q, template t) {
+static mybool match(phrase q, template t) {
      /* Just check the last operand */
      int n = strlen(t->t_pattern);
      const char *p = t->t_pattern;
@@ -366,9 +366,9 @@ static phrase expand(phrase q) {
 }     
 
 /* check_matches -- revise choice of templates, return TRUE if ok already */
-static boolean check_matches(void) {
+static mybool check_matches(void) {
      phrase q;
-     boolean ok = TRUE;
+     mybool ok = TRUE;
 
      for (q = abuf->q_next; q != abuf; ) {
 	  template t = q->q_templ;
@@ -396,7 +396,7 @@ static boolean check_matches(void) {
 
 /* assemble -- assemble instructions */
 static void assemble(void) {
-     boolean ok;
+     mybool ok;
      int trial = 0;
 
      /* A tentative assignment of templates has already been computed,

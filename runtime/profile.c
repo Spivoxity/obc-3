@@ -88,7 +88,7 @@ static proc find_node(value *p) {
 }
 
 #ifdef DEBUG
-static void dump_state(state s, boolean stats) {
+static void dump_state(state s, mybool stats) {
      int i, n = s->s_depth, x = 3;
      value **hist = s->s_history;
      char buf[64];

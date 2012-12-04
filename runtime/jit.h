@@ -160,7 +160,7 @@ ctvalue peek(int n);
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);
 ctvalue move_from_frame(int i);
-ctvalue fix_const(int i, boolean rflag);
+ctvalue fix_const(int i, mybool rflag);
 #define move_to_rc(i) fix_const(i, TRUE)
 
 void flush_stack(int a, int b);

@@ -107,7 +107,7 @@ codepoint new_label(void) {
 }     
 
 /* lookup -- search for a target record for an address */
-static codepoint lookup(int addr, boolean create) {
+static codepoint lookup(int addr, mybool create) {
      int h = addr % HASH;
      codepoint p;
 

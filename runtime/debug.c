@@ -34,8 +34,8 @@
 #include <ctype.h>
 
 #ifdef WINDOWS
-  #include <windows.h>
   #include <winsock2.h>
+  #include <windows.h>
 #else
   #include <signal.h>
   #include <sys/types.h>
@@ -53,7 +53,7 @@ static int deb_sock;
 
 #define SPACE 32768
 
-static boolean running = FALSE;
+static mybool running = FALSE;
 
 static void debug_exit(void);
 
@@ -135,8 +135,8 @@ static int split_line(char *line, char **words) {
      return nwords;
 }
 
-boolean one_shot = FALSE;
-boolean intflag = FALSE;
+mybool one_shot = FALSE;
+mybool intflag = FALSE;
 
 /* debug_break -- conduct breakpoint dialogue */
 void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
