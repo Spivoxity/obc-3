@@ -80,7 +80,8 @@ let catch_failure f x =
 	crash "exception '$'" [fStr (Printexc.to_string x)]
 
 let print_version () =
-  fprintf stderr "Oxford Oberon-2 compiler version $\n" [fStr Config.version];
+  fprintf stderr "Oxford Oberon-2 compiler version $ [build $]\n" 
+    [fStr Config.version; fStr Revid.hash];
   exit 0
 
 let spec =

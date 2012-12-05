@@ -32,6 +32,13 @@ MODULE Builtin;
 
 (* COPY #include <ctype.h> *)
 
+CONST version =
+  "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
+(* COPY 
+char *lib_version = 
+  "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
+*)
+
 PROCEDURE HALT(n: INTEGER) IS "HALT";
 (* CODE xmain_exit(args[0].i); *)
 

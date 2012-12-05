@@ -70,6 +70,7 @@ rule token = parse
   | "!"			{ PLING }
   | "?"			{ QUERY }
   | "!!"|" "		{ token lexbuf } 
+  | "! "[^'\n']*"\n"	{ incr line; token lexbuf }
   | "\n"		{ incr line; token lexbuf }
   | _			{ failwith (sprintf "symlex $" 
 			    [fNum (lexeme_start lexbuf)]) }

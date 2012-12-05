@@ -39,6 +39,7 @@ YYPARSE = ../yacc/yyparse.cmo
 CAMLDEP = @top_srcdir@/camldep
 MLFLAGS = @MLFLAGS@
 TCLSH = tclsh
+PACKAGE_VERSION = @PACKAGE_VERSION@
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
 subdir = compiler
@@ -64,10 +65,16 @@ COMPILER = icode.cmo peepopt.cmo tree.cmo lexer.cmo \
 compiler.cma: $(COMPILER)
 	$(OCAMLC) $(MLFLAGS) -a -o $@ $(COMPILER) 
 
-BASIS = util.cmo print.cmo growvect.cmo symtab.cmo config.cmo eval.cmo \
-	mach.cmo error.cmo dict.cmo symlex.cmo symparse.cmo symfile.cmo
+BASIS = util.cmo print.cmo growvect.cmo symtab.cmo config.cmo revid.cmo \
+	eval.cmo mach.cmo error.cmo dict.cmo symlex.cmo \
+	symparse.cmo symfile.cmo
 basis.cma: $(BASIS)
 	$(OCAMLC) $(MLFLAGS) -a -o $@ $(BASIS)
+
+REVID := $(shell cat ../revid)
+
+revid.ml: ../revid
+	echo "let hash = \"$(REVID)\"" >$@
 
 main.cmo lexer.cmo parser.cmo symparse.cmo config.cmo symfile.cmo: %.cmo: %.ml
 	$(OCAMLC) $(MLFLAGS) $(YYLIB) -c -o $@ $<
@@ -90,8 +97,8 @@ main.cmo lexer.cmo parser.cmo symparse.cmo config.cmo symfile.cmo: %.cmo: %.ml
 
 ## Cleanup
 
-GEN = parser.mli parser.ml lexer.mli lexer.ml \
-	symparse.mli symparse.ml symlex.mli symlex.ml
+GEN = parser.mli parser.ml lexer.ml symparse.mli symparse.ml \
+	symlex.ml revid.ml
 
 # clean: remove object files
 clean:
@@ -125,13 +132,20 @@ ML = growvect.ml growvect.mli print.ml print.mli \
 	expr.mli expr.ml symtab.mli error.mli error.ml switch.mli \
 	switch.ml symtab.ml peepopt.mli peepopt.ml \
 	symfile.mli symfile.ml browser.ml \
-	lexer.ml parser.mli parser.ml symlex.ml symparse.mli \
-	symparse.ml config.ml inicheck.mli inicheck.ml \
+	lexer.ml symlex.ml config.ml inicheck.mli inicheck.ml \
 	stack.mli stack.ml
+EXTRAML = parser.mli parser.ml symparse.mli symparse.ml revid.ml
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
-	$(CAMLDEP) $^ >$@
+	$(CAMLDEP) $(EXTRAML:%=-f %) $^ >$@
 endif
-
+ 
 include $(srcdir)/Depend
+
+# Don't use dependency generation for yacc scripts -- yacc may not be built
+parser.cmo    : dict.cmi error.cmi lexer.cmi parser.cmi print.cmi
+parser.cmi    : eval.cmi symtab.cmi tree.cmi
+symparse.cmo  : config.cmo error.cmi eval.cmi growvect.cmi mach.cmi \
+		print.cmi symparse.cmi symtab.cmi
+symparse.cmi  : dict.cmi

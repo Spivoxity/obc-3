@@ -32,7 +32,9 @@
 #include "oblink.h"
 #include "keiko.h"
 
-const char *copyright = "Copyright (C) 1999 J. M. Spivey";
+const char *version = 
+"Oxford Oberon-2 linker version " PACKAGE_VERSION " [build " REVID "]";
+const char *copyright = "Copyright (C) 1999--2012 J. M. Spivey";
 
 /* The module table has one entry for each module that appears in the
    input files.  There's another table kept by the linker itself that
@@ -304,7 +306,7 @@ static void get_options(int argc, char **argv) {
 	  case 'd':
 	       dflag++; break;
 	  case 'v':
-	       printf("Oxford Oberon-2 linker version %s\n", PACKAGE_VERSION);
+	       printf("%s\n", version);
 	       exit(0);
 	       break;
 	  case 's':

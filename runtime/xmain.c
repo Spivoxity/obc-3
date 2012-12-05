@@ -33,7 +33,30 @@
 #include "keiko.h"
 #include "exec.h"
 
-const char *copyright = "Copyright (C) 1999 J. M. Spivey";
+#ifdef PROFILE
+#define MYNAME "profiler"
+#else
+#ifdef OBXDEB
+#define MYNAME "debugging monitor"
+#else
+#define MYNAME "runtime system"
+#endif
+#endif
+
+const char *version = 
+"Oxford Oberon-2 " MYNAME " version " PACKAGE_VERSION " [build " REVID "]"
+#ifdef JIT
+		       " (JIT)"
+#else
+		       ""
+#endif
+#ifdef DEBUG
+		       " (debug)"
+#else
+		       ""
+#endif
+     ;
+const char *copyright = "Copyright (C) 1999--2012 J. M. Spivey";
 
 extern int vm_debug;
 
@@ -300,16 +323,6 @@ char *search_path(char *name) {
 }
 #endif
 
-#ifdef PROFILE
-#define MYNAME "profiler"
-#else
-#ifdef OBXDEB
-#define MYNAME "debugging monitor"
-#else
-#define MYNAME "runtime system"
-#endif
-#endif
-
 #define argc saved_argc
 #define argv saved_argv
 
@@ -343,19 +356,7 @@ static void read_flags(void) {
 	  } else if (strcmp(argv[0], "-d") == 0) {
 	       dflag++;
 	  } else if (strcmp(argv[0], "-v") == 0) {
-	       fprintf(stderr, "Oxford Oberon-2 %s version %s%s%s\n",
-		       MYNAME, PACKAGE_VERSION,
-#ifdef JIT
-		       " (JIT)",
-#else
-		       "",
-#endif
-#ifdef DEBUG
-		       " (debug)"
-#else
-		       ""
-#endif
-		    );
+	       fprintf(stderr, "%s\n", version);
 	       exit(0);
 	  }
 #ifdef PROFILE

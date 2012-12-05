@@ -76,7 +76,7 @@ ABS_SRCDIR = @ABS_SRCDIR@
 ABS_BINDIR = @ABS_BINDIR@
 # end of Configuration stuff
 
-all : config.h predirs subdirs build sanity
+all : config.h revid predirs subdirs build sanity
 
 PREDIRS = yacc
 SUBDIRS = compiler runtime lib
@@ -202,8 +202,8 @@ LIB = runtime/obx.a runtime/obx-j.a runtime/obx-p.a lib/oblib.a lib/dlstub.o \
 DIRS = $(bindir) $(libdir)/obc
 
 # Inputs for bindist config process
-ETC = $(srcdir)/scripts/obc.in $(srcdir)/scripts/obb.in \
-	ObList.k lib/stdprims.o
+SCRIPTS = obc.in obb.in
+ETC = ObList.k lib/stdprims.o
 
 # Misc bindist files
 INST = $(srcdir)/README $(srcdir)/THANKS $(srcdir)/Fac.m
@@ -219,7 +219,7 @@ endif
 ifdef ENABLE_DEBUGGER
   BIN += obdb
   LIBX += obxdeb
-  ETC += $(srcdir)/scripts/obdb.in
+  SCRIPTS += obdb.in
   ifndef MACOS
     LIB += $(RESOURCES:%=$(RESDIR)/%)
     LIBX += debugger/obdb1 
@@ -253,8 +253,8 @@ BINDIST = bindist
 
 bindist: force
 	@rm -rf $(BINDIST)
-	for d in bin libexec lib libsrc etc; \
-		do $(INSTALL) -d $(BINDIST)/$$d; done
+	for d in bin libexec lib libsrc etc; do \
+		$(INSTALL) -d $(BINDIST)/$$d; done
 	$(AUTOCONF) $(srcdir)/scripts/bindist.conf.in \
 		| sed -e 's/--VERSION--/$(VERSION)/' \
 			-e 's/--ENABLE_JIT--/$(ENABLE_JIT)/' \
@@ -267,6 +267,9 @@ bindist: force
 	for f in $(LIBX); do $(INSTALL_PROG) $$f $(BINDIST)/libexec; done
 	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(BINDIST)/libsrc; done
 	for f in $(LIB); do $(INSTALL_DATA) $$f $(BINDIST)/lib; done
+	for f in $(SCRIPTS); do \
+		$(SETREVID) $(srcdir)/scripts/$f >$(BINDIST)/etc/$f; \
+		chmod 644 $(BINDIST)/etc/$f; done
 	for f in $(ETC); do $(INSTALL_DATA) $$f $(BINDIST)/etc; done	
 	for f in $(INST); do $(INSTALL_DATA) $$f $(BINDIST); done
 
@@ -277,7 +280,7 @@ bindist: force
 #   realclean removes all but original source
 
 CONFIG = Makefile config.h stamp-h config.status config.cache
-EXTRADIRS = test winport
+EXTRADIRS = test winport macport
 
 .PHONY: cleanhere distcleanhere clean distclean quitecleanhere quiteclean
 
@@ -287,7 +290,7 @@ cleanhere:
 	rm -rf $(BINDIST) $(BINDIST).tgz build-stamp
 
 quitecleanhere: cleanhere
-	rm -f obc obb obdb obc0 obb0 obdb0 config0
+	rm -f obc obb obdb obc0 obb0 obdb0 config0 revid
 
 distcleanhere: quitecleanhere
 	rm -f $(CONFIG)
@@ -325,11 +328,18 @@ stamp-h: config.h.in config.status
 	CONFIG_FILES= CONFIG_HEADERS=config.h ./config.status
 	echo timestamp >stamp-h
 
+REVID := $(shell (hg id -i || echo unknown) 2>/dev/null)
+
+revid: force
+	echo $(REVID) | cmp -s $@ - || echo $(REVID) >$@
+
+SETREVID = sed -e '/REVID=.*/s//REVID=$(REVID)/'
+
 Makefile: Makefile.in config.status
-	./config.status
+	./config.status Makefile
      
-obc obb obdb: %: scripts/%.in config.status
-	./config.status --file=$@:$<
+obc obb obdb config0: %: scripts/%.in config.status revid
+	$(SETREVID) $< | ./config.status --file=$@:-
 
 %0 : scripts/%.in config0
 	sed -e 's:\@configure_input\@:Generated automagically from $(<F):' \
@@ -337,7 +347,5 @@ obc obb obdb: %: scripts/%.in config.status
 	    -e "/# Config/,/# End of config/d" $< >$@
 	chmod +x $@
 
-config0: scripts/config0.in config.status
-	./config.status --file=config0:scripts/config0.in
 
 

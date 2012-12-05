@@ -47,9 +47,3 @@ let lcflag = ref false
 
 let set_debug n = 
   debug := n; Yyparse.yydebug := (n > 2)
-
-let use_inet = ("@USE_INET@" <> "")
-let lib_mods = 
-  List.map Symtab.intern (Util.split_string "@MODULES@")
-let mono_font = "@MONOFONT@"
-let sans_font = "@SANSFONT@"

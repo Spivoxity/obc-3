@@ -37,7 +37,8 @@ ROOT=@ROOT@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 LIBDIR=@libdir@/obc
-VERSION=@VERSION@
+VERSION=@PACKAGE_VERSION@
+REVID=unspecified
 obdb1=@OBDB1@
 obxdeb=$LIBDIR/obxdeb
 stdlib="-I $LIBDIR"
@@ -64,7 +65,8 @@ while [ $# -gt 0 ]; do
 done
 
 if $vflag; then 
-    /bin/echo "Oxford Oberon-2 debugger driver version $VERSION"
+    /bin/echo "Oxford Oberon-2 debugger driver" \
+	"version $VERSION [build $REVID]"
     $obdb1 -v 
     $obxdeb -v 
     exit

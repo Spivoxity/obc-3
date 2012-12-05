@@ -43,6 +43,7 @@ RANLIB = @RANLIB@
 CFLAGS = @CFLAGS@
 RTFLAGS = @RTFLAGS@
 X_CFLAGS = @X_CFLAGS@
+PACKAGE_VERSION = @PACKAGE_VERSION@
 SHELL = /bin/sh
 TCLSH = @TCLSH@
 DEBUG = @DEBUG@
@@ -84,7 +85,13 @@ endif
 
 OBC1 = ../compiler/obc1
 
-_Builtin.k: Builtin.m
+REVID := $(shell cat ../revid)
+
+Builtin.m: Builtin.m.in ../revid
+	sed -e 's/@VERSION@/$(PACKAGE_VERSION)/' \
+		-e 's/@REVID@/$(REVID)/' $< >$@
+
+_Builtin.k: Builtin.m ../revid
 	$(OBC1) -w -b $< | \
 	    sed -e 's/Builtin\.\([^%]\)/\1/' -e 's/Builtin/_Builtin/' >$@
 
@@ -154,7 +161,7 @@ clean:
 	rm -f *.o *.k *.k0 *.a *.so *.dylib
 
 quiteclean: clean
-	rm -f lscript* stdprims.c
+	rm -f lscript* stdprims.c Builtin.m
 	rm -f _Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c) 
 
 # distclean: also remove all non-distributed files

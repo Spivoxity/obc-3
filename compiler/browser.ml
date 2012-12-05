@@ -208,7 +208,8 @@ let print_def d =
   end
 
 let print_version () =
-  fprintf stderr "Oxford Oberon-2 browser version $\n" [fStr version];
+  fprintf stderr "Oxford Oberon-2 browser version $ [build $]\n" 
+    [fStr Config.version; fStr Revid.hash];
   exit 0
 
 let spec =

@@ -1,5 +1,5 @@
 (*
- * guimain.ml
+ * debmain.ml
  * 
  * This file is part of the Oxford Oberon-2 compiler
  * Copyright (c) 2008 J. M. Spivey
@@ -279,7 +279,8 @@ class main_window () =
   end
 
 let print_version f =
-  fprintf f "Oxford Oberon-2 gui debugger version $\n" [fStr Config.version]
+  fprintf f "Oxford Oberon-2 gui debugger version $ [build $]\n" 
+    [fStr Config.version; fStr Revid.hash]
 
 let anon_fun s = args := !args @ [s]
 

@@ -42,10 +42,6 @@ AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
 	test/Makefile winport/Makefile debugger/Makefile \
 	lablgtk/Makefile macport/Makefile)
 AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
-AC_CONFIG_FILES(obc:scripts/obc.in, chmod +x obc)
-AC_CONFIG_FILES(obb:scripts/obb.in, chmod +x obb)
-AC_CONFIG_FILES(obdb:scripts/obdb.in, chmod +x obdb)
-AC_CONFIG_FILES(config0:scripts/config0.in winport/head.iss)
 AC_CONFIG_FILES(test/regress, chmod +x test/regress)
 AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)
 AC_CONFIG_FILES(test/edtest, chmod +x test/edtest)

@@ -36,6 +36,8 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 LIBDIR=@libdir@/obc
+VERSION=@PACKAGE_VERSION@
+REVID=unspecified
 obb1=$LIBDIR/obb1
 stdlib="-I $LIBDIR"
 # End of config
@@ -57,7 +59,12 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-if $vflag; then $obb1 -v; exit; fi
+if $vflag; then 
+    /bin/echo "Oxford Oberon-2 browser driver" \
+	"version $VERSION [build $REVID]"
+    $obb1 -v
+    exit
+fi
 
 if [ $# -ne 1 ]; then usage; fi
 

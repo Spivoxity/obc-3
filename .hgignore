@@ -149,6 +149,9 @@ test/code.0
 test/data
 test/out
 test/out.0
+compiler/revid.ml
+lib/Builtin.m
+revid
 FINAL
 test/bigtest
 test/edtest

@@ -99,7 +99,7 @@ distclean: quiteclean
 	rm -f Makefile
 
 realclean: distclean
-	rm -f $(srcdir)/Depend
+	rm -f $(srcdir)/Depend debconf.ml
 
 ## Configuration and dependencies
 
