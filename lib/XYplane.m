@@ -72,11 +72,11 @@ static void clear(void) {
 *)
 
 (** Clear -- clear the window to all white *)
-PROCEDURE Clear* IS "*XYplane_clear";
+PROCEDURE Clear* IS "XYplane_clear";
 (* CODE clear(); *)
 
 (** Dot -- draw a dot at coordinates (x, y) *)
-PROCEDURE Dot*(x, y, mode: INTEGER) IS "*XYplane_draw";
+PROCEDURE Dot*(x, y, mode: INTEGER) IS "XYplane_draw";
 (* CODE
      int x = args[0].i, y = args[1].i, m = args[2].i;
      if (display != NULL && x >= 0 && x < W && y >= 0 && y < H) {
@@ -86,7 +86,7 @@ PROCEDURE Dot*(x, y, mode: INTEGER) IS "*XYplane_draw";
 *)
 
 (** IsDot -- return the current colour of the dot at (x, y) *)
-PROCEDURE IsDot*(x, y: INTEGER): BOOLEAN IS "*XYplane_peek";
+PROCEDURE IsDot*(x, y: INTEGER): BOOLEAN IS "XYplane_peek";
 (* CODE
      int x = args[0].i, y = args[1].i;
 
@@ -97,7 +97,7 @@ PROCEDURE IsDot*(x, y: INTEGER): BOOLEAN IS "*XYplane_peek";
 *)
 
 (** Key -- return the last key pressed, or 0X if none *)
-PROCEDURE Key*(): CHAR IS "*XYplane_key";
+PROCEDURE Key*(): CHAR IS "XYplane_key";
 (* CODE
      XEvent event;
      char buf[16];
@@ -105,14 +105,14 @@ PROCEDURE Key*(): CHAR IS "*XYplane_key";
      int n, x, y ,w, h;
 
      ob_res.i = '\0';
-     if (display == NULL) goto done;
+     if (display == NULL) return;
 
      while (XEventsQueued(display, QueuedAfterReading) > 0) {
 	  XNextEvent(display, &event);
 	  switch (event.type) {
 	  case KeyPress:
 	       n = XLookupString(&(event.xkey), buf, 16, &keysym, NULL);
-	       if (n > 0) { ob_res.i = buf[0]; goto done; }
+	       if (n > 0) { ob_res.i = buf[0]; return; }
 	       break;
 
 	  case Expose:
@@ -125,12 +125,10 @@ PROCEDURE Key*(): CHAR IS "*XYplane_key";
 	       break;
 	  }
      }
-done:
-     ;
 *)
 
 (** Open -- create the graphics window *)
-PROCEDURE Open* IS "*XYplane_open";
+PROCEDURE Open* IS "XYplane_open";
 (* CODE
      Visual *visual;
      XGCValues values;
@@ -140,7 +138,7 @@ PROCEDURE Open* IS "*XYplane_open";
 
      /* Opening a second time is the same as clearing */
      if (display != NULL) {
-	  clear(); goto done;
+	  clear(); return;
      }
 
      display = XOpenDisplay(NULL);
@@ -169,8 +167,6 @@ PROCEDURE Open* IS "*XYplane_open";
      values.foreground = bgColour;
      values.background = fgColour;
      bg = XCreateGC(display, parent, GCForeground|GCBackground, &values);
-done:
-     ;
 *)
 
 BEGIN

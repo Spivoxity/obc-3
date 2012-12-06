@@ -948,6 +948,13 @@ void jit_compile(value *cp) {
 #endif
 }
 
+/* interp -- translate procedure on first call */
+void interp(value *bp) {
+     value *cp = bp[CP].p;
+     jit_compile(cp);
+     cp[CP_PRIM].z(bp);
+}
+
 /* vm_alloc -- upcall from vm to allocate code buffer */
 void *vm_alloc(int size) {
      return scratch_alloc(size, TRUE);

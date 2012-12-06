@@ -39,28 +39,28 @@ CONST
   pi* = 3.1415926535897932385;
   e* =  2.7182818284590452354;
 
-PROCEDURE Sqrt*(x: REAL): REAL IS "*Math_Sqrt";
+PROCEDURE Sqrt*(x: REAL): REAL IS "Math_Sqrt";
 (* CODE ob_res.f = sqrt(args[0].f); *)
 
-PROCEDURE Sin*(x: REAL): REAL IS "*Math_Sin";
+PROCEDURE Sin*(x: REAL): REAL IS "Math_Sin";
 (* CODE ob_res.f = sin(args[0].f); *)
 
-PROCEDURE Cos*(x: REAL): REAL IS "*Math_Cos";
+PROCEDURE Cos*(x: REAL): REAL IS "Math_Cos";
 (* CODE ob_res.f = cos(args[0].f); *)
 
-PROCEDURE Tan*(x: REAL): REAL IS "*Math_Tan";
+PROCEDURE Tan*(x: REAL): REAL IS "Math_Tan";
 (* CODE ob_res.f = tan(args[0].f); *)
 
-PROCEDURE Arctan*(x: REAL): REAL IS "*Math_Atan";
+PROCEDURE Arctan*(x: REAL): REAL IS "Math_Atan";
 (* CODE ob_res.f = atan(args[0].f); *)
 
-PROCEDURE Arctan2*(y, x: REAL): REAL IS "*Math_Atan2";
+PROCEDURE Arctan2*(y, x: REAL): REAL IS "Math_Atan2";
 (* CODE ob_res.f = atan2(args[0].f, args[1].f); *)
 
-PROCEDURE Exp*(x: REAL): REAL IS "*Math_Exp";
+PROCEDURE Exp*(x: REAL): REAL IS "Math_Exp";
 (* CODE ob_res.f = exp(args[0].f); *)
 
-PROCEDURE Ln*(x: REAL): REAL IS "*Math_Ln";
+PROCEDURE Ln*(x: REAL): REAL IS "Math_Ln";
 (* CODE ob_res.f = log(args[0].f); *)
 
 BEGIN

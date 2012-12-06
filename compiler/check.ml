@@ -670,8 +670,7 @@ and check_decl lzy alloc env =
 	if !level > 0 then
 	  sem_error "primitives must be declared at the outermost level"
 	    [] x.x_loc;
-	check_proc env Procedure x heading (ref 0) doc;
-	make_prim name
+	check_proc env Procedure x heading (ref 0) doc
     | ForwardDecl (kind, x, heading, doc) -> ()
     | DummyDecl -> ()
 

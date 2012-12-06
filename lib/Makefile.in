@@ -39,6 +39,7 @@ top_srcdir = @top_srcdir@
 LIBDIR = @libdir@/obc
 CC = @CC@
 AR = ar
+LD = @LD@
 RANLIB = @RANLIB@
 CFLAGS = @CFLAGS@
 RTFLAGS = @RTFLAGS@
@@ -50,8 +51,8 @@ DEBUG = @DEBUG@
 VPATH = @srcdir@
 MODULES = @MODULES@
 MODULES_B = @MODULES_B@
-MODULES_J = @MODULES_J@
-PRIMMODS = @PRIMMODS@
+PRIMMODS1 = @PRIMMODS1@
+PRIMMODS2 = @PRIMMODS2@
 SHLMODS = @SHLMODS@
 CHECKMODS = @CHECKMODS@
 BYTEMODS = @BYTEMODS@
@@ -61,6 +62,7 @@ XLIB = @XLIB@
 DYNLINK = @DYNLINK@
 DLEXT= @DLEXT@
 SHL_CFLAGS = @SHL_CFLAGS@
+SHL_LFLAGS = @SHL_LFLAGS@
 XYPLANE = @XYPLANE@
 # End
 
@@ -69,15 +71,17 @@ ifdef DEBUG
   LIBDEP = ../compiler/obc1
 endif
 
-MLIB = _Builtin $(MODULES)
-MLIBB = _Builtin $(MODULES_B)
-PRIM = _Builtin $(PRIMMODS)
-
-all:: $(MLIB:%=%.k) $(CHECKMODS:%=%-b.k) oblib.a stdprims.o dlstub.o \
+all:: _Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k) oblib.o \
 	lscript lscript-b
 
+STDMODS = Builtin $(PRIMMODS1)
+ALLMODS = Builtin $(PRIMMODS1) $(PRIMMODS2)
+
 ifdef DYNLINK
-all:: $(SHLMODS:%=%$(DLEXT))
+all:: $(PRIMMODS2:%=%$(DLEXT))
+else
+all:: primtab.o
+STDMODS += $(PRIMMODS2)
 endif
 
 
@@ -95,10 +99,10 @@ _Builtin.k: Builtin.m ../revid
 	$(OBC1) -w -b $< | \
 	    sed -e 's/Builtin\.\([^%]\)/\1/' -e 's/Builtin/_Builtin/' >$@
 
-_Builtin.k $(MLIB:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP)
+_Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP)
 In.k Out.k Err.k In-b.k : Files.k
 In.k In-b.k : Conv.k
-$(SHLMODS:%=%.k) : DynLink.k
+$(PRIMMODS2:%=%.k) : DynLink.k
 
 %.k: %.m
 	$(OBC1) -O -g -x $< >$@
@@ -112,46 +116,41 @@ $(SHLMODS:%=%.k) : DynLink.k
 ALL_RTFLAGS = $(RTFLAGS) -Wall $(INCLUDE)
 INCLUDE = -I .. -I $(top_srcdir)/runtime -I ../runtime
 
-oblib.a: $(PRIM:%=%.o) $(SHLMODS:%=%.o)
-	$(AR) cr $@ $^
+oblib.o: $(STDMODS:%=%.o)
+	$(LD) -r $^ -o $@
 
-$(PRIMMODS:%=%.c) $(SHLMODS:%=%.c): %.c: %.m makeprims.tcl
+$(ALLMODS:%=%.c): %.c: %.m makeprims.tcl
 	$(TCLSH) $(srcdir)/makeprims.tcl $< >$@
-
-Builtin.c: Builtin.m makeprims.tcl
-	$(TCLSH) $(srcdir)/makeprims.tcl $< >$@
-
-stdprims.c: ../runtime/oblink lscript $(PRIMMODS:%=%.k)
-	../runtime/oblink -L . -dump >stdprims.c
 
 XYplane$(DLEXT): XYplane.c
-	$(CC) $(ALL_RTFLAGS) $(X_CFLAGS) $(SHL_CFLAGS) $< $(LIBS) $(XLIB) -o $@
+	$(CC) $(ALL_RTFLAGS) $(X_CFLAGS) $(SHL_CFLAGS) \
+		$(SHL_LFLAGS) $< $(LIBS) $(XLIB) -o $@
 
 Math$(DLEXT) MathL$(DLEXT): %$(DLEXT): %.c
-	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $< $(LIBS) $(MATHLIB) -o $@
+	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) \
+		$(SHL_LFLAGS) $< $(LIBS) $(MATHLIB) -o $@
 
 %$(DLEXT): %.c
-	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $< $(LIBS) -o $@
-
-dlstub.o: DynLink.c
-	$(CC) $(ALL_RTFLAGS) -D STUB -c $< -o $@
+	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $(SHL_LFLAGS) $< $(LIBS) -o $@
 
 %.o: %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
-$(PRIM:%=%.o) $(SHLMODS:%=%.o) $(SHLMODS:%=%$(DLEXT)) stdprims.o: \
+$(ALLMODS:%=%.o) $(PRIMMODS2:%=%$(DLEXT)) primtab.o: \
 	../config.h $(top_srcdir)/runtime/obx.h \
 	$(top_srcdir)/runtime/obcommon.h
-Coroutines.o: ../runtime/keiko.h
+
+primtab.c: $(CMODULES:%=%.m)
+	$(TCLSH) $(srcdir)/makeprims.tcl -t $^ >$@
 
 
 ### Library scripts
 
 lscript: ../config.status
-	for m in $(MLIB:%=%.k); do echo $$m; done >$@
+	for m in _Builtin $(MODULES); do echo $$m.k; done >$@
 
 lscript-b : ../config.status
-	for m in $(MLIBB:%=%.k); do echo $$m; done >$@
+	for m in _Builtin $(MODULES_B); do echo $$m.k; done >$@
 
 
 ## Cleanup
@@ -161,8 +160,8 @@ clean:
 	rm -f *.o *.k *.k0 *.a *.so *.dylib
 
 quiteclean: clean
-	rm -f lscript* stdprims.c Builtin.m
-	rm -f _Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c) 
+	rm -f lscript* Builtin.m
+	rm -f Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c) 
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean

@@ -118,12 +118,14 @@ debugger: compiler lablgtk
 
 ifdef MACOS
 lablgtk: macport/gtklib
-
 macport/gtklib:
 	$(MAKE) -C macport gtklib
 endif
 
+PRIMS = lib/oblib.o
+
 ifndef DYNLINK
+  PRIMS += lib/primtab.o
   EXTRA_LIBS = $(MATHLIB) $(XLIB)
 endif
 
@@ -132,12 +134,11 @@ obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
 
 LINK = $(CC) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
 
-obx : lib/stdprims.o runtime/obx.a lib/oblib.a;			$(LINK)
-obxj : lib/stdprims.o runtime/obx-j.a lib/oblib.a
-	$(LINK) $(CFLAGS_JIT)
-obtrace : lib/stdprims.o runtime/obx-t.a lib/oblib.a;		$(LINK)
-obprof : lib/stdprims.o runtime/obx-p.a lib/oblib.a;		$(LINK)
-obxdeb : lib/stdprims.o runtime/obx-d.a lib/oblib.a;		$(LINK)
+obx : runtime/obx.a $(PRIMS);		$(LINK)
+obxj : runtime/obx-j.a $(PRIMS);	$(LINK) $(CFLAGS_JIT)
+obtrace : runtime/obx-t.a $(PRIMS);	$(LINK)
+obprof : runtime/obx-p.a $(PRIMS);	$(LINK)
+obxdeb : runtime/obx-d.a $(PRIMS);	$(LINK)
 
 oblist : ObList.k runtime/oblink lib/Files.k
 

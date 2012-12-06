@@ -1448,7 +1448,6 @@ let translate stamp
     (function (x, x', st) -> 
       if x' <> intern "SYSTEM" then put "IMPORT $ $" [fId x'; fHex !st]) 
     imports;
-  List.iter (function s -> put "PRIM $" [fSym s]) (prim_table ());
   put "ENDHDR\n" [];
 
   begin match body with

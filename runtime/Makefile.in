@@ -79,7 +79,7 @@ oblink : $(OBLINK) util.o
 $(OBLINK) util.o : %.o : %.c
 	$(CC) $(ALL_CFLAGS) -c $< -o $@
 
-COMMON = support.o loader.o
+COMMON = support.o loader.o dynlink.o
 OBX = interp.o xmain.o $(COMMON)
 JIT = jit.o jitlab.o jitregs.o jitval.o
 PACK = $(AR) cr $@ $^; $(RANLIB) $@

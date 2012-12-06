@@ -122,12 +122,14 @@ AC_SUBST(OBDB1_DEBUG)
 
 
 # Checks for programs.
-case $host in x86_64-*) CC='gcc -m32';; esac
+LD=ld
+case $host in x86_64-*) CC='gcc -m32'; LD='ld -melf_i386';; esac
 
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
+AC_SUBST(LD)
 
 AC_CHECK_PROGS(TCLSH, tclsh)
 test "$TCLSH" != "" || AC_MSG_ERROR(tclsh not found)
@@ -182,10 +184,12 @@ case $host in
     SHL_CFLAGS="-fPIC -bundle -undefined dynamic_lookup"
     DLEXT=".so";;
   *)           
-    SHL_CFLAGS="-fPIC -shared"
+    SHL_CFLAGS="-fPIC"
+    SHL_LFLAGS="-shared"
     DLEXT=".so";;
 esac
 AC_SUBST(SHL_CFLAGS)
+AC_SUBST(SHL_LFLAGS)
 AC_SUBST(DLEXT)
 AC_DEFINE_UNQUOTED(DLEXT, "$DLEXT", [Extension for dynamic libraries])
 
@@ -279,21 +283,19 @@ AC_SUBST(DEB_LIBS)
 MODULES="DynLink Files Conv In Out Err Args Bit Timer GC \
 	Strings Random Math MathL $XYPLANE"
 AC_SUBST(MODULES)
-
-# These modules contain standard primitives:
-PRIMMODS="Args GC Timer DynLink Files Conv Random"
-AC_SUBST(PRIMMODS)
-
-# These modules have primitives in shared libraries:
-SHLMODS="Math MathL $XYPLANE"
-AC_SUBST(SHLMODS)
-
-# These modules have bounds checks
-CHECKMODS="In Random Strings"
-AC_SUBST(CHECKMODS)
 MODULES_B="DynLink Files Conv In-b Out Err Args Bit Timer GC \
 	Strings-b Random-b Math MathL $XYPLANE"
 AC_SUBST(MODULES_B)
+CHECKMODS="In Random Strings"
+AC_SUBST(CHECKMODS)
+
+# These modules contain standard primitives:
+PRIMMODS1="Args GC Timer DynLink Files Conv Random"
+AC_SUBST(PRIMMODS1)
+
+# These modules have primitives in separate shared libraries:
+PRIMMODS2="Math MathL $XYPLANE"
+AC_SUBST(PRIMMODS2)
 
 # Resource files needed by GUI debugger 
 AC_SUBST(RESOURCES, "blank.png breakpoint.png continue.png here.png \

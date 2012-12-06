@@ -222,20 +222,6 @@ void rterror(int num, int line, value *bp) {
      runtime_error(num, line, bp, NULL);
 }
 
-#ifdef JIT
-/* jit_trap -- translate procedure on first call */
-void jit_trap(value *bp) {
-     value *cp = bp[CP].p;
-     jit_compile(cp);
-     cp[CP_PRIM].z(bp);
-}
-
-/* interp -- dummy interpreter */
-void interp(value *bp) {
-     panic("no interpreter");
-}
-#endif
-
 
 /* Startup */
 
@@ -502,7 +488,6 @@ int main(int ac, char *av[]) {
      gc_init();
 
 #ifdef JIT
-     primtab[0] = jit_trap;
      vm_debug = (dflag > 1);
 #endif
 

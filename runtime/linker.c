@@ -151,6 +151,16 @@ static void data_word(char *s) {
      dloc += 4;
 }
 
+static void put_string(char *str) {
+     char *s = str;
+     do { 
+	  buf_grow(dbuf); 
+	  dbuf[dloc++] = *s;
+     } while (*s++ != '\0');
+     dloc = align(dloc, 4);
+}
+
+
 /* Constant pool */
 
 static growdecl(const_sym);
@@ -675,30 +685,9 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
      case D_PRIMDEF:
 	  nprocs++;
 	  def_global(find_symbol(rands[0]), DATA, dloc, X_PROC);
-
-#ifdef DYNLINK
-	  if (!custom && *rands[1] == '*') {
-	       int name = dloc + 4 * CP_CONST;
-	       char *s = rands[1] + 1;
-
-	       const_head(DLTRAP, name, R_DATA, atoi(rands[2]), 0, rands[3]);
-
-	       assert(dloc == name);
-	       do { 
-		    buf_grow(dbuf); 
-		    dbuf[dloc++] = *s;
-	       } while (*s++ != '\0');
-	       dloc = align(dloc, 4);
-	  } else
-#endif
-	         {
-	       int i;
-	       if (custom) make_prim(rands[1]);
-	       i = find_prim(rands[1]);
-	       if (i < 0)
-		    error("unknown primitive %s", rands[1]);
-	       const_head(i, 0, R_WORD, atoi(rands[2]), 0, rands[3]);
-	  }
+	  const_head(DLTRAP, dloc + 4*CP_CONST, R_DATA, 
+		     atoi(rands[2]), 0, rands[3]);
+	  put_string(rands[1]);
 	  break;
 
      case D_PROC:
@@ -736,7 +725,6 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  break;
 
      case D_IMPORT:
-     case D_PRIM:
      case D_ENDHDR:
 	  /* Ignore directives that appear in the file header */
 	  break;
@@ -805,16 +793,8 @@ void gen_inst(const char *fmt, ...) {
 
 /* save_string -- save a string in the data segment */
 void save_string(const char *label, char *str) {
-     char *p;
-
      def_global(find_symbol(label), DATA, dloc, X_DATA);
-     for (p = str; *p != '\0'; p++) {
-	  buf_grow(dbuf);
-	  dbuf[dloc++] = *p;
-     }
-     buf_grow(dbuf);
-     dbuf[dloc++] = '\0';
-     dloc = align(dloc, 4);
+     put_string(str);
 }
 
 
@@ -844,7 +824,7 @@ void init_linker(char *outname, char *interp) {
 /* end_linking -- write later parts of object file */
 void end_linking(void) {
      trailer t;
-     int fsize, csize, symcount = 0;
+     int fsize, csize, symcount = 0, nwritten;
      const char *magic = MAGIC;
 
      csize = ftell(binfp) - start;
@@ -868,7 +848,7 @@ void end_linking(void) {
      /* Trailer */
      strncpy((char *) t.magic, magic, 4);
      put4(t.sig, SIG);
-     put4(t.primsig, prim_check);
+     put4(t.primsig, 0);
      put4(t.start, start - fsize);
      put4(t.entry, sym_val("MAIN"));
      put4(t.gcmap, sym_val("GCMAP"));
@@ -880,7 +860,10 @@ void end_linking(void) {
      put4(t.nprocs, (sflag ? 0 : nprocs));
      put4(t.nmods, (sflag ? 0 : nmods));
      put4(t.nsyms, symcount);
-     fwrite(&t, sizeof(trailer), 1, binfp);
+     nwritten = fwrite(&t, sizeof(trailer), 1, binfp);
+     if (nwritten < 1)
+	  panic("Couldn't write trailer");
+
      fclose(binfp);
 }
 

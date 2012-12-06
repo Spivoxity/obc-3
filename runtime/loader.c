@@ -142,7 +142,12 @@ static void relocate(int size) {
 		    (*p).x = imem + m;
 		    break;
 	       case R_SUBR:
-		    (*p).z = primtab[m];
+		    switch (m) {
+		    case INTERP: (*p).z = interp; break;
+		    case DLTRAP: (*p).z = dltrap; break;
+		    default:
+			 panic("bad subr code");
+		    }
 		    break;
 	       }
 	  }
@@ -247,10 +252,6 @@ void load_file(FILE *bfp) {
 	  panic("bad signature %#0.8x\n%s\n%s", get_int(t.sig),
 		"[Although this appears to be an Oberon bytecode file,",
 		"  it needs a different version of the runtime system]");
-     if (prim_check != 0 && (unsigned) get_int(t.primsig) != prim_check)
-	  panic("bad primitive checksum\n%s\n%s",
-		"[This program uses a different set of primitives",
-		"  from the ones built into the runtime system]");
 
      /* Decode the other data */
      for (i = 0; i < NSEGS; i++)

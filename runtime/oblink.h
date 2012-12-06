@@ -87,8 +87,6 @@ EXTERN int dflag;
 EXTERN int zflag;		/* Whether to compress the bytecode */
 EXTERN mybool sflag;		/* Whether to suppress symbol table */
 EXTERN mybool gflag;		/* Whether to output extra debugging info */
-EXTERN mybool custom;
-EXTERN mybool dump;
 EXTERN mybool linecount;
 EXTERN int stack_size;
 
@@ -115,11 +113,6 @@ void init_labels(void);
 void def_label(int n, phrase val);
 void sort_labels(void);
 phrase find_label(int n);
-
-int find_prim(const char *name);
-void make_prim(const char *name);
-void dump_prims(FILE *fp);
-extern unsigned prim_check;
 
 /* linker.c */
 void init_linker(char *outname, char *interp);

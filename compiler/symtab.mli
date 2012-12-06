@@ -95,9 +95,3 @@ val save_string : string -> symbol
 
 (* string_table -- fetch table of string constants *)
 val string_table : unit -> (symbol * string) list
-
-(* make_prim -- create a primitive *)
-val make_prim : string -> unit
-
-(* prim_table -- fetch list of primitives *)
-val prim_table : unit -> string list

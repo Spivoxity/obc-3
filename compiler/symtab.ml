@@ -110,12 +110,6 @@ let save_string s =
 (* string_table -- return contents of string table *)
 let string_table () = List.rev !strtbl
 
-let primtbl = ref []
-
-let make_prim s = primtbl := !primtbl @ [s]
-
-let prim_table () = !primtbl
-
 (* |kind| -- basic types *)
 type kind = 
     NumT | ShortT | IntT | LongT | FloatT | DoubleT  

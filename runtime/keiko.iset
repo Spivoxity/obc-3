@@ -677,7 +677,6 @@ dir WORD ?
 dir MODULE ???
 dir ENDHDR 0
 dir IMPORT ??
-dir PRIM ?
 dir STKMAP ?
 dir FLOAT ?
 dir DOUBLE ?

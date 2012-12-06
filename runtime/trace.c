@@ -111,14 +111,6 @@ void dump(void) {
 }
 
 const char *prim_name(value *p) {
-     primitive *z = p[0].z;
-     int i;
-
-     for (i = 0; primtab[i] != NULL; i++)
-	  if (i != 1 && primtab[i] == z)
-	       return primname[i];
-
      if (p[1].x != NULL) return (char *) p[1].x;
-
      return "(unknown)";
 }

@@ -114,11 +114,11 @@ EXTERN value *gcmap;		/* Global pointer map */
 EXTERN int nmods, nprocs, nsyms;
 EXTERN module *modtab;
 EXTERN proc *proctab;
-extern unsigned prim_check;
-extern primitive *primtab[];
-#ifdef TRACE
-extern char *primname[];
-#endif
+
+extern struct primdef {
+     char *p_name;
+     primitive *p_prim;
+} primtab[];
 
 EXTERN value _result[2];	/* Procedure result */
 #define ob_res _result[0]
@@ -206,6 +206,9 @@ void pack_closure(value *sp);
 void unpack_closure(value *sp);
 #endif
 
+/* dynlink.c */
+void load_lib(char *fname);
+void dltrap(value *sp);
 
 /* load_file -- load a file of object code */
 void load_file(FILE *bfp);

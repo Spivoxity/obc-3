@@ -144,7 +144,7 @@ endif
 include $(srcdir)/Depend
 
 # Don't use dependency generation for yacc scripts -- yacc may not be built
-parser.cmo    : dict.cmi error.cmi lexer.cmi parser.cmi print.cmi
+parser.cmo    : dict.cmi error.cmi lexer.cmo parser.cmi print.cmi
 parser.cmi    : eval.cmi symtab.cmi tree.cmi
 symparse.cmo  : config.cmo error.cmi eval.cmi growvect.cmi mach.cmi \
 		print.cmi symparse.cmi symtab.cmi

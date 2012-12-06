@@ -6,6 +6,7 @@ syntax: glob
 *.k
 *.exe
 *.x
+*.so
 Depend
 Makefile
 autom4te.cache
@@ -152,6 +153,8 @@ test/out.0
 compiler/revid.ml
 lib/Builtin.m
 revid
+lib/Builtin.c
+lib/primtab.c
 FINAL
 test/bigtest
 test/edtest
