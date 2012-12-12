@@ -1,6 +1,7 @@
 MODULE tLimits;
 
 (*<<
+5
 -32768
 32767
 -2147483648
@@ -43,6 +44,8 @@ BEGIN
 END MaxReal;
 
 BEGIN
+  Out.Int(ASH(20, -2), 0); Out.Ln;
+
   Out.Int(MIN(SHORTINT), 0); Out.Ln;
   Out.Int(MAX(SHORTINT), 0); Out.Ln;
 
@@ -124,7 +127,7 @@ LDLW -4
 CONVNF
 LDLW -8
 CONVNF
-FZCHECK 40
+FZCHECK 41
 FDIV
 STLF -12
 !   FOR i := 1 TO 127 DO x := 2 * x END;
@@ -147,6 +150,13 @@ RETURNF
 END
 
 PROC tLimits.%main 0 4 0
+!   Out.Int(ASH(20, -2), 0); Out.Ln;
+CONST 0
+CONST 5
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
 !   Out.Int(MIN(SHORTINT), 0); Out.Ln;
 CONST 0
 CONST -32768

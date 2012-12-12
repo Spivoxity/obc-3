@@ -921,7 +921,7 @@ and check_builtin env p args e loc =
       | AshFun, [e1; e2] -> 
 	  let f x n = 
 	    if n >= 0 then integer_lsl x n 
-	    else integer_asr x n in
+	    else integer_asr x (-n) in
   	  shift f e1 e2 e
 
       | AbsFun, [e1] ->
