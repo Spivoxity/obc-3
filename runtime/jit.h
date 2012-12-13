@@ -72,8 +72,8 @@ extern code_addr *caseptr;
 #define FLO 2
 
 /* Register rI5 is the same as rSP, so it can be used only in
-   procedures that don't use FLEXCOPY, so that the frame has a fixed
-   size and all addressing can be done relative to rBP. */
+   procedures that don't use FLEXCOPY, so that the frame has 
+   a fixed size and all addressing can be done relative to rBP. */
 
 #define __REGS__(r)	\
      r(ZERO, xZERO, 0)	\

@@ -37,16 +37,16 @@
 /*
 Possible compile-time values
 
-     OP          FIELDS USED    MEANING
-
-     REG         reg		reg
-     CON             val	val
-     STACK           val siz	mem_s[BP + val] where s = 4*siz
-     ADDR        reg val	reg + val
-     LDKW, LDKF      val	konst_4[val]
-     LDKD, LDKQ      val	konst_8[val]
-     LOADs       reg val	mem_s[reg + val] for s = C, S, W, D, F, Q
-     TYPETEST+n  reg val	[ancestor_n(reg) == val]
+     OP            FIELDS USED    MEANING
+                                
+     REG           reg            reg
+     CON               val        val
+     STACK             val siz    mem_s[BP + val] where s = 4*siz
+     ADDR          reg val        reg + val
+     LDKW, LDKF        val        konst_4[val]
+     LDKD, LDKQ        val        konst_8[val]
+     LOADs         reg val        mem_s[reg + val] for s = C, S, W, D, F, Q
+     TYPETEST+n    reg val        [ancestor_n(reg) == val]
 
 Of these, LDKW and LDKD refer to the pool of constants for the procedure
 being compiled.  TYPETEST refers to the result of a type test to determine
@@ -167,8 +167,9 @@ static int base;		/* Offset of stack base from breg */
 /* In normal procedures, breg = rBP and base = frame size.  But some
    procedures require a variable-sized area on the stack for copying
    open array parameters passed by value, and they set breg = rSP and
-   base = 0, after generating code to set rSP to the base of the
-   working stack area. */
+   base = 0, after generating code to set rSP to the *base* of the
+   working stack area.  There is no top-of-stack register, because
+   the working stack size is statically known. */
 
 void init_stack(int frame) {
      sp = 0; 

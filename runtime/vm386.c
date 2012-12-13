@@ -59,8 +59,8 @@
 
 /* Here's how they correspond to VM registers */
 static int equiv[] = {
-     EBX, ESI, EDI, EBP,	/* V0 V1 V2 V3 */
-     EAX, EDX, ECX,		/* R0 R1 R2 */
+     EBX, ESI, EDI, EBP,	/* V0 V1 V2 V3: callee save */
+     EAX, EDX, ECX,		/* R0 R1 R2: caller save */
      FPR0, FPR1, FPR2, FPR3, FPR4, FPR5,
      EAX, NOREG			/* RET ZERO */
 };
@@ -73,7 +73,7 @@ static int equiv[] = {
 /* Instructions */
 
 /* ALU operation codes for the 386 */
-#define aluADD 0
+#define aluADD 0		/* Binary */
 #define aluOR 1
 #define aluADC 2
 #define aluSBB 3
@@ -82,22 +82,22 @@ static int equiv[] = {
 #define aluXOR 6
 #define aluCMP 7
 
-#define aluNOT 2
+#define aluNOT 2		/* Unary */
 #define aluNEG 3
 
 /* Condition codes for branches */
-#define testB 2
-#define testAE 3
-#define testE 4
-#define testNE 5
-#define testBE 6
-#define testA 7
-#define testS 8
-#define testNS 9
-#define testL 12
-#define testGE 13
-#define testLE 14
-#define testG 15
+#define testB 2			/* unsigned < */
+#define testAE 3		/* unsigned >= */
+#define testE 4			/* = */
+#define testNE 5		/* != */
+#define testBE 6		/* unsigned <= */
+#define testA 7			/* unsigned > */
+#define testS 8			/* negative */
+#define testNS 9		/* non-negative */
+#define testL 12		/* signed < */
+#define testGE 13		/* signed >= */
+#define testLE 14		/* signed <= */
+#define testG 15		/* signed > */
 
 /* Operation codes for shifts */
 #define shiftL 4
@@ -493,20 +493,13 @@ static code_addr branch_r(int op, int rs1, int rs2, code_addr lab) {
 
 /* Conditional branch, register + immediate */
 static code_addr branch_i(int op, int rs, int imm, code_addr lab) {
-     binop_i(aluCMP, rs, imm);
+     if (imm == 0)
+	  test_r(rs, rs);
+     else
+	  binop_i(aluCMP, rs, imm);
+
      jumpcc(op, lab);
      return pc-4;
-}
-
-/* Ditto with special case for imm=0 */
-static code_addr branch_i0(int op, int op0, int rs, int imm, code_addr lab) {
-     if (imm != 0)
-	  return branch_i(op, rs, imm, lab);
-     else {
-	  test_r(rs, rs);
-	  jumpcc(op0, lab);
-	  return pc-4;
-     }
 }
 
 /* Unary floating point, 2 registers */
@@ -631,32 +624,16 @@ static void compare_r(int op, int rd, int rs1, int rs2) {
 /* comparison with boolean result (register + immediate) */
 static void compare_i(int op, int rd, int rs, int imm) {
      if (is8bit(rd)) {
-	  binop_i(aluCMP, rs, imm);
+	  if (imm == 0)
+	       test_r(rs, rs);
+	  else
+	       binop_i(aluCMP, rs, imm);
 	  movl_ir(rd, 0);
 	  setcc(op, rd);
-     } else {
-	  push(EAX);
-	  binop_i(aluCMP, rs, imm);
-	  movl_ir(EAX, 0);
-	  setcc(op, EAX);
-	  move(rd, EAX);
-	  pop(EAX);
      }
-}
-
-/* ditto with special case for imm=0 */
-static void compare_i0(int op, int op0, int rd, int rs, int imm) {
-     if (imm != 0)
-	  compare_i(op, rd, rs, imm);
-     else if (is8bit(rd)) {
-	  test_r(rs, rs);
-	  movl_ir(rd, 0);
-	  setcc(op, rd);
-     } else {
-	  push(EAX);
-	  test_r(rs, rs);
-	  movl_ir(EAX, 0);
-	  setcc(op0, EAX);
+     else {
+	  push(EAX); 
+	  compare_i(op, EAX, rs, imm);
 	  move(rd, EAX);
 	  pop(EAX);
      }
@@ -999,17 +976,17 @@ void vm_gen3rri(operation op, vmreg a, vmreg b, int c) {
 	  fstorel(ra, rb, c); break;
 
      case EQ:
-	  compare_i0(testE, testE, ra, rb, c); break;
+	  compare_i(testE, ra, rb, c); break;
      case GEQ:
-	  compare_i0(testGE, testNS, ra, rb, c); break;
+	  compare_i(testGE, ra, rb, c); break;
      case GT: 
 	  compare_i(testG, ra, rb, c); break;
      case LEQ:
 	  compare_i(testLE, ra, rb, c); break;
      case LT: 
-	  compare_i0(testL, testS, ra, rb, c); break;
+	  compare_i(testL, ra, rb, c); break;
      case NEQ:
-	  compare_i0(testNE, testNE, ra, rb, c); break;
+	  compare_i(testNE, ra, rb, c); break;
 
      default:
 	  badop();
@@ -1073,11 +1050,11 @@ code_addr vm_gen3rib(operation op, vmreg a, int b, code_addr lab) {
 
      switch (op) {
      case BEQ: 
-	  return branch_i0(testE, testE, ra, b, lab);
+	  return branch_i(testE, ra, b, lab);
      case BGEQU: 
 	  return branch_i(testAE, ra, b, lab);
      case BGEQ: 
-	  return branch_i0(testGE, testNS, ra, b, lab);
+	  return branch_i(testGE, ra, b, lab);
      case BGT: 
 	  return branch_i(testG, ra, b, lab);
      case BLEQ: 
@@ -1085,9 +1062,9 @@ code_addr vm_gen3rib(operation op, vmreg a, int b, code_addr lab) {
      case BLTU: 
 	  return branch_i(testB, ra, b, lab);
      case BLT: 
-	  return branch_i0(testL, testS, ra, b, lab);
+	  return branch_i(testL, ra, b, lab);
      case BNEQ: 
-	  return branch_i0(testNE, testNE, ra, b, lab);
+	  return branch_i(testNE, ra, b, lab);
      case BGTU:
 	  return branch_i(testA, ra, b, lab);
      case BLEQU:
