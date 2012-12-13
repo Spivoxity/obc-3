@@ -68,8 +68,6 @@ let gen_lab l = Peepopt.gen (LABEL l)
 let gen_const n = gen (CONST (integer n))
 let gen_symbol s = gen (GLOBAL s)
 
-let dup n () = gen (DUP n)
-
 
 (* Pointer maps *)
 
@@ -322,39 +320,39 @@ let rec gen_addr v =
     | _ -> failwith "gen_addr"
 
 (* gen_bound -- generate code to push k'th bound of array *)
-and gen_bound k e0 addr_fun =
-  (* addr_fun () generates code to push the address of e0 without
-     duplicating side effects. What a mess! *)
-  let rec bound i t1 =
-    match t1.t_guts with
-	ArrayType (n, t2) -> 
-	  if i < k then bound (i+1) t2
-	  else gen_const n
-      | FlexType t2 ->
-	  if i < k then 
-	    bound (i+1) t2
-	  else begin
-	    match e0.e_guts with
-		Name x ->
-		  (* An open array parameter *)
-		  let d = get_def x in
-		  gen_local d.d_level (d.d_offset + (k+1) * word_size);
-		  gen (LOAD IntT)
-	      | Deref p ->
-		  (* Get descriptor address *)
-		  addr_fun ();
-		  gen_const (-word_size);
-		  gen (BINOP (PtrT, PlusA));
-		  load_addr ();
+and gen_bound k e0 =
+  let rec bound i t =
+    match t.t_guts with
+	ArrayType (n, t1) ->
+	  if i = 0 then n else bound (i-1) t1
+      | _ -> failwith "gen_bound 2" in
+  
+  (* Expect the address of e0 on the stack *)
+  let f = flexity e0.e_type in
+  if k >= f then begin
+    gen (POP 1);
+    gen_const (bound (k-f) (flex_base e0.e_type))
+  end
+  else begin
+    match e0.e_guts with
+	Name x ->
+	  (* An open array parameter *)
+	  let d = get_def x in
+	  gen (POP 1);
+	  gen_local d.d_level (d.d_offset + (k+1) * word_size);
+	  gen (LOAD IntT)
+      | Deref p ->
+	  (* Get descriptor address *)
+	  gen_const (-word_size);
+	  gen (BINOP (PtrT, PlusA));
+	  load_addr ();
 
-		  (* Fetch k'th dimension *)
-		  gen_const (bound_offset + k * word_size);
-		  gen (BINOP (PtrT, PlusA));
-		  gen (LOAD IntT)
-	      | _ -> failwith "gen_bound 2"
-	  end
-      | _ -> failwith "gen_bound" in
-  bound 0 e0.e_type
+	  (* Fetch k'th dimension *)
+	  gen_const (bound_offset + k * word_size);
+	  gen (BINOP (PtrT, PlusA));
+	  gen (LOAD IntT)
+      | _ -> failwith "gen_bound"
+  end    
 
 and gen_offset e0 us =
   let rec loop i ys t =
@@ -365,16 +363,19 @@ and gen_offset e0 us =
 	    gen (BINOP (IntT, Times))
 	  end
 	  else begin
-	    gen_bound i e0 (dup 1);
+	    gen (DUP 1);
+	    gen_bound i e0;
 	    gen (BINOP (IntT, Times));
 	    loop (i+1) [] (base_type t)
 	  end
       | x::xs ->
-	  gen_bound i e0 (dup 1);
+	  gen (DUP 1);
+	  gen_bound i e0;
 	  gen (BINOP (IntT, Times));
 	  gen_expr x;
 	  if !Config.boundchk then begin
-	    gen_bound i e0 (dup 2);
+	    gen (DUP 2);
+	    gen_bound i e0;
 	    gen (BOUND !code_line)
 	  end;
 	  gen (BINOP (IntT, Plus));
@@ -384,7 +385,8 @@ and gen_offset e0 us =
     | x::xs ->
 	gen_expr x;
 	if !Config.boundchk then begin
-          gen_bound 0 e0 (dup 1);
+	  gen (DUP 1);
+          gen_bound 0 e0;
           gen (BOUND !code_line)
         end;
 	loop 1 xs (base_type e0.e_type)
@@ -700,7 +702,8 @@ and gen_flexarg t a =
       let t1 = flex_base a.e_type in
       gen_const (t1.t_rep.m_size);
       for i = 0 to flexity a.e_type - 1 do
-	gen_bound i a (dup 2);
+	gen (DUP 1);
+	gen_bound i a;
 	gen (BINOP (IntT, Times))
       done
     end;
@@ -710,7 +713,8 @@ and gen_flexarg t a =
     let us = subscripts a in
     gen_addr e0;
     for i = flexity t - 1 downto 0 do
-      gen_bound (List.length us + i) e0 (dup 0);
+      gen (DUP 0);
+      gen_bound (List.length us + i) e0;
       gen SWAP
     done;
     gen_offset e0 us;
@@ -776,8 +780,8 @@ and gen_builtin q args =
 	  else int_of_integer (int_value (value_of (List.nth args 1))) in
 	let e0 = sub_base v in
 	let us = subscripts v in
-	(* Bug?: any side effects of the subscripts are lost *)
-	gen_bound (List.length us + n) e0 (function () -> gen_addr e0)
+	gen_addr e0;
+	gen_bound (List.length us + n) e0
 
     | (IncProc | DecProc), e1::_ ->
 	begin match op_kind e1.e_type with

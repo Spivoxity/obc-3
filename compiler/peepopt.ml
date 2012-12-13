@@ -204,6 +204,12 @@ let ruleset1 replace =
     | CONST n :: POP 1 :: _ ->
 	replace 2 []
 
+    (* Easy array bounds *)
+    | DUP n :: POP 1 :: _ -> replace 2 []
+    | LOCAL n :: POP 1 :: _ -> replace 2 []
+    | GLOBAL x :: POP 1 :: _ -> replace 2 []
+    | LOAD IntT :: POP 1 :: _  -> replace 1 []
+
     (* Unneeded static links *)
     | CONST n :: LINK :: _ when n = integer 0 ->
 	replace 2 []
