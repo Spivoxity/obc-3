@@ -90,8 +90,17 @@ val fLab : codelab -> Print.arg
 (* current -- name of the module being compiled *)
 val current : ident ref
 
+(* put -- output assembly directive *)
+val put : string -> Print.arg list -> unit
+
+(* put_int -- output integer constant *)
+val put_int : int -> unit
+
+(* put_sym -- output symbolic constant *)
+val put_sym : symbol -> unit
+
 (* save_string -- store a string constant *)
 val save_string : string -> symbol
 
-(* string_table -- fetch table of string constants *)
-val string_table : unit -> (symbol * string) list
+(* put_strings -- generate table of string constants *)
+val put_strings : unit -> unit

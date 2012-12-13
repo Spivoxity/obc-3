@@ -42,7 +42,6 @@ val char_of_integer : integer -> char
 val integer_of_string : string -> integer
 val float_of_integer : integer -> float
 val fInteger : integer -> Print.arg
-val fHexInteger : integer -> Print.arg
 
 val integer_add : integer -> integer -> integer
 val integer_sub : integer -> integer -> integer

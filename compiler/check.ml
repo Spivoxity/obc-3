@@ -31,6 +31,7 @@
 open Tree
 open Symtab
 open Dict
+open Gcmap
 open Mach
 open Expr
 open Error
@@ -61,13 +62,13 @@ let make_def x k t doc =
     d_used = (x.x_export <> Private); d_loc = x.x_loc; 
     d_line = Error.line_num x.x_loc;
     d_type = t; d_lab = nosym; d_level = !level; d_offset = 0; 
-    d_param = 0; d_comment = doc; d_env = empty_env; d_map = [] }
+    d_param = 0; d_comment = doc; d_env = empty_env; d_map = null_map }
 
 let typedef () =
   { d_tag = anon; d_module = !current; d_export = Private; d_kind = TypeDef;
     d_used = true; d_loc = no_loc; d_line = 0; d_type = errtype; 
     d_lab = nosym; d_level = 0; d_offset = 0; d_param = 0; d_comment = None;
-    d_env = empty_env; d_map = [] }
+    d_env = empty_env; d_map = null_map }
 
 (* get_space -- allocate local space *)
 let get_space size t =
@@ -133,8 +134,7 @@ let is_typename tx =
 
 let check_target t loc = 
   match t.t_guts with
-      ArrayType _ -> 
-	if t.t_map <> [] then make_desc t
+      ArrayType _ -> if t.t_map <> null_map then make_desc t
     | RecordType _ | FlexType _ -> ()
     | _ -> 
 	if not (is_errtype t) then begin
@@ -553,7 +553,8 @@ and check_typecons lzy env name tx =
       Enum xs ->
 	if not !Config.extensions then
 	  sem_extend "enumerated types are not allowed" [] tx.tx_loc;
-	let t = new_type !level (EnumType (List.length xs), int_rep, []) in
+	let t = new_type !level 
+	  (EnumType (List.length xs), int_rep, null_map) in
 	let j = ref 0 in
 	let dcl x = add_def env 
 	      (make_def x (ConstDef (IntVal (integer !j))) t None);
@@ -569,7 +570,7 @@ and check_typecons lzy env name tx =
 	  check_target t tx1.tx_loc;
 	  d.d_type <- t
 	end;
-	new_type !level (PointerType d, addr_rep, [GC_Offset 0])
+	new_type !level (pointer d)
     | Array (upb, tx1) ->
 	let v1 = check_tconst env inttype "an array bound" upb
  	and t2 = check_typexpr lzy env anon tx1 in
@@ -708,7 +709,7 @@ and check_heading kind x (Heading (fparams, result)) doc env fsize =
   end;
   let p = { p_kind = kind; p_fparams = top_block env'; 
 	    p_result = rt; p_pcount = !psize / param_rep.m_size } in
-  let t = new_type !level (ProcType p, addr_rep, []) in
+  let t = new_type !level (proctype p) in
   let d = make_def x ProcDef t doc in
   d.d_env <- env'; d
 

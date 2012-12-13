@@ -89,6 +89,12 @@ let nolab = 0
 
 let fLab n = fNum n
 
+(* put -- generate a directive *)
+let put fmt args = printf "$\n" [fMeta fmt args]
+
+let put_int n = put "WORD $" [fNum n]
+let put_sym s = put "WORD $" [fSym s]
+
 (* We store a list of the string constants from the source program.
    It's stored as a backwards list to make it cheap to add a new
    string; the whole thing can be reversed in linear time when the
@@ -107,8 +113,28 @@ let save_string s =
       Hashtbl.add strhash s lab;
       lab
 
-(* string_table -- return contents of string table *)
-let string_table () = List.rev !strtbl
+(* put_string -- generate a string constant *)
+let put_string (lab, s) = 
+  let s' = s ^ "\000" in
+  put "! String \"$\"" [fStr (String.escaped s)];
+  put "DEFINE $" [fSym lab];
+  let hex = "0123456789ABCDEF" in
+  let n = String.length s' and r = ref 0 in
+  while !r < n do
+    let k = min (n - !r) 32 in
+    printf "STRING " [];
+    for i = !r to !r+k-1 do
+      let c = int_of_char s'.[i] in
+      printf "$$" [fChr (hex.[c / 16]); fChr (hex.[c mod 16])]
+    done;
+    printf "\n" [];
+    r := !r + k
+  done;
+  printf "\n" []
+
+let put_strings () =
+  List.iter put_string (List.rev !strtbl)
+
 
 (* |kind| -- basic types *)
 type kind = 

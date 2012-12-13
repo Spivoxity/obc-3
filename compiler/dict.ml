@@ -33,6 +33,7 @@ open Symtab
 open Error
 open Print
 open Eval
+open Gcmap
 
 type export = Private | ReadOnly | Visible
 
@@ -42,15 +43,6 @@ module IdMap = Map.Make(struct
   type t = ident
   let compare = compare
 end)
-
-type gcmap = gcitem list
-and gcitem =
-    GC_Offset of int		(* A pointer *)
-  | GC_Repeat of int * int * int * gcmap
-				(* Repeat (base, count, stride, map) *)
-  | GC_Block of int * int	(* Pointer block (base, count) *)
-  | GC_Flex of int * int * int * gcmap
-				(* Flex parameter (addr, ndim, stride, map) *)
 
 (* environment -- abstract type of environments *)
 type environment = Env of (def list ref * def IdMap.t ref) list
@@ -213,18 +205,6 @@ let rec flexity t =
 let rec flex_base t =
   match t.t_guts with FlexType t1 -> flex_base t1 | _ -> t
 
-
-(* Basic gcmap stuff *)
-
-let rec shift k m = List.map (shift_item k) m
-
-and shift_item k =
-  function
-      GC_Offset o -> GC_Offset (o+k)
-    | GC_Repeat (b, n, s, m) -> GC_Repeat (b+k, n, s, m)
-    | GC_Block (b, n) -> GC_Block (b+k, n)
-    | GC_Flex (o, n, s, m) -> GC_Flex (o+k, n, s, m)
-
 let def_map d =
   match d.d_kind with
       VarDef | FieldDef ->
@@ -234,9 +214,8 @@ let def_map d =
 	  (* A flex parameter that is copied to dynamically allocated
 	     stack space *)
 	  let eltype = flex_base d.d_type in
-	  if eltype.t_map = [] then [] else
-	    [GC_Flex (d.d_offset, flexity d.d_type, 
-					eltype.t_rep.m_size, eltype.t_map)]
+	  flex_map d.d_offset (flexity d.d_type) 
+	      eltype.t_rep.m_size eltype.t_map
 	else
 	  (* A scalar parameter, or an aggregate parameter that is 
 	     copied to statically allocated stack space *)
@@ -245,25 +224,14 @@ let def_map d =
 	if scalar d.d_type then 
 	  shift d.d_offset d.d_type.t_map
 	else 
-	  [GC_Offset d.d_offset]
+	  shift d.d_offset ptr_map
     | VParamDef ->
 	(* VAR params all begin with the address of the target.  If they
 	   refer to a heap object, then it will have its own descriptor. *)
-	[GC_Offset d.d_offset]
-    | _ -> []
+	shift d.d_offset ptr_map
+    | _ -> null_map
 
-let local_map ds = List.concat (List.map def_map ds)
-
-let is_block stride =
-  function
-      [GC_Offset 0] -> stride = 4
-    | [GC_Block (base, count)] -> base = 0 && count * 4 = stride
-    | _ -> false
-
-let repeat count stride m = 
-  if m = [] || count = 0 then []
-  else if is_block stride m then [GC_Block (0, count * stride / 4)]
-  else [GC_Repeat (0, count, stride, m)]
+let local_map ds = union (List.map def_map ds)
 
 
 (* Types *)
@@ -294,7 +262,7 @@ let new_type lev (g, r, m) =
     t_guts = g; t_rep = r; t_desc = nosym; t_map = m }
 
 let basic_type k r s =
-  let map = if k = PtrT then [GC_Offset 0] else [] in
+  let map = if k = PtrT then ptr_map else null_map in
   let t = new_type 0 (BasicType k, r, map) in
   t.t_name <- intern s; t
 
@@ -326,21 +294,19 @@ let dummy_def =
   { d_tag = intern "*dummy*"; d_module = intern ""; d_kind = DummyDef;
     d_type = errtype; d_export = Private; d_loc = no_loc; d_line = 0;
     d_used = true; d_lab = nosym; d_level = 0; d_offset = 0; 
-    d_param = 0; d_comment = None; d_env = empty_env; d_map = [] }
+    d_param = 0; d_comment = None; d_env = empty_env; d_map = null_map }
+
+let pointer d =
+  (PointerType d, addr_rep, ptr_map)
 
 let row n t = 
   (ArrayType (n, t), 
     { m_size = n * t.t_rep.m_size; m_align = max_align },
     repeat n t.t_rep.m_size t.t_map)
 
-let flex t = (FlexType t, void_rep, [])
+let flex t = (FlexType t, void_rep, null_map)
 
 let strtype = new_type 0 (flex character)
-
-let bodytype =
-  let p = { p_kind = Body; p_fparams = []; 
-		p_pcount = 0; p_result = voidtype } in
-  (new_type 0 (ProcType p, addr_rep, []))
 
 let record abs parent size fields =
   let depth = 
@@ -350,6 +316,13 @@ let record abs parent size fields =
   (RecordType newrec, 
     { m_size = size; m_align = max_align },
     local_map fields)
+
+let proctype p = (ProcType p, addr_rep, null_map)
+
+let bodytype =
+  let p = { p_kind = Body; p_fparams = []; 
+		p_pcount = 0; p_result = voidtype } in
+  new_type 0 (proctype p)
 
 (* This is used only for assignments involving string constants *)
 let bound t =
@@ -492,14 +465,14 @@ let is_discrete t =
     | EnumType n -> true
     | _ -> false
 
-let is_pointer t =
-  match t.t_guts with PointerType _ -> true | _ -> false
-
 let is_proc t =
   match t.t_guts with (ProcType _ | BuiltinType _) -> true | _ -> false
 
 let is_array t =
   match t.t_guts with (ArrayType _ | FlexType _) -> true | _ -> false
+
+let is_pointer t =
+  match t.t_guts with PointerType _ -> true | _ -> false
 
 (* This is used for most rules where types should match *)
 let same_types t1 t2 =
@@ -597,17 +570,17 @@ let make_def s x k t =
     d_module = anon; d_export = x; d_kind = k; d_used = true; 
     d_loc = no_loc; d_line = 0; d_type = t; d_lab = s; d_level = 0; 
     d_offset = 0; d_param = 0; d_comment = None; d_env = empty_env; 
-    d_map = [] }
+    d_map = null_map }
 
 let builtin name i n ats = 
   let data = { b_name = name; b_id = i; b_nargs = n; b_argtypes = ats } in
-  (name, PrimDef, new_type 0 (BuiltinType data, void_rep, []))
+  (name, PrimDef, new_type 0 (BuiltinType data, void_rep, null_map))
 
 let libproc name n fps rt =
   let fparam (s, k, t) = make_def s Private k t in
-  let data = { p_kind = Procedure; p_fparams = List.map fparam fps;
+  let p = { p_kind = Procedure; p_fparams = List.map fparam fps;
                                 p_pcount = n; p_result = rt } in
-  (name, ProcDef, new_type 0 (ProcType data, addr_rep, []))
+  (name, ProcDef, new_type 0 (proctype p))
 
 let make_env ds =
   let env = new_block empty_env in 

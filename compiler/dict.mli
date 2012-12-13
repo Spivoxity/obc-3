@@ -31,6 +31,7 @@
 open Symtab
 open Eval
 open Mach
+open Gcmap
 
 (*
 This module defines the types that represent definitions and Oberon
@@ -60,15 +61,6 @@ type def_kind =
 type export = Private | ReadOnly | Visible
 
 type docstring = Error.location option
-
-type gcmap = gcitem list
-and gcitem =
-    GC_Offset of int		(* A pointer *)
-  | GC_Repeat of int * int * int * gcmap
-				(* Repeat (base, count, stride, map) *)
-  | GC_Block of int * int	(* Pointer block (base, count) *)
-  | GC_Flex of int * int * int * gcmap
-				(* Flex parameter (addr, ndim, stride, map) *)
 
 (* def -- definitions in environment *)
 type def = 
@@ -189,6 +181,9 @@ type typespec = type_guts * metrics * gcmap
 (* new_type -- construct a new type *)
 val new_type : int -> typespec -> otype
 
+(* pointer -- make a pointer type *)
+val pointer : def -> typespec
+
 (* row -- make an array type *)
 val row : int -> otype -> typespec
 
@@ -197,6 +192,9 @@ val flex : otype -> typespec
 
 (* record -- make a record type *)
 val record : bool -> otype -> int -> def list -> typespec
+
+(* proctype -- make a procedure type *)
+val proctype : proc_data -> typespec
 
 (* bound -- get bound of array type *)
 val bound : otype -> int
@@ -307,7 +305,6 @@ val fOType : otype -> Print.arg
 
 val align : int -> int ref -> unit
 val local_map : def list -> gcmap
-val shift : int -> gcmap -> gcmap
 
 
 (* Initial environment *)

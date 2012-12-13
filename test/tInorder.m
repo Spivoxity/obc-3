@@ -243,10 +243,10 @@ WORD tInorder.Node
 
 ! Pointer maps
 DEFINE tInorder.Traverse2.%map
-WORD 76
-WORD 60
+WORD 12
+WORD -4
 WORD GC_BLOCK
-WORD -3944
+WORD -4008
 WORD 1000
 WORD GC_END
 

@@ -40,7 +40,7 @@ type check =
 (* icode -- type of intermediate instructions *)
 type icode =
     CONST of integer 	 	(* Push constant (value) *)
-  | HEXCONST of integer		(* Push hex constant (value) *)
+  | HEXCONST of int32		(* Push hex constant (value) *)
   | TCONST of kind * value	(* Typed constant *)
   | GLOBAL of symbol		(* Push global addr (value) *)  
   | LOCAL of int		(* Push address (offset) *)
@@ -142,7 +142,7 @@ let fWidth =
 let fInst =
   function
       CONST n ->	fMeta "CONST $" [fInteger n]
-    | HEXCONST n ->	fMeta "CONST $" [fHexInteger n]
+    | HEXCONST n ->	fMeta "CONST $" [fHex32 n]
     | TCONST (k, x) ->	fMeta "$CONST $" [fType k; fVal x]
     | GLOBAL x ->	fMeta "GLOBAL $" [fSym x]
     | LOCAL o ->	fMeta "LOCAL $" [fNum o]

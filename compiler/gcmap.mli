@@ -1,5 +1,5 @@
 (*
- * info.ml
+ * gcmap.mli
  * 
  * This file is part of the Oxford Oberon-2 compiler
  * Copyright (c) 2006 J. M. Spivey
@@ -28,41 +28,37 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-open Print
-open Symtab
-open Dict
-open Mach
+type gcmap
 
-let modules = Hashtbl.create 20
-let debug_defs = Hashtbl.create 100
+(* null_map -- map with no pointers *)
+val null_map : gcmap
 
-let put_debug d =
-  if d.d_lab <> nosym then
-    Hashtbl.add debug_defs d.d_lab d
+(* ptr_map -- map for a single pointer *)
+val ptr_map : gcmap
 
-let get_debug x =
-  Hashtbl.find debug_defs x
+(* flex_map -- map for an open array parameter *)
+val flex_map : int -> int -> int -> gcmap -> gcmap
 
-let init =
-  Dict.debugger := put_debug;
-  let p = { p_kind = Procedure; p_pcount = 0; 
-		p_fparams = []; p_result = voidtype } in
-  put_debug
-    { d_tag = intern "MAIN"; d_module = intern "%Main"; d_kind = ProcDef;
-      d_type = new_type 0 (proctype p); d_export = Private; 
-      d_loc = Error.no_loc; d_line = 0; d_used = true; d_lab = "MAIN"; 
-      d_level = 0; d_offset = 0; d_param = 0; d_env = init_env ();
-      d_comment = None; d_map = Gcmap.null_map }
+(* shift -- shift a GC map by a specified offset *)
+val shift : int -> gcmap -> gcmap
 
-let import m objchk =
-  try 
-    let f = Util.search_path (extern m ^ ".k") !Config.libpath in
-    let (env, chksum, _) = Symfile.import f in
-    if chksum <> objchk then
-      fprintf stderr "? Symbol file for $ has wrong checksum\n" [fId m];
-    Hashtbl.add modules m env
-  with Not_found ->
-    fprintf stderr "? Couldn't find symbol file for $\n" [fId m]
+(* repeat -- repeat a GC map with specified count and stride *)
+val repeat : int -> int -> gcmap -> gcmap
 
-let get_module m = Hashtbl.find modules m
+(* join -- union of two maps *)
+val join : gcmap -> gcmap -> gcmap
 
+(* union -- union of a list of maps *)
+val union : gcmap list -> gcmap
+
+(* make_bitmap -- render a GC map as a bitmap or raise Not_found *)
+val make_bitmap : int -> gcmap -> int32
+
+(* put_varmap -- output GC map for a variable *)
+val put_varmap : Symtab.symbol -> gcmap -> unit
+
+(* save_map -- a definition to map table *)
+val save_map : Symtab.symbol -> gcmap -> unit
+
+(* put_maps -- output saved definitions *)
+val put_maps : unit -> unit

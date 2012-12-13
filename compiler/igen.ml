@@ -30,6 +30,7 @@
 
 open Symtab
 open Dict
+open Gcmap
 open Tree
 open Mach
 open Icode
@@ -67,116 +68,43 @@ let gen_lab l = Peepopt.gen (LABEL l)
 let gen_const n = gen (CONST (integer n))
 let gen_symbol s = gen (GLOBAL s)
 
-(* put -- generate a directive *)
-let put fmt args = printf "$\n" [fMeta fmt args]
-
-let put_int n = put "WORD $" [fNum n]
-let put_sym s = put "WORD $" [fSym s]
-
 let dup n () = gen (DUP n)
-
-let intval n = IntVal (integer n)
 
 
 (* Pointer maps *)
 
-let maps = ref []
-
-let rec make_bitmap m = 
-  let rec bitmap m =
-    List.fold_left Int32.logor Int32.zero (List.map item m)
-  and item =
-    function
-	GC_Offset o ->
-	  if o < 0 || o >= 4*31 then raise Not_found;
-	  Int32.shift_left Int32.one (o/4)
-      | GC_Repeat (base, count, stride, m) ->
-	  if base < 0 || base + count * stride >= 4*32 then raise Not_found;
-	  let b = bitmap m in
-	  List.fold_left Int32.logor Int32.zero 
-	    (List.map (fun i -> Int32.shift_left b ((base + i * stride) / 4))
-	      (Util.range 0 (count-1)))
-      | GC_Block (base, count) ->
-	  item (GC_Repeat (base, count, 4, [GC_Offset 0]))
-      | GC_Flex (_, _, _, _) ->
-	  raise Not_found in
-  integer_of_int32 (Int32.logor (Int32.shift_left (bitmap m) 1) Int32.one)
-
-let hex_bitmap bm = sprintf "$" [fHexInteger bm]
-
-let make_map lab m =
-  if m = [] then "0" else
-    try hex_bitmap (make_bitmap m) with
-      Not_found ->
-        maps := (lab, m) :: !maps; lab
-
 let map_name x = sprintf "$.%map" [fSym x]
 
+let make_map sh lab m =
+  if m = null_map then "0" else
+    try Util.hex_of_int32 (make_bitmap sh m) with
+      Not_found -> save_map lab m; lab
+
 let frame_map d =
-  make_map (map_name d.d_lab) (shift frame_shift d.d_map)
+  make_map Mach.frame_shift (map_name d.d_lab) d.d_map
 
 let type_map t =
-  make_map (map_name t.t_desc) t.t_map
+  make_map 0 (map_name t.t_desc) t.t_map
 
 let push_map t =
-  if t.t_map = [] then
+  if t.t_map = null_map then
     gen_const 0
-  else if t.t_map = [GC_Offset 0] then
+  else if t.t_map = ptr_map then
     (* A pointer type *)
     gen_const 3
   else begin
-    try gen (HEXCONST (make_bitmap t.t_map)) with
+    try gen (HEXCONST (make_bitmap 0 t.t_map)) with
       Not_found ->
 	if t.t_desc <> nosym then
 	  gen_symbol (map_name t.t_desc)
 	else
-	  gen_symbol (make_map (genlab ()) t.t_map)
+	  gen_symbol (make_map 0 (genlab ()) t.t_map)
   end
 
 let gen_stackmap n =
   let m = Stack.make_map n in
-  if m <> [] then 
-    gen (STKMAP (make_map (genlab ()) (shift (n*word_size) m)))
-
-let rec put_map m = 
-  try 
-    (* Don't use a bitmap for a single item *)
-    if (match m with [GC_Offset o] -> true | _ -> false) then raise Not_found;
-    let bm = make_bitmap m in 
-    put_sym "GC_MAP"; put_sym (hex_bitmap bm)
-  with Not_found ->
-    List.iter put_item m
-
-and put_item =
-  function
-      GC_Offset o -> 
-	put_int o
-    | GC_Repeat (base, count, stride, m) ->
-	put_sym "GC_REPEAT";
-	put_int base;
-	put_int count;
-	put_int stride;
-	put_map m;
-	put_sym "GC_END"
-    | GC_Block (base, count) ->
-	put_sym "GC_BLOCK";
-	put_int base;
-	put_int count
-    | GC_Flex (offset, ndim, stride, m) ->
-	put_sym "GC_FLEX";
-	put_int offset;
-	put_int ndim;
-	put_int stride;
-	put_map m;
-	put_sym "GC_END"
-
-let put_maps () =
-  if !maps <> [] then begin
-    put "! Pointer maps" [];
-    List.iter (function (lab, m) -> 
-	put "DEFINE $" [fSym lab]; put_map m; put_sym "GC_END"; put "" []) 
-      (List.rev !maps)
-  end
+  if m <> null_map then 
+    gen (STKMAP (make_map 0 (genlab ()) m))
 
 
 (* Code generation *)
@@ -344,7 +272,7 @@ let rec gen_addr v =
 	      gen_local d.d_level d.d_offset;
 	      load_addr ()
 	  | ProcDef ->
-	      (* This is needed when a proc is passed as a parameter
+	      (* This is needed when a procedue is passed as a parameter
 		 of type ARRAY OF SYSTEM.BYTE *)
 	      gen_symbol d.d_lab
           | _ -> failwith "gen_addr"
@@ -870,7 +798,7 @@ and gen_builtin q args =
 	      gen (STORE k)
 	  | LongT ->
 	      if List.length args = 1 then
-		gen (TCONST (LongT, intval 1))
+		gen (TCONST (LongT, IntVal (integer 1)))
 	      else
 		gen_expr (List.nth args 1);
 	      gen_addr e1;
@@ -1395,25 +1323,6 @@ let rec gen_proc =
 	  [fSym d.d_lab; fStr name; fSym (frame_map d)];
     | _ -> ()
 
-(* gen_string -- generate code for a string constant *)
-let gen_string (lab, s) = 
-  let s' = s ^ "\000" in
-  put "! String \"$\"" [fStr (String.escaped s)];
-  put "DEFINE $" [fSym lab];
-  let hex = "0123456789ABCDEF" in
-  let n = String.length s' and r = ref 0 in
-  while !r < n do
-    let k = min (n - !r) 32 in
-    printf "STRING " [];
-    for i = !r to !r+k-1 do
-      let c = int_of_char s'.[i] in
-      printf "$$" [fChr (hex.[c / 16]); fChr (hex.[c mod 16])]
-    done;
-    printf "\n" [];
-    r := !r + k
-  done;
-  printf "\n" []
-
 (* gen_descriptor -- generate a descriptor *)
 let gen_descriptor t =
   put "! Descriptor for $" [fId t.t_name];
@@ -1461,31 +1370,26 @@ let translate stamp
 	failwith "translate"
   end;
 
-  if List.exists (function d -> d.d_kind = VarDef) !glodefs then begin
+  let vardefs = List.filter (function d -> d.d_kind = VarDef) !glodefs in
+  if vardefs <> [] then begin
     put "! Global variables" [];
     List.iter (function d ->
-	match d.d_kind with
-	    VarDef ->
-	      put "GLOVAR $ $" [fSym d.d_lab; fNum d.d_type.t_rep.m_size]
- 	  | _ -> ())
-      !glodefs;
+        put "GLOVAR $ $" [fSym d.d_lab; fNum d.d_type.t_rep.m_size])
+      vardefs;
     put "" [];
 
-    let gcmap = 
-      List.concat (List.map (function d ->
-	  if d.d_kind = VarDef && d.d_map <> [] 
-	  then [(d.d_lab, d.d_map)] else [])
-	!glodefs) in
-    if gcmap <> [] then begin
+    let mapdefs = List.filter (function d -> d.d_map <> null_map) vardefs in
+    if mapdefs <> [] then begin
       put "! Pointer map" [];
       put "DEFINE $.%gcmap" [fId !current];
-      List.iter (function (s, m) -> 
-		  put_sym "GC_BASE"; put_sym s; put_map m) gcmap;
+      List.iter (function d -> put_varmap d.d_lab d.d_map) mapdefs;
       put_sym "GC_END";
       put "" []
     end
   end;
-  List.iter gen_string (string_table ());
+
+  put_strings ();
   List.iter gen_descriptor (desc_table ());
   put_maps ();
+
   put "! End of file" []

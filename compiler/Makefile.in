@@ -66,7 +66,7 @@ compiler.cma: $(COMPILER)
 	$(OCAMLC) $(MLFLAGS) -a -o $@ $(COMPILER) 
 
 BASIS = util.cmo print.cmo growvect.cmo symtab.cmo config.cmo revid.cmo \
-	eval.cmo mach.cmo error.cmo dict.cmo symlex.cmo \
+	eval.cmo mach.cmo error.cmo gcmap.cmo dict.cmo symlex.cmo \
 	symparse.cmo symfile.cmo
 basis.cma: $(BASIS)
 	$(OCAMLC) $(MLFLAGS) -a -o $@ $(BASIS)
@@ -133,8 +133,10 @@ ML = growvect.ml growvect.mli print.ml print.mli \
 	switch.ml symtab.ml peepopt.mli peepopt.ml \
 	symfile.mli symfile.ml browser.ml \
 	lexer.ml symlex.ml config.ml inicheck.mli inicheck.ml \
-	stack.mli stack.ml
+	stack.mli stack.ml gcmap.mli gcmap.ml
 EXTRAML = parser.mli parser.ml symparse.mli symparse.ml revid.ml
+
+.SECONDARY: $(EXTRAML)
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)

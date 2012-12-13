@@ -82,7 +82,7 @@ sp:      V     V
 let frame_head = 12
 let dyn_link = 0
 let stat_link = -4
-let frame_shift = 4*16
+let frame_shift = 16
 
 (*
 Record descriptor layout:

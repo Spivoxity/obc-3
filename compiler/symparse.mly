@@ -35,6 +35,7 @@ open Error
 open Print
 open Mach
 open Eval
+open Gcmap
 %}
 
 %token 			ARRAY CONST PARAM DEF END ENUM FIELD TARGET
@@ -58,7 +59,7 @@ let make_def x v k t ln doc =
   { d_tag = x; d_module = !modname; d_export = v; d_kind = k; 
     d_used = true; d_loc = no_loc; d_line = ln; d_type = t; d_lab = nosym;
     d_level = !level; d_offset = 0; d_param = 0; d_comment = doc;  
-    d_env = empty_env; d_map = [] }
+    d_env = empty_env; d_map = null_map }
 
 let install d =
   try define !env d with
@@ -177,10 +178,9 @@ typedef :
 
 tguts :
     POINTER			
-      { (PointerType (make_def anon Private TypeDef voidtype 0 None), 
-	  addr_rep, [GC_Offset 0]) }
+      { pointer (make_def anon Private TypeDef voidtype 0 None) }
   | ENUM int			
-      { (EnumType $int, int_rep, []) }
+      { (EnumType $int, int_rep, null_map) }
   | recflag symbol int otype push defs SEMI
       { desc := $symbol; 
 	let t = record $recflag $otype $int (top_block !env) in
@@ -191,7 +191,7 @@ tguts :
       { let p = { p_kind = $prockind; p_pcount = $int; p_result = $otype; 
 	    p_fparams = top_block !env } in
         decr level; env := pop_block !env;
-	(ProcType p, addr_rep, []) } ;
+	proctype p } ;
 
 push :
     /* EMPTY */			{ incr level; env := new_block !env } ;

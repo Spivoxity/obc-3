@@ -97,7 +97,7 @@ Builtin.m: Builtin.m.in ../revid
 
 _Builtin.k: Builtin.m ../revid
 	$(OBC1) -w -b $< | \
-	    sed -e 's/Builtin\.\([^%]\)/\1/' -e 's/Builtin/_Builtin/' >$@
+	    sed -e 's/Builtin\.\([^%]\)/\1/g' -e 's/Builtin/_Builtin/' >$@
 
 _Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP)
 In.k Out.k Err.k In-b.k : Files.k

@@ -8,6 +8,7 @@ open Icode
 open Symtab
 open Print
 open Dict
+open Gcmap
 
 (* We keep a stack of Booleans, each indicating whether an item on the
    evaluation stack at runtime is a pointer or not.  *)
@@ -113,13 +114,8 @@ link) and the code address of the callee are on the simulated stack;
 so we drop n+1 stack items before computing the map. *)
 
 let make_map n =
-  let rec loop i =
-    function
-        [] -> []
-      | k::ks ->
-	  let m = loop (i+1) ks in
-	  if k then GC_Offset (4*i) :: m else m in
-  loop 0 (pop_stack (n+1) !stk)
+  let h p m = join (if p then ptr_map else null_map) (shift 4 m) in
+  shift (4*n) (List.fold_right h (pop_stack (n+1) !stk) null_map)
 
 let max_depth () = !maxd
 

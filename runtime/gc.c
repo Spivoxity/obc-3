@@ -786,7 +786,7 @@ static int *map_next(int *p) {
 }
 
 /* redir_map -- interpret a pointer map, redirecting each pointer */
-static void redir_map(unsigned map, uchar *base) {
+static void redir_map(unsigned map, uchar *base, int bmshift) {
      int i, count, stride, op, ndim;
      uchar *base2;
      int *p;
@@ -795,7 +795,7 @@ static void redir_map(unsigned map, uchar *base) {
 
      if ((map & 0x1) != 0) {
 	  /* A bitmap */
-	  i = 0; map >>= 1;
+	  i = -bmshift; map >>= 1;
 
 	  while (map != 0) {
 	       if ((map & 0x1) != 0)
@@ -829,7 +829,7 @@ static void redir_map(unsigned map, uchar *base) {
 	       ASSERT(count > 0);
 
 	       for (i = 0; i < count; i++)
-		    redir_map((unsigned) (p+4), base2 + i*stride);
+		    redir_map((unsigned) (p+4), base2 + i*stride, 0);
 
 	       break;
 
@@ -842,7 +842,7 @@ static void redir_map(unsigned map, uchar *base) {
 	       break;
 			 
 	  case GC_MAP:
-	       redir_map((unsigned) p[1], base);
+	       redir_map((unsigned) p[1], base, 0);
 	       break;
 
 	  case GC_FLEX:
@@ -856,7 +856,7 @@ static void redir_map(unsigned map, uchar *base) {
 	       
 	       base2 = (uchar *) get_word(base2, 0);
 	       for (i = 0; i < count; i++)
-		    redir_map((unsigned) (p+4), base2 + i*stride);
+		    redir_map((unsigned) (p+4), base2 + i*stride, 0);
 
 	       break;
 
@@ -885,7 +885,7 @@ static void traverse_stack(value *xsp) {
 	  /* Local variables and parameters */
 	  DEBUG_PRINT('m', ("\nFrame for %s", x->p_name));
 	  if (c[CP_MAP].i != 0) 
-	       redir_map(c[CP_MAP].i, (uchar *) (f - FRAME_SHIFT));
+	       redir_map(c[CP_MAP].i, (uchar *) f, FRAME_SHIFT);
 
 	  if (pc.i != 0) {
 	       /* Evaluation stack: look up calling PC value in
@@ -901,12 +901,12 @@ static void traverse_stack(value *xsp) {
 		    }
 		    if (r[0].x != NULL) {
 			 DEBUG_PRINT('m', ("\nEval stack (%#x)", r[1].i));
-			 redir_map(r[1].i, (uchar *) sp);
+			 redir_map(r[1].i, (uchar *) sp, 0);
 		    }
 	       } else {
 		    /* Compiled primitive: f[PC].i is stack map */
 		    DEBUG_PRINT('m', ("\nEval stack (%#x)", pc.i));
-		    redir_map(pc.i, (uchar *) sp);
+		    redir_map(pc.i, (uchar *) sp, 0);
 	       }
 	  }
 
@@ -957,7 +957,7 @@ static void migrate(void) {
 		    changed = TRUE;
 		    p = finger[i];
 		    if (desc(p) != NULL)
-			 redir_map(desc(p)[DESC_MAP], p + BYTES_PER_WORD);
+			 redir_map(desc(p)[DESC_MAP], p + BYTES_PER_WORD, 0);
 		    finger[i] = p + pool_size(i);
 	       }
 	  }
@@ -967,7 +967,7 @@ static void migrate(void) {
 	       big_thumb = big_thumb->h_next;
 	       p = big_thumb->h_memory;
 	       if (desc(p) != NULL)
-		    redir_map(desc(p)[DESC_MAP], p + BYTES_PER_WORD);
+		    redir_map(desc(p)[DESC_MAP], p + BYTES_PER_WORD, 0);
 	  }
      } while (changed);
 }
@@ -1068,7 +1068,7 @@ void gc_collect(value *sp) {
 	  free_ptr[i] = NULL; free_count[i] = 0;
      }
 
-     redir_map((unsigned) gcmap, NULL);	/* Redirect global variables */
+     redir_map((unsigned) gcmap, NULL, 0);  /* Redirect global variables */
      traverse_stack(sp);	/* Redirect pointers in the stack */
      migrate();			/* Redirect internal pointers */
 

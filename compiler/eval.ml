@@ -43,7 +43,6 @@ let char_of_integer n = char_of_int (int_of_integer n)
 let integer_of_string s = Int64.of_string s
 let float_of_integer n = Int64.to_float n
 let fInteger n = fStr (Int64.to_string n)
-let fHexInteger n = fStr (Printf.sprintf "%#.8Lx" n)
 
 (* Mathematically correct div and mod *)
 let divmod a b =

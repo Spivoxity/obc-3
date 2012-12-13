@@ -31,6 +31,7 @@
 open Tree
 open Symtab
 open Dict
+open Gcmap
 open Print
 open Eval
 open Error
@@ -55,7 +56,7 @@ let fake_def x =
   let d = { d_tag = x; d_module = !current; d_export = Private; 
     d_kind = VarDef; d_loc = no_loc; d_line = 0; d_type = errtype; 
     d_used = true; d_lab = nosym; d_level = 0; d_offset = 0; 
-    d_param = 0; d_comment = None; d_env = empty_env; d_map = [] } in
+    d_param = 0; d_comment = None; d_env = empty_env; d_map = null_map } in
   define !err_context d; d
 
 (* lookup_def -- find definition of a name, give error if none *)
