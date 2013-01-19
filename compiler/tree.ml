@@ -404,7 +404,7 @@ let ppTree (Module (m, imports, body, _, _)) =
 let print_tree fp t = 
   set_formatter_out_channel fp;
   grind "$" [ppTree t]; 
-  print_newline()
+  print_newline ()
 
 let print_expr fp e =
   set_formatter_out_channel fp;

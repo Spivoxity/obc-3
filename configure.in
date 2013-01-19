@@ -33,10 +33,9 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 2.9.2, mike@cs.ox.ac.uk)
+AC_INIT(obc, 3.0, mike@cs.ox.ac.uk)
 # Don't forget to update version number in debian/changelog too.
 AC_PREREQ(2.50)
-AC_REVISION($Revision: 1639 $)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
