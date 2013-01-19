@@ -615,7 +615,7 @@ inst LNUM 2 S0 {
      if (intflag)
      	  debug_break(cp, bp, pc0, "interrupt");
      else if (one_shot) 
-          debug_break(cp, bp, pc0, "stop");
+          debug_break(cp, bp, pc0, "line");
 #endif
 }
 
