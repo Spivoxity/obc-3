@@ -193,7 +193,7 @@ LIBX = compiler/obc1 compiler/obb1 runtime/oblink obx
 LIBSRC = $(MODULES:%=$(srcdir)/lib/%.m)
 
 # Other files installed in {prefix}/lib
-LIB = runtime/obx.a runtime/obx-j.a runtime/obx-p.a lib/oblib.a lib/dlstub.o \
+LIB = runtime/obx.a runtime/obx-j.a runtime/obx-p.a $(PRIMS) \
 	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h \
 	lib/lscript lib/lscript-b \
 	$(srcdir)/lib/Builtin.m lib/_Builtin.k \
@@ -204,13 +204,13 @@ DIRS = $(bindir) $(libdir)/obc
 
 # Inputs for bindist config process
 SCRIPTS = obc.in obb.in
-ETC = ObList.k lib/stdprims.o
+ETC = ObList.k
 
 # Misc bindist files
 INST = $(srcdir)/README $(srcdir)/THANKS $(srcdir)/Fac.m
 
 ifdef DYNLINK
-  LIB += $(SHLMODS:%=lib/%$(DLEXT))
+  LIB += lib/oblib$(DLEXT) $(SHLMODS:%=lib/%$(DLEXT))
 endif
 
 ifdef ENABLE_JIT
@@ -263,14 +263,16 @@ bindist: force
 	chmod 755 $(BINDIST)/configure
 	$(INSTALL_DATA) $(srcdir)/scripts/bindist.make.in \
 						$(BINDIST)/Makefile.in
-	$(INSTALL_PROG) $(srcdir)/scripts/install-sh $(BINDIST)
+	$(INSTALL_PROG) $(srcdir)/scripts/install-sh \
+		$(srcdir)/scripts/config.sub \
+		$(srcdir)/scripts/config.guess $(BINDIST)
 	$(INSTALL_PROG) obprof $(BINDIST)/bin
 	for f in $(LIBX); do $(INSTALL_PROG) $$f $(BINDIST)/libexec; done
 	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(BINDIST)/libsrc; done
 	for f in $(LIB); do $(INSTALL_DATA) $$f $(BINDIST)/lib; done
 	for f in $(SCRIPTS); do \
-		$(SETREVID) $(srcdir)/scripts/$f >$(BINDIST)/etc/$f; \
-		chmod 644 $(BINDIST)/etc/$f; done
+		$(SETREVID) $(srcdir)/scripts/$$f >$(BINDIST)/etc/$$f; \
+		chmod 644 $(BINDIST)/etc/$$f; done
 	for f in $(ETC); do $(INSTALL_DATA) $$f $(BINDIST)/etc; done	
 	for f in $(INST); do $(INSTALL_DATA) $$f $(BINDIST); done
 

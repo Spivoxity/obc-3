@@ -33,15 +33,23 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.13)
-AC_REVISION($Revision$)
 AC_INIT(README)
+AC_PREREQ(2.50)
 AC_PROG_INSTALL
+AC_CANONICAL_HOST
 
 AC_SUBST(VERSION, --VERSION--)
 AC_SUBST(ENABLE_JIT, --ENABLE_JIT--)
-AC_SUBST(ENABLE_GUI, --ENABLE_GUI--)
 AC_SUBST(ROOT)
 AC_SUBST(EXEEXT)
+
+case $host in
+    i?86-*)   CC=gcc;;
+    x86_64-*) CC='"gcc -m32"';;
+    *)        CC=unknown;;
+esac
+AC_SUBST(CC)
+
+AC_SUBST(OBDB1, '"$LIBDIR/obdb1 -R $LIBDIR"')
 
 AC_OUTPUT(Makefile)

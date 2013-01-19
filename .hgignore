@@ -10,6 +10,7 @@ syntax: glob
 Depend
 Makefile
 autom4te.cache
+bindist
 config.cache
 compiler/Makefile
 compiler/basis.cma
