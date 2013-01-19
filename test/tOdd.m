@@ -33,13 +33,15 @@ STGC tOdd.r
 !   FOR i := 0 TO 10 DO
 CONST 0
 STGW tOdd.i
-JUMP 2
 LABEL 1
+LDGW tOdd.i
+CONST 10
+JGT 2
 !     IF ODD(i) THEN Out.Int(i,0) END;
 LDGW tOdd.i
 CONST 1
 BITAND
-JEQZ 4
+JUMPF 4
 CONST 0
 LDGW tOdd.i
 GLOBAL Out.Int
@@ -49,8 +51,6 @@ LABEL 4
 LDGW tOdd.i
 CONST 1
 BITAND
-CONST 0
-NEQ
 STGC tOdd.b
 !     IF b = r THEN Out.Int(i,0) END
 LDGC tOdd.b
@@ -61,14 +61,11 @@ LDGW tOdd.i
 GLOBAL Out.Int
 CALL 2
 LABEL 6
-!   FOR i := 0 TO 10 DO
 LDGW tOdd.i
 INC
 STGW tOdd.i
+JUMP 1
 LABEL 2
-LDGW tOdd.i
-CONST 10
-JLEQ 1
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

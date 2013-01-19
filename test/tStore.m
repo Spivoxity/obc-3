@@ -107,8 +107,12 @@ CONST -1
 STLW -4
 LDGW tStore.N
 STLW -8
-JUMP 8
 LABEL 6
+!   WHILE a+1 # b DO
+LDLW -4
+INC
+LDLW -8
+JEQ 7
 !     m := (a+b) DIV 2;
 LDLW -4
 LDLW -8
@@ -133,17 +137,13 @@ JGTZ 9
 !       a := m
 LDLW -12
 STLW -4
-JUMP 8
+JUMP 6
 LABEL 9
 !       b := m
 LDLW -12
 STLW -8
-LABEL 8
-!   WHILE a+1 # b DO
-LDLW -4
-INC
-LDLW -8
-JNEQ 6
+JUMP 6
+LABEL 7
 !   RETURN a
 LDLW -4
 RETURNW
@@ -162,10 +162,10 @@ CALLW 1
 STLW -4
 !   IF (i >= 0) & (i < N) & (name[i] = s) THEN
 LDLW -4
-JLTZ 11
+JLTZ 13
 LDLW -4
 LDGW tStore.N
-JGEQ 11
+JGEQ 13
 CONST 20
 LOCAL -28
 CONST 20
@@ -178,7 +178,7 @@ TIMES
 PLUSA
 GLOBAL COMPARE
 CALLW 4
-JNEQZ 11
+JNEQZ 13
 !     value[i] := v
 LDLW 16
 GLOBAL tStore.value
@@ -187,15 +187,19 @@ CONST 100
 BOUND 46
 STIW
 RETURN
-LABEL 11
+LABEL 13
 !     j := N; N := N+1;
 LDGW tStore.N
 STLW -8
 LDGW tStore.N
 INC
 STGW tStore.N
-JUMP 13
-LABEL 12
+LABEL 11
+!     WHILE j > i+1 DO
+LDLW -8
+LDLW -4
+INC
+JLEQ 12
 !       name[j] := name[j-1];
 GLOBAL tStore.name
 LDLW -8
@@ -228,12 +232,8 @@ BOUND 51
 STIW
 !       j := j-1
 DECL -8
-LABEL 13
-!     WHILE j > i+1 DO
-LDLW -8
-LDLW -4
-INC
-JGT 12
+JUMP 11
+LABEL 12
 !     name[j] := s;
 GLOBAL tStore.name
 LDLW -8
@@ -383,8 +383,10 @@ DEC
 STLW -8
 CONST 0
 STLW -4
-JUMP 17
 LABEL 16
+LDLW -4
+LDLW -8
+JGT 17
 !     Out.String(name[i]); Out.String(" = "); 
 CONST 20
 GLOBAL tStore.name
@@ -411,12 +413,9 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   FOR i := 0 TO N-1 DO
 INCL -4
+JUMP 16
 LABEL 17
-LDLW -4
-LDLW -8
-JLEQ 16
 RETURN
 END
 

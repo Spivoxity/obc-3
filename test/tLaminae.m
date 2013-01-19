@@ -66,13 +66,27 @@ PROC tLaminae.Tally 8 4 0
 !   FOR a := 3 TO 250001 DO
 CONST 3
 STLW -4
-JUMP 2
 LABEL 1
+LDLW -4
+CONST 250001
+JGT 2
 !     d := 1;
 CONST 1
 STLW -8
-JUMP 4
 LABEL 3
+!     WHILE (2*d < a) & (d*(a-d) <= 250000) DO
+LDLW -8
+CONST 2
+TIMES
+LDLW -4
+JGEQ 4
+LDLW -8
+LDLW -4
+LDLW -8
+MINUS
+TIMES
+CONST 250000
+JGT 4
 !       INC(count[d*(a-d)]); d := d+1
 GLOBAL tLaminae.count
 LDLW -8
@@ -89,27 +103,11 @@ INC
 SWAP
 STOREW
 INCL -8
+JUMP 3
 LABEL 4
-!     WHILE (2*d < a) & (d*(a-d) <= 250000) DO
-LDLW -8
-CONST 2
-TIMES
-LDLW -4
-JGEQ 5
-LDLW -8
-LDLW -4
-LDLW -8
-MINUS
-TIMES
-CONST 250000
-JLEQ 3
-LABEL 5
-!   FOR a := 3 TO 250001 DO
 INCL -4
+JUMP 1
 LABEL 2
-LDLW -4
-CONST 250001
-JLEQ 1
 RETURN
 END
 
@@ -124,25 +122,19 @@ INC
 STLW -16
 CONST 3
 STLW -4
-JUMP 7
-LABEL 6
+LABEL 5
+LDLW -4
+LDLW -16
+JGT 6
 !     b := a-2;
 LDLW -4
 CONST 2
 MINUS
 STLW -8
-JUMP 9
-LABEL 8
-!       n := n+1; b := b-2
-INCL -12
-LDLW -8
-CONST 2
-MINUS
-STLW -8
-LABEL 9
+LABEL 7
 !     WHILE (b > 0) & ((a+b)*(a-b) <= 4*x) DO
 LDLW -8
-JLEQZ 10
+JLEQZ 8
 LDLW -4
 LDLW -8
 PLUS
@@ -153,14 +145,18 @@ TIMES
 LDLW 12
 CONST 4
 TIMES
-JLEQ 8
-LABEL 10
-!   FOR a := 3 TO x+1 DO
+JGT 8
+!       n := n+1; b := b-2
+INCL -12
+LDLW -8
+CONST 2
+MINUS
+STLW -8
+JUMP 7
+LABEL 8
 INCL -4
-LABEL 7
-LDLW -4
-LDLW -16
-JLEQ 6
+JUMP 5
+LABEL 6
 !   RETURN n
 LDLW -12
 RETURNW
@@ -203,35 +199,34 @@ CALL 0
 !   FOR i := 1 TO 250000 DO
 CONST 1
 STGW tLaminae.i
-JUMP 12
-LABEL 11
+LABEL 9
+LDGW tLaminae.i
+CONST 250000
+JGT 10
 !     IF (count[i] > 0) & (count[i] <= 10) THEN
 GLOBAL tLaminae.count
 LDGW tLaminae.i
 CONST 250001
 BOUND 41
 LDIW
-JLEQZ 14
+JLEQZ 12
 GLOBAL tLaminae.count
 LDGW tLaminae.i
 CONST 250001
 BOUND 41
 LDIW
 CONST 10
-JGT 14
+JGT 12
 !       total := total + 1
 LDGW tLaminae.total
 INC
 STGW tLaminae.total
-LABEL 14
-!   FOR i := 1 TO 250000 DO
+LABEL 12
 LDGW tLaminae.i
 INC
 STGW tLaminae.i
-LABEL 12
-LDGW tLaminae.i
-CONST 250000
-JLEQ 11
+JUMP 9
+LABEL 10
 !   Out.Int(total, 0); Out.Ln
 CONST 0
 LDGW tLaminae.total

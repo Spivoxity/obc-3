@@ -77,16 +77,20 @@ DEC
 STLW -12
 CONST 0
 STLW -4
-JUMP 5
 LABEL 4
+LDLW -4
+LDLW -12
+JGT 5
 !     FOR j := 0 TO LEN(dst, 1) - 1 DO
 LDLW 32
 DEC
 STLW -16
 CONST 0
 STLW -8
-JUMP 7
 LABEL 6
+LDLW -8
+LDLW -16
+JGT 7
 !       dst[i][j] := src[i][j]
 LDLW 12
 LDLW -4
@@ -110,18 +114,12 @@ LDLW 32
 BOUND 10
 PLUS
 STIW
-!     FOR j := 0 TO LEN(dst, 1) - 1 DO
 INCL -8
+JUMP 6
 LABEL 7
-LDLW -8
-LDLW -16
-JLEQ 6
-!   FOR i := 0 TO LEN(dst, 0) - 1 DO
 INCL -4
+JUMP 4
 LABEL 5
-LDLW -4
-LDLW -12
-JLEQ 4
 RETURN
 END
 

@@ -101,8 +101,10 @@ PROC tRecurse.%main 0 5 0
 !   FOR n := 0 TO N-1 DO a[n] := N-n END;
 CONST 0
 STGW tRecurse.n
-JUMP 6
 LABEL 5
+LDGW tRecurse.n
+CONST 199
+JGT 6
 CONST 200
 LDGW tRecurse.n
 MINUS
@@ -114,10 +116,8 @@ STIW
 LDGW tRecurse.n
 INC
 STGW tRecurse.n
+JUMP 5
 LABEL 6
-LDGW tRecurse.n
-CONST 199
-JLEQ 5
 !   Out.Int(Sum(N, a), 0); Out.Ln;
 CONST 0
 CONST 200

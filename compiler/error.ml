@@ -109,7 +109,7 @@ let find_line p =
 let locator k =
   let (p, n, f) = Growvect.get source_map (k-1) in (n, f)
 
-let line_num (p, q) = find_line p
+let line_num loc = if loc = no_loc then 0 else find_line (fst loc)
 
 let end_loc (p, q) = (q, q)
 

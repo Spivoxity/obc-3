@@ -45,38 +45,38 @@ PROC tEnum.Print 0 3 0
 ! PROCEDURE Print(c: X.colour);
 !   IF c = X.red THEN
 LDLW 12
-JNEQZ 5
+JNEQZ 9
 !     Out.String("red")
 CONST 4
 GLOBAL tEnum.%1
 GLOBAL Out.String
 CALL 2
 RETURN
-LABEL 5
+LABEL 9
 !     CASE c OF
 LDLW 12
 DEC
 JCASE 2
+CASEL 7
 CASEL 8
-CASEL 9
-JUMP 6
-LABEL 8
+JUMP 5
+LABEL 7
 !         X.blue: Out.String("blue")
 CONST 5
 GLOBAL tEnum.%2
 GLOBAL Out.String
 CALL 2
-JUMP 7
-LABEL 9
+JUMP 6
+LABEL 8
 !       | X.green: Out.String("green")
 CONST 6
 GLOBAL tEnum.%3
 GLOBAL Out.String
 CALL 2
-JUMP 7
-LABEL 6
+JUMP 6
+LABEL 5
 ERROR E_CASE 18
-LABEL 7
+LABEL 6
 !     Out.Int(ORD(c), 2)
 CONST 2
 LDLW 12
@@ -96,8 +96,10 @@ CALL 0
 !   FOR x := MIN(X.colour) TO MAX(X.colour) DO
 CONST 0
 STGW tEnum.x
-JUMP 11
 LABEL 10
+LDGW tEnum.x
+CONST 2
+JGT 11
 !     X.x := x; Print(x); Out.Ln
 LDGW tEnum.x
 STGW xPrelude.x
@@ -106,14 +108,11 @@ GLOBAL tEnum.Print
 CALL 1
 GLOBAL Out.Ln
 CALL 0
-!   FOR x := MIN(X.colour) TO MAX(X.colour) DO
 LDGW tEnum.x
 INC
 STGW tEnum.x
+JUMP 10
 LABEL 11
-LDGW tEnum.x
-CONST 2
-JLEQ 10
 !   Out.Int(ORD(X.x > MAX(X.colour)), 0); Out.Ln
 CONST 0
 LDGW xPrelude.x

@@ -33,6 +33,7 @@
 type state =
     Ready
   | Stopped
+  | LineBreak
   | BreakPoint
   | Interrupted
   | Running

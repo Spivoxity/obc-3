@@ -36,13 +36,16 @@ MODULE tForLong STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tForLong.%main 0 8 0
+PROC tForLong.%main 0 6 0
 !   FOR i := -2 TO 2 BY 2 DO
 CONST -2
 CONVNQ
 STGQ tForLong.i
-JUMP 2
 LABEL 1
+LDGQ tForLong.i
+CONST 2
+CONVNQ
+QJGT 2
 !     Out.LongInt(i, 0); Out.Ln()
 CONST 0
 LDGQ tForLong.i
@@ -50,23 +53,23 @@ GLOBAL Out.LongInt
 CALL 3
 GLOBAL Out.Ln
 CALL 0
-!   FOR i := -2 TO 2 BY 2 DO
 LDGQ tForLong.i
 CONST 2
 CONVNQ
 QPLUS
 STGQ tForLong.i
+JUMP 1
 LABEL 2
-LDGQ tForLong.i
-CONST 2
-CONVNQ
-QJLEQ 1
 !   i := -2;
 CONST -2
 CONVNQ
 STGQ tForLong.i
-JUMP 4
 LABEL 3
+!   WHILE i <= 2 DO
+LDGQ tForLong.i
+CONST 2
+CONVNQ
+QJGT 4
 !     Out.LongInt(i, 0); Out.Ln;
 CONST 0
 LDGQ tForLong.i
@@ -80,12 +83,8 @@ CONVNQ
 GLOBAL tForLong.i
 GLOBAL INCLONG
 CALLQ 3
+JUMP 3
 LABEL 4
-!   WHILE i <= 2 DO
-LDGQ tForLong.i
-CONST 2
-CONVNQ
-QJLEQ 3
 RETURN
 END
 

@@ -66,7 +66,7 @@ PROC tQueens.queens 16 4 0x00200001
 !   IF k = N THEN
 LDLW 12
 CONST 8
-JNEQ 2
+JNEQ 8
 !     print(choice); done := TRUE
 LDLW 16
 GLOBAL tQueens.print
@@ -74,19 +74,29 @@ CALL 1
 CONST 1
 STGC tQueens.done
 RETURN
-LABEL 2
+LABEL 8
 !     y := 0;
 CONST 0
 STLW -4
-JUMP 4
-LABEL 3
+LABEL 2
+!     WHILE (y < N) & ~done DO
+LDLW -4
+CONST 8
+JGEQ 3
+LDGC tQueens.done
+JUMPT 3
 !       j := 0; ok := TRUE;
 CONST 0
 STLW -8
 CONST 1
 STLC -13
-JUMP 6
-LABEL 5
+LABEL 4
+!       WHILE ok & (j < k) DO
+LDLC -13
+JUMPF 5
+LDLW -8
+LDLW 12
+JGEQ 5
 !         q := choice[j];
 LDLW 16
 LDLW -8
@@ -117,17 +127,11 @@ AND
 STLC -13
 !         j := j+1
 INCL -8
-LABEL 6
-!       WHILE ok & (j < k) DO
-LDLC -13
-JUMPF 7
-LDLW -8
-LDLW 12
-JLT 5
-LABEL 7
+JUMP 4
+LABEL 5
 !       IF ok THEN 
 LDLC -13
-JUMPF 9
+JUMPF 7
 ! 	choice[k] := SHORT(y);
 LDLW -4
 CONVNS
@@ -142,17 +146,11 @@ LDLW 12
 INC
 GLOBAL tQueens.queens
 CALL 2
-LABEL 9
+LABEL 7
 !       y := y+1
 INCL -4
-LABEL 4
-!     WHILE (y < N) & ~done DO
-LDLW -4
-CONST 8
-JGEQ 10
-LDGC tQueens.done
-JUMPF 3
-LABEL 10
+JUMP 2
+LABEL 3
 RETURN
 END
 
@@ -161,16 +159,19 @@ PROC tQueens.print 4 4 0x00100001
 !   x := 0;
 CONST 0
 STLW -4
-JUMP 12
-LABEL 11
+LABEL 9
+!   WHILE x < N DO
+LDLW -4
+CONST 8
+JGEQ 10
 !     IF x > 0 THEN Out.Char(' ') END;
 LDLW -4
-JLEQZ 14
+JLEQZ 12
 CONST 32
 ALIGNC
 GLOBAL Out.Char
 CALL 1
-LABEL 14
+LABEL 12
 !     Out.Int(choice[x]+1, 0);
 CONST 0
 LDLW 12
@@ -183,11 +184,8 @@ GLOBAL Out.Int
 CALL 2
 !     x := x+1
 INCL -4
-LABEL 12
-!   WHILE x < N DO
-LDLW -4
-CONST 8
-JLT 11
+JUMP 9
+LABEL 10
 !   Out.Ln()
 GLOBAL Out.Ln
 CALL 0

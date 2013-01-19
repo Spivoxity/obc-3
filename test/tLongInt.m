@@ -91,8 +91,11 @@ CONVNQ
 STGQ tLongInt.m
 CONST 0
 STGW tLongInt.k
-JUMP 4
 LABEL 3
+!   WHILE m < n DO 
+LDGQ tLongInt.m
+LDGQ tLongInt.n
+QJGEQ 4
 !     m := r * m;
 LDGW tLongInt.r
 CONVNQ
@@ -103,11 +106,8 @@ STGQ tLongInt.m
 LDGW tLongInt.k
 INC
 STGW tLongInt.k
+JUMP 3
 LABEL 4
-!   WHILE m < n DO 
-LDGQ tLongInt.m
-LDGQ tLongInt.n
-QJLT 3
 !   Out.LongInt(m, 0); Out.Ln;
 CONST 0
 LDGQ tLongInt.m

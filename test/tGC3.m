@@ -125,8 +125,10 @@ DEC
 STLW -28
 CONST 0
 STLW -4
-JUMP 4
 LABEL 3
+LDLW -4
+LDLW -28
+JGT 4
 !     x := Random(N); y := Random(N); z := Random(N); w := Random(N);
 CONST 1000
 GLOBAL tGC3.Random
@@ -205,12 +207,9 @@ LDLW -20
 CONST 1000
 BOUND 48
 STIW
-!   FOR i := 0 TO count-1 DO
 INCL -4
+JUMP 3
 LABEL 4
-LDLW -4
-LDLW -28
-JLEQ 3
 RETURN
 END
 
@@ -224,8 +223,10 @@ STLW -12
 !   FOR i := 0 TO N-1 DO s := s + Size(pool[i]); r := r + aa[i] END;
 CONST 0
 STLW -4
-JUMP 6
 LABEL 5
+LDLW -4
+CONST 999
+JGT 6
 LDLW -8
 GLOBAL tGC3.pool
 LDLW -4
@@ -245,10 +246,8 @@ LDIW
 PLUS
 STLW -12
 INCL -4
+JUMP 5
 LABEL 6
-LDLW -4
-CONST 999
-JLEQ 5
 !   Out.Int(s, 8); Out.Int(r, 8); Out.Ln
 CONST 8
 LDLW -8

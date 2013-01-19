@@ -392,7 +392,7 @@ let optstep rules changed code =
     ch := false; rules replace !code
   done
 
-let optimize rules prog =
+let rewrite rules prog =
   let buf1 = ref prog and buf2 = ref [] in
   let changed = ref true in
   while !changed do
@@ -400,7 +400,7 @@ let optimize rules prog =
     while !buf1 <> [] do
       optstep rules changed buf1;
       if !buf1 <> [] then begin
-	buf2 := List.hd !buf1 :: !buf2;
+	buf2 := rename_labs (List.hd !buf1) :: !buf2;
 	buf1 := List.tl !buf1
       end
     done;
@@ -409,39 +409,14 @@ let optimize rules prog =
   done;
   !buf1
 
-let put_line n =
-  printf "! $\n" [fStr (source_line n)];
-  if !Config.linecount then printf "$\n" [fInst (LINE n)]
-
-let put =
-  function
-      LINE n ->
-	put_line n
-    | JCASE labs ->
-	printf "$\n" [fInst (JCASE labs)];
-	List.iter (function x -> printf "CASEL $\n" [fLab x]) labs
-    | i -> 
-	printf "$\n" [fInst i]
-
-let buf = ref []
-
-(* gen -- buffer an instruction *)
-let gen i =
-  if !Config.debug > 2 then printf "!! $\n" [fInst i];
-  do_refs incr i;
-  buf := i :: !buf
-
-let reduce () =
+let optimise code =
   (* Rule sets 1 and 2 do optional optimization, but rule set 3 is 
      obligatory, because it deals with large constants, which are not
      supported by the abstract machine *)
-  buf := 
-    optimize ruleset3
-      (if !Config.optflag then 
-          optimize ruleset2 (optimize ruleset1 (List.rev !buf))
-        else 
-          List.rev !buf)
-
-let flush () =
-  List.iter (function i -> put (rename_labs i)) !buf;
-  buf := []; Hashtbl.clear label_tab
+  Hashtbl.clear label_tab;
+  List.iter (do_refs incr) code;
+  rewrite ruleset3
+    (if !Config.optflag then 
+	rewrite ruleset2 (rewrite ruleset1 code)
+      else 
+	code)

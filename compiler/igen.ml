@@ -38,36 +38,7 @@ open Eval
 open Error
 open Print
 
-(* Code output *)
-
-let code_line = ref 0
-let line_pending = ref false
-
-(* set_loc -- note line number *)
-let set_loc p =
-  if p <> no_loc then begin
-    let n = line_num p in
-    if n <> !code_line then begin
-      code_line := n;
-      line_pending := true
-    end
-  end
-
-(* gen -- generate instruction with possible line number *)
-let gen i =
-  if !line_pending then begin
-    Peepopt.gen (LINE !code_line);
-    line_pending := false
-  end;
-  Stack.simulate i; Peepopt.gen i;
-  if !Config.debug > 0 then printf "!& $ ($)\n" [fInst i; Stack.fStack]
-
-(* gen_lab -- place a label *)
-let gen_lab l = Peepopt.gen (LABEL l)
-
-let gen_const n = gen (CONST (integer n))
-let gen_symbol s = gen (GLOBAL s)
-
+let const n = CONST (integer n)
 
 (* Pointer maps *)
 
@@ -86,23 +57,18 @@ let type_map t =
 
 let push_map t =
   if t.t_map = null_map then
-    gen_const 0
+    const 0
   else if t.t_map = ptr_map then
     (* A pointer type *)
-    gen_const 3
+    const 3
   else begin
-    try gen (HEXCONST (make_bitmap 0 t.t_map)) with
+    try HEXCONST (make_bitmap 0 t.t_map) with
       Not_found ->
 	if t.t_desc <> nosym then
-	  gen_symbol (map_name t.t_desc)
+	  GLOBAL (map_name t.t_desc)
 	else
-	  gen_symbol (make_map 0 (genlab ()) t.t_map)
+	  GLOBAL (make_map 0 (genlab ()) t.t_map)
   end
-
-let gen_stackmap n =
-  let m = Stack.make_map n in
-  if m <> null_map then 
-    gen (STKMAP (make_map 0 (genlab ()) m))
 
 
 (* Code generation *)
@@ -127,6 +93,8 @@ let value_of e =
       Const (v, t) -> v
     | _ -> failwith "value_of"
 
+let expr_line e = line_num e.e_loc
+
 (* op_kind -- machine type for operation *)
 let op_kind t = 
   let k = kind_of t in
@@ -142,70 +110,60 @@ let mem_kind t =
     | PtrT | SetT -> IntT
     | _ -> k
 
-(* gen_local -- generate instructions to follow static chain *)
-let gen_local l o =
-  if l = !level then
-    gen (LOCAL o)
+(* local -- instructions to follow static chain *)
+let local l o =
+  if !level = l then
+    LOCAL o
   else begin
-    gen (LOCAL stat_link);
-    gen (LOAD IntT);
-    for i = !level-2 downto l do 
-      gen_const stat_link;
-      gen (BINOP (PtrT, PlusA));
-      gen (LOAD IntT)
-    done;
-    gen_const o;
-    gen (BINOP (PtrT, PlusA))
+    let rec loop k =
+      if k = 1 then
+	SEQ [LOCAL stat_link; LOAD IntT]
+      else
+	SEQ [loop (k-1); const stat_link; BINOP (PtrT, PlusA); LOAD IntT] in
+    SEQ [loop (!level - l); const o; BINOP (PtrT, PlusA)]
   end
 
-(* gen_typematch -- generate code to compare record type *)
-let gen_typematch t =
+(* typematch -- code to compare record type *)
+let typematch t =
   (* Expects the location of the descriptor address on the stack. *)
   let r = get_record t in
-  gen (LOAD IntT);
-  gen_symbol t.t_desc;
-  gen (TYPETEST r.r_depth)
+  SEQ [LOAD IntT; GLOBAL t.t_desc; TYPETEST r.r_depth]
 
-(* gen_conv -- generate code for type conversion *)
-let gen_conv t1 t2 =
-  let rec convert k1 k2 =
-    if k1 <> k2 then begin
+(* convert -- code for type conversion *)
+let convert t1 t2 =
+  let rec conv k1 k2 =
+    if k1 = k2 then 
+      NOP
+    else begin
       match k1, k2 with
 	(* Treat short via integer *)
-	  ShortT, _ -> convert IntT k2
-	| _, ShortT -> convert k1 IntT; gen (CONV (IntT, ShortT))
+	  ShortT, _ -> conv IntT k2
+	| _, ShortT -> SEQ [conv k1 IntT; CONV (IntT, ShortT)]
 
 	(* Convert from long to float via double *)
 	| LongT, FloatT ->
-	    gen (CONV (LongT, DoubleT)); gen (CONV (DoubleT, FloatT))
+	    SEQ [CONV (LongT, DoubleT); CONV (DoubleT, FloatT)]
 
 	(* Otherwise convert directly *)
 	| (IntT, (LongT | FloatT | DoubleT)) |
 	  (LongT, (IntT | DoubleT)) |
-	  (FloatT, DoubleT) | (DoubleT, FloatT) -> 
-	    gen (CONV (k1, k2))
+	  (FloatT, DoubleT) | (DoubleT, FloatT) -> CONV (k1, k2)
 
-	| _, _ -> failwith "convert" 
+	| _, _ -> failwith "conv" 
     end in
-
   match t1.t_guts, t2.t_guts with
-      BasicType k1, BasicType k2 -> 
-	convert k1 k2
-    | _, _ -> failwith "gen_conv"
+      BasicType k1, BasicType k2 -> conv k1 k2
+    | _, _ -> failwith "convert"
 
-let mark_type t =
-  if is_pointer t then Stack.mark ()
+let mark_type t = if is_pointer t then XMARK else NOP
 
-let load_addr () = 
-  gen (LOAD IntT); Stack.mark ()
+let load_addr = SEQ [LOAD IntT; XMARK]
 
 let gen_call pcount rtype =
-  gen_stackmap pcount;
-  gen (CALL (pcount, op_kind rtype));
-  mark_type rtype
+  SEQ [XSTKMAP pcount; CALL (pcount, op_kind rtype); mark_type rtype]
 
 let call_proc lab pcount rtype =
-  gen_symbol lab; gen_call pcount rtype
+  SEQ [GLOBAL lab; gen_call pcount rtype]
 
 (* safe -- test if an expression has no side effects or runtime errors *)
 let rec safe e =
@@ -237,65 +195,62 @@ let rec conditional e =
 (* null_check -- check value of expression is not null *)
 let null_check e =
   match e.e_guts with
-      Cast (e1, t) -> ()
-    | _ -> gen (CHECK (NullPtr, !code_line))
+      Cast (e1, t) -> NOP  (* Casts are automatically non-null *)
+    | _ -> CHECK (NullPtr, expr_line e)
 
-(* gen_constant -- generate code to push a constant *)
-let gen_constant k v =
+(* constant -- code to push a constant *)
+let constant k v =
   match k with
-      NumT | ShortT | IntT | CharT | BoolT -> 
-	gen (CONST (int_value v))
-    | FloatT | DoubleT | LongT -> gen (TCONST (k, v))
-    | _ -> failwith (sprintf "gen_const $" [fType1 k])
+      NumT | ShortT | IntT | CharT | BoolT -> CONST (int_value v)
+    | FloatT | DoubleT | LongT -> TCONST (k, v)
+    | _ -> failwith (sprintf "constant $" [fType1 k])
 
-(* gen_addr -- generate code to push the address of a variable *)
+let check code =
+  if !Config.boundchk then code else NOP
+
+(* gen_addr -- code to push the address of a variable *)
 let rec gen_addr v = 
   match v.e_guts with
       Name x ->
-	set_loc x.x_loc;
 	let d = get_def x in
-	begin match d.d_kind with
+	(match d.d_kind with
 	    VarDef ->
 	      if d.d_level = 0 then
-	        gen_symbol d.d_lab
+		GLOBAL d.d_lab
 	      else
-                gen_local d.d_level d.d_offset
+		local d.d_level d.d_offset
 	  | ParamDef ->
-	      gen_local d.d_level d.d_offset;
-	      if is_flex d.d_type then load_addr ()
+	      if is_flex d.d_type then 
+		SEQ [local d.d_level d.d_offset; load_addr]
+	      else
+		local d.d_level d.d_offset
 	  | CParamDef ->
-	      gen_local d.d_level d.d_offset;
-	      if not (scalar d.d_type) then load_addr ()
-          | VParamDef ->
-	      gen_local d.d_level d.d_offset;
-	      load_addr ()
+	      if scalar d.d_type then
+		local d.d_level d.d_offset
+	      else
+		SEQ [local d.d_level d.d_offset; load_addr]
+	  | VParamDef ->
+	      SEQ [local d.d_level d.d_offset; load_addr]
 	  | ProcDef ->
-	      (* This is needed when a procedue is passed as a parameter
+	      (* This is needed when a procedure is passed as a parameter
 		 of type ARRAY OF SYSTEM.BYTE *)
-	      gen_symbol d.d_lab
-          | _ -> failwith "gen_addr"
-	end
+	      GLOBAL d.d_lab
+	  | _ -> failwith "gen_addr")
 
     | Deref p ->
-	gen_expr p;
-	if !Config.boundchk then null_check p
+	SEQ [gen_expr p; check (null_check p)]
 
     | Sub (_, _) ->
 	let e0 = sub_base v in
 	let es = subscripts v in
-	gen_addr e0;
-	gen_offset e0 es;
-	gen (BINOP (PtrT, PlusA))
+	SEQ [gen_addr e0; offset e0 es; BINOP (PtrT, PlusA)]
 
     | Select (r, x) ->
-	set_loc x.x_loc;
 	let d = get_def x in
-        gen_addr r;
-        gen_const d.d_offset;
-        gen (BINOP (PtrT, PlusA))
+        SEQ [gen_addr r; const d.d_offset; BINOP (PtrT, PlusA)]
 
     | String (lab, n) ->
-	gen_symbol lab
+	GLOBAL lab
 
     | Cast (e1, tn) ->
 	let d = get_def tn in
@@ -304,16 +259,14 @@ let rec gen_addr v =
 	    Name x ->
 	      let dx = get_def x in
               if dx.d_kind <> VParamDef then failwith "addr of cast 3";
-              if !Config.boundchk then begin
-	        let lab1 = label () in
-	        gen_local dx.d_level (dx.d_offset + word_size);
-	        gen_typematch d.d_type;
-		gen (JUMPB (true, lab1));
-	        gen (ERROR ("E_CAST", !code_line));
-	        gen_lab lab1
-	      end;
-	      gen_local dx.d_level dx.d_offset;
-	      load_addr ()
+	      let lab1 = label () in
+	      SEQ [
+		check (SEQ [
+		  local dx.d_level (dx.d_offset + word_size);
+		  typematch d.d_type; JUMPB (true, lab1);
+		  ERROR ("E_CAST", expr_line v);
+		  LABEL lab1]);
+		local dx.d_level dx.d_offset; load_addr]
 	  | _ -> failwith "addr of cast 2"
 	end
 
@@ -329,67 +282,48 @@ and gen_bound k e0 =
   
   (* Expect the address of e0 on the stack *)
   let f = flexity e0.e_type in
-  if k >= f then begin
-    gen (POP 1);
-    gen_const (bound (k-f) (flex_base e0.e_type))
-  end
+  if k >= f then
+    SEQ [POP 1; const (bound (k-f) (flex_base e0.e_type))]
   else begin
     match e0.e_guts with
 	Name x ->
 	  (* An open array parameter *)
 	  let d = get_def x in
-	  gen (POP 1);
-	  gen_local d.d_level (d.d_offset + (k+1) * word_size);
-	  gen (LOAD IntT)
+	  SEQ [POP 1; 
+	    local d.d_level (d.d_offset + (k+1) * word_size); LOAD IntT]
       | Deref p ->
-	  (* Get descriptor address *)
-	  gen_const (-word_size);
-	  gen (BINOP (PtrT, PlusA));
-	  load_addr ();
+	  SEQ [
+	    (* Get descriptor address *)
+	    const (-word_size); BINOP (PtrT, PlusA); load_addr;
 
-	  (* Fetch k'th dimension *)
-	  gen_const (bound_offset + k * word_size);
-	  gen (BINOP (PtrT, PlusA));
-	  gen (LOAD IntT)
+	    (* Fetch k'th dimension *)
+	    const (bound_offset + k * word_size); BINOP (PtrT, PlusA);
+	    LOAD IntT]
       | _ -> failwith "gen_bound"
   end    
 
-and gen_offset e0 us =
+and offset e0 us =
   let rec loop i ys t =
     match ys with
 	[] -> 
-	  if not (is_flex t) then begin
-	    gen_const t.t_rep.m_size;
-	    gen (BINOP (IntT, Times))
-	  end
+	  if not (is_flex t) then
+	    SEQ [const t.t_rep.m_size; BINOP (IntT, Times)]
 	  else begin
-	    gen (DUP 1);
-	    gen_bound i e0;
-	    gen (BINOP (IntT, Times));
-	    loop (i+1) [] (base_type t)
+	    SEQ [DUP 1; gen_bound i e0; BINOP (IntT, Times);
+	      loop (i+1) [] (base_type t)]
 	  end
       | x::xs ->
-	  gen (DUP 1);
-	  gen_bound i e0;
-	  gen (BINOP (IntT, Times));
-	  gen_expr x;
-	  if !Config.boundchk then begin
-	    gen (DUP 2);
-	    gen_bound i e0;
-	    gen (BOUND !code_line)
-	  end;
-	  gen (BINOP (IntT, Plus));
-	  loop (i+1) xs (base_type t) in
+	  SEQ [DUP 1; gen_bound i e0; BINOP (IntT, Times);
+	    gen_expr x;
+	    check (SEQ [DUP 2; gen_bound i e0; BOUND (expr_line x)]);
+	    BINOP (IntT, Plus);
+	    loop (i+1) xs (base_type t)] in
   match us with
-      [] -> gen_const 0
+      [] -> const 0
     | x::xs ->
-	gen_expr x;
-	if !Config.boundchk then begin
-	  gen (DUP 1);
-          gen_bound 0 e0;
-          gen (BOUND !code_line)
-        end;
-	loop 1 xs (base_type e0.e_type)
+	SEQ [gen_expr x; 
+	  check (SEQ [DUP 1; gen_bound 0 e0; BOUND (expr_line x)]);
+	  loop 1 xs (base_type e0.e_type)]
 
 (* gen_expr -- generate code to push the value of an expression *)
 and gen_expr e = 
@@ -397,86 +331,69 @@ and gen_expr e =
     gen_condval true e
   else begin
     match e.e_guts with
-	Const (v, t) -> gen_constant (op_kind t) v
+	Const (v, t) -> constant (op_kind t) v
 
       | Name x ->
 	  let d = get_def x in
 	  begin match d.d_kind with
 	      ProcDef ->
-		gen_symbol d.d_lab
+		GLOBAL d.d_lab
 	    | _ -> 
-		gen_addr e; 
-		gen (LOAD (mem_kind e.e_type));
-		mark_type e.e_type
+		SEQ [gen_addr e; LOAD (mem_kind e.e_type); mark_type e.e_type]
 	  end
 
       | Sub _ | Select _ ->
-	  gen_addr e;
-	  gen (LOAD (mem_kind e.e_type));
-	  mark_type e.e_type
+	  SEQ [gen_addr e; LOAD (mem_kind e.e_type); mark_type e.e_type]
 
       | Monop (w, e1) ->
-	  gen_expr e1;
-	  if w <> Uplus then
-	    gen (MONOP (op_kind e.e_type, w))
+	  SEQ [gen_expr e1;
+	    if w = Uplus then NOP else MONOP (op_kind e.e_type, w)]
 
       | Binop ((Eq | Neq | Lt | Leq | Gt | Geq) as w, e1, e2) ->
 	  let set_leq e1' e2' =
-	    gen_expr e1'; gen_expr e2'; 
-	    gen (MONOP (IntT, BitNot));
-	    gen (BINOP (IntT, BitAnd));
-	    gen_const 0;
-	    gen (BINOP (IntT, Eq)) in
+	    SEQ [gen_expr e1'; gen_expr e2'; 
+	      MONOP (IntT, BitNot); BINOP (IntT, BitAnd);
+	      const 0; BINOP (IntT, Eq)] in
 
-	  if is_string e1.e_type then begin
-	    gen_flexarg strtype e2;
-	    gen_flexarg strtype e1;
-	    call_proc "COMPARE" 4 boolean;
-	    gen_const 0;
-	    gen (BINOP (IntT, w))
-	  end
+	  if is_string e1.e_type then
+	    SEQ [gen_flexarg strtype e2; gen_flexarg strtype e1;
+	      call_proc "COMPARE" 4 boolean;
+	      const 0; BINOP (IntT, w)]
 	  else if w = Leq && same_types e1.e_type settype then
 	    set_leq e1 e2
 	  else if w = Geq && same_types e1.e_type settype then
 	    set_leq e2 e1
 	  else begin
 	    let k = op_kind e1.e_type in
-	    if is_const e1 && not (is_const e2) then begin
-	      gen_expr e2; gen_expr e1; gen (BINOP (k, commute w))
-	    end
-	    else begin
-	      gen_expr e1; gen_expr e2; gen (BINOP (k, w))
-	    end
+	    if is_const e1 && not (is_const e2) then
+	      SEQ [gen_expr e2; gen_expr e1; BINOP (k, commute w)]
+	    else
+	      SEQ [gen_expr e1; gen_expr e2; BINOP (k, w)]
 	  end
 
       | Binop ((Div | Mod) as w, e1, e2) ->
 	  let t = op_kind e.e_type in
-	  gen_expr e1; gen_expr e2;
-	  if !Config.boundchk then gen (CHECK (DivZero t, !code_line));
-	  gen (BINOP (t, w))
+	  SEQ [gen_expr e1; gen_expr e2;
+	    check (CHECK (DivZero t, expr_line e));
+	    BINOP (t, w)]
 
       | Binop (Over, e1, e2) ->
 	  let t = op_kind e.e_type in
-	  gen_expr e1; gen_expr e2;
-	  if !Config.boundchk then gen (CHECK (DivZero t, !code_line));
-	  gen (BINOP (t, Div))
+	  SEQ [gen_expr e1; gen_expr e2;
+	    check (CHECK (DivZero t, expr_line e));
+	    BINOP (t, Div)]
 
       | Binop (In, e1, e2) ->
-	  gen_expr e1;
-	  if !Config.boundchk then begin
-	    gen_const set_size;
-	    gen (BOUND !code_line)
-	  end;
-	  gen (MONOP (IntT, Bit));
-	  gen_expr e2;
-	  gen (BINOP (IntT, BitAnd));
-	  gen_const 0;
-	  gen (BINOP (IntT, Neq))
+	  SEQ [gen_expr e1;
+	    check (SEQ [const set_size; BOUND (expr_line e)]);
+	    MONOP (IntT, Bit);
+	    gen_expr e2;
+	    BINOP (IntT, BitAnd); const 0; BINOP (IntT, Neq)]
 
       | Binop (w, e1, e2) ->
 	  let gen_it w' e1' e2' =
-	    gen_expr e1'; gen_expr e2'; 
-	    gen (BINOP (op_kind e.e_type, w')) in
+	    SEQ [gen_expr e1'; gen_expr e2'; 
+	      BINOP (op_kind e.e_type, w')] in
 	  if is_const e1 && not (is_const e2) then
 	    try let w' = commute w in gen_it w' e2 e1 with 
 	      Not_found -> gen_it w e1 e2
@@ -484,11 +401,10 @@ and gen_expr e =
 	    gen_it w e1 e2
 
       | Nil ->
-	  gen_const 0
+	  const 0
 
       | Convert e1 ->
-	  gen_expr e1;
-	  gen_conv e1.e_type e.e_type
+	  SEQ [gen_expr e1; convert e1.e_type e.e_type]
 
       | FuncCall (p, args) -> 
 	  gen_proccall p args
@@ -499,31 +415,25 @@ and gen_expr e =
       | Cast (e1, tn) ->
 	  let d = get_def tn in
 	  if not (is_pointer d.d_type) then failwith "val of cast";
-	  gen_expr e1;
-	  if !Config.boundchk then begin
-	    let lab1 = label () in
-	    gen (DUP 0);
-	    null_check e1;
-	    gen_const (-word_size);
-	    gen (BINOP (PtrT, PlusA));
-	    gen_typematch (base_type d.d_type);
-	    gen (JUMPB (true, lab1));
-	    gen (ERROR ("E_CAST", !code_line));
-	    gen_lab lab1
-	  end
+	  let lab1 = label () in
+	  SEQ [gen_expr e1;
+	    check (SEQ [DUP 0; null_check e1;
+	      const (-word_size); BINOP (PtrT, PlusA);
+	      typematch (base_type d.d_type); JUMPB (true, lab1);
+	      ERROR ("E_CAST", expr_line e);
+	      LABEL lab1])]
 
       | TypeTest (e1, tn) ->
 	  gen_typetest e1 tn
 
       | Set els ->
 	  if els = [] then
-	    gen_const 0
-	  else begin
-	    gen_element (List.hd els);
-	    List.iter 
-	      (function el -> gen_element el; gen (BINOP (IntT, BitOr)))
-	      (List.tl els)
-	  end
+	    const 0
+	  else
+	    SEQ [gen_element (List.hd els);
+	      SEQ (List.map
+		(function el -> SEQ [gen_element el; BINOP (IntT, BitOr)])
+		(List.tl els))]
 
       | _ -> expr_fail "gen_expr" e
   end
@@ -532,10 +442,11 @@ and gen_expr e =
 and gen_proccall f args =
   match f.e_type.t_guts with
       ProcType p ->
-	List.iter2 gen_arg (List.rev p.p_fparams) (List.rev args);
-	gen_funarg LINK f;
-	if !Config.boundchk then gen (CHECK (NullPtr, !code_line));
-	gen_call p.p_pcount p.p_result
+	SEQ [
+	  SEQ (List.map2 gen_arg (List.rev p.p_fparams) (List.rev args));
+	  gen_funarg LINK f; 
+	  check (CHECK (NullPtr, expr_line f));
+	  gen_call p.p_pcount p.p_result]
 
     | BuiltinType b ->
 	gen_builtin b args
@@ -546,25 +457,21 @@ and gen_proccall f args =
 and gen_message r m args =
   let d = get_def m in
   let p = get_proc d.d_type in
-  List.iter2 gen_arg (List.rev (List.tl p.p_fparams)) (List.rev args);
   let rcvr = List.hd p.p_fparams in
-  begin
-    match rcvr.d_kind with
+  SEQ [
+    SEQ (List.map2 gen_arg (List.rev (List.tl p.p_fparams)) (List.rev args));
+    (match rcvr.d_kind with
 	VParamDef ->
-	  gen_arg rcvr r;			(* addr+desc *)
-	  gen (DUP 1)				(* desc *)
+	  SEQ [gen_arg rcvr r;			(* addr+desc *)
+	    DUP 1]				(* desc *)
       | (ParamDef | CParamDef) ->
-	  gen_addr r;				(* addr *)
-	  gen (DUP 0);
-	  gen_const (-word_size);
-	  gen (BINOP (PtrT, PlusA));
-	  gen (LOAD IntT)			(* desc *)
-      | _ -> failwith "method receiver" 
-  end;
-  gen_const (method_offset + word_size * d.d_offset);
-  gen (BINOP (PtrT, PlusA));
-  gen (LOAD IntT);
-  gen_call p.p_pcount p.p_result
+	  SEQ [gen_addr r;			(* addr *)
+	    DUP 0; const (-word_size);
+	    BINOP (PtrT, PlusA); LOAD IntT]	(* desc *)
+      | _ -> failwith "method receiver");
+    const (method_offset + word_size * d.d_offset);
+    BINOP (PtrT, PlusA); LOAD IntT;
+    gen_call p.p_pcount p.p_result]
 
 (*
 This table shows how the three kinds of parameters are passed and how
@@ -601,34 +508,24 @@ instruction.
 
 (* gen_arg -- generate code to push a procedure argument *)
 and gen_arg f a = 
-  if is_proc f.d_type then begin
-    match f.d_kind with
-	(ParamDef | CParamDef) ->
-	  gen_funarg NOP a
-      | VParamDef ->
-	  gen_addr a
-      | _ -> failwith "gen_arg"
-  end
-  else if scalar f.d_type then begin
-    match f.d_kind with
+  if is_proc f.d_type then
+    (match f.d_kind with
+	ParamDef | CParamDef -> gen_funarg NOP a
+      | VParamDef -> gen_addr a
+      | _ -> failwith "gen_arg")
+  else if scalar f.d_type then
+    (match f.d_kind with
 	(ParamDef | CParamDef) -> 
-	  gen_expr a;
 	  let s = mem_kind f.d_type in
-	  (match s with 
-	      CharT | ShortT -> gen (ALIGN s) 
-	    | _ -> ())
-      | VParamDef ->
-	  gen_addr a
-      | _ -> failwith "gen_arg"
-  end
-  else if is_record f.d_type then begin
-    match f.d_kind with
-	(ParamDef | CParamDef) ->
-	  gen_addr a
-      | VParamDef ->
-	  gen_recarg a
-      | _ -> failwith "gen_arg"
-  end
+	  SEQ [gen_expr a;
+	    (match s with CharT | ShortT -> ALIGN s | _ -> NOP)]
+      | VParamDef -> gen_addr a
+      | _ -> failwith "gen_arg")
+  else if is_record f.d_type then
+    (match f.d_kind with
+	ParamDef | CParamDef -> gen_addr a
+      | VParamDef -> gen_recarg a
+      | _ -> failwith "gen_arg")
   else if is_flex f.d_type then
     gen_flexarg f.d_type a
   else if is_array f.d_type then
@@ -643,135 +540,86 @@ and gen_funarg inst a =
 	let d = get_def x in
 	begin match d.d_kind with
 	    ProcDef ->
-	      if d.d_level = 0 then
-		gen_const 0
-	      else
-		gen_local d.d_level 0;
-	      gen inst;
-	      gen_symbol d.d_lab
+	      SEQ [if d.d_level = 0 then const 0 else local d.d_level 0;
+		inst; GLOBAL d.d_lab]
 	  | (ParamDef | CParamDef) ->
-	      gen_local d.d_level (d.d_offset + word_size);
-	      load_addr ();
-	      gen inst;
-	      gen_local d.d_level d.d_offset;
-	      load_addr ()
+	      SEQ [local d.d_level (d.d_offset + word_size);
+		load_addr; inst;
+		local d.d_level d.d_offset; load_addr]
 	  | _ ->
-	      gen_const 0;
-	      gen inst;
-	      gen_expr a
+	      SEQ [const 0; inst; gen_expr a]
 	end
     | _ ->
-	gen_const 0;
-	gen inst;
-	gen_expr a
+	SEQ [const 0; inst; gen_expr a]
 
 (* gen_recarg -- push address and descriptor of record *)
 and gen_recarg a =
   match a.e_guts with
       Name x ->
 	let d = get_def x in
-	if d.d_kind = VParamDef then begin
-	  gen_local d.d_level (d.d_offset + word_size);
-	  load_addr ();
-	  gen_local d.d_level d.d_offset;
-	  load_addr ();
-	end
-	else begin
-	  gen_symbol a.e_type.t_desc;
-	  gen_addr a
-	end
+	if d.d_kind = VParamDef then
+	  SEQ [local d.d_level (d.d_offset + word_size); load_addr;
+	    local d.d_level d.d_offset; load_addr]
+	else
+	  SEQ [GLOBAL a.e_type.t_desc; gen_addr a]
     | Deref p -> 
-	gen_expr p;
-	if !Config.boundchk then null_check p;
-	gen (DUP 0);
-	gen_const (-word_size);
-	gen (BINOP (PtrT, PlusA));
-	load_addr ();
-	gen SWAP
+	SEQ [gen_expr p;
+	  check (null_check p);
+	  DUP 0; const (-word_size); BINOP (PtrT, PlusA);
+	  load_addr; SWAP]
     | _ -> 
-	gen_symbol a.e_type.t_desc;
-	gen_addr a
+	SEQ [GLOBAL a.e_type.t_desc; gen_addr a]
 
 (* gen_flexarg -- push addr+bound for flex array arg *)
 and gen_flexarg t a =
   if same_types (base_type t) bytetype then begin
-    gen_addr a;
     if not (is_flex a.e_type) then 
-      gen_const (size_of a)
+      SEQ [const (size_of a); gen_addr a]
     else begin
       let t1 = flex_base a.e_type in
-      gen_const (t1.t_rep.m_size);
-      for i = 0 to flexity a.e_type - 1 do
-	gen (DUP 1);
-	gen_bound i a;
-	gen (BINOP (IntT, Times))
-      done
-    end;
-    gen SWAP
+      SEQ [gen_addr a;
+	const (t1.t_rep.m_size);
+	SEQ (List.map 
+	  (fun i -> SEQ [DUP 1; gen_bound i a; BINOP (IntT, Times)])
+	  (Util.range 0 (flexity a.e_type - 1)));
+        SWAP]
+    end
   end else begin
     let e0 = sub_base a in
     let us = subscripts a in
-    gen_addr e0;
-    for i = flexity t - 1 downto 0 do
-      gen (DUP 0);
-      gen_bound (List.length us + i) e0;
-      gen SWAP
-    done;
-    gen_offset e0 us;
-    gen (BINOP (PtrT, PlusA))
+    SEQ [gen_addr e0;
+      SEQ (List.map
+	(fun i -> SEQ [DUP 0; gen_bound (List.length us + i) e0; SWAP])
+	(List.rev (Util.range 0 (flexity t - 1))));
+      offset e0 us; BINOP (PtrT, PlusA)]
   end
 
 (* gen_builtin -- generate code to call a built-in procedure *)
 and gen_builtin q args =
   match q.b_id, args with
-      ChrFun, [e1] ->
-	gen_expr e1;
-	gen (CONV (IntT, CharT))
+      ChrFun, [e1] -> SEQ [gen_expr e1; CONV (IntT, CharT)]
+    | OrdFun, [e1] -> gen_expr e1
+    | OddFun, [e1] -> SEQ [gen_expr e1; const 1; BINOP (IntT, BitAnd)]
+    | AshFun, [e1; e2] -> 
+	SEQ [gen_expr e2; gen_expr e1; call_proc "ASH" 2 inttype]
+    | LslFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsl)]
+    | LsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsr)]
+    | AsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Asr)]
 
-    | OrdFun, [e1] ->
-	gen_expr e1
-
-    | OddFun, [e1] ->
-	gen_expr e1;
-	gen_const 1;
-	gen (BINOP (IntT, BitAnd));
-	gen_const 0;
-	gen (BINOP (IntT, Neq));
-
-    | AshFun, [e1; e2] ->
-	gen_expr e2;
-	gen_expr e1;
-	call_proc "ASH" 2 inttype
-
-    | LslFun, [e1; e2] ->
-	gen_expr e1; gen_expr e2; gen (BINOP (IntT, Lsl))
-    | LsrFun, [e1; e2] ->
-	gen_expr e1; gen_expr e2; gen (BINOP (IntT, Lsr))
-    | AsrFun, [e1; e2] ->
-	gen_expr e1; gen_expr e2; gen (BINOP (IntT, Asr))
-
-    | NewProc, e1::_ ->
+    | NewProc, e1::es ->
 	let t = base_type e1.e_type in
 	begin match t.t_guts with
 	    (RecordType _ | ArrayType _) -> 
-	      gen_const t.t_rep.m_size;
-	      if t.t_desc = nosym then 
-		gen_const 0 
-	      else 
-		gen_symbol t.t_desc;
-	      gen_addr e1;
-	      call_proc "NEW" 3 voidtype
+	      SEQ [const t.t_rep.m_size;
+		if t.t_desc = nosym then const 0 else GLOBAL t.t_desc;
+		gen_addr e1; call_proc "NEW" 3 voidtype]
 	  | FlexType _ -> 
  	      let n = flexity t in
  	      let t0 = flex_base t in
- 	      for i = n downto 1 do
- 		gen_expr (List.nth args i)
- 	      done;
- 	      gen_const n;
-	      gen_const t0.t_rep.m_size;
-	      push_map t0;
- 	      gen_addr e1;
- 	      call_proc "NEWFLEX" (n+4) voidtype
+	      SEQ [SEQ (List.map gen_expr (List.rev es));
+		const n; const t0.t_rep.m_size;
+		push_map t0; gen_addr e1;
+		call_proc "NEWFLEX" (n+4) voidtype]
 	  | _ -> failwith "NewProc"
 	end
 
@@ -780,117 +628,85 @@ and gen_builtin q args =
 	  else int_of_integer (int_value (value_of (List.nth args 1))) in
 	let e0 = sub_base v in
 	let us = subscripts v in
-	gen_addr e0;
-	gen_bound (List.length us + n) e0
+	SEQ [gen_addr e0; gen_bound (List.length us + n) e0]
 
     | (IncProc | DecProc), e1::_ ->
 	begin match op_kind e1.e_type with
 	    IntT ->
 	      let k = mem_kind e1.e_type in
-	      gen_addr e1;
-	      gen (DUP 0);
-	      gen (LOAD k);
-	      if List.length args = 1 then
-		gen_const 1
-	      else
-		gen_expr (List.nth args 1);
-	      if q.b_id = IncProc then 
-		gen (BINOP (IntT, Plus))
-	      else 
-		gen (BINOP (IntT, Minus));
-	      gen SWAP;
-	      gen (STORE k)
+	      SEQ [gen_addr e1; DUP 0; LOAD k;
+		if List.length args = 1 then const 1 else 
+		  gen_expr (List.nth args 1);
+		if q.b_id = IncProc then 
+		  BINOP (IntT, Plus)
+		else 
+		  BINOP (IntT, Minus);
+	      SWAP; STORE k]
 	  | LongT ->
-	      if List.length args = 1 then
-		gen (TCONST (LongT, IntVal (integer 1)))
-	      else
-		gen_expr (List.nth args 1);
-	      gen_addr e1;
-	      if q.b_id = IncProc then
-		call_proc "INCLONG" 3 longint
-	      else
-		call_proc "DECLONG" 3 longint
+	      SEQ [
+		if List.length args = 1 then
+		  TCONST (LongT, IntVal (integer 1))
+		else
+		  gen_expr (List.nth args 1);
+		gen_addr e1;
+		if q.b_id = IncProc then
+		  call_proc "INCLONG" 3 longint
+		else
+		  call_proc "DECLONG" 3 longint]
 	  | _ -> failwith "IncProc"
 	end
 
     | (InclProc | ExclProc), [e1; e2] ->
-	gen_addr e1;
-	gen (DUP 0);
-	gen (LOAD IntT);
-	gen_expr e2;
-	if !Config.boundchk then begin
-	  gen_const set_size;
-	  gen (BOUND !code_line)
-	end;
-	gen (MONOP (IntT, Bit));
-	if q.b_id = InclProc then
-	  gen (BINOP (IntT, BitOr))
-	else begin
-	  gen (MONOP (IntT, BitNot));
-	  gen (BINOP (IntT, BitAnd))
-	end;
-	gen SWAP;
-	gen (STORE IntT)
+	SEQ [gen_addr e1; DUP 0; LOAD IntT;
+	  gen_expr e2;
+	  check (SEQ [const set_size; BOUND (expr_line e2)]);
+	  MONOP (IntT, Bit);
+	  if q.b_id = InclProc then
+	    BINOP (IntT, BitOr)
+	  else
+	    SEQ [MONOP (IntT, BitNot); BINOP (IntT, BitAnd)];
+	  SWAP; STORE IntT]
 
     | AbsFun, [e1] ->
 	let t = op_kind e1.e_type in
-	gen_expr e1;
 	begin match t with
-	    IntT -> call_proc "ABSINT" 1 inttype
-          | LongT -> call_proc "ABSQUAD" 2 longint
-	  | FloatT -> call_proc "ABSREAL" 1 realtype
-	  | DoubleT -> call_proc "ABSLONG" 2 longreal
+	    IntT -> SEQ [gen_expr e1; call_proc "ABSINT" 1 inttype]
+          | LongT -> SEQ [gen_expr e1; call_proc "ABSQUAD" 2 longint]
+	  | FloatT -> SEQ [gen_expr e1; call_proc "ABSREAL" 1 realtype]
+	  | DoubleT -> SEQ [gen_expr e1; call_proc "ABSLONG" 2 longreal]
 	  | _ -> failwith "ABS"
 	end
 
     | Entier, [e1] ->
 	let t = op_kind e1.e_type in
-	gen_expr e1;
 	begin match t with
-	    FloatT -> call_proc "INTREAL" 1 inttype
-	  | DoubleT -> call_proc "INTLONG" 2 inttype
+	    FloatT -> SEQ [gen_expr e1; call_proc "INTREAL" 1 inttype]
+	  | DoubleT -> SEQ [gen_expr e1; call_proc "INTLONG" 2 inttype]
 	  | _ -> failwith "ENTIER"
 	end
 
     | Assert, e1::_ ->
-	if !Config.boundchk then begin
-	  let lab1 = label () in
-	  gen_cond true lab1 e1;
-	  if List.length args = 1 then
-	    gen_const 0
-	  else
+	let lab1 = label () in
+	check (SEQ [gen_cond true lab1 e1;
+	  if List.length args = 1 then const 0 else
 	    gen_expr (List.nth args 1);
-	  gen (EASSERT !code_line);
-	  gen_lab lab1
-        end
+	  EASSERT (expr_line e1); LABEL lab1])
 
-    | AdrFun, [e1] ->
-	gen_addr e1
+    | AdrFun, [e1] -> gen_addr e1
 
-    | ValFun, [e1; e2] ->
-	gen_expr e2
+    | ValFun, [e1; e2] -> gen_expr e2
 
     | BitFun, [e1; e2] ->
-	gen_expr e1;
-	gen (LOAD IntT);
-	gen_expr e2;
-	gen (MONOP (IntT, Bit)); 
-	gen (BINOP (IntT, BitAnd)); 
-	gen_const 0;
-	gen (BINOP (IntT, Neq))
+	SEQ [gen_expr e1; LOAD IntT; gen_expr e2; MONOP (IntT, Bit); 
+	  BINOP (IntT, BitAnd);  const 0; BINOP (IntT, Neq)]
 
     | GetProc, [e1; e2] ->
 	let k = mem_kind e2.e_type in
-	gen_expr e1;
-	gen (LOAD k);
-	gen_addr e2;
-	gen (STORE k);
+	SEQ [gen_expr e1; LOAD k; gen_addr e2; STORE k]
 
     | PutProc, [e1; e2] ->
 	let k = mem_kind e2.e_type in
-	gen_expr e2;
-	gen_expr e1;
-	gen (STORE k)
+	SEQ [gen_expr e2; gen_expr e1; STORE k]
 
     | _ -> 
 	failwith (sprintf "can't generate code for $ with $ args"
@@ -900,367 +716,287 @@ and gen_builtin q args =
 and gen_cond sense lab test =
   match test.e_guts with
       Const (v, t) ->
-	if sense = (int_value v <> integer 0) then
-          gen (JUMP lab)
+	if sense = (int_value v <> integer 0) then JUMP lab else NOP
 
     | Monop (Not, e) ->
         gen_cond (not sense) lab e
 
     | Binop (And, e1, e2) ->
-	if sense then begin
-	  let lab1 = label () in
-	  gen_cond false lab1 e1;
-	  gen_cond true lab e2;
-	  gen_lab lab1
-	end
+	if not sense then
+	  SEQ [gen_cond false lab e1; gen_cond false lab e2]
 	else begin
-	  gen_cond false lab e1;
-	  gen_cond false lab e2
+	  let lab1 = label () in
+	  SEQ [gen_cond false lab1 e1; gen_cond true lab e2; LABEL lab1]
 	end
 
     | Binop (Or, e1, e2) ->
-	if not sense then begin
-	  let lab1 = label () in
-	  gen_cond true lab1 e1;
-	  gen_cond false lab e2;
-	  gen_lab lab1
-	end
+	if sense then 
+	  SEQ [gen_cond true lab e1; gen_cond true lab e2]
 	else begin
-	  gen_cond true lab e1;
-	  gen_cond true lab e2
+	  let lab1 = label () in
+	  SEQ [gen_cond true lab1 e1; gen_cond false lab e2; LABEL lab1]
 	end
 
     | _ ->
-        gen_expr test;
-        gen (JUMPB (sense, lab))
+        SEQ [gen_expr test; JUMPB (sense, lab)]
 
 and gen_condval sense e =
   match e.e_guts with
       Binop (And, e1, e2) when not (conditional e2) ->
 	(* No need to generate jumping code for e2 *)
 	let lab1 = label () and lab2 = label () in
-	gen_cond true lab1 e1;
-	gen_const (if sense then 0 else 1);
-	gen (JUMP lab2);
-	gen (LABEL lab1);
-	gen_expr e2;
-	if not sense then gen (MONOP (BoolT, Not));
-	gen (LABEL lab2)
+	SEQ [gen_cond true lab1 e1;
+	  const (if sense then 0 else 1); JUMP lab2;
+	  LABEL lab1; gen_expr e2;
+	  if sense then NOP else MONOP (BoolT, Not);
+	  LABEL lab2]
 
     | Binop (Or, e1, e2) when not (conditional e2) ->
 	(* No need to generate jumping code for e2 *)
 	let lab1 = label () and lab2 = label () in
-	gen_cond false lab1 e1;
-	gen_const (if sense then 1 else 0);
-	gen (JUMP lab2);
-	gen (LABEL lab1);
-	gen_expr e2;
-	if not sense then gen (MONOP (BoolT, Not));
-	gen (LABEL lab2)
+	SEQ [gen_cond false lab1 e1;
+	  const (if sense then 1 else 0); JUMP lab2;
+	  LABEL lab1; gen_expr e2;
+	  if sense then NOP else MONOP (BoolT, Not);
+	  LABEL lab2]
 
     | Monop (Not, e1) ->
 	gen_condval (not sense) e1
 
     | _ ->
 	let lab1 = label () and lab2 = label () in
-	gen_cond (not sense) lab1 e;
-	gen_const 1;
-	gen (JUMP lab2);
-	gen_lab lab1;
-	gen_const 0;
-	gen_lab lab2
+	SEQ [gen_cond (not sense) lab1 e; const 1; JUMP lab2;
+	  LABEL lab1; const 0; LABEL lab2]
 
 and gen_typetest e tn =
   let d = get_def tn in
-  if is_pointer d.d_type then begin
-    gen_expr e;
-    if !Config.boundchk then null_check e;
-    gen_const (-word_size);
-    gen (BINOP (PtrT, PlusA));
-    gen_typematch (base_type d.d_type)
-  end
-  else if is_record d.d_type then begin
-    begin match e.e_guts with
+  if is_pointer d.d_type then
+    SEQ [gen_expr e; check (null_check e);
+      const (-word_size); BINOP (PtrT, PlusA);
+      typematch (base_type d.d_type)]
+  else if is_record d.d_type then
+    (match e.e_guts with
 	Name x ->
 	  let dx = get_def x in
-	  if dx.d_kind = VParamDef then
-	    gen_local dx.d_level (dx.d_offset + word_size)
-	  else
-	    failwith "type test 2";
+	  if dx.d_kind <> VParamDef then failwith "type test 2";
+	  SEQ [local dx.d_level (dx.d_offset + word_size);
+	    typematch d.d_type]
       | Deref e1 ->
-	  gen_expr e1;
-	  if !Config.boundchk then null_check e1;
-	  gen_const (-word_size);
-	  gen (BINOP (PtrT, PlusA))
+	  SEQ [gen_expr e1; check (null_check e1);
+	    const (-word_size); BINOP (PtrT, PlusA);
+	    typematch d.d_type]
       | _ -> 
-	  expr_fail "type test" e
-    end;
-    gen_typematch d.d_type
-  end
+	  expr_fail "type test" e)
   else
     failwith "type test 3"
 
 and gen_element =
   function
       Single x ->
-	gen_expr x;
-	if !Config.boundchk then begin
-	  gen_const set_size;
-	  gen (BOUND !code_line)
-	end;
-	gen (MONOP (IntT, Bit))
+	SEQ [gen_expr x;
+	  check (SEQ [const set_size; BOUND (expr_line x)]);
+	  MONOP (IntT, Bit)]
     | Range (x, y) ->
 	(* {x..y} = {0..y} * {x..31} *)
 	(* For bound checks, the allowable range for x is 0..32,
 	   and the allowable range for y is -1..31: the actual 
 	   check is that y+1 is in 0..32. *)
-	gen_expr y;
-	gen (MONOP (IntT, Inc));	(* y+1 *)
-	if !Config.boundchk then begin
-	  gen_const (set_size+1);
-	  gen (BOUND !code_line)
-	end;
-	gen (MONOP (IntT, Bit));	(* bit(y+1) *)
-	gen (MONOP (IntT, Dec));	(* bits(0..y) *)
+	SEQ [gen_expr y;
+	  MONOP (IntT, Inc);		(* y+1 *)
+	  check (SEQ [const (set_size+1); BOUND (expr_line y)]);
+	  MONOP (IntT, Bit);		(* bit(y+1) *)
+	  MONOP (IntT, Dec);		(* bits(0..y) *)
 
-	gen_expr x;
-	if !Config.boundchk then begin
-	  gen_const (set_size+1);
-	  gen (BOUND !code_line)
-	end;
-	gen (MONOP (IntT, Bit));	(* bit(x) *)
-	gen (MONOP (IntT, Dec));	(* bits(0..x-1) *)
-	gen (MONOP (IntT, BitNot));	(* bits(x..31) *)
+	  gen_expr x;
+	  check (SEQ [const (set_size+1); BOUND (expr_line x)]);
+	  MONOP (IntT, Bit);		(* bit(x) *)
+	  MONOP (IntT, Dec);		(* bits(0..x-1) *)
+	  MONOP (IntT, BitNot);		(* bits(x..31) *)
 
-	gen (BINOP (IntT, BitAnd))
+	  BINOP (IntT, BitAnd)]
 
 let gen_rec_addr v desc =
   match v.e_guts with
       Name x ->
 	let d = get_def x in
-	if !Config.boundchk && d.d_kind = VParamDef then begin
+	if d.d_kind <> VParamDef then 
+	  gen_addr v
+	else begin
 	  let lab1 = label () in
-	  gen_local d.d_level (d.d_offset + word_size);
-	  gen (LOAD IntT);
-	  gen_symbol desc;
-	  gen (JUMPC (PtrT, Eq, lab1));
-	  gen (ERROR ("E_ASSIGN", !code_line));
-	  gen_lab lab1
-	end;
-	gen_addr v
+	  SEQ [
+	    check (SEQ [local d.d_level (d.d_offset + word_size);
+	      LOAD IntT; GLOBAL desc; JUMPC (PtrT, Eq, lab1);
+	      ERROR ("E_ASSIGN", expr_line v);
+	      LABEL lab1]);
+	    gen_addr v]
+	end
     | Deref p ->
-	gen_expr p;
-	if !Config.boundchk then begin
-	  let lab1 = label () in
-	  null_check p;
-	  gen (DUP 0);
-	  gen_const (-word_size);
-	  gen (BINOP (PtrT, PlusA));
-	  gen (LOAD IntT);
-	  gen_symbol desc;
-	  gen (JUMPC (PtrT, Eq, lab1));
-	  gen (ERROR ("E_ASSIGN", !code_line));
-	  gen_lab lab1
-	end;
-      | _ ->
-	gen_addr v
+	let lab1 = label () in
+	SEQ [gen_expr p;
+	  check (SEQ [check (null_check p);
+	    DUP 0; const (-word_size); BINOP (PtrT, PlusA);
+	    LOAD IntT; GLOBAL desc; JUMPC (PtrT, Eq, lab1);
+	    ERROR ("E_ASSIGN", expr_line v);
+	    LABEL lab1])]
+    | _ ->
+        gen_addr v
 
 (* gen_stmt -- generate code for a statement *)
 let rec gen_stmt exit_lab s =
-  set_loc s.s_loc;
-  match s.s_guts with
-      Assign (v, e) ->
-	let t = v.e_type in
-	if is_proc t then begin
-	  gen_funarg (CHECK (GlobProc, !code_line)) e;
-	  gen_addr v;
-	  gen (STORE IntT)
-	end
-	else if scalar t then begin
-	  gen_expr e;
-	  gen_addr v;
-	  gen (STORE (mem_kind t))
-	end
-	else if is_string_const e then begin
-	  gen_flexarg strtype v;
-	  gen_flexarg strtype e;
-	  call_proc "COPY" 4 voidtype
-	end
-	else if is_flex t then begin
-	  let t0 = flex_base t in
-	  gen_flexarg t v;
-	  gen_flexarg t e;
-	  gen_const (flexity t);
-	  gen_const t0.t_rep.m_size;
-	  call_proc "FLEXASSIGN" 6 voidtype
-	end
-	else begin
-	  if is_record t then
-	    gen_rec_addr v t.t_desc
-	  else
-	    gen_addr v;
-	  gen_addr e;
-	  gen_const t.t_rep.m_size;
-	  gen FIXCOPY 
-	end
+  let code =
+    match s.s_guts with
+	Assign (v, e) ->
+	  let t = v.e_type in
+	  if is_proc t then
+	    SEQ [gen_funarg (check (CHECK (GlobProc, expr_line v))) e;
+	      gen_addr v; STORE IntT]
+	  else if scalar t then
+	    SEQ [gen_expr e; gen_addr v; STORE (mem_kind t)]
+	  else if is_string_const e then
+	    SEQ [gen_flexarg strtype v;
+	      gen_flexarg strtype e; call_proc "COPY" 4 voidtype]
+	  else if is_flex t then begin
+	    let t0 = flex_base t in
+	    SEQ [gen_flexarg t v; gen_flexarg t e; 
+	      const (flexity t); const t0.t_rep.m_size;
+	      call_proc "FLEXASSIGN" 6 voidtype]
+	  end
+	  else begin
+	    SEQ [
+	      if is_record t then
+		gen_rec_addr v t.t_desc
+	      else
+		gen_addr v;
+	      gen_addr e; const t.t_rep.m_size; FIXCOPY]
+	  end
 
-    | ProcCall e ->
-        gen_expr e;
-	if size_of e > 0 then
-	  gen (POP (count_of e.e_type))
+      | ProcCall e ->
+	  SEQ [gen_expr e;
+	    if size_of e = 0 then NOP else POP (count_of e.e_type)]
 
-    | Return res ->
-        begin 
-	  match res with 
-	      Some e -> 
-		gen_expr e;
-		gen (RETURN (op_kind e.e_type))
-	    | None -> 
-		gen (RETURN VoidT)
-	end
+      | Return res ->
+	  begin 
+	    match res with 
+		Some e -> 
+		  SEQ [gen_expr e; RETURN (op_kind e.e_type)]
+	      | None -> 
+		  RETURN VoidT
+	  end
 
-    | IfStmt (arms, elsept) ->
-	let lab_end = label () in
-	List.iter (fun (cond, thenpt) ->
-	    let lab1 = label () in
-	    gen_cond false lab1 cond;
-	    gen_stmt exit_lab thenpt;
-	    gen (JUMP lab_end);
-	    gen_lab lab1)
-	  arms;
-	gen_stmt exit_lab elsept;
-	gen_lab lab_end
+      | IfStmt (arms, elsept) ->
+	  let lab_end = label () in
+	  SEQ [
+	    SEQ (List.map (fun (cond, thenpt) ->
+	      let lab1 = label () in
+	      SEQ [gen_cond false lab1 cond;
+		gen_stmt exit_lab thenpt; JUMP lab_end;
+		LABEL lab1]) arms);
+	    gen_stmt exit_lab elsept;
+	    LABEL lab_end]
 
-    | CaseStmt (switch, arms, default) ->
-	let lab1 = label () and lab2 = label ()
-        and caselabs = List.map (function _ -> label ()) arms in
+      | CaseStmt (switch, arms, default) ->
+	  let lab1 = label () and lab2 = label ()
+	  and caselabs = List.map (function _ -> label ()) arms in
 
-	let make_cases lab (vs, body) =
-	  let f =
-	      function 
-		  Single e -> 
-		    let v = int_value (value_of e) in (v, v, lab)
-		| Range (e1, e2) -> 
-		    let v1 = int_value (value_of e1)
-		    and v2 = int_value (value_of e2) in (v1, v2, lab) in
-	  List.map f vs 
+	  let make_cases lab (vs, body) =
+	    let f =
+		function 
+		    Single e -> 
+		      let v = int_value (value_of e) in (v, v, lab)
+		  | Range (e1, e2) -> 
+		      let v1 = int_value (value_of e1)
+		      and v2 = int_value (value_of e2) in (v1, v2, lab) in
+	    List.map f vs 
 
-	and gen_arm lab (vs, body) =
-	  gen_lab lab;
-	  gen_stmt exit_lab body;
-	  gen (JUMP lab2) in
+	  and gen_arm lab (vs, body) =
+	    SEQ [LABEL lab; gen_stmt exit_lab body; JUMP lab2] in
 
-	gen_expr switch;
-	let line = !code_line in
-	Switch.switch (List.concat (List.map2 make_cases caselabs arms)) lab1;
-	Stack.pop 1;
-	List.iter2 gen_arm caselabs arms;
-	gen_lab lab1;
-	begin match default with
-	    Some ss -> gen_stmt exit_lab ss
-	  | None -> if !Config.boundchk then gen (ERROR ("E_CASE", line));
-	end;
-	gen_lab lab2
+	  SEQ [gen_expr switch;
+	    Switch.switch 
+	      (List.concat (List.map2 make_cases caselabs arms)) lab1;
+	    SEQ (List.map2 gen_arm caselabs arms);
+	    LABEL lab1;
+	    (match default with
+		Some ss -> gen_stmt exit_lab ss
+	      | None -> check (ERROR ("E_CASE", expr_line switch)));
+	    LABEL lab2]
 
-    | WhileStmt ((test1, body1)::arms) ->
-	let lab1 = label () and lab_test = label () in
-	gen (JUMP lab_test);
-	gen_lab lab1;
-        gen_stmt exit_lab body1;
-	gen_lab lab_test;
-	code_line := 0;
-        gen_cond true lab1 test1;
-	List.iter (fun (test, body) ->
-	    let lab2 = label () in
-	    gen_cond false lab2 test;
-	    gen_stmt exit_lab body;
-	    gen (JUMP lab_test);
-	    gen_lab lab2)
-	  arms
+      | WhileStmt arms ->
+	  (* Not the best translation, but one that makes it easier
+	     to get line numbers right for the debugger *)
+	  let lab_top = label () in
+	  SEQ [LABEL lab_top;
+	    SEQ (List.map (fun (test, body) ->
+		let lab1 = label () in
+		SEQ [LINE (expr_line test); gen_cond false lab1 test;
+		  gen_stmt exit_lab body; JUMP lab_top;
+		  LABEL lab1]) arms)]
 
-    | WhileStmt [] -> failwith "gen_stmt: empty while"
-
-    | RepeatStmt (body, test) ->
-	let lab1 = label () in
-	gen_lab lab1;
-	gen_stmt exit_lab body;
-	gen_cond false lab1 test
-
-    | LoopStmt body ->
-	let lab1 = label () and lab2 = label () in
-	gen_lab lab1;
-	gen_stmt lab2 body;
-	gen (JUMP lab1);
-	gen_lab lab2
-
-    | ExitStmt ->
-	gen (JUMP exit_lab)
-
-    | ForStmt (var, lo, hi, step, body, tmp) ->
-	let lab1 = label () and lab2 = label () in
-	let memk = mem_kind var.e_type in
-	let kind = op_kind var.e_type in
-	let inc =  int_value (value_of step) in
-	let gen_upb =
-	  match hi.e_guts with 
-	      Const (_, _) -> 
-		(function () -> gen_expr hi)
-	    | _ ->
-		let off = (!tmp).d_offset in
-		gen_expr hi; gen (LOCAL off); gen (STORE memk);
-		(function () -> gen (LOCAL off); gen (LOAD memk)) in
-
- 	(* var := lo; goto lab2 *)
-  	gen_expr lo; gen_addr var; gen (STORE memk);
- 	gen (JUMP lab2);
- 
- 	(* lab1: body *)
-  	gen_lab lab1;
-  	gen_stmt exit_lab body;
- 
- 	(* var := var + inc *)
- 	gen_expr var; gen_constant kind (IntVal inc);
-	gen (BINOP (kind, Plus)); gen_addr var; gen (STORE memk);
- 
- 	(* lab2: if var <= hi goto lab1 *)
- 	gen_lab lab2;
- 	gen_expr var; gen_upb ();
- 	gen (JUMPC (kind, (if inc > integer 0 then Leq else Geq), lab1))
-
-    | WithStmt (branches, else_part) ->
-	let labn = label () in
-
-	let gen_branch (e, tn, body) =
+      | RepeatStmt (body, test) ->
 	  let lab1 = label () in
-	  gen_typetest e tn;
-	  gen (JUMPB (false, lab1));
-	  gen_stmt exit_lab body;
-	  gen (JUMP labn);
-	  gen_lab lab1 in
+	  SEQ [LABEL lab1; gen_stmt exit_lab body;
+	    LINE (expr_line test); gen_cond false lab1 test]
 
-	List.iter gen_branch branches;
-	begin match else_part with
-	    Some s -> 
-	      gen_stmt exit_lab s
-	  | None -> 
-	      if !Config.boundchk then 
-		gen (ERROR ("E_WITH", !code_line))
-	end;
-	gen_lab labn
+      | LoopStmt body ->
+	  let lab1 = label () and lab2 = label () in
+	  SEQ [LABEL lab1; gen_stmt lab2 body; JUMP lab1; LABEL lab2]
 
-    | Seq ss -> 
-	let rec walk = 
-	  function 
-	      [] -> ()
-	    | s::ss' ->
-		gen_stmt exit_lab s; 
-		walk ss' in
-	walk ss
+      | ExitStmt ->
+	  JUMP exit_lab
 
-    | Skip -> ()
+      | ForStmt (var, lo, hi, step, body, tmp) ->
+	  let lab1 = label () and lab2 = label () in
+	  let memk = mem_kind var.e_type in
+	  let kind = op_kind var.e_type in
+	  let inc =  int_value (value_of step) in
+	  let (prep, upb) =
+	    match hi.e_guts with 
+		Const (_, _) -> (NOP, gen_expr hi)
+	      | _ ->
+		  let off = (!tmp).d_offset in
+		  ( SEQ [gen_expr hi; LOCAL off; STORE memk],
+		    SEQ [LOCAL off; LOAD memk] ) in
 
-    | ErrStmt ->
-	failwith "igen ErrStmt"
+	  SEQ [prep;
+	    (* var := lo *)
+	    gen_expr lo; gen_addr var; STORE memk;
+
+	    (* lab1: if var > hi goto lab2 *)
+	    LABEL lab1; gen_expr var; upb;
+	    JUMPC (kind, (if inc > integer 0 then Gt else Lt), lab2);
+
+	    (* body *)
+	    gen_stmt exit_lab body;
+
+	    (* var := var + inc; goto lab1 *)
+	    gen_expr var; constant kind (IntVal inc);
+	    BINOP (kind, Plus); gen_addr var; STORE memk;
+	    JUMP lab1;
+	    
+	    LABEL lab2]
+
+
+      | WithStmt (branches, else_part) ->
+	  let labn = label () in
+
+	  let gen_branch (e, tn, body) =
+	    let lab1 = label () in
+	    SEQ [gen_typetest e tn; JUMPB (false, lab1);
+	      gen_stmt exit_lab body; JUMP labn; LABEL lab1] in
+
+	  SEQ [SEQ (List.map gen_branch branches);
+	    (match else_part with
+		Some s -> gen_stmt exit_lab s
+	      | None -> check (ERROR ("E_WITH", line_num s.s_loc)));
+	    LABEL labn]
+
+      | Seq ss -> SEQ (List.map (gen_stmt exit_lab) ss)
+
+      | Skip -> NOP
+
+      | ErrStmt ->
+	  failwith "igen ErrStmt" in
+  SEQ [LINE (line_num s.s_loc); code]	
 
 (* gen_copy -- generate code to copy aggregate value params *)
 let gen_copy fps = 
@@ -1268,50 +1004,58 @@ let gen_copy fps =
      the formal, this code copies junk beyond the terminating 0X. In 
      extreme cases, it could cause a segfault. *)
   let copy fp =
-    if fp.d_kind = ParamDef && not (scalar fp.d_type) then begin
-      if is_flex fp.d_type then begin
-	gen (LOCAL fp.d_offset);
-	gen (LOCAL (fp.d_offset + word_size));
-	gen (LOAD IntT);
-	for i = 2 to flexity fp.d_type do
-	  gen (LOCAL (fp.d_offset + i*word_size));
-	  gen (LOAD IntT);
-	  gen (BINOP (IntT, Times))
-	done;
-	gen_const (flex_base fp.d_type).t_rep.m_size;
-	gen (BINOP (IntT, Times));
-	gen FLEXCOPY 
-      end
-      else begin
-	gen (LOCAL fp.d_offset);
-	gen (LOCAL fp.d_param);
-	gen (LOAD IntT);
-	gen_const fp.d_type.t_rep.m_size;
-	gen FIXCOPY
-      end
+    if fp.d_kind <> ParamDef || scalar fp.d_type then NOP else begin
+      if is_flex fp.d_type then
+	SEQ [LOCAL fp.d_offset; 
+	  LOCAL (fp.d_offset + word_size); LOAD IntT;
+	  SEQ (List.map (fun i ->
+	      SEQ [LOCAL (fp.d_offset + i*word_size); 
+		LOAD IntT; BINOP (IntT, Times)]) 
+	    (Util.range 2 (flexity fp.d_type)));
+	const (flex_base fp.d_type).t_rep.m_size;
+	BINOP (IntT, Times); FLEXCOPY]
+      else
+	SEQ [LOCAL fp.d_offset; LOCAL fp.d_param; LOAD IntT;
+	  const fp.d_type.t_rep.m_size; FIXCOPY]
     end in
-  List.iter copy fps
+  SEQ (List.map copy fps)
+
+
+
+(* Code output *)
+
+let transform code =
+  (* Tail recursion in case code is very long *)
+  let rec walk xs zs =
+    match xs with
+	[] -> List.rev zs
+      | XMARK :: ys -> Stack.mark (); walk ys zs
+      | XSTKMAP n :: ys ->
+	  let m = Stack.make_map n in
+	  if m = null_map then walk ys zs else
+	    walk ys (STKMAP (make_map 0 (genlab ()) m) :: zs)
+      | x :: ys -> Stack.simulate x; walk ys (x :: zs) in
+  Stack.reset (); walk code []
 
 let gen_procdef d loc fsize body =
   let p = get_proc d.d_type in
   let line = line_num loc in
-  code_line := line;
   level := d.d_level+1;
-  Stack.reset ();
-  if d.d_level > 0 then gen SAVELINK;
-  gen_copy p.p_fparams;
-  gen_stmt nolab body;
-  if kind_of p.p_result = VoidT then
-    gen (RETURN VoidT)
-  else
-    gen (ERROR ("E_RETURN", line));
+  let code = SEQ [
+    if d.d_level > 0 then SAVELINK else NOP;
+    gen_copy p.p_fparams;
+    gen_stmt nolab body;
+    if kind_of p.p_result = VoidT then
+      RETURN VoidT
+    else
+      ERROR ("E_RETURN", line)] in
 
-  Peepopt.reduce ();
+  let code2 = Peepopt.optimise (transform (Icode.canon code)) in
   let stk = Stack.max_depth () in
   let map = frame_map d in
   put "PROC $ $ $ $" [fSym d.d_lab; fNum !fsize; fNum stk; fSym map];
-  if loc <> no_loc then Peepopt.put_line line;
-  Peepopt.flush ();
+  if loc <> no_loc then Icode.put_line line;
+  Icode.output line code2;
   put "END\n" []
 
 (* gen_proc -- generate code for a procedure, ignore other declarations *)

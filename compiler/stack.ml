@@ -41,7 +41,7 @@ let arity =
     | RETURN (DoubleT|LongT) -> (2, [])
     | RETURN _ -> (1, [])
     | TYPETEST _ -> (2, [f])
-    | NOP -> (0, [])
+    | LINE _ -> (0, [])
     | CALL (n, VoidT) -> (n+1, []) 
     | CALL (n, (DoubleT|LongT)) -> (n+1, [f; f]) 
     | CALL (n, _) -> (n+1, [f]) 
@@ -62,12 +62,18 @@ let arity =
     | CONV (_, (DoubleT|LongT)) -> (1, [f; f])
     | CONV (_, _) -> (1, [f])
 
+    | JCASE _ -> (1, [])
+    | JRANGE _ -> (3, [])
+
     | _ -> raise Not_found
 
 let simulate i =
   begin match i with
       JUMP lab ->
 	Hashtbl.add labstate lab !stk
+    | TESTGEQ lab ->
+	let s = pop_stack 1 !stk in
+	Hashtbl.add labstate lab s; stk := s
     | DUP n ->
 	stk := push_stack (nth_stack !stk n) !stk
     | JUMPB (_, lab) ->
@@ -77,12 +83,13 @@ let simulate i =
 	let s = pop_stack 2 !stk in
 	Hashtbl.add labstate lab s; stk := s
     | SWAP ->
-	stk := push_stack (nth_stack !stk 1) (push_stack (nth_stack !stk 0) 
-						(pop_stack 2 !stk))
+	let x = nth_stack !stk 0  and y = nth_stack !stk 1 in
+	stk := push_stack y (push_stack x (pop_stack 2 !stk))
     | LABEL lab ->
 	(* This assumes that a label immediately following an unconditional 
-	   branch is the target of some other forward branch. *)
-	(try stk := Hashtbl.find labstate lab with Not_found -> ())
+	   branch has an empty stack if it is not the target of some other 
+	   forward branch. *)
+	stk := (try Hashtbl.find labstate lab with Not_found -> [])
 
     | _ -> 
 	(try

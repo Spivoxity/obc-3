@@ -110,8 +110,10 @@ STLW -12
 !   FOR n := N TO 1 BY -1 DO 
 CONST 100000
 STLW -4
-JUMP 4
 LABEL 3
+LDLW -4
+CONST 1
+JLT 4
 !     xs := Cons(3, xs);		    (* Create some garbage *)
 LDLW -12
 CONST 3
@@ -126,17 +128,16 @@ LDLW -4
 GLOBAL tChain.Cons
 CALLW 2
 STLW -12
-!   FOR n := N TO 1 BY -1 DO 
 DECL -4
+JUMP 3
 LABEL 4
-LDLW -4
-CONST 1
-JGEQ 3
 !   s := 0;
 CONST 0
 STLW -8
-JUMP 6
 LABEL 5
+!   WHILE xs # NIL DO
+LDLW -12
+JEQZ 6
 !     s := (s + xs.head) MOD P;
 LDLW -8
 LDLW -12
@@ -168,10 +169,8 @@ LDLW -12
 NCHECK 52
 LDNW 4
 STLW -12
+JUMP 5
 LABEL 6
-!   WHILE xs # NIL DO
-LDLW -12
-JNEQZ 5
 !   Out.Int(s, 0); Out.Ln;
 CONST 0
 LDLW -8
@@ -191,17 +190,17 @@ CALL 2
 !   FOR i := 1 TO 10 DO Test END;
 CONST 1
 STGW tChain.i
-JUMP 10
 LABEL 9
+LDGW tChain.i
+CONST 10
+JGT 10
 GLOBAL tChain.Test
 CALL 0
 LDGW tChain.i
 INC
 STGW tChain.i
+JUMP 9
 LABEL 10
-LDGW tChain.i
-CONST 10
-JLEQ 9
 !   Out.Int((((((P+1) DIV 2) * (N MOD P)) MOD P) 
 CONST 0
 CONST 2415

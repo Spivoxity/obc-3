@@ -70,7 +70,6 @@ type icode =
   | TYPETEST of int		(* Type test (level) *)
   | LABEL of codelab		(* Set code label *)
   | LINE of int			(* Line number *)
-  | NOP				(* No-op *)
 
   | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
@@ -89,9 +88,22 @@ type icode =
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
   | TESTGEQ of codelab		(* Case split = DUP 1/JUMPC Lt *)
 
+  | XMARK			(* Mark needed here *)
+  | XSTKMAP of int		(* Stack map needed here *)
+  | SEQ of icode list		(* Sequence *)
+  | NOP				(* No-op *)
+
+(* canon -- flatten icode into a list without SEQ or NOP *)
+val canon : icode -> icode list
+
 val fType : kind -> Print.arg
 val fType1 : kind -> Print.arg
 val fOpcode : op -> Print.arg
 
 (* Inst -- printf format for instructions *)
 val fInst : icode -> Print.arg
+
+
+val put_line : int -> unit
+
+val output : int -> icode list -> unit

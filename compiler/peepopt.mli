@@ -28,8 +28,4 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-val gen : Icode.icode -> unit
-val reduce : unit -> unit
-val flush : unit -> unit
-
-val put_line : int -> unit
+val optimise : Icode.icode list -> Icode.icode list

@@ -168,8 +168,10 @@ STGQ tRand64.u
 !   FOR x := 1 TO 100 DO 
 CONST 1
 STGW tRand64.x
-JUMP 2
 LABEL 1
+LDGW tRand64.x
+CONST 100
+JGT 2
 !     y := Random.Random();
 GLOBAL Random.Random
 CALLW 0
@@ -196,19 +198,18 @@ JEQ 3
 CONST 0
 EASSERT 30
 LABEL 3
-!   FOR x := 1 TO 100 DO 
 LDGW tRand64.x
 INC
 STGW tRand64.x
+JUMP 1
 LABEL 2
-LDGW tRand64.x
-CONST 100
-JLEQ 1
 !   FOR x := 1 TO 100000 DO ASSERT(Random.Random() = next()) END;
 CONST 1
 STGW tRand64.x
-JUMP 5
 LABEL 4
+LDGW tRand64.x
+CONST 100000
+JGT 5
 GLOBAL Random.Random
 CALLW 0
 GLOBAL tRand64.next
@@ -220,10 +221,8 @@ LABEL 6
 LDGW tRand64.x
 INC
 STGW tRand64.x
+JUMP 4
 LABEL 5
-LDGW tRand64.x
-CONST 100000
-JLEQ 4
 RETURN
 END
 

@@ -60,8 +60,11 @@ CALL 3
 !   i := 0;
 CONST 0
 STLW -4
-JUMP 2
 LABEL 1
+!   WHILE i < n DO
+LDLW -4
+CONST 10
+JGEQ 2
 !     a[i, 0] := 1; j := 1;
 CONST 1
 LDLW -12
@@ -86,8 +89,11 @@ TIMES
 LDIW
 GLOBAL Out.Int
 CALL 2
-JUMP 4
 LABEL 3
+!     WHILE j <= i DO
+LDLW -8
+LDLW -4
+JGT 4
 !       a[i, j] := a[i-1, j-1] + a[i-1, j];
 LDLW -12
 NCHECK 30
@@ -151,11 +157,8 @@ GLOBAL Out.Int
 CALL 2
 !       j := j+1
 INCL -8
+JUMP 3
 LABEL 4
-!     WHILE j <= i DO
-LDLW -8
-LDLW -4
-JLEQ 3
 !     a[i, i+1] := 0;
 CONST 0
 LDLW -12
@@ -176,11 +179,8 @@ GLOBAL Out.Ln
 CALL 0
 !     i := i+1
 INCL -4
+JUMP 1
 LABEL 2
-!   WHILE i < n DO
-LDLW -4
-CONST 10
-JLT 1
 RETURN
 END
 

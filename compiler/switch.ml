@@ -126,35 +126,18 @@ table would be very small.  These functions are used by |gen_tree| to
 generate a binary search tree with jump tables or range tests at the
 leaves. *)
 
-let gen i = Peepopt.gen i
-
 (* |gen_range| -- generate a range test or single comparison *)
 let gen_range lob hib (lo, hi, lab) deflab =
-  if lob = lo && hib = hi then begin
-    gen (POP 1);
-    gen (JUMP lab)
-  end
-  else if lo = hi then begin
-    gen (CONST lo);
-    gen (JUMPC (IntT, Eq, lab));
-    gen (JUMP deflab)
-  end
-  else if hib = hi then begin
-    gen (CONST lo);
-    gen (JUMPC (IntT, Geq, lab));
-    gen (JUMP deflab)
-  end
-  else if lob = lo then begin
-    gen (CONST hi);
-    gen (JUMPC (IntT, Leq, lab));
-    gen (JUMP deflab)
-  end
-  else begin
-    gen (CONST lo);
-    gen (CONST hi);
-    gen (JRANGE lab);
-    gen (JUMP deflab)
-  end
+  if lob = lo && hib = hi then
+    SEQ [POP 1; JUMP lab]
+  else if lo = hi then
+    SEQ [CONST lo; JUMPC (IntT, Eq, lab); JUMP deflab]
+  else if hib = hi then
+    SEQ [CONST lo; JUMPC (IntT, Geq, lab); JUMP deflab]
+  else if lob = lo then
+    SEQ [CONST hi; JUMPC (IntT, Leq, lab); JUMP deflab]
+  else
+    SEQ [CONST lo; CONST hi; JRANGE lab; JUMP deflab]
 
 (* |gen_table| -- generate a jump table *)
 let gen_table lob hib t deflab =
@@ -168,10 +151,7 @@ let gen_table lob hib t deflab =
 	      @ Util.copy (int_of_integer (integer_sub hi lo) + 1) lab 
 	      @ tab (integer_add hi (integer 1)) rs in
     tab t.lowest t.ranges in
-  gen (CONST t.lowest);
-  gen (BINOP (IntT, Minus));
-  gen (JCASE labels);
-  gen (JUMP deflab)
+  SEQ [CONST t.lowest; BINOP (IntT, Minus); JCASE labels; JUMP deflab]
 
 (* |gen_tree| -- generate a binary search, with tables at the leaves *)
 let rec gen_tree lob hib tables deflab =
@@ -179,8 +159,7 @@ let rec gen_tree lob hib tables deflab =
   match tables with
       [] ->
 	(* bug fix for empty CASE statements 27/7/01 *)
-        gen (POP 1);
-	gen (JUMP deflab)
+        SEQ [POP 1; JUMP deflab]
     | [t] ->
 	( match t.ranges with
 	      [r] -> gen_range lob hib r deflab
@@ -190,11 +169,10 @@ let rec gen_tree lob hib tables deflab =
 	let n = List.length tables in
 	let k = (n+1) / 2 in
 	let m = (List.nth tables k).lowest in
-	gen (CONST m);
-	gen (TESTGEQ lab);
-	gen_tree lob (integer_sub m (integer 1)) (Util.take k tables) deflab;
-	gen (LABEL lab);
-	gen_tree m hib (Util.drop k tables) deflab
+	SEQ [CONST m; TESTGEQ lab;
+	  gen_tree lob (integer_sub m (integer 1)) (Util.take k tables) deflab;
+	  LABEL lab;
+	  gen_tree m hib (Util.drop k tables) deflab]
 
 (* And finally, we put it all together.  Because the tree has passed
 semantic checks, we may assume that there are no duplicate values. *)

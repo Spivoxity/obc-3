@@ -668,8 +668,11 @@ PROC tMerge.mergestreamrec.Next 4 4 0x00100001
 !   i := 0;
 CONST 0
 STLW -4
-JUMP 16
 LABEL 15
+!   WHILE i < k DO
+LDLW -4
+LDLW 16
+JGEQ 16
 !     s.Fix();
 LDLW 12
 NCHECK 160
@@ -712,11 +715,8 @@ CONST 8
 STIC
 !     i := i+1
 INCL -4
+JUMP 15
 LABEL 16
-!   WHILE i < k DO
-LDLW -4
-LDLW 16
-JLT 15
 RETURN
 END
 
@@ -817,8 +817,10 @@ DEC
 STLW -4
 CONST 0
 STGW tMerge.k
-JUMP 24
 LABEL 23
+LDGW tMerge.k
+LDLW -4
+JGT 24
 !     a[k] := m;
 LDGW tMerge.m
 LDGW tMerge.a
@@ -848,14 +850,11 @@ BOUND 195
 LDIW
 GLOBAL Out.Int
 CALL 2
-!   FOR k := 0 TO n-1 DO 
 LDGW tMerge.k
 INC
 STGW tMerge.k
+JUMP 23
 LABEL 24
-LDGW tMerge.k
-LDLW -4
-JLEQ 23
 !   Out.Ln;
 GLOBAL Out.Ln
 CALL 0
@@ -866,8 +865,15 @@ CALLW 1
 GLOBAL tMerge.sort
 CALLW 1
 STGW tMerge.s
-JUMP 26
 LABEL 25
+!   WHILE ~s.Done() DO
+LDGW tMerge.s
+NCHECK 200
+DUP 0
+LDNW -4
+LDNW 12
+CALLW 1
+JUMPT 26
 !     k := s.Current();
 LDGW tMerge.s
 NCHECK 201
@@ -889,15 +895,8 @@ DUP 0
 LDNW -4
 LDNW 20
 CALL 2
+JUMP 25
 LABEL 26
-!   WHILE ~s.Done() DO
-LDGW tMerge.s
-NCHECK 200
-DUP 0
-LDNW -4
-LDNW 12
-CALLW 1
-JUMPF 25
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

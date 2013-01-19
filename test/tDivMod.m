@@ -68,8 +68,10 @@ PROC tDivMod.Test 20 3 0
 !   FOR a := -10 TO 10 DO
 CONST -10
 STLW -4
-JUMP 7
 LABEL 6
+LDLW -4
+CONST 10
+JGT 7
 !     q := a DIV b; r := a MOD b;
 LDLW -4
 LDLW 12
@@ -173,12 +175,9 @@ CALL 0
 CONST 1
 STGC tDivMod.failed
 LABEL 9
-!   FOR a := -10 TO 10 DO
 INCL -4
+JUMP 6
 LABEL 7
-LDLW -4
-CONST 10
-JLEQ 6
 RETURN
 END
 
@@ -296,18 +295,18 @@ CALL 0
 !   FOR n := 1 TO 10 DO Test(n) END;
 CONST 1
 STGW tDivMod.n
-JUMP 12
 LABEL 11
+LDGW tDivMod.n
+CONST 10
+JGT 12
 LDGW tDivMod.n
 GLOBAL tDivMod.Test
 CALL 1
 LDGW tDivMod.n
 INC
 STGW tDivMod.n
+JUMP 11
 LABEL 12
-LDGW tDivMod.n
-CONST 10
-JLEQ 11
 !   IF failed THEN Out.String("Failed!"); Out.Ln END  
 LDGC tDivMod.failed
 JUMPF 14

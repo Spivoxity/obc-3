@@ -54,8 +54,11 @@ PROC tCases.%main 0 3 0
 !   i := 0;
 CONST 0
 STGW tCases.i
-JUMP 3
 LABEL 2
+!   WHILE i < 10 DO
+LDGW tCases.i
+CONST 10
+JGEQ 3
 !     CASE i OF
 LDGW tCases.i
 DEC
@@ -117,16 +120,15 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
+JUMP 2
 LABEL 3
-!   WHILE i < 10 DO
-LDGW tCases.i
-CONST 10
-JLT 2
 !   FOR i := 0 TO 127 DO
 CONST 0
 STGW tCases.i
-JUMP 11
 LABEL 10
+LDGW tCases.i
+CONST 127
+JGT 11
 !     c := CHR(i);
 LDGW tCases.i
 STGC tCases.c
@@ -143,14 +145,12 @@ ALIGNC
 GLOBAL Out.Char
 CALL 1
 LABEL 12
-!   FOR i := 0 TO 127 DO
+!     ELSE
 LDGW tCases.i
 INC
 STGW tCases.i
+JUMP 10
 LABEL 11
-LDGW tCases.i
-CONST 127
-JLEQ 10
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

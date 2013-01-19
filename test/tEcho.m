@@ -49,8 +49,10 @@ DEC
 STLW -12
 CONST 1
 STLW -4
-JUMP 2
 LABEL 1
+LDLW -4
+LDLW -12
+JGT 2
 !     Args.GetArg(i, s^);
 LDLW -8
 NCHECK 15
@@ -79,12 +81,9 @@ LDNW 4
 SWAP
 GLOBAL Out.String
 CALL 2
-!   FOR i := 1 TO Args.argc-1 DO
 INCL -4
+JUMP 1
 LABEL 2
-LDLW -4
-LDLW -12
-JLEQ 1
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

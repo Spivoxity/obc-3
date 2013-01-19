@@ -235,8 +235,10 @@ CALL 2
 !   FOR i := 0 TO 7 DO
 CONST 0
 STGW tFibTree2.i
-JUMP 12
 LABEL 11
+LDGW tFibTree2.i
+CONST 7
+JGT 12
 !     p := Build(i);
 LDGW tFibTree2.i
 GLOBAL tFibTree2.Build
@@ -267,14 +269,11 @@ GLOBAL Out.Ln
 CALL 0
 GLOBAL Out.Ln
 CALL 0
-!   FOR i := 0 TO 7 DO
 LDGW tFibTree2.i
 INC
 STGW tFibTree2.i
+JUMP 11
 LABEL 12
-LDGW tFibTree2.i
-CONST 7
-JLEQ 11
 RETURN
 END
 

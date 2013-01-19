@@ -195,8 +195,10 @@ PROC tFibTree.%main 0 4 0
 !   FOR i := 0 TO 7 DO
 CONST 0
 STGW tFibTree.i
-JUMP 9
 LABEL 8
+LDGW tFibTree.i
+CONST 7
+JGT 9
 !     p := Build(i);
 LDGW tFibTree.i
 GLOBAL tFibTree.Build
@@ -227,14 +229,11 @@ GLOBAL Out.Ln
 CALL 0
 GLOBAL Out.Ln
 CALL 0
-!   FOR i := 0 TO 7 DO
 LDGW tFibTree.i
 INC
 STGW tFibTree.i
+JUMP 8
 LABEL 9
-LDGW tFibTree.i
-CONST 7
-JLEQ 8
 RETURN
 END
 

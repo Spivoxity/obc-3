@@ -46,8 +46,10 @@ DEC
 STLW -12
 CONST 0
 STLW -4
-JUMP 2
 LABEL 1
+LDLW -4
+LDLW -12
+JGT 2
 LDLW -8
 LDLW 12
 NCHECK 15
@@ -60,10 +62,8 @@ LDIW
 PLUS
 STLW -8
 INCL -4
+JUMP 1
 LABEL 2
-LDLW -4
-LDLW -12
-JLEQ 1
 !   RETURN s
 LDLW -8
 RETURNW
@@ -81,8 +81,10 @@ CALL 5
 !   FOR j := 0 TO 4 DO b[j] := j+1 END;
 CONST 0
 STGW tOpen2.j
-JUMP 4
 LABEL 3
+LDGW tOpen2.j
+CONST 4
+JGT 4
 LDGW tOpen2.j
 INC
 LDGW tOpen2.b
@@ -96,10 +98,8 @@ STIW
 LDGW tOpen2.j
 INC
 STGW tOpen2.j
+JUMP 3
 LABEL 4
-LDGW tOpen2.j
-CONST 4
-JLEQ 3
 !   Out.Int(Sum(b), 0); Out.Ln;
 CONST 0
 LDGW tOpen2.b

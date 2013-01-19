@@ -135,8 +135,11 @@ LDLW 12
 STLW -4
 LDLW 16
 STLW -8
-JUMP 3
 LABEL 1
+!   WHILE i < j DO
+LDLW -4
+LDLW -8
+JGEQ 2
 !     IF a[i] < x THEN
 GLOBAL tMissing.a
 LDLW -4
@@ -147,7 +150,7 @@ LDLW 20
 JGEQ 4
 !       i := i+1
 INCL -4
-JUMP 3
+JUMP 1
 LABEL 4
 !       j := j-1;
 DECL -8
@@ -174,11 +177,8 @@ LDLW -8
 CONST 1002
 BOUND 18
 STIW
-LABEL 3
-!   WHILE i < j DO
-LDLW -4
-LDLW -8
-JLT 1
+JUMP 1
+LABEL 2
 !   RETURN i
 LDLW -4
 RETURNW
@@ -193,8 +193,11 @@ CONST 1000
 STLW -8
 CONST 1001
 STLW -12
-JUMP 7
 LABEL 5
+!   WHILE p # q DO
+LDLW -4
+LDLW -8
+JEQ 6
 !     m := (p+r) DIV 2;
 LDLW -4
 LDLW -12
@@ -218,16 +221,13 @@ LDLW -20
 STLW -8
 LDLW -16
 STLW -12
-JUMP 7
+JUMP 5
 LABEL 8
 !       p := k
 LDLW -20
 STLW -4
-LABEL 7
-!   WHILE p # q DO
-LDLW -4
-LDLW -8
-JNEQ 5
+JUMP 5
+LABEL 6
 !   RETURN p
 LDLW -4
 RETURNW
@@ -254,8 +254,27 @@ PROC tMissing.Bundala 4 4 0
 !   n := 0;
 CONST 0
 STLW -4
-JUMP 10
+LABEL 9
+!   WHILE n < M DO
+LDLW -4
+CONST 1000
+JGEQ 10
 LABEL 11
+!     WHILE (a[n] < M) & (a[n] # n) DO
+GLOBAL tMissing.a
+LDLW -4
+CONST 1002
+BOUND 55
+LDIW
+CONST 1000
+JGEQ 12
+GLOBAL tMissing.a
+LDLW -4
+CONST 1002
+BOUND 55
+LDIW
+LDLW -4
+JEQ 12
 !       Swap(a[n], a[a[n]])
 GLOBAL tMissing.a
 GLOBAL tMissing.a
@@ -273,49 +292,30 @@ BOUND 56
 INDEXW
 GLOBAL tMissing.Swap
 CALL 2
+JUMP 11
 LABEL 12
-!     WHILE (a[n] < M) & (a[n] # n) DO
-GLOBAL tMissing.a
-LDLW -4
-CONST 1002
-BOUND 55
-LDIW
-CONST 1000
-JGEQ 13
-GLOBAL tMissing.a
-LDLW -4
-CONST 1002
-BOUND 55
-LDIW
-LDLW -4
-JNEQ 11
-LABEL 13
 !     n := n + 1
 INCL -4
+JUMP 9
 LABEL 10
-!   WHILE n < M DO
-LDLW -4
-CONST 1000
-JLT 12
 !   n := 0;
 CONST 0
 STLW -4
-JUMP 15
-LABEL 14
-INCL -4
-LABEL 15
+LABEL 13
 !   WHILE (n < M) & (a[n] = n) DO n := n+1 END;
 LDLW -4
 CONST 1000
-JGEQ 16
+JGEQ 14
 GLOBAL tMissing.a
 LDLW -4
 CONST 1002
 BOUND 62
 LDIW
 LDLW -4
-JEQ 14
-LABEL 16
+JNEQ 14
+INCL -4
+JUMP 13
+LABEL 14
 !   RETURN n
 LDLW -4
 RETURNW
@@ -323,8 +323,17 @@ END
 
 PROC tMissing.Bundala2 0 4 0
 ! PROCEDURE Bundala2(): INTEGER;
-JUMP 18
-LABEL 17
+LABEL 15
+!   WHILE a[a[n]] # a[n] DO
+GLOBAL tMissing.a
+GLOBAL tMissing.a
+LDNW 4004
+CONST 1002
+BOUND 69
+LDIW
+GLOBAL tMissing.a
+LDNW 4004
+JEQ 16
 !     Swap(a[n], a[a[n]])
 GLOBAL tMissing.a
 GLOBAL tMissing.a
@@ -337,17 +346,8 @@ CONST 4004
 PLUSA
 GLOBAL tMissing.Swap
 CALL 2
-LABEL 18
-!   WHILE a[a[n]] # a[n] DO
-GLOBAL tMissing.a
-GLOBAL tMissing.a
-LDNW 4004
-CONST 1002
-BOUND 69
-LDIW
-GLOBAL tMissing.a
-LDNW 4004
-JNEQ 17
+JUMP 15
+LABEL 16
 !   RETURN a[n]
 GLOBAL tMissing.a
 LDNW 4004
@@ -360,8 +360,10 @@ PROC tMissing.Permute 12 4 0
 LDLW 12
 DEC
 STLW -4
-JUMP 20
-LABEL 19
+LABEL 17
+LDLW -4
+CONST 1
+JLT 18
 !     j := Random.Roll(i+1);
 LDLW -4
 INC
@@ -370,14 +372,14 @@ CALLW 1
 STLW -8
 !     ASSERT((j >= 0) & (j <= i));
 LDLW -8
-JLTZ 22
+JLTZ 20
 LDLW -8
 LDLW -4
-JLEQ 21
-LABEL 22
+JLEQ 19
+LABEL 20
 CONST 0
 EASSERT 80
-LABEL 21
+LABEL 19
 !     t := a[i]; a[i] := a[j]; a[j] := t
 GLOBAL tMissing.a
 LDLW -4
@@ -401,12 +403,9 @@ LDLW -8
 CONST 1002
 BOUND 81
 STIW
-!   FOR i := m-1 TO 1 BY -1 DO
 DECL -4
-LABEL 20
-LDLW -4
-CONST 1
-JGEQ 19
+JUMP 17
+LABEL 18
 RETURN
 END
 
@@ -430,12 +429,14 @@ STLW -8
 !   FOR r := 0 TO N-1 DO
 CONST 0
 STLW -12
-JUMP 24
-LABEL 23
+LABEL 21
+LDLW -12
+CONST 1000
+JGT 22
 !     IF r # x THEN a[i] := r; i := i+1 END
 LDLW -12
 LDLW -4
-JEQ 26
+JEQ 24
 LDLW -12
 GLOBAL tMissing.a
 LDLW -8
@@ -443,13 +444,10 @@ CONST 1002
 BOUND 92
 STIW
 INCL -8
-LABEL 26
-!   FOR r := 0 TO N-1 DO
-INCL -12
 LABEL 24
-LDLW -12
-CONST 1000
-JLEQ 23
+INCL -12
+JUMP 21
+LABEL 22
 !   Permute(M);
 CONST 1000
 GLOBAL tMissing.Permute

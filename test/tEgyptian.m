@@ -56,8 +56,12 @@ CONVNQ
 STLQ -16
 CONST 0
 STLW -28
-JUMP 5
 LABEL 4
+!   WHILE p > 0 DO
+LDLQ -8
+CONST 0
+CONVNQ
+QJLEQ 5
 !     m := (q-1) DIV p + 1;
 LDLQ -16
 CONST 1
@@ -89,12 +93,8 @@ LDLQ -16
 LDLQ -24
 QTIMES
 STLQ -16
+JUMP 4
 LABEL 5
-!   WHILE p > 0 DO
-LDLQ -8
-CONST 0
-CONVNQ
-QJGT 4
 !   RETURN n
 LDLW -28
 RETURNW
@@ -138,8 +138,10 @@ DEC
 STLW -4
 CONST 0
 STGW tEgyptian.i
-JUMP 7
 LABEL 6
+LDGW tEgyptian.i
+LDLW -4
+JGT 7
 !     IF i > 0 THEN Out.String(" + ") END;
 LDGW tEgyptian.i
 JLEQZ 9
@@ -161,14 +163,11 @@ BOUND 31
 LDIQ
 GLOBAL Out.LongInt
 CALL 3
-!   FOR i := 0 TO n-1 DO
 LDGW tEgyptian.i
 INC
 STGW tEgyptian.i
+JUMP 6
 LABEL 7
-LDGW tEgyptian.i
-LDLW -4
-JLEQ 6
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

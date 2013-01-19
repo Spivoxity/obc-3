@@ -91,10 +91,7 @@ LABEL 2
 !   j := 0;
 CONST 0
 STLW -4
-JUMP 4
 LABEL 3
-INCL -4
-LABEL 4
 !   WHILE fib[j+1] <= n DO j := j+1 END;
 GLOBAL tZeck.fib
 LDLW -4
@@ -103,7 +100,10 @@ CONST 100
 BOUND 28
 LDIQ
 LDLQ 12
-QJLEQ 3
+QJGT 4
+INCL -4
+JUMP 3
+LABEL 4
 !   r := n - fib[j];
 LDLQ 12
 GLOBAL tZeck.fib

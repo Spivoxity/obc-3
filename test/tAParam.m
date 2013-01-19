@@ -51,8 +51,10 @@ STLW -8
 !   FOR i := 0 TO LEN(a)-1 DO 
 CONST 0
 STLW -4
-JUMP 2
 LABEL 1
+LDLW -4
+CONST 4
+JGT 2
 !     s := s + a[i]
 LDLW -8
 LOCAL -28
@@ -62,12 +64,9 @@ BOUND 17
 LDIW
 PLUS
 STLW -8
-!   FOR i := 0 TO LEN(a)-1 DO 
 INCL -4
+JUMP 1
 LABEL 2
-LDLW -4
-CONST 4
-JLEQ 1
 !   RETURN s
 LDLW -8
 RETURNW
@@ -77,8 +76,10 @@ PROC tAParam.%main 0 5 0
 !   FOR j := 0 TO LEN(b)-1 DO 
 CONST 0
 STGW tAParam.j
-JUMP 4
 LABEL 3
+LDGW tAParam.j
+CONST 4
+JGT 4
 !     b[j] := j+1
 LDGW tAParam.j
 INC
@@ -87,14 +88,11 @@ LDGW tAParam.j
 CONST 5
 BOUND 26
 STIW
-!   FOR j := 0 TO LEN(b)-1 DO 
 LDGW tAParam.j
 INC
 STGW tAParam.j
+JUMP 3
 LABEL 4
-LDGW tAParam.j
-CONST 4
-JLEQ 3
 !   Out.Int(Sum(0, b), 0); Out.Ln;
 CONST 0
 GLOBAL tAParam.b

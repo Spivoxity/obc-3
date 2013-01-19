@@ -154,8 +154,10 @@ STGW tGC2.a
 !   FOR n := 1 TO 1000 DO a := Snoc(a, n) END;
 CONST 1
 STGW tGC2.n
-JUMP 8
 LABEL 7
+LDGW tGC2.n
+CONST 1000
+JGT 8
 LDGW tGC2.n
 LDGW tGC2.a
 GLOBAL tGC2.Snoc
@@ -164,10 +166,8 @@ STGW tGC2.a
 LDGW tGC2.n
 INC
 STGW tGC2.n
+JUMP 7
 LABEL 8
-LDGW tGC2.n
-CONST 1000
-JLEQ 7
 !   Out.Int(Sum(Reverse(a)), 0); Out.Ln;
 CONST 0
 LDGW tGC2.a

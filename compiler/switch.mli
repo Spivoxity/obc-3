@@ -32,4 +32,4 @@ open Symtab
 open Eval
 
 (* |switch| -- generate switching code for CASE statement *)
-val switch : (integer * integer * codelab) list -> codelab -> unit
+val switch : (integer * integer * codelab) list -> codelab -> Icode.icode

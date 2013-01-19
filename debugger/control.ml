@@ -43,6 +43,7 @@ let rcsid = "$Id$"
 type state =
     Ready
   | Stopped
+  | LineBreak
   | BreakPoint
   | Interrupted
   | Running
@@ -62,6 +63,7 @@ let state_name () =
   match !state with
       Ready -> "Ready"
     | Stopped -> "Stopped"
+    | LineBreak -> "Line break"
     | BreakPoint -> "Breakpoint"
     | Interrupted -> "Interrupted"
     | Running -> "Running"
@@ -82,6 +84,7 @@ let rec continue () =
 	  ["hello"; v] -> monitor_version := v
 	| ["ready"] -> state := Ready; raise Exit
 	| ["stop"] -> state := Stopped; raise Exit
+	| ["line"] -> state := LineBreak; raise Exit
 	| ["break"] -> state := BreakPoint; raise Exit
 	| ["interrupt"] -> state := Interrupted; raise Exit
 	| ["exit"] -> state := Exited; raise Exit
@@ -140,7 +143,8 @@ let line_test p =
 
 let step p =
   resume "step";
-  while !state = Stopped && not !int_flag && not (line_test p) do 
+  while (!state = Stopped || !state = LineBreak)
+      && not !int_flag && not (line_test p) do 
     resume "step" 
   done
 
@@ -148,7 +152,7 @@ let step_into () =
   match find_loc !vregs with
       Line (m, p, n) ->
         let bp = !vregs.bp in
-        step (fun n' -> !vregs.bp <> bp || n' <> n)
+        step (fun n' -> !state = LineBreak || !vregs.bp <> bp || n' <> n)
     | _ ->
         step (fun n' -> true)
 

@@ -71,7 +71,6 @@ type icode =
   | TYPETEST of int		(* Type test (level) *)
   | LABEL of codelab		(* Set code label *)
   | LINE of int			(* Line number *)
-  | NOP				(* No-op *)
 
   | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
@@ -89,6 +88,26 @@ type icode =
   | JUMPC of kind * op * codelab  (* op/JUMPB *)
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
   | TESTGEQ of codelab		(* Case split = DUP 1/JUMPC Lt *)
+
+  | XMARK			(* Mark needed here *)
+  | XSTKMAP of int		(* Stack map needed here *)
+  | SEQ of icode list		(* Sequence *)
+  | NOP				(* No-op *)
+
+let mark_line n ys =
+  if n = 0 then ys else
+    match ys with
+	[] | LINE _ :: _ -> ys
+      | _ -> LINE n :: ys
+
+let canon code =
+  let rec walk x ys =
+    match x with
+	NOP -> ys
+      | SEQ xs -> List.fold_right walk xs ys
+      | LINE n -> mark_line n ys
+      | _ -> x :: ys in
+  walk code []
 
 let opcode =
   function 
@@ -185,7 +204,6 @@ let fInst =
     | JUMPCZ (w, lab) -> fMeta "J$Z $" [fOpcode w; fLab lab]
     | LABEL lab ->	fMeta "LABEL $" [fLab lab]
     | LINE n -> 	fMeta "LINE $" [fNum n]
-    | NOP ->		fStr "NOP"
 
     | INDEX n ->	fMeta "INDEX$" [fWidth n]
     | LDL (s, n) ->	fMeta "LDL$ $" [fKind s; fNum n]
@@ -198,3 +216,26 @@ let fInst =
     | STNW n ->		fMeta "STNW $" [fNum n]
     | LDEW n ->		fMeta "LDEW $" [fNum n]
     | STEW n ->		fMeta "STEW $" [fNum n]
+
+    | XMARK ->		fStr "XMARK"
+    | XSTKMAP n ->	fMeta "XSTKMAP $" [fNum n]
+    | SEQ _ ->		fStr "SEQ ..."
+    | NOP ->		fStr "NOP"
+
+let put_line n =
+  printf "! $\n" [fStr (Error.source_line n)];
+  if !Config.linecount then printf "$\n" [fInst (LINE n)]
+
+let output ln code =
+  let line = ref ln in
+  List.iter (function
+      LINE n ->
+	if n <> 0 && n <> !line then begin
+	  line := n; put_line n
+	end
+    | JCASE labs ->
+	printf "$\n" [fInst (JCASE labs)];
+	List.iter (fun lab -> printf "CASEL $\n" [fLab lab]) labs
+    | x -> 
+	printf "$\n" [fInst x]) code
+
