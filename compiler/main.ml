@@ -71,9 +71,6 @@ let catch_failure f x =
   try f x with
       Failure s -> 
 	crash "$" [fStr s]
-    | Expr_failure (s, e) ->
-	print_expr stderr e;
-	crash "$" [fStr s]
     | Invalid_argument s ->
 	crash "invalid argument to '$'" [fStr s]
     | x ->

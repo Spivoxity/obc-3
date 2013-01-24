@@ -175,7 +175,3 @@ val fQualId : name -> Print.arg
 (* print_tree -- print tree as S-expression *)
 val print_tree : out_channel -> program -> unit
 val print_expr : out_channel -> expr -> unit
-
-exception Expr_failure of string * expr
-
-val expr_fail : string -> expr -> 'a

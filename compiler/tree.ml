@@ -181,47 +181,14 @@ let makeDefId (x, s, n) =
 
 (* Grinder *)
 
-open Format
-
-let rec grind fmt args =
-  let n = String.length fmt in
-  let i, j = ref 0, ref 0 in
-  while !i < n do
-    let c = fmt.[!i] in
-    if c = '$' then begin
-      (try print_arg (List.nth args !j) 
-	with Invalid_argument _ -> print_string "***");
-      incr j
-    end
-    else if c = ' ' then
-      print_space ()
-    else if c = '_' then
-      print_char ' '
-    else begin
-      if c = '(' then open_hvbox 2;
-      print_char c;
-      if c = ')' then close_box ()
-    end;
-    incr i
-  done
-
-and print_arg =
-  function
-      Chr c -> print_char c
-    | Str s -> print_string s
-    | Ext f -> f grind
-
-let fSeq(fmt) xs = 
-  let f prf =
-    List.iter (function x -> prf " $" [fmt x]) xs in
-  fExt f
+let fTail(fmt) xs = 
+  fExt (fun prf -> List.iter (function x -> prf " $" [fmt x]) xs)
 
 let fPSeq(fmt) xs = 
-  let f prf =
+  fExt (fun prf ->
     match xs with
 	[] -> prf "()" []
-      | y::ys -> prf "($$)" [fmt y; fSeq(fmt) ys] in
-  fExt f
+      | y::ys -> prf "($$)" [fmt y; fTail(fmt) ys])
 
 let ppOpt f =
   function
@@ -254,7 +221,7 @@ let ppPKind k =
   fStr kind
 
 let rec ppExpr e = 
-  let f prf =
+  fExt (fun prf ->
     match e.e_guts with
 	Name x -> prf "$" [fQualId x]
       | Deref e1 -> prf "(DEREF $)" [ppExpr e1]
@@ -265,10 +232,10 @@ let rec ppExpr e =
       | Decimal s -> prf "(DECIMAL $)" [fStr s]
       | Nil -> prf "(NIL)" []
       | FuncCall (f, args) ->
-	  prf "(CALL $$)" [ppExpr f; fSeq(ppExpr) args]
+	  prf "(CALL $$)" [ppExpr f; fTail(ppExpr) args]
       | MethodCall (r, x, args) ->
 	  prf "(METHCALL $ $$)" 
-	    [ppExpr r; ppName x; fSeq(ppExpr) args]
+	    [ppExpr r; ppName x; fTail(ppExpr) args]
       | Convert e1 ->
 	  prf "(CONVERT $)" [ppExpr e1]
       | Monop (w, e1) ->
@@ -280,18 +247,16 @@ let rec ppExpr e =
 	  List.iter (function e -> prf " $" [ppElement e]) els;
 	  prf ")" []
       | Cast (e1, x) -> prf "(CAST $ $)" [ppExpr e1; fQualId x]
-      | TypeTest (e1, x) -> prf "(TYPETEST $ $)" [ppExpr e1; fQualId x] in
-  fExt f
+      | TypeTest (e1, x) -> prf "(TYPETEST $ $)" [ppExpr e1; fQualId x])
 
 and ppElement e = 
-  let f prf =
+  fExt (fun prf ->
     match e with
 	Single e -> prf "$" [ppExpr e]
-      | Range (e1, e2) -> prf "(RANGE $ $)" [ppExpr e1; ppExpr e2] in
-  fExt f
+      | Range (e1, e2) -> prf "(RANGE $ $)" [ppExpr e1; ppExpr e2])
 
 let rec ppStmt s =
-  let f prf =
+  fExt (fun prf ->
     match s.s_guts with
         Assign (e1, e2) -> 
 	  prf "(ASSIGN $ $)" [ppExpr e1; ppExpr e2]
@@ -307,7 +272,7 @@ let rec ppStmt s =
       | CaseStmt (sw, arms, elsept) ->
 	  prf "(CASE $" [ppExpr sw];
 	  List.iter (function (labs, stmts) ->
-	    prf " (LABELS$) $" [fSeq(ppElement) labs; ppStmt stmts]) arms;
+	    prf " (LABELS$) $" [fTail(ppElement) labs; ppStmt stmts]) arms;
 	  (match elsept with Some s -> prf " ELSE $" [ppStmt s] | None -> ());
 	  prf ")" []
       | WhileStmt arms ->
@@ -317,7 +282,8 @@ let rec ppStmt s =
 	  prf "(REPEAT $ $)" [ppStmt body; ppExpr test]
       | LoopStmt body ->
 	  prf "(LOOP $)" [ppStmt body]
-      | ExitStmt -> prf "(EXIT)" []
+      | ExitStmt -> 
+	  prf "(EXIT)" []
       | ForStmt (v, lo, hi, step, body, _) ->
 	  prf "(FOR $ $ $ $ $)" 
 	    [ppExpr v; ppExpr lo; ppExpr hi; ppExpr step; ppStmt body]
@@ -328,18 +294,17 @@ let rec ppStmt s =
 	  (match elsept with Some s -> prf " ELSE $" [ppStmt s] | None -> ());
 	  prf ")" []
       | Seq stmts ->
-	  prf "(SEQ$)" [fSeq(ppStmt) stmts]
+	  prf "(SEQ$)" [fTail(ppStmt) stmts]
       | Skip ->
 	  prf "(SKIP)" []
       | ErrStmt ->
-	  prf "(ERRSTMT)" [] in
-  fExt f
+	  prf "(ERRSTMT)" [])
 
 and ppTypexpr te = 
-  let f prf =
+  fExt (fun prf ->
     match te.tx_guts with
 	TypeName tn -> prf "$" [fQualId tn]
-      | Enum xs -> prf "(ENUM$)" [fSeq(ppDefId) xs]
+      | Enum xs -> prf "(ENUM$)" [fTail(ppDefId) xs]
       | Pointer te1 -> prf "(POINTER $)" [ppTypexpr te1]
       | Array (e, te1) -> prf "(ARRAY $ $)" [ppExpr e; ppTypexpr te1]
       | Flex te1 -> prf "(FLEX $)" [ppTypexpr te1]
@@ -347,12 +312,11 @@ and ppTypexpr te =
 	  let parent = 
 	    match p with Some x -> ppTypexpr x | None -> fStr "NONE" in
 	  prf "(RECORD $$$)" 
-	    [fStr (if abs then "ABS " else ""); parent; fSeq(ppDecl) fields]
-      | Proc hdg -> prf "(PROC $)" [ppHeading hdg] in
-  fExt f
+	    [fStr (if abs then "ABS " else ""); parent; fTail(ppDecl) fields]
+      | Proc hdg -> prf "(PROC $)" [ppHeading hdg])
 
 and ppDecl d = 
-  let f prf =
+  fExt (fun prf ->
     match d with
         ConstDecl (x, e, _) -> 
 	  prf "(CONST $ $)" [ppDefId x; ppExpr e]
@@ -369,37 +333,29 @@ and ppDecl d =
 	  prf "(LIBPROC $ $ = \"$\")" [ppDefId x; ppHeading hdg; fStr name]
       | ForwardDecl (k, x, hdg, _) ->
 	  prf "($ $ $)" [ppPKind k; ppDefId x; ppHeading hdg]
-      | DummyDecl -> prf "(DUMMY)" [] in
-  fExt f
+      | DummyDecl -> prf "(DUMMY)" [])
 
 and ppHeading (Heading (fps, rt)) = 
-  let f prf = 
+  fExt (fun prf ->
     let result = match rt with Some t -> fQualId t | None -> fStr "NONE" in
-    prf "$ $" [fPSeq(ppDecl) fps; result] in
-  fExt f
+    prf "$ $" [fPSeq(ppDecl) fps; result])
 
 and ppBlock =
   function
       Block (decls, stmts, fsize) ->
 	let f prf = 
-	  prf "(BLOCK (DECLS$) $)" [fSeq(ppDecl) decls; ppStmt stmts] in
+	  prf "(BLOCK (DECLS$) $)" [fTail(ppDecl) decls; ppStmt stmts] in
 	fExt f
     | NoBlock -> fStr "(NOBLOCK)"
 
 let ppTree (Module (m, imports, body, _, _)) = 
   let f prf = prf "(MODULE $ (IMPORTS$) $)" 
-    [ppName m; fSeq(ppImport) imports; ppBlock body] in
+    [ppName m; fTail(ppImport) imports; ppBlock body] in
   fExt f
 
-let print_tree fp t = 
-  set_formatter_out_channel fp;
-  grind "$" [ppTree t]; 
-  print_newline ()
+let print_tree fp t = fgrindf fp "$" [ppTree t]
 
-let print_expr fp e =
-  set_formatter_out_channel fp;
-  grind "$" [ppExpr e]; 
-  print_newline()
+let print_expr fp e = fgrindf fp "$" [ppExpr e]
 
 exception Expr_failure of string * expr
 

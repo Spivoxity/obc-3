@@ -28,10 +28,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-type arg =
-    Str of string 		(* String *)
-  | Chr of char 		(* Character *)
-  | Ext of ((string -> arg list -> unit) -> unit)  (* Extension *)
+type arg
 
 val fNum: int -> arg		(* Decimal number *)
 val fHex: int -> arg		(* Hexadecimal number *)
@@ -64,4 +61,8 @@ val fprintf : out_channel -> string -> arg list -> unit
 (* |sprintf| -- print to a string *)
 val sprintf : string -> arg list -> string
 
+(* |fgrindf| -- pretty-printer *)
+val fgrindf : out_channel -> string -> arg list -> unit
+
+(* For the symfile output routine *)
 val do_print : (char -> unit) -> string -> arg list -> unit

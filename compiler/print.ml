@@ -28,10 +28,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-type arg = 
-    Str of string 		(* String *)
-  | Chr of char 		(* Character *)
-  | Ext of ((string -> arg list -> unit) -> unit)  (* Extension *)
+type arg = vtable -> unit
+
+and vtable = { outch : char -> unit; prf : string -> arg list -> unit }
 
 let portable_string_of_float x =
   let s = string_of_float x in
@@ -41,62 +40,49 @@ let portable_string_of_float x =
   else
     s
 
-let fNum n = Str (string_of_int n)
-let fHex n = Str (Util.hex_of_int n)
-let fFlo x = Str (portable_string_of_float x)
-let fStr s = Str s
-let fChr c = Chr c
-let fBool b = Str (if b then "true" else "false")
-let fExt f = Ext f
+let fChr c vtab = vtab.outch c
 
-(* do_string -- apply function to each char of a string *)
-let do_string f s =
-  for i = 0 to String.length s - 1 do f s.[i] done
+let fStr s vtab =
+  for i = 0 to String.length s - 1 do vtab.outch s.[i] done
+
+let fNum n = fStr (string_of_int n)
+let fHex n = fStr (Util.hex_of_int n)
+let fFlo x = fStr (portable_string_of_float x)
+let fBool b = fStr (if b then "true" else "false")
+let fNum32 n = fStr (Int32.to_string n)
+let fHex32 n = fStr (Util.hex_of_int32 n)
 
 (* do_print -- the guts of printf and friends *)
-let rec do_print out_fun fmt args =
-  let n = String.length fmt in
-  let i, j = ref 0, ref 0 in
-  while !i < n do
-    let c = fmt.[!i] in
-    if c <> '$' then
-      out_fun c
+let rec do_print outch fmt args0 =
+  let vtab = { outch = outch; prf = do_print outch } in
+  let args = ref args0 in
+  for i = 0 to String.length fmt - 1 do
+    if fmt.[i] <> '$' then
+      outch fmt.[i]
     else begin
-      (try print_arg out_fun (List.nth args !j) 
-	with Invalid_argument _ -> do_string out_fun "***");
-      incr j
-    end;
-    incr i
+      (try List.hd !args vtab; args := List.tl !args
+	with Invalid_argument _ -> outch '*'; outch '*'; outch '*');
+    end
   done
 
-(* print_arg -- convert a printf argument *)
-and print_arg out_fun =
-  function
-      Str s -> do_string out_fun s
-    | Chr c -> out_fun c
-    | Ext f -> f (do_print out_fun)
+let fExt g vtab = g vtab.prf
+
+(* fMeta -- insert output of recursive call to printf *)
+let fMeta fmt args vtab = vtab.prf fmt args
 
 let fFixNum (n, w) = 
-  let f prf =
+  fExt (fun prf ->
     let digits = string_of_int n in
     let w0 = String.length digits in
     for i = 1 to w - w0 do prf " " [] done;
-    prf "$" [Str digits] in
-  fExt f
-
-let fNum32 n = Str (Int32.to_string n)
-let fHex32 n = Str (Util.hex_of_int32 n)
-
-(* fMeta -- insert output of recursive call to printf *)
-let fMeta fmt args = fExt (function prf -> prf fmt args)
+    prf "$" [fStr digits])
 
 let fSeq(cvt, sep) xs =
-  let f prf =
+  fExt (fun prf ->
     if xs <> [] then begin
       prf "$" [cvt (List.hd xs)];
-      List.iter (function y -> prf "$$" [Str sep; cvt y]) (List.tl xs)
-    end in
-  fExt f
+      List.iter (function y -> prf "$$" [fStr sep; cvt y]) (List.tl xs)
+    end)
 
 (* fList -- format a comma-separated list *)
 let fList(cvt) xs = fSeq(cvt, ", ") xs
@@ -112,3 +98,31 @@ let sprintf fmt args =
   let sbuf = Buffer.create 20 in
   do_print (Buffer.add_char sbuf) fmt args;
   Buffer.contents sbuf
+
+open Format
+
+let rec do_grind fmt args0 =
+  let vtab = { outch = print_char; prf = do_grind } in
+  let args = ref args0 in
+  for i = 0 to String.length fmt - 1 do
+    begin match fmt.[i] with
+	'$' ->
+	  begin try 
+	    List.hd !args vtab;
+	    args := List.tl !args 
+	  with
+	    Invalid_argument _ -> print_string "***"
+	  end
+      | ' ' -> print_space ()
+      | '_' -> print_char ' '
+      | '(' -> open_hvbox 2; print_char '('
+      | ')' -> print_char ')'; close_box ()
+      | ch -> print_char ch
+    end
+  done
+
+(* |fgrindf| -- pretty-printer *)
+let rec fgrindf fp fmt args =
+  set_formatter_out_channel fp;
+  do_grind fmt args;
+  print_newline ()

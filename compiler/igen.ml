@@ -435,7 +435,7 @@ and gen_expr e =
 		(function el -> SEQ [gen_element el; BINOP (IntT, BitOr)])
 		(List.tl els))]
 
-      | _ -> expr_fail "gen_expr" e
+      | _ -> failwith "gen_expr"
   end
 
 (* gen_proccall -- generate code to call a procedure *)
@@ -786,7 +786,7 @@ and gen_typetest e tn =
 	    const (-word_size); BINOP (PtrT, PlusA);
 	    typematch d.d_type]
       | _ -> 
-	  expr_fail "type test" e)
+	  failwith "type test")
   else
     failwith "type test 3"
 
