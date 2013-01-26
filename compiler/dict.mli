@@ -46,6 +46,7 @@ type environment
 (* def_kind -- kinds of definition *)
 type def_kind = 
     ConstDef of value 		(* Constant (value) *)
+  | EnumDef of int		(* Enum constant (value) *)
   | StringDef 			(* String *)
   | TypeDef 			(* Type *)
   | VarDef			(* Variable *)
@@ -246,6 +247,9 @@ val scalar : otype -> bool
 
 (* is_discrete -- test if a type suits FOR, CASE, etc. *)
 val is_discrete : otype -> bool
+
+(* is_enum -- test if a type is an enumerated type *)
+val is_enum : otype -> bool
 
 (* is_string -- test if a type is 'array N of char' *)
 val is_string : otype -> bool

@@ -41,3 +41,6 @@ val get_module : Symtab.ident -> Dict.environment
 
 (* get_debug -- get debugging info for a procedure or other object *)
 val get_debug : Symtab.symbol -> Dict.def
+
+(* find_enum -- find enumeration constant *)
+val find_enum : Dict.otype -> Eval.value -> Dict.def

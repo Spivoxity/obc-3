@@ -556,11 +556,9 @@ and check_typecons lzy env name tx =
 	let t = new_type !level 
 	  (EnumType (List.length xs), int_rep, null_map) in
 	let j = ref 0 in
-	let dcl x = add_def env 
-	      (make_def x (ConstDef (IntVal (integer !j))) t None);
-	  incr j in
-	List.iter dcl xs;
-	t
+	let dcl x = 
+	  add_def env (make_def x (EnumDef !j) t None); incr j in
+	List.iter dcl xs; t
     | Pointer tx1 ->
 	let d = typedef () in
 	if lzy && (is_typename tx1 || !Config.extensions) then

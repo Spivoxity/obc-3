@@ -335,6 +335,8 @@ and check_desig1 env e =
 	      begin match d.d_kind with
 		  ConstDef v ->
 		    edit_expr e (Const (v, d.d_type))
+		| EnumDef n ->
+		    edit_expr e (Const (IntVal (integer n), d.d_type))
 		| StringDef ->
 		    let n = bound d.d_type in
 		    edit_expr e (String (d.d_lab, n-1))

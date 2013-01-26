@@ -327,9 +327,8 @@ class varsview_impl (peer : GTree.view) =
     vc_type#set_cell_data_func render_type (fun model row ->
       let v = model#get ~row ~column:c_value in
       let t = type_of v in
-      let s = 
-	if same_types t voidtype then "" 
-	else sprintf "$" [fType t] in
+      let s = if same_types t voidtype then "" 
+		else sprintf "$" [fType t] in
       render_type#set_properties [`TEXT s]);
 
     ignore (peer#append_column vc_name); vc_name#set_resizable true;

@@ -122,6 +122,9 @@ def :
 	d.d_lab <- $symbol; debug d; install d }
   | CONST ident mark doc otype const 
       { install (make_def $ident $mark (ConstDef $const) $otype 0 $doc) }
+  | ENUM ident mark doc otype NUM
+      { install (make_def $ident $mark (EnumDef (int_of_string $NUM))
+	  $otype 0 $doc) }
   | STRING ident mark doc int symbol 
       { let d = make_def $ident $mark StringDef
 		  (new_type 0 (row $int character)) 0 $doc in

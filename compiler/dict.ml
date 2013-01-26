@@ -60,6 +60,7 @@ type environment = Env of (def list ref * def IdMap.t ref) list
 (* def_kind -- kinds of definition *)
 and def_kind = 
     ConstDef of Eval.value	(* Constant (value) *)
+  | EnumDef of int		(* Enum constant (value) *)
   | StringDef 			(* String *)
   | TypeDef 			(* Type *)
   | VarDef			(* Variable *)
@@ -463,6 +464,11 @@ let is_discrete t =
       BasicType (LongT | IntT | ShortT | NumT | CharT | BoolT | ErrT) -> 
 	true
     | EnumType n -> true
+    | _ -> false
+
+let is_enum t =
+  match t.t_guts with
+      EnumType n -> true
     | _ -> false
 
 let is_proc t =

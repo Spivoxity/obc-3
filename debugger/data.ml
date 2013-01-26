@@ -58,7 +58,8 @@ let fetch t a =
     (t, Address a)
   else begin
     let r = match t.t_guts with
-	BasicType (IntT | CharT | BoolT | SetT | ByteT) ->
+	BasicType (IntT | CharT | BoolT | SetT | ByteT) 
+            | EnumType _ ->
 	  Simple (IntVal (integer_of_int32 (peek t.t_rep.m_size a)))
       | BasicType ShortT ->
 	  Simple (IntVal (signext 16 (integer_of_int32 (peek 2 a))))
@@ -172,6 +173,10 @@ let subscript (t, r) i =
   let a = get_addr r in
   fetch t0 (offset a (i * t0.t_rep.m_size))
 
+let fEnum t v =
+  try let d = Info.find_enum t v in fId d.d_tag with
+    Not_found -> fMeta "<enum $>" [fVal v]
+
 let fDynVal =
   function
       (t, Simple v) -> 
@@ -186,6 +191,8 @@ let fDynVal =
 	      fStr (Printf.sprintf "%.12G" (flo_value v))
 	  | BasicType VoidT ->
 	      fStr "-"
+	  | EnumType _ ->
+	      fEnum t v
 	  | _ -> fVal v
 	end
     | (t, Address a) ->

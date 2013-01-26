@@ -194,6 +194,10 @@ and out_def d =
 	xprintf "\nCONST #$$$ $ $" 
 	  [fId d.d_tag; fExm d.d_export; fDoc d.d_comment; 
 	    fType d.d_type; fValu x]
+    | EnumDef n ->
+	xprintf "\nENUM #$$$ $ $"
+	  [fId d.d_tag; fExm d.d_export; fDoc d.d_comment;
+	    fType d.d_type; fNum n]
     | StringDef -> 
 	xprintf "\nSTRING #$$$ $ #$" 
 	  [fId d.d_tag; fExm d.d_export; fDoc d.d_comment; 

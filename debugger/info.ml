@@ -35,6 +35,7 @@ open Mach
 
 let modules = Hashtbl.create 20
 let debug_defs = Hashtbl.create 100
+let enum_dict = Hashtbl.create 100
 
 let put_debug d =
   if d.d_lab <> nosym then
@@ -60,9 +61,19 @@ let import m objchk =
     let (env, chksum, _) = Symfile.import f in
     if chksum <> objchk then
       fprintf stderr "? Symbol file for $ has wrong checksum\n" [fId m];
-    Hashtbl.add modules m env
+    Hashtbl.add modules m env;
+    List.iter (fun d ->
+      match d.d_kind with
+	  EnumDef n -> 
+	    if is_enum d.d_type then
+	      Hashtbl.add enum_dict 
+		(d.d_type.t_module, d.d_type.t_id, n) d
+	| _ -> ()) (top_block env)
   with Not_found ->
     fprintf stderr "? Couldn't find symbol file for $\n" [fId m]
 
 let get_module m = Hashtbl.find modules m
 
+let find_enum t v = 
+  Hashtbl.find enum_dict 
+    (t.t_module, t.t_id, Eval.int_of_integer (Eval.int_value v))

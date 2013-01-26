@@ -190,6 +190,7 @@ let print_def d =
 	ConstDef v ->
 	  printf "$CONST $ = $;\n\n" 
 	    [fDoc d.d_comment; fId d.d_tag; fValExp d.d_type v]
+      | EnumDef _ -> ()
       | StringDef ->
 	  printf "$CONST $ = <a string constant>;\n\n" 
 	    [fDoc d.d_comment; fId d.d_tag]

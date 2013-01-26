@@ -208,7 +208,8 @@ let ppExport =
 let ppDefId x = fMeta "$$" [fId x.x_name; ppExport x.x_export]
 
 let ppKind k = 
-  let kind = match k with ConstDef k -> "CONST" | StringDef -> "STRING"
+  let kind = match k with 
+	ConstDef _ -> "CONST" | EnumDef _ -> "ENUM" | StringDef -> "STRING"
       | TypeDef -> "TYPE" | VarDef -> "VAR" | ParamDef -> "PARAM"
       | VParamDef -> "VPARAM" | FieldDef -> "FIELD" | ProcDef -> "PROC"
       | PrimDef -> "PRIM" | ModDef (x, env) -> "MODULE" 
