@@ -184,6 +184,12 @@ let ruleset1 replace =
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
 	replace 7 [GLOBAL x; LOAD s; CONST n; 
 	      		BINOP (IntT, Plus); GLOBAL x; STORE s]
+    | CONST a :: BINOP (PtrT, PlusA) :: DUP 0 :: LOAD s :: CONST n 
+	  :: BINOP (IntT, Plus) :: SWAP :: STORE s1 :: _ when s = s1 ->
+	(* Allow use of LDN instruction *)
+	replace 8 [DUP 0; CONST a; BINOP (PtrT, PlusA); LOAD s;
+	  CONST n; BINOP (IntT, Plus); SWAP; 
+	  CONST a; BINOP (PtrT, PlusA); STORE s]
 
     (* For simultaneous assignment *)
     | (LOCAL _ | GLOBAL _ as i1) :: CONST b :: 
