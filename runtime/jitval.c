@@ -34,63 +34,63 @@
 #include "decode.h"
 #include <assert.h>
 
-/*
-Possible compile-time values
+/* Possible compile-time values
 
-     OP            FIELDS USED    MEANING
+     OP            FIELDS      MEANING
                                 
-     REG           reg            reg
-     CON               val        val
-     STACK             val siz    mem_s[BP + val] where s = 4*siz
-     ADDR          reg val        reg + val
-     LDKW, LDKF        val        konst_4[val]
-     LDKD, LDKQ        val        konst_8[val]
-     LOADs         reg val        mem_s[reg + val] for s = C, S, W, D, F, Q
-     TYPETEST+n    reg val        [ancestor_n(reg) == val]
+     REG           reg         reg
+     CON               val     val
+     STACKW            val     mem_4[BP + val]
+     STACKD            val     mem_8[BP + val]
+     ADDR          reg val     reg + val
+     LDKW, LDKF        val     konst_4[val]
+     LDKD, LDKQ        val     konst_8[val]
+     LOADs         reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
+     TYPETEST+n    reg val     [ancestor_n(reg) == val]
 
 Of these, LDKW and LDKD refer to the pool of constants for the procedure
 being compiled.  TYPETEST refers to the result of a type test to determine
 whether the level n ancestor of the type whose descriptor is in reg is
 equal to val: it's delayed to find out whether the next operation is an
-assignment or a jump.
-*/
+assignment or a jump. */
 
 #ifdef DEBUG
 /* show -- print a value for debugging */
 static void show(ctvalue v) {
      switch (v->v_op & 0xff) {
      case I_REG: 
-	  printf("reg %s", regs[v->v_reg].r_name); break;
+	  printf("reg %s", v->v_reg->r_name); break;
 
      case I_CON:
-	  printf("const %d", v->v_val); break;
+	  printf("const %s", fmt_val(v->v_val)); break;
 
-     case I_STACK: 
-	  printf("stack %d", v->v_val); break;
+     case I_STACKW: 
+	  printf("stackw %d", v->v_val); break;
+
+     case I_STACKD: 
+	  printf("stackd %d", v->v_val); break;
 
      case I_TYPETEST:
 	  printf("[TYPETEST %d %s %d]", v->v_op >> 16, 
-		 regs[v->v_reg].r_name, v->v_val);
+		 v->v_reg->r_name, v->v_val);
 	  break;
 
      default:
-	  printf("[%s %d", instrs[v->v_op & 0xff].i_name, v->v_val);
-	  if (v->v_reg != ZERO) printf("(%s)", regs[v->v_reg].r_name);
+	  printf("[%s %s", instrs[v->v_op & 0xff].i_name, fmt_val(v->v_val));
+	  if (v->v_reg != rZERO) printf("(%s)", v->v_reg->r_name);
 	  printf("]");
      }
 }
 
 /* dumpregs -- print values cached in all registers */
 void dumpregs(void) {
-     int ir;
+     reg r;
 
-     for (ir = 0; ir < NREGS; ir++) {
-	  reg r = (reg) ir;
-	  if (regs[r].r_class == 0) continue;
-	  if (r == rF0) printf("\n");
-	  printf("  %s(%d)", regs[r].r_name, regs[r].r_refct);
+     for_regs (r) {
+	  if (r->r_class == 0) continue;
+	  printf("  %s(%d)", r->r_name, r->r_refct);
 	  if (cached(r)) {
-	       printf(" = "); show(&regs[r].r_value);
+	       printf(" = "); show(&r->r_value);
 	  }
      }
      printf("\n");
@@ -105,13 +105,13 @@ static mybool same(ctvalue v, ctvalue w) {
 void set_cache(reg r, ctvalue v) {
 #ifdef DEBUG
      if (dflag > 2) {
-	  printf("\tCache %s = ", regs[r].r_name);
+	  printf("\tCache %s = ", r->r_name);
 	  show(v);
 	  printf("\n");
      }
 #endif
 
-     regs[r].r_value = *v;
+     r->r_value = *v;
 }
 
 /* alias -- conservatively test if two values may be aliases */
@@ -125,7 +125,7 @@ static mybool alias(ctvalue v, ctvalue w) {
      case I_LOADD:
      case I_LOADF:
      case I_LOADQ:
-	  return (v->v_reg != ZERO || w->v_reg != ZERO || same(v, w));
+	  return (v->v_reg != rZERO || w->v_reg != rZERO || same(v, w));
 
      default:
 	  return FALSE;
@@ -134,7 +134,7 @@ static mybool alias(ctvalue v, ctvalue w) {
 
 /* kill_alias -- forget all cached values that might alias v */
 static void kill_alias(ctvalue v) {
-     int ir;
+     reg r;
 
 #ifdef DEBUG
      if (dflag > 2) {
@@ -144,9 +144,8 @@ static void kill_alias(ctvalue v) {
      }
 #endif
 
-     for (ir = 0; ir < NREGS; ir++) {
-	  reg r = (reg) ir;
-	  if (alias(v, &(regs[r].r_value))) 
+     for_regs (r) {
+	  if (alias(v, &(r->r_value))) 
 	       kill(r);
      }
 }
@@ -193,9 +192,9 @@ void flex_space(reg nreg) {
      reg r0 = rSP;
 
      if (breg == rBP) {
-	  /* Disable rI5 and use it as stack pointer */
-	  assert(regs[rI5].r_refct == 0);
-	  regs[rI5].r_refct = OMEGA+1;
+	  /* Disable rSP and use it as stack pointer */
+	  assert(rSP->r_refct == 0);
+	  rSP->r_refct = OMEGA+1;
 
 	  if (base == 0) 
 	       r0 = rBP;
@@ -219,14 +218,17 @@ static void set(int i, int op, int type, int val, reg r, int s) {
      ctvalue v = &vstack[i];
      reserve(r);
 
-     if (op == I_STACK) val = offset[i];
+     if (op == I_STACKW || op == I_STACKD) val = offset[i];
+
+     if (v->v_op == op && v->v_type == type && v->v_val == val
+         && v->v_reg == r && v->v_size == s) return;
 
      v->v_op = op; v->v_type = type; v->v_val = val; 
      v->v_reg = r; v->v_size = s;
 
 #ifdef DEBUG
      if (dflag > 1) {
-	  printf("\t<%d> = ", i);
+	  printf("<%d> = ", i);
 	  show(v);
 	  printf(" (%d/%d)\n", offset[i], s);
      }
@@ -283,7 +285,7 @@ void save_stack(codepoint lab) {
 
 /* restore_stack -- restore stack state at target of a forward branch */
 void restore_stack(codepoint lab) {
-     int n = lab->l_depth, map = lab->l_stack, i, s;
+     int n = lab->l_depth, map = lab->l_stack, i;
 
 #ifdef DEBUG
      if (dflag > 1 && n > 0) printf("[Restore %d]\n", n);
@@ -291,8 +293,10 @@ void restore_stack(codepoint lab) {
 
      sp = 0; pdepth = 0;
      for (i = 0; i < n; i++) {
-	  s = (map & (1 << i) ? 2 : 1);
-	  push(I_STACK, INT, ZERO, 0, s);
+	  if (map & (1 << i))
+	       push(I_STACKD, INT, rZERO, 0, 2);
+	  else
+	       push(I_STACKW, INT, rZERO, 0, 1);	       
      }
 }
 
@@ -303,7 +307,7 @@ void restore_stack(codepoint lab) {
 ctvalue move_from_frame(int i) {
      ctvalue v = &vstack[sp-i];
 
-     if (v->v_op == I_STACK) {
+     if (v->v_op == I_STACKW) {
 	  reg r = move_to_reg(i, INT);
 	  runlock(r);
      }
@@ -314,9 +318,9 @@ ctvalue move_from_frame(int i) {
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
      ctvalue v = &vstack[sp-i];
-     reg r = ZERO;
+     reg r = rZERO;
 
-     if (v->v_op != I_STACK) {
+     if (v->v_op != I_STACKW && v->v_op != I_STACKD) {
 	  switch (v->v_type) {
 	  case INT:
 #ifdef INT64	       
@@ -343,15 +347,17 @@ void move_to_frame(int i) {
 	       panic("move_to_frame");
 	  }
 
-	  if (r != ZERO && v->v_op != I_REG && v->v_reg != r) 
+	  if (r != rZERO && v->v_op != I_REG && v->v_reg != r) 
 	       set_cache(r, v);
-	  set(sp-i, I_STACK, v->v_type, 0, ZERO, v->v_size);
+
+	  set(sp-i, (v->v_size == 1 ? I_STACKW : I_STACKD), 
+	      v->v_type, 0, rZERO, v->v_size);
      }
 }
 
 /* transient -- check if a value is not preserved across a procedure call */
 static mybool transient(ctvalue v) {
-     if (regs[v->v_reg].r_class != 0)
+     if (v->v_reg->r_class != 0)
 	  return TRUE;
 
      switch (v->v_op) {
@@ -401,18 +407,14 @@ static reg load(operation op, int cl, reg r, int val) {
 /* move_to_reg -- move stack item to a register */
 reg move_to_reg(int i, int ty) {
      ctvalue v = &vstack[sp-i];
-     int ir;
      reg r, r2;
      codepoint lab;
 
      if (v->v_op != I_REG) {
-	  for (ir = 0; ir < NREGS; ir++) {
-	       r = (reg) ir;
-	       if (cached(r) 
-		   && same(&regs[r].r_value, v) 
-		   && member(r, ty)) {
+	  for_regs (r) {
+	       if (cached(r) && same(&r->r_value, v) && member(r, ty)) {
 #ifdef DEBUG
-		    if (dflag > 1) printf("Hit %s\n", regs[r].r_name);
+		    if (dflag > 2) printf("Hit %s\n", r->r_name);
 #endif
 		    rfree(v->v_reg);
 		    set(sp-i, I_REG, ty, 0, r, v->v_size);
@@ -441,7 +443,7 @@ reg move_to_reg(int i, int ty) {
 	       break;
 
 	  case FLO:
-	       g3rri(LDW, r, ZERO, v->v_val);
+	       g2ri(LDKW, r, v->v_val);
 	       break;
 
 	  default:
@@ -452,7 +454,7 @@ reg move_to_reg(int i, int ty) {
      case I_LDKD:
 	  assert(ty == FLO);
 	  r = ralloc(FLO);
-	  g3rri(LDD, r, ZERO, v->v_val);
+	  g3rri(LDD, r, rZERO, v->v_val);
 	  break;
 
      case I_ADDR:
@@ -478,13 +480,13 @@ reg move_to_reg(int i, int ty) {
 	  r = load(LDD, FLO, v->v_reg, v->v_val); 
 	  break;
 
-     case I_STACK:
-	  if (v->v_size == 1)
-	       r = load(LDW, ty, breg, base + v->v_val);
-	  else {
-	       assert(ty == FLO);
-	       r = load(LDD, FLO, breg, base + v->v_val);
-	  }
+     case I_STACKW:
+	  r = load(LDW, ty, breg, base + v->v_val);
+	  break;
+
+     case I_STACKD:
+	  assert(ty == FLO);
+	  r = load(LDD, FLO, breg, base + v->v_val);
 	  break;
 
      case I_TYPETEST:
@@ -504,18 +506,19 @@ reg move_to_reg(int i, int ty) {
 
      default:
 	  panic("fixr %s\n", instrs[v->v_op].i_name);
-	  r = ZERO;
+	  r = rZERO;
      }
 
      /* Unusually, e.g. in SYSTEM.VAL(REAL, n+1), a floating point
-	value can appear in an integer register, or vice versa. */
+	value can appear in an integer register, or vice versa. 
+        See test tValReal.m */
      if (rkind(r) != ty) {
 	  r2 = ralloc(ty);
 	  g2rr(MOV, r2, r);
 	  r = r2;
      }
 
-     if (v->v_op != I_STACK && v->v_reg != r)
+     if (v->v_op != I_STACKW && v->v_op != I_STACKD && v->v_reg != r)
 	  set_cache(r, v);
 
      set(sp-i, I_REG, ty, 0, r, v->v_size);
@@ -531,7 +534,7 @@ ctvalue fix_const(int i, mybool rflag) {
 	  break;
 
      case I_LDKW:
-	  set(sp-i, I_CON, INT, * (int *) v->v_val, ZERO, 1);
+	  set(sp-i, I_CON, INT, * (int *) v->v_val, rZERO, 1);
 	  break;
 
      default:
@@ -557,7 +560,7 @@ void deref(int op, int ty, int size) {
      case I_CON:
      case I_LDKW:
 	  fix_const(1, FALSE); pop(1); unlock(1);
-	  push(op, ty, ZERO, v->v_val, size);
+	  push(op, ty, rZERO, v->v_val, size);
 	  break;
 
      default:
@@ -640,7 +643,7 @@ void plusa() {
 	  v2 = move_to_rc(1); 
 	  pop(2); unlock(2);
 	  if (v2->v_op == I_CON)
-	       push(I_CON, INT, ZERO, v1->v_val + v2->v_val, 1);
+	       push(I_CON, INT, rZERO, v1->v_val + v2->v_val, 1);
 	  else
 	       push(I_ADDR, INT, v2->v_reg, v1->v_val, 1);
 	  break;
@@ -723,7 +726,7 @@ void move_longval(ctvalue src, reg rd, int offd) {
      case I_LOADQ:
 	  move_long(src->v_reg, src->v_val, rd, offd);
 	  break;
-     case I_STACK:
+     case I_STACKD:
 	  move_long(breg, base + src->v_val, rd, offd);
 	  break;
      case I_LDKQ:
@@ -745,7 +748,7 @@ void get_halflong(ctvalue src, int off, reg dst) {
      case I_LOADQ:
 	  g3rri(LDW, dst, src->v_reg, src->v_val + 4*off);
 	  break;
-     case I_STACK:
+     case I_STACKD:
 	  g3rri(LDW, dst, breg, base + src->v_val + 4*off);
 	  break;
      case I_LDKQ:

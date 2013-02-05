@@ -53,7 +53,7 @@ MODULES = @MODULES@
 MODULES_B = @MODULES_B@
 PRIMMODS1 = @PRIMMODS1@
 PRIMMODS2 = @PRIMMODS2@
-SHLMODS = @SHLMODS@
+PRIMMODS = $(PRIMMODS1) $(PRIMMODS2)
 CHECKMODS = @CHECKMODS@
 BYTEMODS = @BYTEMODS@
 LIBS = @LIBS@
@@ -75,7 +75,7 @@ all:: _Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k) oblib.o \
 	lscript lscript-b
 
 STDMODS = Builtin $(PRIMMODS1)
-ALLMODS = Builtin $(PRIMMODS1) $(PRIMMODS2)
+ALLMODS = Builtin $(PRIMMODS)
 
 ifdef DYNLINK
 all:: $(PRIMMODS2:%=%$(DLEXT))
@@ -161,7 +161,7 @@ clean:
 
 quiteclean: clean
 	rm -f lscript* Builtin.m
-	rm -f Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c) 
+	rm -f Builtin.c $(PRIMMODS:%=%.c)
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean

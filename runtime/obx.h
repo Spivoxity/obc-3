@@ -107,18 +107,14 @@ EXTERN int stack_size;		/* Size of main stack */
 EXTERN char *libpath;		/* Path to dynamic library */
 EXTERN value *entry;		/* Program entry point */
 EXTERN value *gcmap;		/* Global pointer map */
+EXTERN primitive *interpreter;
 
-#define get1(p)  ((int) ((char) (p)[0]))
+#define get1(p)  ((int) ((signed char) (p)[0]))
 #define get2(p)  ((int) ((short) (((p)[1]<<8) + (p)[0])))
 
 EXTERN int nmods, nprocs, nsyms;
 EXTERN module *modtab;
 EXTERN proc *proctab;
-
-extern struct primdef {
-     char *p_name;
-     primitive *p_prim;
-} primtab[];
 
 EXTERN value _result[2];	/* Procedure result */
 #define ob_res _result[0]
@@ -179,7 +175,6 @@ void error_exit(int status);
 
 /* support.c */
 extern int bit[];
-extern value *co_desc;
 
 int ob_div(int a, int b);
 int ob_mod(int a, int b);
@@ -223,6 +218,7 @@ void obcopy(char *dst, const char *src, int n);
 void error_stop(const char *msg, int line, value *bp, uchar *pc);
 void runtime_error(int num, int line, value *bp, uchar *pc);
 void rterror(int num, int line, value *bp);
+void stkoflo(value *bp);
 #define liberror(msg) error_stop(msg, 0, bp, NULL)
 
 proc find_symbol(value *p, proc *table, int nelem);
@@ -286,6 +282,7 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...);
 /* jit.c */
 #ifdef JIT
 void jit_compile(value *cp);
+void jit_trap(value *cp);
 #endif
 
 #ifdef __cplusplus
@@ -294,7 +291,7 @@ void jit_compile(value *cp);
 #define PRIMDEF
 #endif
 
-#ifdef ENABLE_JIT
+#ifdef NEED_FPINIT
 /* On x86, each primitive re-initialises the FP unit, so that values
    left behind in registers by the caller do not cause stack overflow. */
 #define FPINIT asm ("fninit")

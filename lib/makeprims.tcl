@@ -65,7 +65,7 @@ proc make_prim {pname code} {
 }
 
 # count -- number of occurrences of a char in a string
-proc count {ch s} {return [regsub -all $ch $s "" dummy]}
+proc count {ch s} {return [regexp -all $ch $s]}
 
 proc scanfile {fn} {
     set f [open $fn "r"]
@@ -81,8 +81,8 @@ proc scanfile {fn} {
 		incr lnum
 		append line " " $line2
 	    }
-	    regexp {^PROCEDURE.*IS "\*?(.*)"} $line dummy pname
-	} elseif {[regexp {^\(\* CODE *(.*)} $line dummy code]} {
+	    regexp {^PROCEDURE.*IS "\*?(.*)"} $line _ pname
+	} elseif {[regexp {^\(\* CODE *(.*)} $line _ code]} {
 	    if {$code != ""} {
 		set code "#line $lnum \"$fn\"\n     $code"
 	    }
@@ -105,7 +105,7 @@ proc scanfile {fn} {
 	    regsub "\[ \n\]*\\*\\)\[ \t\]*\$" $code "" code
 
 	    make_prim $pname $code
-	} elseif {[regexp {^\(\* COPY *(.*)} $line dummy code]} {
+	} elseif {[regexp {^\(\* COPY *(.*)} $line _ code]} {
 	    set code "#line $lnum \"$fn\"\n$code"
 
 	    while {! [regexp {\*\)} $code]} {

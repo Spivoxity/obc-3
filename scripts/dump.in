@@ -1,0 +1,4 @@
+#!/bin/sh
+OBJFMT=@OBJFMT@
+
+objdump -b binary -D -m $OBJFMT $1

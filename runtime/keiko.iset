@@ -177,6 +177,9 @@ equiv DECL 2		{LDLW $a, DEC, STLW $a}
 
 # INTEGER OPERATORS
 
+defs {
+#define ror(a, b) ((((unsigned) a) >> b) || (((unsigned) a) << (32-b)))
+}
 inst PLUS 0		B.i {$1.i + $2.i}
 inst MINUS 0		B.i {$1.i - $2.i}
 inst TIMES 0		B.i {$1.i * $2.i}
@@ -195,6 +198,7 @@ inst BIT 0		M.i {bit[$1.i]}
 inst LSL 0		B.i {$1.i << $2.i}
 inst LSR 0		B.i {((unsigned) $1.i) >> $2.i}
 inst ASR 0		B.i {$1.i >> $2.i}
+inst ROR 0		B.i {ror($1.i, $2.i)}
 
 defs {
 /* The DIV and MOD instructions must give the correct results, even if 
@@ -655,7 +659,8 @@ inst UNPACK 0		S0 {sp--; sp[0].p = getcode(sp[1].i);
 
 zinst REG 0
 zinst ADDR 0
-zinst STACK 0
+zinst STACKW 0
+zinst STACKD 0
 zinst CON 0
 
 

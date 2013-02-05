@@ -31,7 +31,7 @@
 typedef unsigned char *code_addr;
 
 #define __OP__(p) \
-     p(ADD) p(ADDC) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)  \
+     p(ADD) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)	    \
      p(BGEQU) p(BGT) p(BGTF) p(BLEQ) p(BLEQF) p(BLT) p(BLTF)	    \
      p(BLTU) p(BNEQ) p(BNEQF) p(CONVIC) p(CONVIF) p(CONVIS) p(DIVF) \
      p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF) p(JUMP)	    \
@@ -39,8 +39,12 @@ typedef unsigned char *code_addr;
      p(LEQF) p(LSH) p(LT) p(LTF) p(MOV)	p(MUL) p(MULF)		    \
      p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET) p(RETVAL)    \
      p(RSH) p(RSHU) p(STW) p(STC) p(STD) p(STS) p(SUB)		    \
-     p(SUBC) p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)	    \
-     p(BGTU) p(BLEQU)
+     p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
+     p(BGTU) p(BLEQU) p(LDKW)                                       \
+     p(ADDD) p(SUBD) p(MULD) p(DIVD) p(NEGD) p(ZEROD)               \
+     p(BEQD) p(BGEQD) p(BLEQD) p(BLTD) p(BNEQD) p(BGTD)             \
+     p(EQD) p(GEQD) p(LEQD) p(LTD) p(NEQD) p(GTD)                   \
+     p(CONVFD) p(CONVDF) p(CONVID) p(ROR)
 
 #define __op1__(op) op,
 
@@ -48,20 +52,161 @@ typedef enum {
      __OP__(__op1__)
 } operation;
 
-/* Integer resisters V0 .. V3 are callee-save.  The GETARG operation
-   may not work if V3 is changed from the value it was assigned in the
-   routine prolog.  Integer registers R0 .. R2 are caller-save, as are
-   the floating-point registers xF0 .. xF5.  The floating-point
-   registers are each big enough to hold a double. */
+/*
+ADD/SUB/MUL/DIV ra, rb, rc/imm                
+  -- integer arithmetic
+NEG ra, rb
+  -- unary minus
+NOT ra rb
+  -- bitwise negation
+NEGF/NEGD fa, fb
+  -- float or double unary minus
+ADDF/SUBF/MULF/DIVF fa, fb, fc                
+  -- floating point arithmetic
+ADDD/SUBD/MULD/DIVD fa, fb, fc                
+  -- double precision arithmetic
+AND/OR/XOR ra, rb, rc/imm                     
+  -- bitwise logical operations
+LSH/RSH/RSHU ra, rb, rc/imm
+  -- left shift, arithmetic right shift, logical right shift
+BEQ/BNEQ/BLT/BLEQ/BGT/BGEQ ra, rb/imm, lab    
+  -- conditional branches
+BEQF/BNEQF/BLTF/BLEQF/BGTF/BGEQF fa, fb, lab  
+  -- floating point conditional branches
+BEQD/BNEQD/BLTD/BLEQD/BGTD/BGEQD fa, fb, lab  
+  -- double precision conditional branches
+BLTU/BGEQU ra, rb/imm, lab                    
+  -- unsigned conditional branches
+JUMP lab
+  -- unconditionl branch
+EQ/NEQ/LT/LEQ/GT/GEQ ra, rb, rb/imm                         
+  -- comparisons with boolean result
+EQF/NEQF/LTF/LEQF/GTF/GEQF ra, fb, fc
+  -- float comparisons with boolean result
+EQD/NEQD/LTD/LEQD/GTD/GEQD ra, fb, fc                 
+  -- double comparisons with boolean result
+CONVIC ra, rb
+  -- convert integer to character (AND with 0xff)
+CONVIS ra, rb
+  -- convert integer to short (AND with 0xffff and sign extend)    
+CONVIF/CONVID fa, rb
+  -- convert integer to float or double
+CONVFD/CONVDF fa, fb
+  -- convert float/double to double/float
+MOV ra/fa, rb/fb
+  -- move between registers, including integer to float and vice versa
+LDW/STW ra/fa, rb, imm
+  -- load/store word: ra/fa := mem4[rb+imm] or mem4[rb+imm] := ra
+LDC/LDS ra, rb, imm
+  -- load character or short with sign extension
+LDCU/LDSU ra, rb, imm
+  -- load unsigned character or short
+STC/STS ra, rb, imm
+  -- store character or short
+LDD/STD fa, rb, imm
+  -- load/store double
+ZEROF/ZEROD fa
+  -- set float/double register to zero
+LDKW ra/fa, imm
+  -- load register with constant from specified address
 
-#define __VMREG__(p) \
-     p(xV0) p(xV1) p(xV2) p(xV3) p(xR0) p(xR1) p(xR2)	\
-     p(xF0) p(xF1) p(xF2) p(xF3) p(xF4) p(xF5)		\
-     p(xRET) p(xZERO)
+The remaining instructions are associated with subroutine calls, and are
+used only in special patterns.
 
-typedef enum {
-     __VMREG__(__op1__)
-} vmreg;
+GETARG ra, imm
+  -- fetch argument at offset imm (must be used first in the routine)
+RET
+  -- return from subroutine
+PREP imm
+  -- prepare subroutine call with specified number of arguments
+ARG ra
+  -- send subroutine argument from register
+CALL ra/imm
+  -- perform subroutine call
+RETVAL ra
+  -- fetch result into register following return
+
+Specifically: a procedure call is compiled by first computing the
+arguments (and, for an indirect call, the procedure address) into
+registers.  The call itself becomes the sequence
+
+	PREP n
+	ARG rz
+	ARG ry
+	ARG rx
+	CALL p
+
+where n <= 3 is the number of arguments.  The ARG instructions
+(exactly n of them) specify the arguments in right-to-left order.
+Immediately following the call, the instruction
+
+	RETVAL r
+
+fetches the result returned by the procedure into register r.
+
+A subroutine is compiled by first calling vm_begin(name, n), where n
+is the number of arguments.  The procedure code begins with exactly n
+GETARG instructions:
+
+	GETARG rx, 0
+	GETARG ry, 1
+	GETARG rz, 2
+
+(any other instruction may destroy the arguments, so it is necessary
+to fetch them into registers immediately.)  The rest of the procedure
+body follows, and ends with a single RET instruction.
+
+To return a result, the procedure code moves the result into a special
+register ret, then immediately branches to the RET instruction.  Since
+the ret register may be identical with one of the working registers,
+any other intervening code may destroy the return value.
+
+Note that Keiko procedures are compiled into subroutines that accept
+one argument (the value of the Keiko stack pointer) and return no
+result.  The parameters to a Keiko procedure are passed in a separate
+memory area from the host's subroutine stack, and any result is
+assigned to a global variable ob_res.
+
+
+IMPLEMENTATION HINTS
+
+It's necessary to obey the calling conventions of the host, so that
+dynamically translated routines can both be called from compiled code
+and call compiled subroutines.
+
+On machines where arguments are passed in registers, it is simplest to
+decide that the registers (three of them) used for outgoing arguments
+are not also used as working registers.  The PREP instruction can
+simply initialise an argument count, and the ARG instruction can move
+an argument value into the correct register, working from right to
+left.  The GETARG instructions are also implemented as moves
+from register to register.
+
+It's possible to use the argument registers for working registers too,
+but then a pretty dance may be needed to move the right values into
+the right registers at a call.
+
+On machines where arguments are passed on the stack, PREP can set up
+the right amount of (properly aligned) stack space and ARG can become
+a push or store instruction.  GETARG is implemented as a load
+instruction with a computed offset in the stack frame.
+*/
+
+/* 
+Integer resisters vreg[0..nvreg) are callee-save.  
+Integer registers ireg[0..nireg) are caller-save.
+Floating point registers freg[0..nfreg) are caller save.
+The floating-point registers are each big enough to hold a double. 
+
+The Keiko JIT does not actually assume that the callee-save registers
+are preserved across calls, though other applications might do so.
+Keiko assumes nvreg+nireg >= 5.
+*/
+
+typedef int vmreg;
+
+extern int nvreg, nireg, nfreg;
+extern vmreg vreg[], ireg[], freg[], ret, zero;
 
 extern int vm_debug;
 
@@ -69,33 +214,9 @@ extern int vm_debug;
 #define __op2__(op) #op,
 
 /* Mnemonics for the RISC-ish interface instructions */
-static const char *mnemonic[] = {
+const char *mnemonic[] = {
      __OP__(__op2__)
 };
-
-int vm_debug;
-
-#ifdef DEBUG
-/* Register names */
-static const char *rname[] = {
-     __VMREG__(__op2__)
-};
-
-#define vm_dbg(fmt, ...) if (vm_debug > 0) _vm_dbg(fmt, __VA_ARGS__)
-
-static void _vm_dbg(const char *fmt, ...) {
-     va_list va;
-
-     va_start(va, fmt);
-     printf("\t\t\t\t\t");
-     vprintf(fmt, va);
-     printf("\n");
-     va_end(va);
-}
-
-#else
-#define vm_dbg(fmt, ...)
-#endif
 #endif
 
 void vm_gen0(operation op);
@@ -111,10 +232,13 @@ code_addr vm_gen3rib(operation op, vmreg a, int b, code_addr lab);
 
 void vm_patch(code_addr loc, code_addr lab);
 code_addr vm_label(void);
-void vm_prolog(int n);
-int vm_arg(void);
-void vm_flush(code_addr start, code_addr finish);
+code_addr vm_begin(const char *name, int n);
+void vm_end(void);
 code_addr *vm_jumptable(int n);
 
 /* Callback to allocate pages of memory */
 void *vm_alloc(int size);
+
+char *fmt_val(int v);
+
+void unknown(const char *where, operation op);

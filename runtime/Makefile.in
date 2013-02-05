@@ -51,17 +51,19 @@ VPATH = @srcdir@:../lib
 ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
 ENABLE_JIT = @ENABLE_JIT@
 PAGESIZE = @PAGESIZE@
+VM = @VM@
 # End
 
 all :: oblink obx.a obx-p.a
 
 ifdef DEBUG
   DEBUGDEF = -DDEBUG
+  JDEBUG = obx-jd.a
   all :: obx-t.a
 endif
 
 ifdef ENABLE_JIT
-  all :: obx-j.a
+  all :: obx-j.a $(JDEBUG)
 endif
 
 ifdef ENABLE_DEBUGGER
@@ -81,14 +83,15 @@ $(OBLINK) util.o : %.o : %.c
 
 COMMON = support.o loader.o dynlink.o
 OBX = interp.o xmain.o $(COMMON)
-JIT = jit.o jitlab.o jitregs.o jitval.o
+JIT = jit.o jitlab.o jitregs.o jitval.o jitop.o
 PACK = $(AR) cr $@ $^; $(RANLIB) $@
 
 obx.a :   $(OBX) gc.o;						$(PACK)
 obx-t.a : interp-t.o xmain-t.o trace.o $(COMMON) gc-t.o;	$(PACK)
 obx-p.a : interp-p.o xmain-p.o profile.o $(COMMON) gc.o;	$(PACK)
 obx-d.a : interp-d.o xmain-d.o debug.o $(COMMON) gc.o;		$(PACK)
-obx-j.a : $(JIT) vm386.o xmain-j.o decode.o $(COMMON) gc.o;	$(PACK)
+obx-j.a : $(JIT) $(VM) xmain-j.o decode.o $(COMMON) gc.o;	$(PACK)
+obx-jd.a : $(OBX) $(JIT) $(VM) xmain.o decode.o $(COMMON) gc.o; $(PACK)
 
 REVID := $(shell cat ../revid)
 
@@ -98,10 +101,13 @@ xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o oblink.o: \
 # Cancel default rule
 %.o: %.c
 
-vm386.o : %.o : %.c
+fact: fact.o $(VM)
+	$(CC) $(ALL_RTFLAGS) -o $@ $^
+
+vm386.o vmpi.o : %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -DCODEPAGE=$(PAGESIZE) $(DEBUGDEF) -c $< -o $@
 
-$(OBX) $(JIT) decode.o gc.o trace.o profile.o debug.o: %.o : %.c
+$(OBX) $(JIT) decode.o gc.o trace.o profile.o debug.o fact.o: %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
 %-n.o : %.c
@@ -163,4 +169,4 @@ linker.o oblink.o symtab.o template.o util.o: \
 $(JIT) decode.o: decode.h 
 jit.o jitval.o decode.o: keiko.h
 $(JIT): jit.h vm.h
-vm386.o: vm.h
+$(VM) fact.o: vm.h

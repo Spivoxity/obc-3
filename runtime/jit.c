@@ -35,90 +35,38 @@
 #include <stdarg.h>
 #include <assert.h>
 
-/* Code generation interface */
-
-/* gargs -- generate function arguments */
-static void gargs(int n, va_list va) {
-     int i;
-     reg arg[6];
-
-     for (i = 0; i < n; i++)
-	  arg[i] = (reg) va_arg(va, int);
-
-     vm_gen1i(PREP, n);
-     for (i = n-1; i >= 0; i--)
-	  vm_gen1r(ARG, regs[arg[i]].r_reg);
-}
-
-static void gcall1(const char *fname, int f, int n, ...) {
-     va_list va;
-
-#ifdef DEBUG
-     if (dflag > 1) printf("\t\t\t\t\tCall %s\n", fname);
-#endif
-
-     va_start(va, n);
-     gargs(n, va);
-     va_end(va);
-     vm_gen1i(CALL, f);
-}
-
-/* gcallr -- indirect function call */
-static void gcallr(reg f, int n, ...) {
-     va_list va;
-
-     va_start(va, n);
-     gargs(n, va);
-     va_end(va);
-     vm_gen1r(CALL, regs[f].r_reg);
-}
-
-void use_label(code_addr loc, codepoint lab) {
-     if (lab == NULL) panic("undefined label");
-
-     patch_label(loc, lab);
-     if (lab->l_depth < 0)
-	  save_stack(lab);
-}
-     
-
 /* Translator */
 
 static value *context;		/* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
 static int frame;		/* Size of local variable frame */
-static mybool cmpflag = FALSE;	/* Flag for FCMP or DCMP */
+static int cmpflag = 0;         /* Flag for FCMP or DCMP */
 
 #define konst(i) context[CP_CONST+i]
 
 static code_addr stack_oflo = NULL;
+static codepoint retlab;
 
 /* prolog -- generate code for procedure prologue */
-static code_addr prolog(void) {
-     int in, i;
+static code_addr prolog(const char *name) {
+     int i;
      code_addr entry;
+     codepoint lab = new_label();
 
-     if (stack_oflo == NULL) {
-	  stack_oflo = vm_label();
-	  g2ri(MOV, rI0, E_STACK);
-	  g2ri(MOV, rI1, 0);
-	  gcall(rterror, 3, rI0, rI1, rBP);
-     }
-
-     entry = vm_label();
-     vm_prolog(1);
-     in = vm_arg();
-     g2ri(GETARG, rBP, in);
+     entry = vm_begin(name, 1);
+     g2ri(GETARG, rBP, 0);
 
      /* Check for stack overflow */
-     g3rib(BLTU, rBP, (unsigned) stack + SLIMIT + frame, 
-	   to_addr(stack_oflo));
+     g3rib(BGEQU, rBP, (unsigned) stack + SLIMIT + frame, lab);
+     stack_oflo = vm_label();
+     gcall(stkoflo, 1, rBP);
+     label(lab);
 
      if (frame > 24) {
-	  g2ri(MOV, rI0, 0);
-	  g2ri(MOV, rI1, frame);
-	  g3rri(SUB, rI2, rBP, frame);
-	  gcall(memset, 3, rI2, rI0, rI1);
+	  g3rri(SUB, rI0, rBP, frame);
+	  g2ri(MOV, rI1, 0);
+	  g2ri(MOV, rI2, frame);
+	  gcall(memset, 3, rI0, rI1, rI2);
      } else if (frame > 0) {
 	  g2ri(MOV, rI0, 0);
 	  for (i = 4; i <= frame; i += 4)
@@ -152,16 +100,8 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
      push(I_REG, rclass2, r2, 0, s);
 }
 
-/* coerce -- widen or narrow float */
-static void coerce(int s) {
-     reg r;
-
-     r = move_to_reg(1, FLO); pop(1); 
-     push(I_REG, FLO, r, 0, s);
-}
-
 #define imonop(op) gmonop(op, INT, INT, 1)
-#define fmonop(op) gmonop(op, FLO, FLO, 2)
+#define fmonop(op) gmonop(op, FLO, FLO, 1)
 #define dmonop(op) gmonop(op, FLO, FLO, 2)
 
 /* ibinop -- binary integer operation */
@@ -213,15 +153,19 @@ static void fcomp(operation op) {
 }
 
 /* icomp -- integer comparison */
-#define icomp(op) icomp1(op, op##F)
+#define icomp(op) icomp1(op, op##F, op##D)
 
-static void icomp1(operation op, operation opf) {
-     if (cmpflag)
-	  fcomp(opf);
-     else
-	  ibinop(op);
+static void icomp1(operation op, operation opf, operation opd) {
+     switch (cmpflag) {
+     case I_FCMP:
+	  fcomp(opf); break;
+     case I_DCMP:
+          fcomp(opd); break;
+     default:
+	  ibinop(op); break;
+     }
 
-     cmpflag = FALSE;
+     cmpflag = 0;
 }
 
 /* fcondj -- float or double conditional jump */
@@ -273,14 +217,17 @@ static void typejump(int op, ctvalue v, int lab) {
 }
 
 /* icondj -- integer conditional jump */
-#define icondj(op, lab) icondj1(op, op##F, lab)
+#define icondj(op, lab) icondj1(op, op##F, op##D, lab)
 
-static void icondj1(operation op, operation opf, int lab) {
+static void icondj1(operation op, operation opf, operation opd, int lab) {
      reg r1; ctvalue v, v2;
 
-     if (cmpflag)
-	  fcondj(opf, lab);						
-     else {
+     switch (cmpflag) {
+     case I_FCMP:
+	  fcondj(opf, lab); break;
+     case I_DCMP:
+          fcondj(opd, lab); break;
+     default:
 	  flush(2); 
 	  v = move_to_rc(1);
 	  v2 = peek(2);
@@ -299,7 +246,7 @@ static void icondj1(operation op, operation opf, int lab) {
 	  }							
      }
 
-     cmpflag = FALSE;
+     cmpflag = 0;
 }
 
 /* callout -- call out-of-line operation */
@@ -325,7 +272,7 @@ static void proc_call(uchar *pc, int arg) {
      pop(1); unlock(1); 
      rfreeze(r1);
      push(I_REG, INT, r1, 0, 1);	       /* CP */
-     push(I_CON, INT, ZERO, stack_map(pc), 1); /* PC = stack map */
+     push(I_CON, INT, rZERO, stack_map(pc), 1); /* PC = stack map */
      push(I_REG, INT, rBP, 0, 1);	       /* BP */
      flush_stack(0, nargs+3);
      killregs();
@@ -345,20 +292,20 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      int j;
 
      switch (i) {
-     case I_PUSH:	push(I_CON, INT, ZERO, arg1, 1); break;
+     case I_PUSH:	push(I_CON, INT, rZERO, arg1, 1); break;
      case I_LOCAL:	push(I_ADDR, INT, rBP, arg1, 1); break;
 
      case I_LDKW:	
-	  push(I_LDKW, INT, ZERO, (unsigned) &konst(arg1), 1); 
+	  push(I_LDKW, INT, rZERO, (unsigned) &konst(arg1), 1); 
 	  break;
      case I_LDKQ:
-	  push(I_LDKQ, INT, ZERO, (unsigned) &konst(arg1), 2); 
+	  push(I_LDKQ, INT, rZERO, (unsigned) &konst(arg1), 2); 
 	  break;
      case I_LDKF:
-	  push(I_LDKF, FLO, ZERO, (unsigned) &konst(arg1), 1); 
+	  push(I_LDKF, FLO, rZERO, (unsigned) &konst(arg1), 1); 
 	  break;
      case I_LDKD:	
-	  push(I_LDKD, FLO, ZERO, (unsigned) &konst(arg1), 2); 
+	  push(I_LDKD, FLO, rZERO, (unsigned) &konst(arg1), 2); 
 	  break;
 
      case I_LOADS:	deref(I_LOADS, INT, 1); break;
@@ -374,7 +321,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	     index register. */
 	  deref(I_LOADQ, INT, 2); 
 	  v = peek(1);
-	  if (member(v->v_reg, INT) && n_reserved() > 3) move_to_frame(1); 
+	  if (member(v->v_reg, INT) && n_reserved() > 3) 
+	       move_to_frame(1); 
 	  break;
 
      case I_STOREW:	store(I_LOADW, INT, 1); break;
@@ -409,12 +357,13 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_BITXOR:	ibinop(XOR); break;
      case I_ASR:	ibinop(RSH); break;
      case I_LSR:	ibinop(RSHU); break;
+     case I_ROR:	ibinop(ROR); break;
      case I_PLUSA:	plusa(); break;
 
      case I_LSL:        
 	  v = peek(2); v2 = peek(1);
 	  if (v->v_op == I_CON && v2->v_op == I_CON) {
-	       pop(2); push(I_CON, INT, ZERO, v->v_val << v2->v_val, 1);
+	       pop(2); push(I_CON, INT, rZERO, v->v_val << v2->v_val, 1);
 	  } else {
 	       ibinop(LSH); 
 	  }
@@ -424,19 +373,19 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_BITNOT:	imonop(NOT); break;
 
      case I_CONVNF:	gmonop(CONVIF, INT, FLO, 1); break;
-     case I_CONVND:	gmonop(CONVIF, INT, FLO, 2); break;
-     case I_CONVDF:	coerce(1); break;
-     case I_CONVFD:	coerce(2); break;
+     case I_CONVND:	gmonop(CONVID, INT, FLO, 2); break;
+     case I_CONVDF:	gmonop(CONVDF, FLO, FLO, 1); break;
+     case I_CONVFD:	gmonop(CONVFD, FLO, FLO, 2); break;
      case I_CONVNC:	gmonop(CONVIC, INT, INT, 1); break;
      case I_CONVNS:	gmonop(CONVIS, INT, INT, 1); break;
   
      case I_NOT:	
-	  push(I_CON, INT, ZERO, 0, 1); 
-	  ibinop(EQ);
+	  push(I_CON, INT, rZERO, 1, 1); 
+	  ibinop(XOR);
 	  break;
 
      case I_BIT:
-	  push(I_CON, INT, ZERO, 2, 1);
+	  push(I_CON, INT, rZERO, 2, 1);
 	  ibinop(LSH); 
 	  r1 = move_to_reg(1, INT);
 	  pop(1); unlock(1);
@@ -498,7 +447,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(2, INT);
 	  v = fix_const(1, FALSE);
 	  pop(2); unlock(2); killregs();
-	  push(I_STACK, INT, ZERO, 0, 1);
+	  push(I_STACKW, INT, rZERO, 0, 1);
 	  g3rib(BGEQ, r1, v->v_val, to_label(arg1));
 	  break;
 
@@ -508,18 +457,18 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_FDIV:	fbinop(DIVF); break;
      case I_FUMINUS:    fmonop(NEGF); break;
 	  
-     case I_DPLUS:	dbinop(ADDF); break;
-     case I_DMINUS:	dbinop(SUBF); break;
-     case I_DTIMES:	dbinop(MULF); break;
-     case I_DDIV:	dbinop(DIVF); break;
-     case I_DUMINUS:	dmonop(NEGF); break;
+     case I_DPLUS:	dbinop(ADDD); break;
+     case I_DMINUS:	dbinop(SUBD); break;
+     case I_DTIMES:	dbinop(MULD); break;
+     case I_DDIV:	dbinop(DIVD); break;
+     case I_DUMINUS:	dmonop(NEGD); break;
 
 	  /* FCMP or DCMP must be followed by an integer 
 	     comparison, so we just set a flag and generate 
 	     the appropriate comparison instruction later */
 
      case I_FCMP: case I_DCMP:	
-	  		cmpflag = TRUE; break;
+          cmpflag = i; break;
 
      case I_BOUND:
 	  r1 = move_to_reg(2, INT); 
@@ -553,8 +502,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_DZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
-	  g1r(ZEROF, r2);
-	  g3rrb(BEQF, r1, r2, to_error(E_FDIV, arg1));
+	  g1r(ZEROD, r2);
+	  g3rrb(BEQD, r1, r2, to_error(E_FDIV, arg1));
 	  push(I_REG, FLO, r1, 0, 2);
 	  break;
 
@@ -602,12 +551,12 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_LINK:
-	  push(I_CON, INT, ZERO, (unsigned) &statlink, 1);
+	  push(I_CON, INT, rZERO, (unsigned) &statlink, 1);
 	  store(I_LOADW, INT, 1);
 	  break;
 
      case I_SAVELINK:
-	  push(I_LOADW, INT, ZERO, (unsigned) &statlink, 1);
+	  push(I_LOADW, INT, rZERO, (unsigned) &statlink, 1);
 	  push(I_ADDR, INT, rBP, 4*SL, 1);
 	  store(I_LOADW, INT, 1);
 	  break;
@@ -622,46 +571,47 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_SLIDEW:
 	  proc_call(pc, arg1);
-	  push(I_LOADW, INT, ZERO, (unsigned) &ob_res, 1);
+	  push(I_LOADW, INT, rZERO, (unsigned) &ob_res, 1);
 	  break;
 
      case I_SLIDEQ:
 	  proc_call(pc, arg1);
-	  push(I_LOADQ, INT, ZERO, (unsigned) &ob_dres, 2);
+	  push(I_LOADQ, INT, rZERO, (unsigned) &ob_dres, 2);
 	  break;
 
      case I_SLIDEF:
 	  proc_call(pc, arg1);
-	  push(I_LOADF, FLO, ZERO, (unsigned) &ob_res, 1);
+	  push(I_LOADF, FLO, rZERO, (unsigned) &ob_res, 1);
 	  break;
 
      case I_SLIDED:
 	  proc_call(pc, arg1);
-	  push(I_LOADD, FLO, ZERO, (unsigned) &ob_dres, 2);
+	  push(I_LOADD, FLO, rZERO, (unsigned) &ob_dres, 2);
 	  break;
 
      case I_RESULTF:
-	  push(I_CON, INT, ZERO, (unsigned) &ob_res, 1);
+	  push(I_CON, INT, rZERO, (unsigned) &ob_res, 1);
 	  store(I_LOADF, FLO, 1);
 	  break;
 
      case I_RESULTD:
-	  push(I_CON, INT, ZERO, (unsigned) &ob_dres, 1);
+	  push(I_CON, INT, rZERO, (unsigned) &ob_dres, 1);
 	  store(I_LOADD, FLO, 2);
 	  break;
 
      case I_RESULTW:
-	  push(I_CON, INT, ZERO, (unsigned) &ob_res, 1);
+	  push(I_CON, INT, rZERO, (unsigned) &ob_res, 1);
 	  store(I_LOADW, INT, 1);
 	  break;
 
      case I_RESULTQ:
-	  move_longval(peek(1), ZERO, (unsigned) &ob_dres);
+	  move_longval(peek(1), rZERO, (unsigned) &ob_dres);
 	  pop(1);
 	  break;
 
      case I_RETURN:
-	  g0(RET);
+          if (pc+1 < pclimit)
+               g1b(JUMP, retlab);
 	  break;
 
      case I_LNUM:
@@ -677,17 +627,17 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_QCMP:
 	  callout(long_cmp, 2); pop(2);
-	  push(I_STACK, INT, ZERO, 0, 1);
+	  push(I_STACKW, INT, rZERO, 0, 1);
 	  break;
 
      case I_CONVNQ:
 	  v = peek(1);
 	  if (v->v_op == I_CON) {
 	       pop(1);
-	       push(I_CON, INT, ZERO, v->v_val, 2);
+	       push(I_CON, INT, rZERO, v->v_val, 2);
 	  } else {
 	       callout(long_ext, 1); pop(1);
-	       push(I_STACK, INT, ZERO, 0, 2);
+	       push(I_STACKD, INT, rZERO, 0, 2);
 	  }
 	  break;
 
@@ -701,7 +651,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_CONVQD:
 	  callout(long_flo, 1); pop(1);
-	  push(I_STACK, FLO, ZERO, 0, 2);
+	  push(I_STACKD, FLO, rZERO, 0, 2);
 	  break;
 
      case I_QZCHECK:
@@ -730,10 +680,14 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_PACK:
-	  callout(pack_closure, 2); pop(1); break;
+	  callout(pack_closure, 2); 
+	  pop(1); 
+	  break;
 
      case I_UNPACK:
-	  callout(unpack_closure, 1); push(I_STACK, INT, ZERO, 0, 1); break;
+	  callout(unpack_closure, 1); 
+	  push(I_STACKW, INT, rZERO, 0, 1); 
+	  break;
 #endif
 
      default:
@@ -763,10 +717,11 @@ static void tran_instr(uchar *pc, int inst, int arg1, int arg2, int lev) {
 		    arg = equiv[++i];
 
 #ifdef DEBUG
-	       if (dflag > 1) {
-		    printf("\t%.*s%s %d\n", 
-			   lev, "++++++++++",
-			   instrs[e&IMASK].i_name, arg);
+	       if (dflag > 0) {
+		    printf("%.*s %s", lev, "++++++++++", 
+                           instrs[e&IMASK].i_name);
+                    if (e&(IARG|ICON)) printf(" %s", fmt_val(arg));
+                    printf("\n"); 
 	       }
 #endif
 	       
@@ -839,6 +794,8 @@ static void translate(void) {
      const char *s;
      codepoint lab;
 
+     retlab = new_label();
+
      for (pc = pcbase; pc < pclimit; ) {
 	  int op = *pc;
 	  uchar *pc1 = pc+1;
@@ -867,10 +824,10 @@ static void translate(void) {
 	  }
 
 #ifdef DEBUG
-	  if (dflag > 1) {
+	  if (dflag > 0) {
 	       int i;
-	       printf("%6d: %s", pc-pcbase, instrs[d->d_inst].i_name);
-	       for (i = 0; i < nargs; i++) printf(" %d", args[i]);
+	       printf("%d: %s", pc-pcbase, instrs[d->d_inst].i_name);
+	       for (i = 0; i < nargs; i++) printf(" %s", fmt_val(args[i]));
 	       printf("\n");
 	  }
 #endif
@@ -904,6 +861,9 @@ static void translate(void) {
 	       pc += d->d_len;
 	  }
      }
+
+     label(retlab);
+     g0(RET);
 }
 
 static void make_error(codepoint lab, int code, int line) {
@@ -913,15 +873,25 @@ static void make_error(codepoint lab, int code, int line) {
      gcall(rterror, 3, rI0, rI1, rBP);
 }
 
+static int serial;              /* Serial number for anonymous procedures */
+
 /* jit_compile -- replace a bytecode routine with native code */
 void jit_compile(value *cp) {
-     code_addr start, entry, finish;
+     proc p = find_proc(cp);
+     code_addr entry;
+     const char *pname;
+     static char name[16];
+
+     if (p != NULL)
+          pname = p->p_name;
+     else {
+          sprintf(name, "G_%d", ++serial);
+          pname = name;
+     }
 
 #ifdef DEBUG
-     if (dflag > 0) {
-	  proc p = find_proc(cp);
+     if (dflag > 0)
 	  printf("JIT: %s\n", (p != NULL ? p->p_name : "???"));
-     }
 #endif
 
      context = cp; 
@@ -932,15 +902,13 @@ void jit_compile(value *cp) {
      init_regs();
      init_patch();
      init_stack(frame);
-     cmpflag = FALSE;
+     cmpflag = 0;
 
      map_labels();
-     start = vm_label();
-     entry = prolog();
+     entry = prolog(pname);
      translate();
      do_errors(make_error);
-     finish = vm_label();
-     vm_flush(start, finish);
+     vm_end();
      cp[CP_PRIM].z = (primitive *) entry;
 
 #ifdef DEBUG
@@ -948,14 +916,15 @@ void jit_compile(value *cp) {
 #endif
 }
 
-/* interp -- translate procedure on first call */
-void interp(value *bp) {
+/* jit_trap -- translate procedure on first call */
+void jit_trap(value *bp) {
      value *cp = bp[CP].p;
      jit_compile(cp);
      cp[CP_PRIM].z(bp);
 }
 
-/* vm_alloc -- upcall from vm to allocate code buffer */
-void *vm_alloc(int size) {
-     return scratch_alloc(size, TRUE);
+/* jit_proc -- translate a specified procedure */
+void jit_proc(value *bp) {
+     value *p = bp[HEAD].p;
+     jit_compile(p);
 }

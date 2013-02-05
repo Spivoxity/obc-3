@@ -65,37 +65,17 @@ extern code_addr *caseptr;
 
 /* jitregs.c */
 
-/* There's also a bit of macro madness to allow all registers to be 
-   enumerated in just one list. Sorry! */
-
 #define INT 1
 #define FLO 2
 
-/* Register rI5 is the same as rSP, so it can be used only in
-   procedures that don't use FLEXCOPY, so that the frame has 
-   a fixed size and all addressing can be done relative to rBP. */
+/* Register rSP is the same as the last integer register, so that register
+   can be used only in procedures that don't use FLEXCOPY, so that the 
+   frame has a fixed size and all addressing can be done relative to rBP. */
 
-#define __REGS__(r)	\
-     r(ZERO, xZERO, 0)	\
-     r(rBP, xV3, 0)	\
-     r(rSP, xV2, 0)	\
-     r(rRET, xRET, 0)	\
-     r(rI0, xR0, INT)	\
-     r(rI1, xR1, INT)	\
-     r(rI2, xR2, INT)	\
-     r(rI3, xV0, INT)	\
-     r(rI4, xV1, INT)	\
-     r(rI5, xV2, INT)	\
-     r(rF0, xF0, FLO)	\
-     r(rF1, xF1, FLO)	\
-     r(rF2, xF2, FLO)	\
-     r(rF3, xF3, FLO)	\
-     r(rF4, xF4, FLO)	\
-     r(rF5, xF5, FLO)
+typedef struct _reg *reg;
 
-#define __r1__(sym, phys, class) sym,
-
-typedef enum { __REGS__(__r1__) NREGS } reg;
+extern int nregs;
+extern reg rBP, rSP, rI0, rI1, rI2, rZERO;
 
 typedef struct _ctvalue {
      int v_op;			/* Operation to fetch value */
@@ -106,17 +86,19 @@ typedef struct _ctvalue {
 } *ctvalue;;
 
 extern struct _reg {
-     const char *r_name;       /* Our name for the register */
-     vmreg r_reg;	       /* Physical register */
-     int r_class;	       /* INT or FLO, or 0 for if special */
-     int r_refct;	       /* No of references on the stack */
-     struct _ctvalue r_value;  /* Cached value */
-} regs[];
+     char r_name[8];            /* Our name for the register */
+     vmreg r_reg;               /* Physical register */
+     int r_class;               /* INT or FLO, or 0 if special */
+     int r_refct;               /* No of references on the stack */
+     struct _ctvalue r_value;   /* Cached value */
+} *regs;
 
-#define cached(r) (regs[r].r_value.v_op != 0)
-#define uncache(r) regs[r].r_value.v_op = 0
-#define member(r, s) (regs[r].r_class == s)
-#define rkind(r) (regs[r].r_class == 0 ? INT : regs[r].r_class)
+#define for_regs(r) for (r = &regs[0]; r < &regs[nregs]; r++)
+
+#define cached(r) ((r)->r_value.v_op != 0)
+#define uncache(r) (r)->r_value.v_op = 0
+#define member(r, s) ((r)->r_class == s)
+#define rkind(r) ((r)->r_class == 0 ? INT : (r)->r_class)
 
 #define OMEGA 1000
 
@@ -129,7 +111,7 @@ reg incref(reg r, int inc);
 #define rfreeze(r) incref(r, OMEGA+1)
 #define rthaw(r) incref(r, -OMEGA-1)
 
-#define ralloc(s) ralloc_avoid(s, ZERO)
+#define ralloc(s) ralloc_avoid(s, rZERO)
 
 reg ralloc_suggest(int s, reg r);
 reg ralloc_avoid(int s, reg r2);
@@ -180,23 +162,58 @@ void get_halflong(ctvalue src, int off, reg dst);
 #endif
 
 
-/* jit.c */
+/* jitop.c */
 
-#define g0(op) vm_gen0(op)
-#define g1r(op, a) vm_gen1r(op, regs[a].r_reg)
-#define g1i(op, a) vm_gen1i(op, a)
-#define g1b(op, lab) use_label(vm_gen1b(op, NULL), lab)
-#define g2rr(op, a, b) vm_gen2rr(op, regs[a].r_reg, regs[b].r_reg)
-#define g2ri(op, a, b) vm_gen2ri(op, regs[a].r_reg, b)
+extern const char *mnemonic[];
+
+#ifdef DEBUG
+#define vm_dbg(fmt, ...) \
+     (vm_debug > 0 ? _vm_dbg(fmt, __VA_ARGS__) : (void) 0)
+
+void _vm_dbg(const char *fmt, ...);
+
+char *fmt_val(int v);
+
+char *fmt_dest(codepoint lab);
+#else
+#define vm_dbg(fmt, ...) (void) 0
+#endif
+
+#define vm_dbg1(fmt, op, ...) vm_dbg(fmt, mnemonic[op], ##__VA_ARGS__)
+
+#define g0(op) \
+     vm_dbg1("%s", op), vm_gen0(op)
+#define g1r(op, a) \
+     vm_dbg1("%s %s", op, a->r_name), vm_gen1r(op, a->r_reg)
+#define g1i(op, a) \
+     vm_dbg1("%s %s", op, fmt_val(a)), vm_gen1i(op, a)
+#define g1b(op, lab) \
+     vm_dbg1("%s %s", op, fmt_dest(lab)), \
+     use_label(vm_gen1b(op, NULL), lab)
+#define g2rr(op, a, b) \
+     vm_dbg1("%s %s, %s", op, a->r_name, b->r_name), \
+     vm_gen2rr(op, a->r_reg, b->r_reg)
+#define g2ri(op, a, b) \
+     vm_dbg1("%s %s, %s", op, a->r_name, fmt_val(b)),   \
+     vm_gen2ri(op, a->r_reg, b)
 #define g3rrr(op, a, b, c) \
-     vm_gen3rrr(op, regs[a].r_reg, regs[b].r_reg, regs[c].r_reg)
-#define g3rri(op, a, b, c) vm_gen3rri(op, regs[a].r_reg, regs[b].r_reg, c)
+     vm_dbg1("%s %s, %s, %s", op, a->r_name, b->r_name, c->r_name), \
+     vm_gen3rrr(op, a->r_reg, b->r_reg, c->r_reg)
+#define g3rri(op, a, b, c) \
+     vm_dbg1("%s %s, %s, %s", op, a->r_name, b->r_name, fmt_val(c)),    \
+     vm_gen3rri(op, a->r_reg, b->r_reg, c)
 #define g3rrb(op, a, b, lab) \
-     use_label(vm_gen3rrb(op, regs[a].r_reg, regs[b].r_reg, NULL), lab)
+     vm_dbg1("%s %s, %s, %s", op, a->r_name, b->r_name, fmt_dest(lab)), \
+          use_label(vm_gen3rrb(op, a->r_reg, b->r_reg, NULL), lab)
 #define g3rib(op, a, b, lab) \
-     use_label(vm_gen3rib(op, regs[a].r_reg, b, NULL), lab)
+     vm_dbg1("%s %s, %s, %s", op, a->r_name, fmt_val(b), fmt_dest(lab)),    \
+          use_label(vm_gen3rib(op, a->r_reg, b, NULL), lab)
+
+void use_label(code_addr loc, codepoint lab);
+
+void gcall1(const char *fname, int f, int n, ...);
+void gcallr(reg f, int n, ...);
 
 /* gcall -- call fixed function */
 #define gcall(f, n, ...) gcall1(#f, (int) f, n, __VA_ARGS__)
 
-void use_label(code_addr loc, codepoint lab);

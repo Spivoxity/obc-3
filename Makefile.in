@@ -85,6 +85,7 @@ DEBUILD = obc0 obb0 obtrace
 
 ifdef ENABLE_JIT
   BUILD += obxj
+  DEBUILD += obxjd dump
   INTERP = obxj
 else
   INTERP = obx
@@ -136,6 +137,7 @@ LINK = $(CC) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
 
 obx : runtime/obx.a $(PRIMS);		$(LINK)
 obxj : runtime/obx-j.a $(PRIMS);	$(LINK) $(CFLAGS_JIT)
+obxjd : runtime/obx-jd.a $(PRIMS);	$(LINK) $(CFLAGS_JIT) -u jit_proc
 obtrace : runtime/obx-t.a $(PRIMS);	$(LINK)
 obprof : runtime/obx-p.a $(PRIMS);	$(LINK)
 obxdeb : runtime/obx-d.a $(PRIMS);	$(LINK)
@@ -176,7 +178,7 @@ tartan : Tartan.m lib/XYplane.k force
 
 test: force
 	$(MAKE) -C test all
-	cd test; regress
+	cd test; ./regress
 
 # Installation stuff:
 # This supports two kinds of installation:
@@ -343,6 +345,11 @@ Makefile: Makefile.in config.status
      
 obc obb obdb config0: %: scripts/%.in config.status revid
 	$(SETREVID) $< | ./config.status --file=$@:-
+	chmod +x $@
+
+dump: %: scripts/%.in
+	./config.status --file=$@:$<
+	chmod +x $@
 
 %0 : scripts/%.in config0
 	sed -e 's:\@configure_input\@:Generated automagically from $(<F):' \

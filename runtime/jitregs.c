@@ -32,17 +32,42 @@
 #include "jit.h"
 #include <assert.h>
 
-/* We use registers rI0 etc. in the JIT translator, and they are mapped onto
-   registers with names like xR0 that are part of the RISC-ish
-   portability interface.  Behind that interface, xR0 might be mapped
-   to the EAX register on a PC.  What might be confusing is that the
-   x86 has its own registers called BP and SP, and they may or may not
-   be the same as the resisters xV3 and xV2 that we rename as rBP and
-   rSP here. */
+struct _reg *regs = NULL;
+int nregs;
+reg rBP, rSP, rI0, rI1, rI2, rZERO;
 
-#define novalue { 0, 0, 0, ZERO, 0 }
-#define __r2__(sym, phys, class) { #sym, phys, class, 0, novalue },
-struct _reg regs[] = { __REGS__(__r2__) };
+static reg def_reg(char *fmt, int i, vmreg r, int c) {
+     reg p = &regs[nregs++];
+     sprintf(p->r_name, fmt, i);
+     p->r_reg = r;
+     p->r_class = c;
+     p->r_refct = 0;
+     p->r_value.v_op = 0;
+     return p;
+}
+
+void setup_regs(void) {
+     int totregs = nvreg + nireg + nfreg + 1;
+     int nwregs = nvreg + nireg;
+     int i;
+
+     assert(nwregs >= 5);
+
+     regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg), TRUE);
+
+     nregs = 0;
+     for (i = 0; i < nireg; i++)
+          def_reg("I%d", i, ireg[i], INT);
+     for (i = 0; i < nvreg; i++)
+          def_reg("V%d", i, vreg[i], INT);
+     for (i = 0; i < nfreg; i++)
+          def_reg("F%d", i, freg[i], FLO);
+     rZERO = def_reg("ZERO", 0, zero, 0);
+
+     rI0 = &regs[0]; rI1 = &regs[1]; rI2 = &regs[2];
+     rSP = &regs[nwregs-2]; rBP = &regs[nwregs-1]; 
+     rBP->r_class = 0;
+}
 
 /* Each register has a reference count, and may also be locked -- this
    is signified by increasing the reference count by OMEGA.  Normally, a
@@ -53,13 +78,13 @@ struct _reg regs[] = { __REGS__(__r2__) };
    
    move_to_reg(sp-2); move_to_reg(sp-1);
    // Now the two top items on the stack are in registers that are locked.
-   r1 = ralloc(IREG);
+   r1 = ralloc(INT);
    // r1 is guaranteed to be different from the input registers holding the 
    // two stack items
    pop(2);
    // The two registers are still locked, but their reference counts
    // have been decremented
-   r2 = ralloc_avoid(IREG, r1);
+   r2 = ralloc_avoid(INT, r1);
    // r2 is different from r1, but one of the two input registers may be reused.
    // However, the input registers will not be spilled.
    unlock(2);
@@ -71,10 +96,11 @@ struct _reg regs[] = { __REGS__(__r2__) };
 
 /* n_reserved -- count reserved integer registers */
 int n_reserved(void) {
-     int r, res = 0;
+     int res = 0;
+     reg r;
 
-     for (r = 0; r < NREGS; r++) {
-	  if (member(r, INT) && regs[r].r_refct > 0)
+     for_regs (r) {
+	  if (member(r, INT) && r->r_refct > 0)
 	       res++;
      }
 
@@ -83,24 +109,21 @@ int n_reserved(void) {
 
 /* incref -- increment or decrement reference count */
 reg incref(reg r, int inc) {
-     if (regs[r].r_class != 0) regs[r].r_refct += inc;
+     if (r->r_class != 0) r->r_refct += inc;
      return r;
 }
 
 /* ralloc_avoid -- allocate register, avoiding one previously allocated */
 reg ralloc_avoid(int s, reg r2) {
-     reg best = ZERO;
-     unsigned ir;
+     reg r, best = rZERO;
      int min = 2, cost;
 
      static mybool spilling = FALSE;
 
      /* See if there is an unused register */
-     for (ir = 0; ir < NREGS; ir++) {
-	  reg r = (reg) ir;
-
+     for_regs (r) {
 	  /* Locked registers are OK if their refcount is otherwise 0 */
-	  if (member(r, s) && regs[r].r_refct % OMEGA == 0 && r != r2) {
+	  if (member(r, s) && r->r_refct % OMEGA == 0 && r != r2) {
 	       cost = (cached(r));
 	       if (cost < min) {
 		    best = r; min = cost;
@@ -109,7 +132,7 @@ reg ralloc_avoid(int s, reg r2) {
 	  }
      }
 
-     if (best != ZERO)
+     if (best != rZERO)
 	  return kill(best);
 
      /* Now try spilling: ignore locked registers */
@@ -117,24 +140,22 @@ reg ralloc_avoid(int s, reg r2) {
 	  min = OMEGA; 
 	  spilling = TRUE;
 
-	  for (ir = 0; ir < NREGS; ir++) {
-	       reg r = (reg) ir;
-
-	       if (member(r, s) && regs[r].r_refct < min && r != r2) {
-		    best = r; min = regs[r].r_refct;
+	  for_regs (r) {
+	       if (member(r, s) && r->r_refct < min && r != r2) {
+		    best = r; min = r->r_refct;
 	       }
 	  }
 
-	  if (best != ZERO) {
+	  if (best != rZERO) {
 #ifdef DEBUG
 	       if (dflag > 1) 
 		    printf("Spilling %s (refct=%d)\n", 
-			   regs[best].r_name, regs[best].r_refct);
+			   best->r_name, best->r_refct);
 #endif
 	       spill(best);
 #ifdef DEBUG
 	       if (dflag > 1)
-		    printf("Refct now %d\n", regs[best].r_refct);
+		    printf("Refct now %d\n", best->r_refct);
 #endif
 
 	       spilling = FALSE;
@@ -144,12 +165,12 @@ reg ralloc_avoid(int s, reg r2) {
      }
 
      panic("out of registers");
-     return ZERO;
+     return rZERO;
 }
 
 /* ralloc_suggest -- allocate a preferred register, or choose another */
 reg ralloc_suggest(int s, reg r) {
-     if (r != ZERO && member(r, s) && regs[r].r_refct % OMEGA == 0)
+     if (r != rZERO && member(r, s) && r->r_refct % OMEGA == 0)
 	  return kill(r);
      else
 	  return ralloc(s);
@@ -157,31 +178,28 @@ reg ralloc_suggest(int s, reg r) {
 
 /* killregs -- forget all cached values */
 void killregs(void) {
-     int ir;
+     reg r;
 
 #ifdef DEBUG
      if (dflag > 2) printf("\tKillregs\n");
 #endif
 
-     for (ir = 0; ir < NREGS; ir++) {
-	  reg r = (reg) ir;
+     for_regs (r)
 	  uncache(r);
-     }
 }
 
 /* kill -- forget a register and all others related to it */
 reg kill(reg r) {
-     int ir;
+     reg r1;
 
 #ifdef DEBUG
-     if (dflag > 2) printf("\tKill %s\n", regs[r].r_name);
+     if (dflag > 2) printf("\tKill %s\n", r->r_name);
 #endif
 
      uncache(r);
 
-     for (ir = 0; ir < NREGS; ir++) {
-	  reg r1 = (reg) ir;
-	  if (cached(r1) && regs[r1].r_value.v_reg == r)
+     for_regs (r1) {
+	  if (cached(r1) && r1->r_value.v_reg == r)
 	       uncache(r1);
      }
 
@@ -190,11 +208,12 @@ reg kill(reg r) {
 
 /* init_regs -- reset registers for new procedure */
 void init_regs(void) {
-     int ir;
+     reg r;
 
-     for (ir = 0; ir < NREGS; ir++) {
-	  reg r = (reg) ir;
-	  regs[r].r_refct = 0;
+     if (regs == NULL) setup_regs();
+
+     for_regs (r) {
+	  r->r_refct = 0;
 	  uncache(r);
      }
 }

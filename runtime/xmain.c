@@ -222,6 +222,11 @@ void rterror(int num, int line, value *bp) {
      runtime_error(num, line, bp, NULL);
 }
 
+/* stkoflo -- stack overflow handler for JIT */
+void stkoflo(value *bp) {
+     runtime_error(E_STACK, 0, bp, NULL);
+}
+
 
 /* Startup */
 
@@ -488,7 +493,10 @@ int main(int ac, char *av[]) {
      gc_init();
 
 #ifdef JIT
-     vm_debug = (dflag > 1);
+     vm_debug = dflag;
+     interpreter = jit_trap;
+#else
+     interpreter = interp;
 #endif
 
      fp = fopen(codefile, "rb");
@@ -518,6 +526,12 @@ int main(int ac, char *av[]) {
      run(entry);
      xmain_exit(0);
 }
+
+#ifdef JIT
+void interp(value *bp) {
+     panic("dummy interp called");
+}
+#endif
 
 #ifdef WINDOWS
 #ifdef OBXDEB
