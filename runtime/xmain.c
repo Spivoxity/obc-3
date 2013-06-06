@@ -164,7 +164,9 @@ void error_stop(const char *msg, int line, value *bp, uchar *pc) {
      value *cp = bp[CP].p;
 
 #ifdef OBXDEB
-     debug_break(cp, bp, pc, "error %d %s", line, msg);
+     char buf[256];
+     sprintf(buf, msg, ob_res.i);
+     debug_break(cp, bp, pc, "error %d %s", line, buf);
 #else
      module mod = find_module(cp);
 
