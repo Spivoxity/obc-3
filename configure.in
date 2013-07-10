@@ -141,14 +141,10 @@ AC_PATH_PROG(PKG_CONFIG, pkg-config, /usr/bin/pkg-config,
   $PATH$PATH_SEPARATOR$GTKDIR/bin)
 test "$PKG_CONFIG" != "" || AC_MSG_ERROR(pkg-config not found)
 
-# Disable fancy alias analysis in the runtime system on i386
-# Also on x86_64, where the compiler of choice is 'gcc -m32'
+# Disable fancy alias analysis if compiling with gcc
 : ${RTFLAGS='${CFLAGS}'}
 if test "$GCC" == yes; then
-    case $host in
-        i?86-*|x86_64-*) 
-	    RTFLAGS="$RTFLAGS -fno-strict-aliasing";;
-    esac
+    RTFLAGS="$RTFLAGS -fno-strict-aliasing"
 fi
 AC_SUBST(RTFLAGS)
 
