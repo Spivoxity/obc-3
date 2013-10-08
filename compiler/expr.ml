@@ -1065,13 +1065,13 @@ and check_builtin env p args e loc =
 	    let check n t =
 	      let rec loop i t =
 	        match t.t_guts with
-		    ArrayType (n, t2) -> 
+		    ArrayType (k, t2) -> 
 		      if i > 0 then
 			loop (i-1) t2
 		      else begin
-			(* We treat LEN(array) as a typeless constant *)
-			edit_expr e (Const (IntVal (integer n), numtype));
-			numtype
+			if (safe e1) then
+  			  edit_expr e (Const (IntVal (integer k), inttype));
+			inttype
 		      end
 		  | FlexType t2 ->
 		      if i > 0 then

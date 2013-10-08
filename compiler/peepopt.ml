@@ -207,8 +207,6 @@ let ruleset1 replace =
     (* Void returns *)
     | CALL (n, k) :: POP s :: _ when k <> VoidT ->
 	replace 2 [CALL (n, VoidT)]
-    | CONST n :: POP 1 :: _ ->
-	replace 2 []
 
     (* Easy array bounds *)
     | DUP n :: POP 1 :: _ -> replace 2 []
@@ -332,9 +330,13 @@ let ruleset2 replace =
     | LDL (IntT, -4) :: STNW n :: _ ->
 	replace 2 [STEW n]
 
-    (* Eliminate simple swaps *)
+    (* Eliminate simple pops and swaps *)
+    | i1 :: POP 1 :: _ when simple i1 -> 
+	replace 2 []
     | i1 :: i2 :: SWAP :: _  when simple i1 && simple i2 ->
 	replace 3 [i2; i1]
+    | i1 :: SWAP :: POP 1 :: _ when simple i1 ->
+        replace 3 [POP 1; i1]
 
     | _ -> ()
 

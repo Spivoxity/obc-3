@@ -87,6 +87,9 @@ let roundup n = (n+3)/4*4
 let is_const e = 
   match e.e_guts with (Const _ | Nil) -> true | _ -> false
 
+let is_deref e =
+  match e.e_guts with Deref _ -> true | _ -> false
+
 (* value_of -- get value of constant *)
 let value_of e =
   match e.e_guts with
@@ -164,25 +167,6 @@ let gen_call pcount rtype =
 
 let call_proc lab pcount rtype =
   SEQ [GLOBAL lab; gen_call pcount rtype]
-
-(* safe -- test if an expression has no side effects or runtime errors *)
-let rec safe e =
-  match e.e_guts with
-      Deref _ | Sub (_, _) -> false
-    | Select (e1, x) -> safe e1
-    | FuncCall (_, _) | MethodCall (_, _, _) -> false
-    | Monop (w, e1) -> safe e1
-    | Binop ((Div|Mod|Over), e1, e2) -> false
-    | Binop (w, e1, e2) -> safe e1 && safe e2
-    | Set els -> 
-	let safe_el = 
-	  function 
-	      Single e1 -> safe e 
-	    | Range (e1, e2) -> safe e1 && safe e2 in
-	List.for_all safe_el els
-    | Cast (_, _) -> false
-    | TypeTest (_, _) -> false
-    | _ -> true
 
 (* conditional -- test if an expression requires jumping code *)
 let rec conditional e =
@@ -628,7 +612,14 @@ and gen_builtin q args =
 	  else int_of_integer (int_value (value_of (List.nth args 1))) in
 	let e0 = sub_base v in
 	let us = subscripts v in
-	SEQ [gen_addr e0; gen_bound (List.length us + n) e0]
+	let rec loop i ys =
+	  match ys with
+	      [] -> gen_bound (i+n) e0
+	    | (x::xs) ->
+		SEQ [gen_expr x; 
+		  check (SEQ [DUP 1; gen_bound i e0; BOUND (expr_line x)]); 
+		  POP 1; loop (i+1) xs] in
+	SEQ [gen_addr e0; loop 0 us]
 
     | (IncProc | DecProc), e1::_ ->
 	begin match op_kind e1.e_type with

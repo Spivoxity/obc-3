@@ -169,6 +169,25 @@ let rec sub_base e =
       Sub (e1, e2) -> sub_base e1
     | _ -> e
 
+(* safe -- test if an expression has no side effects or runtime errors *)
+let rec safe e =
+  match e.e_guts with
+      Deref _ | Sub (_, _) -> false
+    | Select (e1, x) -> safe e1
+    | FuncCall (_, _) | MethodCall (_, _, _) -> false
+    | Monop (w, e1) -> safe e1
+    | Binop ((Div|Mod|Over), e1, e2) -> false
+    | Binop (w, e1, e2) -> safe e1 && safe e2
+    | Set els -> 
+	let safe_el = 
+	  function 
+	      Single e1 -> safe e 
+	    | Range (e1, e2) -> safe e1 && safe e2 in
+	List.for_all safe_el els
+    | Cast (_, _) -> false
+    | TypeTest (_, _) -> false
+    | _ -> true
+
 (* makeName -- contruct a name node with dummy annotations *)
 let makeName (m, x, n) = 
   { x_name = x; x_module = m; x_export = Private; 

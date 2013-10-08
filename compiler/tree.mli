@@ -169,6 +169,9 @@ val is_string_const : expr -> bool
 val subscripts : expr -> expr list
 val sub_base : expr -> expr
 
+(* safe -- test if an expression has no side effects or runtime errors *)
+val safe : expr -> bool
+
 (* QualId -- printf formatter for qualified names *)
 val fQualId : name -> Print.arg
 
