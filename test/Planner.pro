@@ -25,7 +25,7 @@ Execution profile:
       1568     0.3%    99.7%     196   Out.Ln
       1125     0.2%    99.9%      45   Planner.Delmin
        232     0.0%   100.0%       4   Planner.Requeue
-        35     0.0%   100.0%       1   Files.%main
+        30     0.0%   100.0%       1   Files.%main
         28     0.0%   100.0%       1   Planner.InitQueue
         19     0.0%   100.0%       1   Planner.ClearQueue
         16     0.0%   100.0%       1   Out.Fixed
@@ -35,7 +35,7 @@ Execution profile:
          6     0.0%   100.0%       1   In.%main
          0     0.0%   100.0%     484   COMPARE
          0     0.0%   100.0%     197   Conv.LongRealVal
-         0     0.0%   100.0%       2   DynLink.Load
+         0     0.0%   100.0%       1   DynLink.Load
          0     0.0%   100.0%    4178   Files.Eof
          0     0.0%   100.0%       1   Files.Init
          0     0.0%   100.0%    4177   Files.ReadChar
@@ -46,7 +46,7 @@ Execution profile:
          0     0.0%   100.0%      97   MathL.Sqrt
          0     0.0%   100.0%     395   NEW
 
-Total of 522133 clock ticks
+Total of 522128 clock ticks
 
 Call graph profile:
 
@@ -164,7 +164,6 @@ index  total   self children   calls        name
                 0.0%   0.0%       1/1           MAIN [1]
 [22]     0.0%   0.0%   0.0%       1         Files.%main [22]
                 0.0%   0.0%       3/395         NEW [32]
-                0.0%   0.0%       1/2           DynLink.Load [36]
                 0.0%   0.0%       1/1           Files.Init [37]
 ----------------------------------------------------------------
                 0.0%   0.0%       1/1           Planner.Main [3]
@@ -180,7 +179,7 @@ index  total   self children   calls        name
 ----------------------------------------------------------------
                 0.0%   0.0%       1/1           MAIN [1]
 [26]     0.0%   0.0%   0.0%       1         MathL.%main [26]
-                0.0%   0.0%       1/2           DynLink.Load [36]
+                0.0%   0.0%       1/1           DynLink.Load [36]
 ----------------------------------------------------------------
                 0.0%   0.0%       1/1           MAIN [1]
 [27]     0.0%   0.0%   0.0%       1         In.%main [27]
@@ -213,9 +212,8 @@ index  total   self children   calls        name
                 0.0%   0.0%      97/97          Planner.Euclid [15]
 [35]     0.0%   0.0%   0.0%      97         MathL.Sqrt [35]
 ----------------------------------------------------------------
-                0.0%   0.0%       1/2           Files.%main [22]
-                0.0%   0.0%       1/2           MathL.%main [26]
-[36]     0.0%   0.0%   0.0%       2         DynLink.Load [36]
+                0.0%   0.0%       1/1           MathL.%main [26]
+[36]     0.0%   0.0%   0.0%       1         DynLink.Load [36]
 ----------------------------------------------------------------
                 0.0%   0.0%       1/1           Files.%main [22]
 [37]     0.0%   0.0%   0.0%       1         Files.Init [37]

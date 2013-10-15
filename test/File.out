@@ -1,0 +1,79 @@
+(** General input-output on files *)
+DEFINITION Files;
+
+(** File -- type of open files *)
+TYPE File = POINTER TO FileDesc;
+
+(** stdin -- standard input file *)
+VAR stdin: File;
+
+(** stdout -- standard output file *)
+VAR stdout: File;
+
+(** stderr -- standard error file *)
+VAR stderr: File;
+
+(** Open -- open a file by name; return NIL if not found *)
+PROCEDURE Open(name, mode: ARRAY OF CHAR): File;
+
+(** FDOpen -- open a file given a file descriptor, or return NIL *)
+PROCEDURE FDOpen(fd: INTEGER; mode: ARRAY OF CHAR): File;
+
+(** Close -- close a file *)
+PROCEDURE Close(fp: File);
+
+(** Eof -- test of end of file *)
+PROCEDURE Eof(fp: File): BOOLEAN;
+
+(** Flush -- ensure buffered output has been written out *)
+PROCEDURE Flush(fp: File);
+
+(** ReadChar -- read a character *)
+PROCEDURE ReadChar(f: File; VAR c: CHAR);
+
+(** WriteInt -- output an integer with a specified width *)
+PROCEDURE WriteInt(f: File; n, width: INTEGER);
+
+(** WriteLongInt -- output a long integer with specified width *)
+PROCEDURE WriteLongInt(f: File; n: LONGINT; width: INTEGER);
+
+(** WriteReal -- output a real in scientific notation *)
+PROCEDURE WriteReal(f: File; x: REAL);
+
+(** WriteLongReal -- output a long real in scientific notation *)
+PROCEDURE WriteLongReal(f: File; x: LONGREAL);
+
+(** WriteFixed -- output a long real in fixed decimal notation *)
+PROCEDURE WriteFixed(f: File; x: LONGREAL; width, dec: INTEGER);
+
+(** WriteChar -- output a character *)
+PROCEDURE WriteChar(f: File; c: CHAR);
+
+(** WriteString -- output a null-terminated string *)
+PROCEDURE WriteString(f: File; s: ARRAY OF CHAR);
+
+(** WriteLn -- output a newline *)
+PROCEDURE WriteLn(f: File);
+
+(** Read -- read an arbitary binary object *)
+PROCEDURE Read(f: File; VAR buf: ARRAY OF SYSTEM.BYTE);
+
+(** Write -- write an arbitary binary object *)
+PROCEDURE Write(f: File; VAR buf: ARRAY OF SYSTEM.BYTE);
+
+(** Seek -- set the file pointer to a specified offset *)
+PROCEDURE Seek(f: File; offset, whence: INTEGER);
+
+(** SeekSet -- "whence" argument for Seek to set absolute postition *)
+CONST SeekSet = 0;
+
+(** SeekCur -- "whence" argument to set position relative to current pos *)
+CONST SeekCur = 1;
+
+(** SeekEnd -- "whence" argument to set position relative to end of file *)
+CONST SeekEnd = 2;
+
+(** Tell -- return current file postion *)
+PROCEDURE Tell(f: File): INTEGER;
+
+END Files.

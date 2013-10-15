@@ -71,8 +71,8 @@ BEGIN
     END;
 
     (* Ensure w <= B to avoid overflow *)
-    (* We know u = a * u0 < a * m so u DIV m <= a, and reducing u by B each
-       time will require about a / B = 4 iterations at most *)
+    (* We know u = a*u0 < a*m so u DIV m <= a, and reducing u by B*m each
+       time will require about a/B = 4 iterations at most *)
     IF w > B THEN w := B END;
 
     (* u := u - w*m *)
