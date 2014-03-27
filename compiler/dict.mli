@@ -57,7 +57,6 @@ type def_kind =
   | ProcDef			(* Procedure *)
   | PrimDef			(* Built-in primitive *)
   | ModDef of ident * environment  (* Imported module *)
-  | DummyDef			(* No definition *)
 
 type export = Private | ReadOnly | Visible
 
@@ -145,8 +144,6 @@ val bodytype : otype
 
 (* basic_types -- types represented by their own name in symtab files *)
 val basic_types: otype list
-
-val dummy_def : def
 
 (* new_block -- add a new top block *)
 val new_block : environment -> environment

@@ -311,7 +311,7 @@ stmt1 :
   | LOOP stmts END		{ LoopStmt $stmts }
   | EXIT			{ ExitStmt }
   | FOR desig ASSIGN expr@e1 TO expr@e2 step DO stmts END
-      { ForStmt ($desig, $e1, $e2, $step, $stmts, ref dummy_def) } 
+      { ForStmt ($desig, $e1, $e2, $step, $stmts, ref None) } 
   | WITH branches else END	{ WithStmt ($branches, $else) }
   | error			{ ErrStmt } ;
 

@@ -202,9 +202,9 @@ let methods t =
 
 let make_method table d =
   while Growvect.size table <= d.d_offset do
-    Growvect.append table dummy_def
+    Growvect.append table None
   done;
-  Growvect.set table d.d_offset d
+  Growvect.set table d.d_offset (Some d)
 
 let fMeth md =
   let p = get_proc md.d_type in
@@ -252,7 +252,8 @@ let check_methods t =
     let table = Growvect.create 10 in
     List.iter (make_method table) ms0;
     List.iter (check_method ms0 table vsize) r.r_methods;
-    r.r_methods <- Growvect.to_list table;
+    let h = function Some d -> d | None -> failwith "check_methods" in
+    r.r_methods <- List.map h (Growvect.to_list table);
     if !Config.debug > 0 then 
       printf "! $ now has methods $\n" 
 	[fId t.t_name; fList(fMeth) r.r_methods]
@@ -506,7 +507,7 @@ let rec check_stmt env s =
 	    | _ -> 
 		let x = makeDefId (anon, Private, no_loc) in
 		let d = make_def x VarDef vt None in 
-		!allocate d; tmp := d
+		!allocate d; tmp := Some d
 	end;
  	check_stmt env body
     | WithStmt (branches, else_part) ->
@@ -659,7 +660,7 @@ and check_decl lzy alloc env =
 	List.iter (fun (x, te, doc) ->
 	  let t = check_typexpr true env x.x_name te in
 	  let d = make_def x TypeDef t doc in
-	  x.x_def <- d; add_def env d) decls;
+	  x.x_def <- Some d; add_def env d) decls;
 	force_agenda env
     | ProcDecl (kind, x, heading, body, doc) ->
 	let fsize = 
@@ -717,7 +718,7 @@ and check_proc env kind x heading fsize doc =
   match kind with
       Procedure ->
 	d.d_lab <- proc_name !current !level x.x_name;
-	x.x_def <- d; add_def env d
+	x.x_def <- Some d; add_def env d
     | Method | AbsMeth ->
 	if !level > 0 then
 	  sem_error "methods may only be declared at the outermost level" 
@@ -731,7 +732,7 @@ and check_proc env kind x heading fsize doc =
  	      sem_error "$ does not belong to this module" 
  		[fOType binder] (receiver_loc heading);
 	    d.d_lab <- sprintf "$.$" [fSym binder.t_desc; fId x.x_name];
-	    x.x_def <- d; add_method kind binder d
+	    x.x_def <- Some d; add_method kind binder d
 	  with Not_found -> ()
 	end
     | _ -> failwith "check_proc"
@@ -825,7 +826,7 @@ let annotate (Module (m, imports, body, glodefs, doc)) =
 	     for the module body *)
 	  let d = make_def m ProcDef bodytype doc in
 	  d.d_lab <- sprintf "$.%main" [fId !current];
-	  m.x_def <- d;
+	  m.x_def <- Some d;
 
       | NoBlock -> failwith "annotate"
   end

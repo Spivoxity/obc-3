@@ -40,7 +40,7 @@ type name =
     x_module: ident;		(* module, or current if none specified *)
     x_export: export;		(* export mark (if defining occurrence) *)
     x_loc: location; 		(* line number *)
-    mutable x_def: def }        (* definition in scope *)
+    mutable x_def: def option } (* definition in scope *)
 
 (* abstract syntax *)
 type program = 
@@ -75,7 +75,7 @@ and stmt_guts =
   | RepeatStmt of stmt * expr
   | LoopStmt of stmt
   | ExitStmt
-  | ForStmt of expr * expr * expr * expr * stmt * def ref
+  | ForStmt of expr * expr * expr * expr * stmt * def option ref
   | WithStmt of (expr * name * stmt) list * stmt option
   | Seq of stmt list
   | Skip
@@ -121,13 +121,13 @@ and type_guts =
 
 let fQualId x = fQual (x.x_module, x.x_name)
 
-let undefined x = (x.x_def.d_kind = DummyDef)
+let undefined x = (x.x_def = None)
 
 (* get_def -- get stored definition of a name *)
 let get_def x =
-  if undefined x then
-    failwith (sprintf "missing def of $" [fQualId x]);
-  x.x_def
+  match x.x_def with
+      Some d -> d
+    | None -> failwith (sprintf "missing def of $" [fQualId x])
 
 (* get_name -- extract name from occurrence *)
 let get_name e =
@@ -191,11 +191,11 @@ let rec safe e =
 (* makeName -- contruct a name node with dummy annotations *)
 let makeName (m, x, n) = 
   { x_name = x; x_module = m; x_export = Private; 
-    x_loc = n; x_def = dummy_def }
+    x_loc = n; x_def = None }
 
 let makeDefId (x, s, n) =
   { x_name = x; x_module = !current; x_export = s;
-    x_loc = n; x_def = dummy_def }
+    x_loc = n; x_def = None }
 
 
 (* Grinder *)
@@ -232,7 +232,7 @@ let ppKind k =
       | TypeDef -> "TYPE" | VarDef -> "VAR" | ParamDef -> "PARAM"
       | VParamDef -> "VPARAM" | FieldDef -> "FIELD" | ProcDef -> "PROC"
       | PrimDef -> "PRIM" | ModDef (x, env) -> "MODULE" 
-      | DummyDef -> "DUMMY" | CParamDef -> "CPARAM" in
+      | CParamDef -> "CPARAM" in
   fStr kind
 
 let ppPKind k =

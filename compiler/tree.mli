@@ -53,7 +53,7 @@ type name =
     x_module: ident;		(* module, or current if none specified *)
     x_export: export;		(* export mark (if defining occurrence) *)
     x_loc: location; 		(* line number *)
-    mutable x_def: def }        (* definition in scope *)
+    mutable x_def: def option } (* definition in scope *)
 
 (* abstract syntax *)
 type program = 
@@ -88,7 +88,7 @@ and stmt_guts =
   | RepeatStmt of stmt * expr
   | LoopStmt of stmt
   | ExitStmt
-  | ForStmt of expr * expr * expr * expr * stmt * def ref
+  | ForStmt of expr * expr * expr * expr * stmt * def option ref
   | WithStmt of (expr * name * stmt) list * stmt option
   | Seq of stmt list
   | Skip

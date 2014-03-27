@@ -72,7 +72,6 @@ and def_kind =
   | PrimDef			(* Built-in primitive *)
   | ModDef of ident * environment	
 				(* Imported module *)
-  | DummyDef			(* No definition *)
 
 (* def -- definitions in environment *)
 and def = 
@@ -290,12 +289,6 @@ let bytetype = sys_type ByteT char_rep "BYTE"
 let basic_types = 
   [voidtype; shortint; inttype; longint; character; boolean; 
     realtype; longreal; settype; ptrtype; bytetype]
-
-let dummy_def = 
-  { d_tag = intern "*dummy*"; d_module = intern ""; d_kind = DummyDef;
-    d_type = errtype; d_export = Private; d_loc = no_loc; d_line = 0;
-    d_used = true; d_lab = nosym; d_level = 0; d_offset = 0; 
-    d_param = 0; d_comment = None; d_env = empty_env; d_map = null_map }
 
 let pointer d =
   (PointerType d, addr_rep, ptr_map)

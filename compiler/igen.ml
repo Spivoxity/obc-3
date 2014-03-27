@@ -109,22 +109,24 @@ let op_kind t =
 let mem_kind t =
   let k = kind_of t in
   match k with
-      BoolT | ByteT -> CharT
-    | PtrT | SetT -> IntT
+      (BoolT|ByteT) -> CharT
+    | (PtrT|SetT) -> IntT
     | _ -> k
 
-(* local -- instructions to follow static chain *)
+let schain n =
+  if n = 0 then
+    LOCAL 0
+  else
+    SEQ [LOCAL stat_link; LOAD IntT;
+      SEQ (Util.copy (n-1) 
+        (SEQ [const stat_link; BINOP (PtrT, PlusA); LOAD IntT]))]
+
+(* local -- instructions to push local address *)
 let local l o =
   if !level = l then
     LOCAL o
-  else begin
-    let rec loop k =
-      if k = 1 then
-	SEQ [LOCAL stat_link; LOAD IntT]
-      else
-	SEQ [loop (k-1); const stat_link; BINOP (PtrT, PlusA); LOAD IntT] in
-    SEQ [loop (!level - l); const o; BINOP (PtrT, PlusA)]
-  end
+  else
+    SEQ [schain (!level - l); const o; BINOP (PtrT, PlusA)]
 
 (* typematch -- code to compare record type *)
 let typematch t =
@@ -944,9 +946,11 @@ let rec gen_stmt exit_lab s =
 	    match hi.e_guts with 
 		Const (_, _) -> (NOP, gen_expr hi)
 	      | _ ->
-		  let off = (!tmp).d_offset in
-		  ( SEQ [gen_expr hi; LOCAL off; STORE memk],
-		    SEQ [LOCAL off; LOAD memk] ) in
+                  (match !tmp with
+                      Some d ->
+                        ( SEQ [gen_expr hi; LOCAL d.d_offset; STORE memk],
+                          SEQ [LOCAL d.d_offset; LOAD memk] ) 
+                    | None -> failwith "for bound") in
 
 	  SEQ [prep;
 	    (* var := lo *)

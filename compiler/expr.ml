@@ -66,7 +66,7 @@ let lookup_def env x =
       try lookup env x.x_name with 
         Not_found -> 
 	  sem_error "'$' has not been declared" [fId x.x_name] x.x_loc;
-	  x.x_def <- fake_def x.x_name; 
+	  x.x_def <- Some (fake_def x.x_name); 
 	  raise Not_found
     end
     else begin
@@ -92,7 +92,7 @@ let lookup_def env x =
 	    sem_error "'$' is not a module" [fId x.x_module] x.x_loc;
 	    raise Not_found
     end in
-  d.d_used <- true; x.x_def <- d; d
+  d.d_used <- true; x.x_def <- Some d; d
 
 (* lookup_typename -- look up a type name *)
 let lookup_typename env x =
@@ -291,7 +291,7 @@ let check_super e p loc =
  	    if pp.p_kind = AbsMeth then
  	      sem_error "method '$' is declared abstract in $"
  		[fId x.x_name; fOType r.r_parent] loc;
-	    x.x_def <- d; d.d_type
+	    x.x_def <- Some d; d.d_type
 	  with Not_found ->
 	    sem_error ("in this super call, the parent $ does not"
 	      ^ " support method '$'") 
@@ -402,7 +402,7 @@ and check_desig1 env e =
 	      else begin
 		try
 		  let d = find_field t1 x.x_name in
-		  x.x_def <- d; d.d_type
+		  x.x_def <- Some d; d.d_type
 		with Not_found ->
 		  sem_error "this record does not have a field called '$'" 
 		    [fId x.x_name] e1.e_loc;
