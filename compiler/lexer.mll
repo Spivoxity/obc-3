@@ -165,6 +165,7 @@ rule token = parse
   | "(**"		
       { in_docstring := true; cstart := location lexbuf;
 	comment 1 lexbuf; token lexbuf }
+  | "(**)"				{ token lexbuf }
   | '\r'				{ token lexbuf }
   | '\n'				{ inc_line lexbuf; token lexbuf }
   | "#line"[^'\n']*'\n'			{ set_line lexbuf; token lexbuf }

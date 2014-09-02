@@ -4,6 +4,8 @@ MODULE tFac;
 The factorial of 10 is 3628800
 >>*)
 
+(**)
+
 IMPORT Out;
 
 PROCEDURE fac(n: INTEGER): INTEGER;
