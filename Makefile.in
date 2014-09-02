@@ -43,6 +43,7 @@ export AUTOHEADER = @AUTOHEADER@
 CC = @CC@
 CFLAGS = @CFLAGS@
 CFLAGS_JIT = @CFLAGS_JIT@
+LDFLAGS = @LDFLAGS@
 RTFLAGS = @RTFLAGS@
 INSTALL = @INSTALL@
 INSTALL_PROG = @INSTALL_PROGRAM@
@@ -133,7 +134,7 @@ endif
 ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
 obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
 
-LINK = $(CC) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
+LINK = $(CC) $(LDFLAGS) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
 
 obx : runtime/obx.a $(PRIMS);		$(LINK)
 obxj : runtime/obx-j.a $(PRIMS);	$(LINK) $(CFLAGS_JIT)
