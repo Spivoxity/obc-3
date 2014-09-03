@@ -41,12 +41,12 @@ JGT 2
 LDGW tOdd.i
 CONST 1
 BITAND
-JUMPF 4
+JUMPF 5
 CONST 0
 LDGW tOdd.i
 GLOBAL Out.Int
 CALL 2
-LABEL 4
+LABEL 5
 !     b := ODD(i);
 LDGW tOdd.i
 CONST 1
@@ -55,12 +55,12 @@ STGC tOdd.b
 !     IF b = r THEN Out.Int(i,0) END
 LDGC tOdd.b
 LDGC tOdd.r
-JNEQ 6
+JNEQ 8
 CONST 0
 LDGW tOdd.i
 GLOBAL Out.Int
 CALL 2
-LABEL 6
+LABEL 8
 LDGW tOdd.i
 INC
 STGW tOdd.i

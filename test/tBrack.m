@@ -297,7 +297,7 @@ LDLW -4
 LDLW 16
 BOUND 95
 LDIC
-JEQZ 25
+JEQZ 26
 !     Reset(n, n+1);
 LDLW -4
 INC
@@ -360,7 +360,7 @@ STIW
 !     n := n+1
 INCL -4
 JUMP 24
-LABEL 25
+LABEL 26
 !   N := n
 LDLW -4
 STGW tBrack.N
@@ -372,10 +372,10 @@ PROC tBrack.Combine 12 7 0
 !   FOR x := 0 TO 2 DO
 CONST 0
 STLW -4
-LABEL 26
+LABEL 27
 LDLW -4
 CONST 2
-JGT 27
+JGT 28
 !     IF ways[i,j][x] > 0 THEN
 GLOBAL tBrack.ways
 LDLW 12
@@ -394,14 +394,14 @@ CONST 3
 BOUND 111
 PLUS
 LDIW
-JLEQZ 29
+JLEQZ 31
 !       FOR y := 0 TO 2 DO
 CONST 0
 STLW -8
-LABEL 30
+LABEL 32
 LDLW -8
 CONST 2
-JGT 29
+JGT 31
 !         IF ways[j,k][y] > 0 THEN
 GLOBAL tBrack.ways
 LDLW 16
@@ -420,7 +420,7 @@ CONST 3
 BOUND 113
 PLUS
 LDIW
-JLEQZ 33
+JLEQZ 36
 ! 	  z := op[x,y];
 GLOBAL tBrack.op
 LDLW -4
@@ -510,7 +510,7 @@ CONST 3
 BOUND 116
 PLUS
 LDIW
-JNEQZ 33
+JNEQZ 36
 ! 	    exp[i,k][z] := MakeExp(STAR, exp[i,j][x], exp[j,k][y])
 GLOBAL tBrack.exp
 LDLW 16
@@ -566,13 +566,13 @@ CONST 3
 BOUND 117
 PLUS
 STIW
-LABEL 33
+LABEL 36
 INCL -8
-JUMP 30
-LABEL 29
+JUMP 32
+LABEL 31
 INCL -4
-JUMP 26
-LABEL 27
+JUMP 27
+LABEL 28
 RETURN
 END
 
@@ -591,10 +591,10 @@ LDGW tBrack.N
 STLW -20
 CONST 2
 STLW -12
-LABEL 36
+LABEL 40
 LDLW -12
 LDLW -20
-JGT 37
+JGT 41
 !     FOR i := 0 TO N-k DO
 LDGW tBrack.N
 LDLW -12
@@ -602,10 +602,10 @@ MINUS
 STLW -24
 CONST 0
 STLW -4
-LABEL 38
+LABEL 42
 LDLW -4
 LDLW -24
-JGT 39
+JGT 43
 !       j := i+k;
 LDLW -4
 LDLW -12
@@ -623,10 +623,10 @@ STLW -28
 LDLW -4
 INC
 STLW -16
-LABEL 40
+LABEL 44
 LDLW -16
 LDLW -28
-JGT 41
+JGT 45
 ! 	Combine(i, u, j)
 LDLW -8
 LDLW -16
@@ -634,14 +634,14 @@ LDLW -4
 GLOBAL tBrack.Combine
 CALL 3
 INCL -16
+JUMP 44
+LABEL 45
+INCL -4
+JUMP 42
+LABEL 43
+INCL -12
 JUMP 40
 LABEL 41
-INCL -4
-JUMP 38
-LABEL 39
-INCL -12
-JUMP 36
-LABEL 37
 RETURN
 END
 
@@ -652,7 +652,7 @@ LDLW 12
 NCHECK 142
 LOADW
 CONST 3
-JNEQ 43
+JNEQ 48
 !     RETURN op[Eval(e.left), Eval(e.right)]
 GLOBAL tBrack.op
 LDLW 12
@@ -674,7 +674,7 @@ BOUND 143
 PLUS
 LDIW
 RETURNW
-LABEL 43
+LABEL 48
 !     RETURN e.rator
 LDLW 12
 NCHECK 145
@@ -689,7 +689,7 @@ LDLW 12
 NCHECK 151
 LOADW
 CONST 3
-JNEQ 45
+JNEQ 51
 !     Out.Char('('); Print(e.left); Print(e.right); Out.Char(')')
 CONST 40
 ALIGNC
@@ -710,7 +710,7 @@ ALIGNC
 GLOBAL Out.Char
 CALL 1
 RETURN
-LABEL 45
+LABEL 51
 !     Out.Char(CHR(e.rator + ORD('A')))
 LDLW 12
 NCHECK 154
@@ -744,10 +744,10 @@ CALL 2
 !   FOR x := 0 TO 2 DO
 CONST 0
 STLW -4
-LABEL 46
+LABEL 52
 LDLW -4
 CONST 2
-JGT 47
+JGT 53
 !     IF ways[0,N][x] > 0 THEN
 GLOBAL tBrack.ways
 CONST 0
@@ -762,7 +762,7 @@ CONST 3
 BOUND 164
 PLUS
 LDIW
-JLEQZ 49
+JLEQZ 56
 !       Out.String("  "); Out.Char(CHR(x + ORD('A'))); Out.String(" = ");
 CONST 3
 GLOBAL tBrack.%1
@@ -837,27 +837,27 @@ LDIW
 GLOBAL tBrack.Eval
 CALLW 1
 LDLW -4
-JNEQ 51
+JNEQ 59
 !         Out.String(" OK")
 CONST 4
 GLOBAL tBrack.%5
 GLOBAL Out.String
 CALL 2
-JUMP 50
-LABEL 51
+JUMP 57
+LABEL 59
 !         Out.String(" OOOOOOPS!")
 CONST 11
 GLOBAL tBrack.%6
 GLOBAL Out.String
 CALL 2
-LABEL 50
+LABEL 57
 !       Out.Ln
 GLOBAL Out.Ln
 CALL 0
-LABEL 49
+LABEL 56
 INCL -4
-JUMP 46
-LABEL 47
+JUMP 52
+LABEL 53
 RETURN
 END
 

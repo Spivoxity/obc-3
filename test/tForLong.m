@@ -69,7 +69,7 @@ LABEL 3
 LDGQ tForLong.i
 CONST 2
 CONVNQ
-QJGT 4
+QJGT 5
 !     Out.LongInt(i, 0); Out.Ln;
 CONST 0
 LDGQ tForLong.i
@@ -84,7 +84,7 @@ GLOBAL tForLong.i
 GLOBAL INCLONG
 CALLQ 3
 JUMP 3
-LABEL 4
+LABEL 5
 RETURN
 END
 

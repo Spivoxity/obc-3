@@ -144,9 +144,21 @@ let shift f e1 e2 e =
   end;
   inttype
 
-(* coerce -- widen expression to a given numeric type *)
+let joinable t1 t2 =
+  if !Config.ob07flag then
+    integral t1 && integral t2 || floating t1 && floating t2
+  else
+    numeric t1 && numeric t2
+
+let coerceable t1 t2 =
+  if !Config.ob07flag then
+    integral t1 && integral t2 || floating t1 && floating t2
+  else
+    numeric t1 && numeric t2 && kind_of t1 <= kind_of t2
+
+(* coerce -- convert expression to a given numeric type *)
 let coerce t e =
-  if kind_of e.e_type < kind_of t then convert t e
+  if kind_of e.e_type <> kind_of t then convert t e
 
 (* is_var -- check that expression denotes a variable *)
 let rec is_var e =
@@ -158,7 +170,8 @@ let rec is_var e =
 	  let d = get_def x in
 	  match d.d_kind with 
 	      VarDef ->
-		d.d_module = !current || d.d_export = Visible
+		d.d_module = !current 
+                  || d.d_export = Visible && not !Config.ob07flag
 	    | ParamDef -> true
 	    | CParamDef -> false
 	    | VParamDef -> true
@@ -171,7 +184,8 @@ let rec is_var e =
 	  true
 	else begin
 	  let d = get_def x in 
-	  is_var r && (d.d_module = !current || d.d_export = Visible)
+	  is_var r && (d.d_module = !current 
+            || d.d_export = Visible && not !Config.ob07flag)
 	end
     | Cast (e, tn) ->
 	if undefined tn then
@@ -596,7 +610,7 @@ and check_binop env w e1 e2 e =
   let t1 = check_expr env e1 and t2 = check_expr env e2 in
   match w with
       Plus | Minus | Times ->
-	if numeric t1 && numeric t2 then begin
+	if joinable t1 t2 then begin
 	  let t = join_type t1 t2 in
 	  coerce t e1; coerce t e2; t
 	end
@@ -608,14 +622,15 @@ and check_binop env w e1 e2 e =
 	end
 	else begin
 	  if not (is_errtype t1) && not (is_errtype t2) then begin
-	    sem_error "the operands of $ must be both numeric or both sets" 
-	      [fOp w] e.e_loc;
+	    sem_error "the operands of $ must be $ or both sets" 
+	      [fOp w; fStr (if !Config.ob07flag then
+                "both integers or both real" else "both numeric")] e.e_loc;
 	    sem_type2 t1 t2
 	  end;
 	  errtype
         end
     | Over ->
-	if numeric t1 && numeric t2 then begin
+	if coerceable t1 longreal && coerceable t2 longreal then begin
 	  let t = join_type realtype (join_type t1 t2) in
 	  coerce t e1; coerce t e2; t
 	end
@@ -625,7 +640,7 @@ and check_binop env w e1 e2 e =
 	end
 	else begin
 	  if not (is_errtype t1) && not (is_errtype t2) then begin
-	    sem_error "the operands of / must be both numeric or both sets" 
+	    sem_error "the operands of / must be both real or both sets" 
 	      [] e.e_loc;
 	    sem_type2 t1 t2
 	  end;
@@ -644,7 +659,7 @@ and check_binop env w e1 e2 e =
 	  errtype
 	end
     | Eq | Neq | Lt | Gt | Leq | Geq ->
-	if numeric t1 && numeric t2 then begin
+	if joinable t1 t2 then begin
 	  let t = join_type t1 t2 in
 	  coerce t e1; coerce t e2
 	end
@@ -797,7 +812,7 @@ and check_arg env (formal, arg) =
     if is_string formal.d_type && is_char_const arg then
       promote_char arg
     else if not (array_match t1 formal.d_type) 
-	&& not (same_types (base_type formal.d_type) bytetype) then begin
+	&& not (same_types (base_type formal.d_type) sysbyte) then begin
       sem_error "open array parameter '$' should have $" 
 	[fId formal.d_tag; fOType formal.d_type] arg.e_loc;
       sem_type t1
@@ -841,14 +856,29 @@ and check_builtin env p args e loc =
 	  env t e e.e_loc in
       List.iter check (List.combine args p.b_argtypes)
     end;
+
     let propagate f e1 t1 =
       begin match e1.e_guts with
 	  Const (v, _) -> edit_expr e (Const(f v, t1))
         | _ -> () 
       end;
       t1 in
+
     let typeconv t1 e1 =
       convert t1 e1; edit_expr e e1.e_guts; t1 in
+
+    let check_var test reqd e =
+      let t = check_expr env e in
+      if not (test t) then begin
+        sem_error "the argument of $ must be $ variable"
+	  [fStr p.b_name; fStr reqd] e.e_loc;
+	sem_type t
+      end
+      else if not (is_var e) then
+        sem_error "the argument of $ must be a variable" 
+          [fStr p.b_name] e.e_loc;
+      t in
+
     match p.b_id, args  with 
 
 	ChrFun, [e1] ->
@@ -881,7 +911,7 @@ and check_builtin env p args e loc =
 
       | Entier, [e1] ->
 	  let t1 = check_expr env e1 in
-	  if not (numeric t1 && kind_of t1 >= FloatT) then begin
+	  if not (floating t1) then begin
 	    sem_error "the argument of $ must be have a real type" 
 	      [fStr p.b_name] e1.e_loc;
 	    sem_type t1
@@ -918,9 +948,12 @@ and check_builtin env p args e loc =
 	    errtype
 	  end
 
+      | FltFun, [e1] -> typeconv realtype e1
+
       | LslFun, [e1; e2] -> shift integer_lsl e1 e2 e
       | LsrFun, [e1; e2] -> shift integer_lsr e1 e2 e
       | AsrFun, [e1; e2] -> shift integer_asr e1 e2 e
+      | RorFun, [e1; e2] -> shift integer_ror e1 e2 e
       | AshFun, [e1; e2] -> 
 	  let f x n = 
 	    if n >= 0 then integer_lsl x n 
@@ -1011,18 +1044,8 @@ and check_builtin env p args e loc =
 	    sem_error "NEW expects 1 or 2 arguments" [] loc
 	  else begin
 	    let e1 = List.nth args 0 in
-	    let t1 = check_expr env e1 in
-	    if is_errtype t1 then
-	      () 
-	    else if not (is_var e1) then
-	      sem_error "the argument of NEW must be a variable" 
-		[] e1.e_loc
-	    else if not (is_pointer t1) then begin
-	      sem_error "the argument of NEW must be a pointer" 
-		[] e1.e_loc;
-	      sem_type t1
-	    end
-	    else begin
+            let t1 = check_var is_pointer "a pointer" e1 in
+            if is_pointer t1 then begin
 	      let tb = base_type t1 in
 	      match tb.t_guts with
  		  RecordType r ->
@@ -1081,10 +1104,10 @@ and check_builtin env p args e loc =
 		  | _ -> 
 		      if not (is_errtype t1) then begin
 			if n = 0 then
-			  sem_error "this argument of LEN should be an array"
+			  sem_error "the argument of LEN must be an array"
 			    [] e1.e_loc
 			else
-			  sem_error ("this argument of LEN should be an array" ^
+			  sem_error ("the argument of LEN must be an array" ^
 			    " of at least $ dimensions") [fNum (n+1)] e1.e_loc;
 			sem_type t1
 		      end;
@@ -1111,25 +1134,27 @@ and check_builtin env p args e loc =
 	  if List.length args < 1 || List.length args > 2 then
 	    sem_error "$ expects 1 or 2 arguments" [fStr p.b_name] e.e_loc;
 	  let e1 = List.nth args 0 in
-	  let t1 = check_expr env e1 in
-	  if not (integral t1) then begin
-	    sem_error "the argument of $ must be an integer variable"
-	      [fStr p.b_name] e1.e_loc;
-	    sem_type t1
-	  end
-	  else if not (is_var e1) then
-	    sem_error "the argument of $ must be a variable" 
-	      [fStr p.b_name] e1.e_loc
-	  else if List.length args = 2 then begin
+	  let t1 = check_var integral "an integer" e1 in
+	  if List.length args = 2 && integral t1 then begin
 	    let e2 = List.nth args 1 in
-	    check_assign "as the second argument of INC or DEC" []
+	    check_assign "as the second argument of $" [fStr p.b_name]
 	      env t1 e2 e2.e_loc
 	  end;
 	  voidtype
 
+      | PackProc, [e1; e2] ->
+          ignore (check_var floating "a real" e1);
+          check_assign "as argument of PACK" [] env inttype e2 e2.e_loc;
+          voidtype
+
+      | UnpkProc, [e1; e2] ->
+          ignore (check_var floating "a real" e1);
+          ignore (check_var (same_types inttype) "an integer" e2);
+          voidtype
+
       | (InclProc | ExclProc), [e1; e2] ->
 	  if not (is_var e1) then
-	    sem_error "the first argument of $ must be a variable"
+	    sem_error "the argument of $ must be a variable"
 		[fStr p.b_name] e1.e_loc;
 	  voidtype
 
@@ -1200,7 +1225,11 @@ and check_builtin env p args e loc =
 
 and check_assign cxt args env lt e loc =
   let rt = check_expr env e in
-  if numeric lt && numeric rt && kind_of lt >= kind_of rt then
+  if not !Config.ob07flag
+      && numeric lt && numeric rt && kind_of lt >= kind_of rt then
+    coerce lt e
+  else if !Config.ob07flag
+      && (integral lt && integral rt || floating lt && floating rt) then
     coerce lt e
   else if is_string lt && is_char_const e && bound lt >= 2 then
     promote_char e
@@ -1239,7 +1268,7 @@ and check_tconst env t cxt e =
   let (t1, v) = check_const env cxt e in
   if same_types t1 t then
     v
-  else if numeric t && numeric t1 && kind_of t1 <= kind_of t then begin
+  else if coerceable t1 t then begin
     coerce t e;
     const_value e
   end

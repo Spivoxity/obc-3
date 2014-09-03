@@ -112,7 +112,7 @@ LABEL 6
 LDLW -4
 INC
 LDLW -8
-JEQ 7
+JEQ 8
 !     m := (a+b) DIV 2;
 LDLW -4
 LDLW -8
@@ -133,17 +133,17 @@ TIMES
 PLUSA
 GLOBAL COMPARE
 CALLW 4
-JGTZ 9
+JGTZ 11
 !       a := m
 LDLW -12
 STLW -4
 JUMP 6
-LABEL 9
+LABEL 11
 !       b := m
 LDLW -12
 STLW -8
 JUMP 6
-LABEL 7
+LABEL 8
 !   RETURN a
 LDLW -4
 RETURNW
@@ -162,10 +162,10 @@ CALLW 1
 STLW -4
 !   IF (i >= 0) & (i < N) & (name[i] = s) THEN
 LDLW -4
-JLTZ 13
+JLTZ 17
 LDLW -4
 LDGW tStore.N
-JGEQ 13
+JGEQ 17
 CONST 20
 LOCAL -28
 CONST 20
@@ -178,7 +178,7 @@ TIMES
 PLUSA
 GLOBAL COMPARE
 CALLW 4
-JNEQZ 13
+JNEQZ 17
 !     value[i] := v
 LDLW 16
 GLOBAL tStore.value
@@ -187,19 +187,19 @@ CONST 100
 BOUND 46
 STIW
 RETURN
-LABEL 13
+LABEL 17
 !     j := N; N := N+1;
 LDGW tStore.N
 STLW -8
 LDGW tStore.N
 INC
 STGW tStore.N
-LABEL 11
+LABEL 13
 !     WHILE j > i+1 DO
 LDLW -8
 LDLW -4
 INC
-JLEQ 12
+JLEQ 15
 !       name[j] := name[j-1];
 GLOBAL tStore.name
 LDLW -8
@@ -232,8 +232,8 @@ BOUND 51
 STIW
 !       j := j-1
 DECL -8
-JUMP 11
-LABEL 12
+JUMP 13
+LABEL 15
 !     name[j] := s;
 GLOBAL tStore.name
 LDLW -8
@@ -268,10 +268,10 @@ CALLW 1
 STLW -4
 !   IF (i >= 0) & (i < N) & (name[i] = s) THEN
 LDLW -4
-JLTZ 15
+JLTZ 22
 LDLW -4
 LDGW tStore.N
-JGEQ 15
+JGEQ 22
 CONST 20
 LOCAL -24
 CONST 20
@@ -284,7 +284,7 @@ TIMES
 PLUSA
 GLOBAL COMPARE
 CALLW 4
-JNEQZ 15
+JNEQZ 22
 !     RETURN value[i]
 GLOBAL tStore.value
 LDLW -4
@@ -292,7 +292,7 @@ CONST 100
 BOUND 64
 LDIW
 RETURNW
-LABEL 15
+LABEL 22
 !     RETURN -1
 CONST -1
 RETURNW
@@ -383,10 +383,10 @@ DEC
 STLW -8
 CONST 0
 STLW -4
-LABEL 16
+LABEL 25
 LDLW -4
 LDLW -8
-JGT 17
+JGT 26
 !     Out.String(name[i]); Out.String(" = "); 
 CONST 20
 GLOBAL tStore.name
@@ -414,8 +414,8 @@ CALL 2
 GLOBAL Out.Ln
 CALL 0
 INCL -4
-JUMP 16
-LABEL 17
+JUMP 25
+LABEL 26
 RETURN
 END
 

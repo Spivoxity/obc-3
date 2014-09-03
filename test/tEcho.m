@@ -66,12 +66,12 @@ CALL 3
 !     IF i > 1 THEN Out.Char(' ') END;
 LDLW -4
 CONST 1
-JLEQ 4
+JLEQ 5
 CONST 32
 ALIGNC
 GLOBAL Out.Char
 CALL 1
-LABEL 4
+LABEL 5
 !     Out.String(s^)
 LDLW -8
 NCHECK 17

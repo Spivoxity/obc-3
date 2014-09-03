@@ -79,6 +79,11 @@ let signext w a =
   let b = 64 - w in
   Int64.shift_right (Int64.shift_left a b) b
 
+let integer_ror a b = 
+  let a' = Int64.to_int32 a in
+  Int64.of_int32 (Int32.logor
+    (Int32.shift_right_logical a' b)
+    (Int32.shift_left a' (32-b)))
 
 type value =
     IntVal of integer

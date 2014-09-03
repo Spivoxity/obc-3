@@ -105,7 +105,7 @@ TIMES
 LDLW -12
 PLUS
 LDLW -4
-JNEQ 10
+JNEQ 9
 LDLW -16
 LDLW 12
 UMINUS
@@ -114,11 +114,11 @@ LDLW -20
 PLUS
 LDLW -4
 UMINUS
-JNEQ 10
+JNEQ 9
 LDLW -16
 LDLW -8
-JEQ 9
-LABEL 10
+JEQ 10
+LABEL 9
 !       Out.Int(a, 0); Out.Char(' ');
 CONST 0
 LDLW -4
@@ -174,7 +174,7 @@ CALL 0
 !       failed := TRUE
 CONST 1
 STGC tDivMod.failed
-LABEL 9
+LABEL 10
 INCL -4
 JUMP 6
 LABEL 7
@@ -295,28 +295,28 @@ CALL 0
 !   FOR n := 1 TO 10 DO Test(n) END;
 CONST 1
 STGW tDivMod.n
-LABEL 11
+LABEL 13
 LDGW tDivMod.n
 CONST 10
-JGT 12
+JGT 14
 LDGW tDivMod.n
 GLOBAL tDivMod.Test
 CALL 1
 LDGW tDivMod.n
 INC
 STGW tDivMod.n
-JUMP 11
-LABEL 12
+JUMP 13
+LABEL 14
 !   IF failed THEN Out.String("Failed!"); Out.Ln END  
 LDGC tDivMod.failed
-JUMPF 14
+JUMPF 17
 CONST 8
 GLOBAL tDivMod.%5
 GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 14
+LABEL 17
 RETURN
 END
 

@@ -60,7 +60,8 @@ type libid =
   | IncProc | DecProc | Assert | Entier | Short | Long
   | MinFun | MaxFun | AshFun | SizeFun | InclProc | ExclProc 
   | AdrFun | ValFun | BitFun | GetProc | PutProc
-  | LslFun | LsrFun | AsrFun
+  | LslFun | LsrFun | AsrFun | RorFun | FltFun
+  | PackProc | UnpkProc
 
 type symbol = string
 
@@ -138,9 +139,9 @@ let put_strings () =
 
 (* |kind| -- basic types *)
 type kind = 
-    NumT | ShortT | IntT | LongT | FloatT | DoubleT  
+    NumT | ByteT | ShortT | IntT | LongT | FloatT | DoubleT  
 				(* Numerics in order of width *)
-  | CharT | BoolT | SetT | PtrT | ByteT
+  | CharT | BoolT | SetT | PtrT | SysByteT
 				(* Non-numerics *)
   | VoidT | ErrT		(* Fictitious types *)
 
@@ -149,7 +150,7 @@ type op =
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
   | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA
   | In | BitAnd | BitOr | BitNot | BitXor | BitSub
-  | Inc | Dec | Lsl | Lsr | Asr
+  | Inc | Dec | Lsl | Lsr | Asr | Ror
 
 (* opposite -- negate a comparison operator *)
 let opposite = 
@@ -173,6 +174,6 @@ let op_name =
     | BitAnd -> "*BITAND*" | BitOr -> "*BITOR*"
     | BitNot -> "*BITNOT*" | BitXor -> "*BITXOR*" | BitSub -> "*BITSUB*"
     | In -> "IN" | Inc -> "INC" | Dec -> "DEC" 
-    | Asr -> "ASR" | Lsr -> "LSR" | Lsl -> "LSL"
+    | Asr -> "ASR" | Lsr -> "LSR" | Lsl -> "LSL" | Ror -> "ROR"
 
 let fOp w = fStr (op_name w)

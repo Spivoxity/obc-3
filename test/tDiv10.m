@@ -75,7 +75,7 @@ STLW -12
 !     IF y # z THEN 
 LDLW -8
 LDLW -12
-JEQ 7
+JEQ 8
 !       Out.Int(x, 0); Out.String(": "); Out.Int(y, 0);
 CONST 0
 LDLW -4
@@ -100,7 +100,7 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 7
+LABEL 8
 INCL -4
 JUMP 4
 LABEL 5

@@ -149,11 +149,11 @@ CONST 10
 GLOBAL Random.Roll
 CALLW 1
 LDLW 12
-JGEQ 2
+JGEQ 3
 !     RETURN NIL
 CONST 0
 RETURNW
-LABEL 2
+LABEL 3
 !     p := NewNode(Random.Roll(10));
 CONST 10
 GLOBAL Random.Roll
@@ -186,14 +186,14 @@ PROC tTreeCopy.PrintTree 0 4 0x00100001
 ! PROCEDURE PrintTree(t: Tree);
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ 4
+JNEQZ 6
 !     Out.Char('.')
 CONST 46
 ALIGNC
 GLOBAL Out.Char
 CALL 1
 RETURN
-LABEL 4
+LABEL 6
 !     Out.Int(t.data, 0); PrintTree(t.left); PrintTree(t.right)
 CONST 0
 LDLW 12
@@ -218,11 +218,11 @@ PROC tTreeCopy.Copy 8020 4 tTreeCopy.Copy.%map
 ! PROCEDURE Copy(t: Tree): Tree;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ 13
+JNEQZ 19
 !     RETURN NIL
 CONST 0
 RETURNW
-LABEL 13
+LABEL 19
 !     sp := 0; 
 CONST 0
 STLW -20
@@ -256,16 +256,16 @@ LDNW 4
 STLW -4
 LDLW -16
 STLW -8
-LABEL 6
+LABEL 8
 !     WHILE (p # NIL) OR (sp > 0) DO
 LDLW -4
-JNEQZ 12
+JNEQZ 9
 LDLW -20
-JLEQZ 7
-LABEL 12
+JLEQZ 10
+LABEL 9
 !       WHILE p # NIL DO
 LDLW -4
-JEQZ 9
+JEQZ 13
 ! 	r := NewNode(p.data);
 LDLW -4
 NCHECK 54
@@ -301,8 +301,8 @@ LDNW 4
 STLW -4
 LDLW -12
 STLW -8
-JUMP 12
-LABEL 9
+JUMP 9
+LABEL 13
 !       sp := sp-1; p := astack[sp]; q := bstack[sp]; 
 DECL -20
 LOCAL -4020
@@ -319,7 +319,7 @@ LDIW
 STLW -8
 !       IF p # NIL THEN
 LDLW -4
-JEQZ 6
+JEQZ 8
 !         r := NewNode(p.data);
 LDLW -4
 NCHECK 62
@@ -355,8 +355,8 @@ LDNW 4
 STLW -4
 LDLW -12
 STLW -8
-JUMP 6
-LABEL 7
+JUMP 8
+LABEL 10
 !   RETURN u
 LDLW -16
 RETURNW
@@ -366,7 +366,7 @@ PROC tTreeCopy.FlatPrint 0 4 0x00100001
 ! PROCEDURE FlatPrint(t: Tree);
 !   IF t # NIL THEN
 LDLW 12
-JEQZ 15
+JEQZ 22
 !     FlatPrint(t.left);
 LDLW 12
 NCHECK 76
@@ -386,21 +386,21 @@ NCHECK 78
 LDNW 8
 GLOBAL tTreeCopy.FlatPrint
 CALL 1
-LABEL 15
+LABEL 22
 RETURN
 END
 
 PROC tTreeCopy.PrintFlat 4 4 0x00110001
 ! PROCEDURE PrintFlat(t: Tree);
-LABEL 16
+LABEL 23
 !   WHILE t # NIL DO
 LDLW 12
-JEQZ 17
+JEQZ 25
 !     IF t.left = NIL THEN
 LDLW 12
 NCHECK 86
 LDNW 4
-JNEQZ 19
+JNEQZ 28
 !       Out.Int(t.data, 0);
 CONST 0
 LDLW 12
@@ -413,8 +413,8 @@ LDLW 12
 NCHECK 88
 LDNW 8
 STLW 12
-JUMP 16
-LABEL 19
+JUMP 23
+LABEL 28
 !       p := t.left;
 LDLW 12
 NCHECK 90
@@ -435,8 +435,8 @@ STNW 8
 !       t := p
 LDLW -4
 STLW 12
-JUMP 16
-LABEL 17
+JUMP 23
+LABEL 25
 RETURN
 END
 

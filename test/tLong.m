@@ -47,14 +47,14 @@ STGD tLong.x
 !   IF x > 2.0 THEN Out.String("Greater"); Out.Ln END;
 LDGD tLong.x
 DCONST 2.
-DJLEQ 3
+DJLEQ 4
 CONST 8
 GLOBAL tLong.%1
 GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 3
+LABEL 4
 !   Out.LongReal(Mult(2.0, x)); Out.Ln;
 LDGD tLong.x
 DCONST 2.

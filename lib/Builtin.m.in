@@ -31,6 +31,7 @@
 MODULE Builtin;
 
 (* COPY #include <ctype.h> *)
+(* COPY #include <math.h> *)
 
 CONST version =
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
@@ -210,13 +211,48 @@ BEGIN
   x := x - n
 END DECLONG;
 
-PROCEDURE ASH(a, b: INTEGER): INTEGER;
-BEGIN
-  IF b >= 0 THEN
-    RETURN LSL(a, b)
-  ELSE
-    RETURN ASR(a, -b)
-  END
-END ASH;
+PROCEDURE ASH(a, b: INTEGER): INTEGER IS "ASH";
+(* CODE
+     int a = args[0].i, b = args[1].i;
+     ob_res.i = (b >= 0 ? a << b : a >> (-b));
+*)
+
+PROCEDURE PACK(VAR x: REAL; n: INTEGER) IS "PACK";
+(* CODE
+     value *x = args[0].p;
+     int n = args[1].i;
+     float y = x->f;
+     y = ldexpf(y, n);
+     x->f = y;
+*)
+
+PROCEDURE UNPK(VAR x: REAL; VAR n: INTEGER) IS "UNPK";
+(* CODE
+    value *x = args[0].p;
+    value *n = args[1].p;
+    float y = x->f; int k;
+    y = frexpf(y, &k);
+    if (y != 0.0) { y *= 2; k--; }
+    x->f = y; n->i = k;
+*)
+
+PROCEDURE PACKLONG(VAR x: REAL; n: INTEGER) IS "PACKLONG";
+(* CODE
+     value *x = args[0].p;
+     int n = args[1].i;
+     double y = get_double(x);
+     y = ldexp(y, n);
+     put_double(x, y);
+*)
+
+PROCEDURE UNPKLONG(VAR x: REAL; VAR n: INTEGER) IS "UNPKLONG";
+(* CODE
+    value *x = args[0].p;
+    value *n = args[1].p;
+    double y = get_double(x); int k;
+    y = frexp(y, &k);
+    if (y != 0.0) { y *= 2; k--; }
+    put_double(x, y); n->i = k;
+*)
 
 END Builtin.

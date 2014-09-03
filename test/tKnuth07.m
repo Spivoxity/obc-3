@@ -1,0 +1,414 @@
+MODULE tKnuth07;
+
+(* Solve the recurrence f(n) = f(n-1) + f(floor(n/2)), f(0) = 1. *)
+
+IMPORT Out;
+
+CONST N = 10; M = 1000000000;
+
+TYPE bignum = ARRAY N OF INTEGER;
+
+PROCEDURE Normalize(VAR a: bignum);
+  VAR i: INTEGER;
+BEGIN
+  FOR i := 0 TO N-2 DO
+    a[i+1] := a[i+1] + a[i] DIV M;
+    a[i] := a[i] MOD M
+  END
+END Normalize;
+
+PROCEDURE Set(VAR a: bignum; x: INTEGER);
+  VAR i: INTEGER;
+BEGIN
+  a[0] := x;
+  FOR i := 1 TO N-1 DO a[i] := 0 END;
+  Normalize(a)
+END Set;
+
+PROCEDURE Add(VAR a1: bignum; a2: bignum);
+  VAR i: INTEGER;
+BEGIN
+  FOR i := 0 TO N-1 DO a1[i] := a1[i] + a2[i] END;
+  Normalize(a1)
+END Add;
+
+PROCEDURE PrintPiece(x: INTEGER);
+  VAR m: INTEGER;
+BEGIN
+  m := M;
+  WHILE m > 1 DO
+    m := m DIV 10;
+    Out.Int(x DIV m, 0);
+    x := x MOD m
+  END
+END PrintPiece;
+
+PROCEDURE Print(VAR a: bignum);
+  VAR i: INTEGER;
+BEGIN
+  i := N-1;
+  WHILE (i > 0) & (a[i] = 0) DO i := i-1 END;
+  Out.Int(a[i], 0); i := i-1;
+  WHILE i >= 0 DO PrintPiece(a[i]); i := i-1 END
+END Print;
+
+PROCEDURE Calc(n: INTEGER; VAR ans: bignum);
+  CONST K = 20;
+  VAR 
+    i, j, k: INTEGER;
+    arg: ARRAY K OF INTEGER;
+    val: ARRAY K OF bignum;
+BEGIN
+  FOR j := 0 TO K-1 DO arg[j] := 0; Set(val[j], 1) END;
+
+  (* Invariant: arg[j+1] = arg[j] DIV 2, val[j] = f(arg[j]) *)
+
+  FOR i := 1 TO n DO
+    j := 0; k := i;
+    WHILE k > arg[j] DO k := k DIV 2; j := j + 1 END;
+    WHILE j > 0 DO
+      j := j - 1;
+      INC(arg[j]);
+      Add(val[j], val[j+1])
+    END
+  END;
+
+  ans := val[0]
+END Calc;
+
+VAR ans: bignum;
+
+BEGIN
+  Calc(10000, ans);
+  Print(ans); Out.Ln
+END tKnuth07.
+
+(*<<
+214454008193526428202
+>>*)
+
+(*[[
+!! SYMFILE #tKnuth07 STAMP #tKnuth07.%main 1
+!! END STAMP
+!! 
+MODULE tKnuth07 STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tKnuth07.Normalize 4 4 0x00100001
+! PROCEDURE Normalize(VAR a: bignum);
+!   FOR i := 0 TO N-2 DO
+CONST 0
+STLW -4
+LABEL 1
+LDLW -4
+CONST 8
+JGT 2
+!     a[i+1] := a[i+1] + a[i] DIV M;
+LDLW 12
+LDLW -4
+INC
+CONST 10
+BOUND 15
+LDIW
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 15
+LDIW
+CONST 1000000000
+DIV
+PLUS
+LDLW 12
+LDLW -4
+INC
+CONST 10
+BOUND 15
+STIW
+!     a[i] := a[i] MOD M
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 16
+LDIW
+CONST 1000000000
+MOD
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 16
+STIW
+INCL -4
+JUMP 1
+LABEL 2
+RETURN
+END
+
+PROC tKnuth07.Set 4 4 0x00100001
+! PROCEDURE Set(VAR a: bignum; x: INTEGER);
+!   a[0] := x;
+LDLW 16
+LDLW 12
+STOREW
+!   FOR i := 1 TO N-1 DO a[i] := 0 END;
+CONST 1
+STLW -4
+LABEL 3
+LDLW -4
+CONST 9
+JGT 4
+CONST 0
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 24
+STIW
+INCL -4
+JUMP 3
+LABEL 4
+!   Normalize(a)
+LDLW 12
+GLOBAL tKnuth07.Normalize
+CALL 1
+RETURN
+END
+
+PROC tKnuth07.Add 4 4 0x00300001
+! PROCEDURE Add(VAR a1: bignum; a2: bignum);
+!   FOR i := 0 TO N-1 DO a1[i] := a1[i] + a2[i] END;
+CONST 0
+STLW -4
+LABEL 5
+LDLW -4
+CONST 9
+JGT 6
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 31
+LDIW
+LDLW 16
+LDLW -4
+CONST 10
+BOUND 31
+LDIW
+PLUS
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 31
+STIW
+INCL -4
+JUMP 5
+LABEL 6
+!   Normalize(a1)
+LDLW 12
+GLOBAL tKnuth07.Normalize
+CALL 1
+RETURN
+END
+
+PROC tKnuth07.PrintPiece 4 4 0
+! PROCEDURE PrintPiece(x: INTEGER);
+!   m := M;
+CONST 1000000000
+STLW -4
+LABEL 7
+!   WHILE m > 1 DO
+LDLW -4
+CONST 1
+JLEQ 9
+!     m := m DIV 10;
+LDLW -4
+CONST 10
+DIV
+STLW -4
+!     Out.Int(x DIV m, 0);
+CONST 0
+LDLW 12
+LDLW -4
+ZCHECK 41
+DIV
+GLOBAL Out.Int
+CALL 2
+!     x := x MOD m
+LDLW 12
+LDLW -4
+ZCHECK 42
+MOD
+STLW 12
+JUMP 7
+LABEL 9
+RETURN
+END
+
+PROC tKnuth07.Print 4 4 0x00100001
+! PROCEDURE Print(VAR a: bignum);
+!   i := N-1;
+CONST 9
+STLW -4
+LABEL 10
+!   WHILE (i > 0) & (a[i] = 0) DO i := i-1 END;
+LDLW -4
+JLEQZ 12
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 50
+LDIW
+JNEQZ 12
+DECL -4
+JUMP 10
+LABEL 12
+!   Out.Int(a[i], 0); i := i-1;
+CONST 0
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 51
+LDIW
+GLOBAL Out.Int
+CALL 2
+DECL -4
+LABEL 14
+!   WHILE i >= 0 DO PrintPiece(a[i]); i := i-1 END
+LDLW -4
+JLTZ 16
+LDLW 12
+LDLW -4
+CONST 10
+BOUND 52
+LDIW
+GLOBAL tKnuth07.PrintPiece
+CALL 1
+DECL -4
+JUMP 14
+LABEL 16
+RETURN
+END
+
+PROC tKnuth07.Calc 896 4 0x00200001
+! PROCEDURE Calc(n: INTEGER; VAR ans: bignum);
+!   FOR j := 0 TO K-1 DO arg[j] := 0; Set(val[j], 1) END;
+CONST 0
+STLW -8
+LABEL 17
+LDLW -8
+CONST 19
+JGT 18
+CONST 0
+LOCAL -92
+LDLW -8
+CONST 20
+BOUND 62
+STIW
+CONST 1
+LOCAL -892
+LDLW -8
+CONST 20
+BOUND 62
+CONST 40
+TIMES
+PLUSA
+GLOBAL tKnuth07.Set
+CALL 2
+INCL -8
+JUMP 17
+LABEL 18
+!   FOR i := 1 TO n DO
+LDLW 12
+STLW -896
+CONST 1
+STLW -4
+LABEL 19
+LDLW -4
+LDLW -896
+JGT 20
+!     j := 0; k := i;
+CONST 0
+STLW -8
+LDLW -4
+STLW -12
+LABEL 21
+!     WHILE k > arg[j] DO k := k DIV 2; j := j + 1 END;
+LDLW -12
+LOCAL -92
+LDLW -8
+CONST 20
+BOUND 68
+LDIW
+JLEQ 23
+LDLW -12
+CONST 2
+DIV
+STLW -12
+INCL -8
+JUMP 21
+LABEL 23
+!     WHILE j > 0 DO
+LDLW -8
+JLEQZ 26
+!       j := j - 1;
+DECL -8
+!       INC(arg[j]);
+LOCAL -92
+LDLW -8
+CONST 20
+BOUND 71
+INDEXW
+DUP 0
+LOADW
+INC
+SWAP
+STOREW
+!       Add(val[j], val[j+1])
+LOCAL -892
+LDLW -8
+INC
+CONST 20
+BOUND 72
+CONST 40
+TIMES
+PLUSA
+LOCAL -892
+LDLW -8
+CONST 20
+BOUND 72
+CONST 40
+TIMES
+PLUSA
+GLOBAL tKnuth07.Add
+CALL 2
+JUMP 23
+LABEL 26
+INCL -4
+JUMP 19
+LABEL 20
+!   ans := val[0]
+LDLW 16
+LOCAL -892
+CONST 40
+FIXCOPY
+RETURN
+END
+
+PROC tKnuth07.%main 0 4 0
+!   Calc(10000, ans);
+GLOBAL tKnuth07.ans
+CONST 10000
+GLOBAL tKnuth07.Calc
+CALL 2
+!   Print(ans); Out.Ln
+GLOBAL tKnuth07.ans
+GLOBAL tKnuth07.Print
+CALL 1
+GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+! Global variables
+GLOVAR tKnuth07.ans 40
+
+! End of file
+]]*)

@@ -120,10 +120,10 @@ STGW tString.j
 !   ASSERT(i=j);
 LDGW tString.i
 LDGW tString.j
-JEQ 12
+JEQ 13
 CONST 0
 EASSERT 17
-LABEL 12
+LABEL 13
 !   s[0] := 'a';
 CONST 97
 LDGW tString.s
@@ -199,10 +199,10 @@ MINUS
 STLW -4
 CONST 0
 STGW tString.i
-LABEL 13
+LABEL 14
 LDGW tString.i
 LDLW -4
-JGT 14
+JGT 15
 !     s[i] := s[i+1]
 LDGW tString.s
 NCHECK 27
@@ -224,8 +224,8 @@ STIC
 LDGW tString.i
 INC
 STGW tString.i
-JUMP 13
-LABEL 14
+JUMP 14
+LABEL 15
 !   s[Strings.Length(s^)-1] := 0X;
 CONST 0
 LDGW tString.s
@@ -260,10 +260,10 @@ CALL 0
 !   FOR i := 0 TO 10 DO
 CONST 0
 STGW tString.i
-LABEL 15
+LABEL 16
 LDGW tString.i
 CONST 10
-JGT 16
+JGT 17
 !     Strings.Extract("abcdefghij", 0, i, t);
 CONST 20
 GLOBAL tString.t
@@ -323,8 +323,8 @@ CALL 0
 LDGW tString.i
 INC
 STGW tString.i
-JUMP 15
-LABEL 16
+JUMP 16
+LABEL 17
 !   Out.Int(Strings.Pos('', '', 0), 0);
 CONST 0
 CONST 0
@@ -354,10 +354,10 @@ CALL 2
 !   FOR i := 0 TO 3 DO
 CONST 0
 STGW tString.i
-LABEL 17
+LABEL 18
 LDGW tString.i
 CONST 3
-JGT 18
+JGT 19
 !     Out.Char(' '); Out.Int(Strings.Pos('', 'abc', i), 0);
 CONST 32
 ALIGNC
@@ -391,8 +391,8 @@ CALL 2
 LDGW tString.i
 INC
 STGW tString.i
-JUMP 17
-LABEL 18
+JUMP 18
+LABEL 19
 !   Out.Ln;
 GLOBAL Out.Ln
 CALL 0
@@ -417,10 +417,10 @@ CONST 0
 LDGW tString.i
 GLOBAL Out.Int
 CALL 2
-LABEL 19
+LABEL 20
 !   WHILE i >= 0 DO
 LDGW tString.i
-JLTZ 20
+JLTZ 22
 !     i := Strings.Pos('abc', t, i+1);
 LDGW tString.i
 INC
@@ -440,8 +440,8 @@ CONST 0
 LDGW tString.i
 GLOBAL Out.Int
 CALL 2
-JUMP 19
-LABEL 20
+JUMP 20
+LABEL 22
 !   Out.Ln;
 GLOBAL Out.Ln
 CALL 0

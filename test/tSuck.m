@@ -35,20 +35,20 @@ STGC tSuck.b
 LABEL 3
 !     IF (b = (TRUE & TRUE)) & TRUE THEN Out.String("A") END;
 LDGC tSuck.b
-JUMPF 5
+JUMPF 7
 CONST 2
 GLOBAL tSuck.%1
 GLOBAL Out.String
 CALL 2
-LABEL 5
+LABEL 7
 !     IF b = FALSE THEN Out.String("B") END;
 LDGC tSuck.b
-JUMPT 7
+JUMPT 11
 CONST 2
 GLOBAL tSuck.%2
 GLOBAL Out.String
 CALL 2
-LABEL 7
+LABEL 11
 !     b := (b = FALSE)
 LDGC tSuck.b
 NOT

@@ -119,7 +119,7 @@ let opcode =
     | BitAnd -> "BITAND" | BitOr -> "BITOR" 
     | BitNot -> "BITNOT" | BitXor -> "BITXOR" | BitSub -> "BITSUB"
     | Inc -> "INC" | Dec -> "DEC"
-    | Lsl -> "LSL" | Lsr -> "LSR" | Asr -> "ASR"
+    | Lsl -> "LSL" | Lsr -> "LSR" | Asr -> "ASR" | Ror -> "ROR"
     | w -> failwith (sprintf "opcode $" [fOp w])
 
 let fOpcode w = fStr (opcode w)
@@ -134,6 +134,7 @@ let fType =
 let fType1 =
   function
       CharT -> fStr "C"
+    | ByteT -> fStr "C"
     | ShortT -> fStr "S"
     | IntT -> fStr "N"
     | LongT -> fStr "Q"
@@ -145,6 +146,7 @@ let fKind =
   function
       VoidT -> fStr ""
     | CharT -> fStr "C"
+    | ByteT -> fStr "C"
     | ShortT -> fStr "S"
     | IntT -> fStr "W"
     | LongT -> fStr "Q"

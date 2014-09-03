@@ -53,6 +53,7 @@ val integer_bitand : integer -> integer -> integer
 val integer_lsl : integer -> int -> integer
 val integer_asr : integer -> int -> integer
 val integer_lsr : integer -> int -> integer
+val integer_ror : integer -> int -> integer
 val integer_neg : integer -> integer
 
 val int_monop : op -> integer -> integer

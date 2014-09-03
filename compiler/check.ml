@@ -132,15 +132,24 @@ let global_alloc fsize d =
 let is_typename tx =
   match tx.tx_guts with TypeName _ -> true | _ -> false
 
+let not_07 feature loc = 
+  if !Config.ob07flag && not !Config.extensions then 
+    sem_extend "$ is not allowed in Oberon07" [fStr feature] loc
+
 let check_target t loc = 
   match t.t_guts with
-      ArrayType _ -> if t.t_map <> null_map then make_desc t
-    | RecordType _ | FlexType _ -> ()
+      ArrayType _ -> 
+        not_07 "pointer to array" loc;
+        if t.t_map <> null_map then make_desc t
+    | FlexType _ -> 
+        not_07 "pointer to open array" loc
+    | RecordType _ -> ()
     | _ -> 
 	if not (is_errtype t) then begin
 	  sem_error 
-	    "the base type of a pointer must be an array or record" 
-	    [] loc;
+            "the base type of a pointer must be $"
+            [fStr (if !Config.ob07flag then "a record"
+                else "an array or record")] loc;
 	  sem_type t
 	end
 
@@ -266,8 +275,10 @@ let rec check_return s =
     | IfStmt (arms, elsept) ->
 	List.exists (fun (_, s) -> check_return s) arms || check_return elsept
     | CaseStmt (sw, arms, default) ->
-	let check2 (labs, body) = check_return body in
-	List.exists check2 arms 
+	List.exists (fun (_, body) -> check_return body) arms 
+	  || (match default with Some s1 -> check_return s1 | None -> false)
+    | TypeCase (sw, arms, default) ->
+	List.exists (fun (_, body) -> check_return body) arms 
 	  || (match default with Some s1 -> check_return s1 | None -> false)
     | WhileStmt arms -> 
 	List.exists (fun (_, s) -> check_return s) arms
@@ -371,6 +382,37 @@ let receiver_loc (Heading (ds, _)) =
       VarDecl (_, _, tx, _) -> tx.tx_loc
     | _ -> failwith "receiver_loc"
 
+let element_loc =
+  function
+      Single e -> e.e_loc
+    | Range (e1, e2) -> Error.join_locs e1.e_loc e2.e_loc
+
+let make_typecase (switch, arms, default) =
+
+  let fix (labs, body) =
+    if List.length labs > 1 then
+      sem_error "Only one case label allowed in type CASE" 
+        [] (element_loc (List.nth labs 1));
+    match List.hd labs with
+        Single e ->
+          begin match e.e_guts with
+              Name x -> (x, body)
+            | _ -> 
+                sem_error "type name expected in type CASE" [] e.e_loc;
+                raise Not_found
+          end
+      | Range (e1, e2) ->
+          sem_error "range pattern not allowed here" 
+            [] (Error.join_locs e1.e_loc e2.e_loc);
+          raise Not_found in
+
+  match switch.e_guts with
+      Name x -> 
+        TypeCase (switch, List.map fix arms, default)
+    | _ ->
+        sem_error "name expected in type CASE" [] switch.e_loc;
+        raise Not_found
+
 let rec check_stmt env s =
   match s.s_guts with
       Assign (lhs, rhs) ->
@@ -423,34 +465,42 @@ let rec check_stmt env s =
 
     | CaseStmt (switch, arms, default) ->
 	let st = check_expr env switch in
-	if not (is_discrete st) then begin
-	  let reqd = if !Config.extensions then "a discrete type" 
-	    else "an integral or character type" in
-	  sem_error "the expression after CASE must have $"
-	      [fStr reqd] switch.e_loc;
-	  sem_type st
-	end
-	else begin
-	  if not (integral st || same_types st character) 
-	      && not !Config.extensions then begin
-	    sem_extend "CASE expects an integer or character expression" 
-	      [] switch.e_loc;
-	    sem_type st
-	  end;
-	  if same_types st longint then
-	    sem_error "sorry, CASE for type LONGINT is not implemented" 
-	      [] switch.e_loc;
+        if is_record st || is_pointer st && is_record (base_type st) then begin
+          try
+            let tc = make_typecase (switch, arms, default) in
+            s.s_guts <- tc; check_typecase env s
+          with Not_found -> ()
+        end
+        else begin
+          if not (is_discrete st) then begin
+            let reqd = if !Config.extensions then "a discrete type" 
+              else "an integral or character type" in
+            sem_error "the expression after CASE must have $"
+                [fStr reqd] switch.e_loc;
+            sem_type st
+          end
+          else begin
+            if not (integral st || same_types st character) 
+                && not !Config.extensions then begin
+              sem_extend "CASE expects an integer or character expression" 
+                [] switch.e_loc;
+              sem_type st
+            end;
+            if same_types st longint then
+              sem_error "sorry, CASE for type LONGINT is not implemented" 
+                [] switch.e_loc;
 
-	  let nerrs = !Error.err_count in
-	  let check_labs (labs, body) = 
-	    List.map (check_caselab env st) labs in
-	  let vs = List.concat (List.map check_labs arms) in
-	  (* Check for duplicate only if there were no errors while
-	      checking the labels *)
-	  if !Error.err_count = nerrs then check_dupcases vs st
-	end;
-	List.iter (function (labs, body) -> check_stmt env body) arms;
-	check_else env default
+            let nerrs = !Error.err_count in
+            let check_labs (labs, body) = 
+              List.map (check_caselab env st) labs in
+            let vs = List.concat (List.map check_labs arms) in
+            (* Check for duplicate only if there were no errors while
+                checking the labels *)
+            if !Error.err_count = nerrs then check_dupcases vs st
+          end;
+          List.iter (function (labs, body) -> check_stmt env body) arms;
+          check_else env default
+        end
 
     | WhileStmt arms ->
 	List.iter (fun (cond, body) ->
@@ -476,10 +526,12 @@ let rec check_stmt env s =
 	incr loop_level;
 	check_stmt env body;
 	decr loop_level
+
     | ExitStmt ->
 	if !loop_level = 0 then
 	  sem_error "this EXIT statement is not inside a LOOP statement" 
 	    [] s.s_loc
+
     | ForStmt (var, lo, hi, step, body, tmp) ->
  	let vt = check_forvar env var in
 	if not (is_discrete vt) then begin
@@ -531,10 +583,39 @@ let rec check_stmt env s =
     | Skip -> ()
     | ErrStmt ->
 	failwith "check ErrStmt"
+    | TypeCase _ ->
+        failwith "check TypeCase"
+
+and check_typecase env s =
+  match s.s_guts with
+      TypeCase (switch, arms, default) ->
+        let st = switch.e_type in
+        if not (dynamic switch) then begin
+          sem_error "a record pointer or VAR parameter is needed here" 
+            [] switch.e_loc;
+          if not (is_record st) then sem_type st
+        end
+        else begin
+          let dx = get_def (get_name switch) in
+          let check_arm (tn, body) =
+            try
+              let dt = lookup_typename env tn in
+              if not (subtype dt.d_type st) then begin
+                sem_error "a subtype of $ is needed here" [fOType st] tn.x_loc;
+                sem_type dt.d_type
+              end;
+              let dx' = { dx with d_loc = tn.x_loc; d_type = dt.d_type } in
+              let env' = new_block env in
+              add_def env' dx'; check_stmt env' body
+            with Not_found -> () in
+          List.iter check_arm arms;
+          check_else env default
+        end
+    | _ -> failwith "check_typecase"
 
 and check_else env =
   function
-      Some ss -> check_stmt env ss
+      Some ss -> not_07 "ELSE part" ss.s_loc; check_stmt env ss
     | None -> ()
 
 (* check_typexpr -- check a type expression, returning the otype *)
@@ -655,9 +736,17 @@ and check_decl lzy alloc env =
 	      (ParamDef | CParamDef | VParamDef) ->
 		if x.x_export <> Private then
 		  sem_error "cannot export a parameter" [] x.x_loc
-	    | _ -> ()
+            | VarDef ->
+                if !level > 0 && x.x_export <> Private then
+                  sem_error "cannot export a local variable" [] x.x_loc
+            | FieldDef -> ()
+	    | _ -> failwith "var kind"
 	  end;
-	  let d = make_def x kind t doc in alloc d; add_def env d in
+          let kind' =
+            (* In Oberon07, aggregate value parameters are implicitly CONST *)
+            if !Config.ob07flag && kind = ParamDef 
+              && not (scalar t) then CParamDef else kind in
+	  let d = make_def x kind' t doc in alloc d; add_def env d in
 	List.iter def xs
     | TypeDecl decls ->
 	List.iter (fun (x, te, doc) ->
@@ -667,7 +756,7 @@ and check_decl lzy alloc env =
 	force_agenda env
     | ProcDecl (kind, x, heading, body, doc) ->
 	let fsize = 
-	  match body with Block (_, _, fs) -> fs | NoBlock -> ref 0 in
+	  match body with Block (_, _, _, fs) -> fs | NoBlock -> ref 0 in
 	check_proc env kind x heading fsize doc
     | PrimDecl (x, heading, name, doc) ->
 	if !level > 0 then
@@ -723,6 +812,7 @@ and check_proc env kind x heading fsize doc =
 	d.d_lab <- proc_name !current !level x.x_name;
 	x.x_def <- Some d; add_def env d
     | Method | AbsMeth ->
+        not_07 "method aka type-bound procedure" x.x_loc;
 	if !level > 0 then
 	  sem_error "methods may only be declared at the outermost level" 
 	      [] x.x_loc
@@ -743,7 +833,7 @@ and check_proc env kind x heading fsize doc =
 (* check_body -- check body of a procedure declaration *)
 and check_body env =
   function
-      ProcDecl (_, x, _, Block (locals, body, fsize), _) ->
+      ProcDecl (_, x, _, Block (locals, body, ret, fsize), _) ->
 	if not (undefined x) then begin
 	  let d = get_def x in
 	  let p = get_proc d.d_type in
@@ -758,14 +848,28 @@ and check_body env =
 	  return_type := p.p_result;
 	  allocate := downward_alloc fsize;
 	  check_stmt env' body;
+          
+          begin match ret with
+              Some e ->
+                if same_types !return_type voidtype 
+                    && not (is_errtype !return_type) then
+                  sem_error "this procedure should not have a RETURN clause" 
+                    [] e.e_loc
+                else
+                  check_assign "in this RETURN clause" []
+		    env' !return_type e e.e_loc
+            | None ->
+                if not (same_types p.p_result voidtype) 
+                    && not (check_return body) then
+                  sem_warn "this typed procedure returns no result" 
+                    [] x.x_loc
+          end;
+
 	  check_used (top_block env');
+
 	  if !Error.err_count = errs0 then
 	    (* Don't check for uninitialised variables if there were errors *)
 	    Inicheck.check_init !level body;
-	  if not (same_types p.p_result voidtype) 
-	      && not (check_return body) then
-	    sem_warn "this function contains no RETURN statement" 
-	      [] x.x_loc;
 
 	  decr level; err_context := cxt;
 	  List.iter (param_copy fsize) p.p_fparams;
@@ -808,7 +912,7 @@ let annotate (Module (m, imports, body, glodefs, doc)) =
   if !Error.err_count = 0 then begin	
     (* No point going on if imports failed *)
     match body with
-	Block (globals, body, fsize) ->
+	Block (globals, body, None, fsize) ->
 	  check_decls false (global_alloc fsize) glo_env globals;
 	  List.iter check_methods (desc_table ());
 	  is_module := false;
@@ -831,6 +935,6 @@ let annotate (Module (m, imports, body, glodefs, doc)) =
 	  d.d_lab <- sprintf "$.%main" [fId !current];
 	  m.x_def <- Some d;
 
-      | NoBlock -> failwith "annotate"
+      | _ -> failwith "annotate"
   end
 

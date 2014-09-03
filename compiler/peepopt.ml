@@ -175,6 +175,10 @@ let ruleset1 replace =
     | CONV (IntT, ShortT) :: (LOCAL _ | GLOBAL _) :: STORE ShortT :: _ -> 
 	replace 1 []
 
+    (* Don't lose precision in double conversion *)
+    | CONV (IntT, FloatT) :: CONV (FloatT, DoubleT) :: _ ->
+        replace 2 [CONV (IntT, DoubleT)]
+
     (* Specially for INC(local) and INC(global) *)
     | LOCAL a :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
@@ -256,7 +260,7 @@ let simple =
 
 let width =
   function
-       CharT | BoolT | ByteT -> 1 
+       CharT | BoolT | SysByteT -> 1 
      | ShortT -> 2
      | IntT | FloatT | PtrT -> 4
      | LongT | DoubleT -> 8
@@ -358,9 +362,9 @@ let ruleset3 replace =
     | GLOBAL x :: STORE s :: _ -> replace 2 [STG (s, x)]
 
       (* Small results *)
-    | CALL (n, (CharT|BoolT|ByteT|ShortT)) :: _ -> 
+    | CALL (n, (CharT|BoolT|SysByteT|ShortT)) :: _ -> 
 	replace 1 [CALL (n, IntT)]
-    | RETURN (CharT|BoolT|ByteT|ShortT) :: _ -> replace 1 [RETURN IntT]
+    | RETURN (CharT|BoolT|SysByteT|ShortT) :: _ -> replace 1 [RETURN IntT]
 
       (* Eliminate operands that don't fit in 16 bits *)
     | LOCAL n :: _ when not (fits 16 n) ->

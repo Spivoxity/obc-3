@@ -46,12 +46,26 @@ let init () =
   List.iter add
     [ "ARRAY", ARRAY; "BEGIN", BEGIN; "BY", BY; "CASE", CASE; "CONST", CONST;
       "DIV", MULOP Div; "DO", DO; "ELSE", ELSE; "ELSIF", ELSIF; 
-      "END", END; "EXIT", EXIT; "FOR", FOR; "IF", IF ; "IMPORT", IMPORT; 
-      "IS", IS; "LOOP", LOOP; "MOD", MULOP Mod; "MODULE", MODULE; "NIL", NIL; 
+      "END", END; "FOR", FOR; "IF", IF ; "IMPORT", IMPORT; 
+      "IS", IS; "MOD", MULOP Mod; "MODULE", MODULE; "NIL", NIL; 
       "OF", OF; "OR", ADDOP Or; "POINTER", POINTER; "PROCEDURE", PROCEDURE; 
-      "RECORD", RECORD; "REPEAT", REPEAT; "RETURN", RETURN; "THEN", THEN; 
+      "RECORD", RECORD; "REPEAT", REPEAT; "THEN", THEN; 
       "TO", TO; "TYPE", TYPE; "UNTIL", UNTIL; "VAR", VAR; 
-      "WHILE", WHILE; "WITH", WITH; "IN", RELOP In ];
+      "WHILE", WHILE; "IN", RELOP In ];
+
+  (* Ordinary Oberon-2 *)
+  if not !Config.ob07flag then
+    List.iter add [ "RETURN", RETURN; "WITH", WITH ];
+
+  (* Oberon07 *)
+  if !Config.ob07flag then
+    List.iter add [ "RETURN", RETURN07; "TRUE", TRUE; "FALSE", FALSE ];
+
+  (* Extensions to Oberon07 *)
+  if not !Config.ob07flag || !Config.extensions then
+    List.iter add [ "LOOP", LOOP; "EXIT", EXIT ];
+
+  (* Extensions to all dialects *)
   if !Config.extensions then
     List.iter add [ "ABSTRACT", ABSTRACT ]
 

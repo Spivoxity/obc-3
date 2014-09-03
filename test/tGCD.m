@@ -38,25 +38,25 @@ LABEL 1
 !   WHILE x # y DO
 LDGW tGCD.x
 LDGW tGCD.y
-JEQ 2
+JEQ 3
 !     IF x > y THEN
 LDGW tGCD.x
 LDGW tGCD.y
-JLEQ 4
+JLEQ 6
 !       x := x - y
 LDGW tGCD.x
 LDGW tGCD.y
 MINUS
 STGW tGCD.x
 JUMP 1
-LABEL 4
+LABEL 6
 !       y := y - x
 LDGW tGCD.y
 LDGW tGCD.x
 MINUS
 STGW tGCD.y
 JUMP 1
-LABEL 2
+LABEL 3
 !   Out.Int(x, 0); Out.Ln
 CONST 0
 LDGW tGCD.x

@@ -78,14 +78,14 @@ PROC tFCmp.PBool 0 5 0
 ! PROCEDURE PBool(b: BOOLEAN);
 !   IF b THEN
 LDLC 12
-JUMPF 6
+JUMPF 7
 !     Out.String("true")
 CONST 5
 GLOBAL tFCmp.%1
 GLOBAL Out.String
 CALL 2
 JUMP 5
-LABEL 6
+LABEL 7
 !     Out.String("false")
 CONST 6
 GLOBAL tFCmp.%2

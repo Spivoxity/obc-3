@@ -26,7 +26,7 @@ if [ -z "$lib" ]; then
     exit 2
 fi
 
-compiler="../compiler/obc1 -I $lib -x"
+compiler="../compiler/obc1 -I $lib"
 interp="../obx"
 if [ "$ENABLE_JIT" = 1 ]; then interp="../obxj"; fi
 OBC_LIB=../lib
@@ -61,14 +61,17 @@ done
 
 status=0
 
-$compiler $srcdir/xTypes.m >xTypes.k
-$compiler $srcdir/xPrelude.m >xPrelude.k
+$compiler -x $srcdir/xTypes.m >xTypes.k
+$compiler -x $srcdir/xPrelude.m >xPrelude.k
 
 for f in ${*:-`cd $srcdir; echo t*.m`}; do
     echo "$f"
 
-    flag=
-    if [ $f = tMixIt.m ]; then flag=-w; fi
+    case $f in
+        tMixIt.m) flag='-w -x';;
+        *07.m) flag='-07 -x';;
+        *) flag=-x ;;
+    esac
 
     rm -f a.out a.k out code
     ($compiler $flag -O $srcdir/$f >a.k \

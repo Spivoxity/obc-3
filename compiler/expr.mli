@@ -57,6 +57,9 @@ val check_assign :
   string -> Print.arg list -> 
     environment -> otype -> expr -> location -> unit
 
+(* dynamic -- check if an expression has dynamic type *)
+val dynamic : expr -> bool
+
 (* check_typetest -- check a type test *)
 val check_typetest : expr -> otype -> location -> unit
 

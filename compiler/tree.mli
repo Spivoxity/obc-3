@@ -61,7 +61,7 @@ type program =
 
 and import = name * ident * int ref
 
-and block = Block of decl list * stmt * int ref | NoBlock
+and block = Block of decl list * stmt * expr option * int ref | NoBlock
 
 and decl = 
     ConstDecl of name * expr * docstring
@@ -75,7 +75,7 @@ and decl =
 and proc_heading = Heading of decl list * name option
 
 and stmt = 
-  { s_guts: stmt_guts;		(* The statement itself *)
+  { mutable s_guts: stmt_guts;	(* The statement itself *)
     s_loc: location }		(* Starting line *)
 
 and stmt_guts =
@@ -90,6 +90,7 @@ and stmt_guts =
   | ExitStmt
   | ForStmt of expr * expr * expr * expr * stmt * def option ref
   | WithStmt of (expr * name * stmt) list * stmt option
+  | TypeCase of expr * (name * stmt) list * stmt option
   | Seq of stmt list
   | Skip
   | ErrStmt

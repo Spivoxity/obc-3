@@ -158,7 +158,7 @@ STLW -4
 LABEL 4
 !   WHILE q # NIL DO v.visit(v, q.head); q := q.tail END
 LDLW -4
-JEQZ 5
+JEQZ 6
 LDLW -4
 NCHECK 29
 LOADW
@@ -173,7 +173,7 @@ NCHECK 29
 LDNW 4
 STLW -4
 JUMP 4
-LABEL 5
+LABEL 6
 RETURN
 END
 
@@ -186,9 +186,9 @@ NCHECK 38
 LDNW -4
 GLOBAL tIter.CRec
 TYPETEST 1
-JUMPT 6
+JUMPT 7
 ERROR E_CAST 38
-LABEL 6
+LABEL 7
 STLW -4
 !   self.count := self.count+1
 LDLW -4
@@ -238,9 +238,9 @@ NCHECK 56
 LDNW -4
 GLOBAL tIter.RRec
 TYPETEST 1
-JUMPT 7
+JUMPT 8
 ERROR E_CAST 56
-LABEL 7
+LABEL 8
 STLW -4
 !   NEW(p); p.head := n; p.tail := self.list; self.list := p
 CONST 8

@@ -126,6 +126,7 @@ and builtin =
     b_argtypes: otype list }
 
 val numtype : otype
+val bytetype : otype
 val shortint : otype
 val inttype : otype
 val longint : otype
@@ -137,7 +138,7 @@ val longreal: otype
 val settype: otype
 val niltype : otype
 val ptrtype : otype
-val bytetype : otype
+val sysbyte : otype
 val errtype : otype
 val strtype : otype
 val bodytype : otype
@@ -223,6 +224,9 @@ val numeric : otype -> bool
 
 (* integral -- test if a type is integral *)
 val integral : otype -> bool
+
+(* floating -- test for real types *)
+val floating : otype -> bool
 
 (* kind_of -- get kind code for basic type *)
 val kind_of : otype -> kind

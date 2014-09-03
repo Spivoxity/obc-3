@@ -71,7 +71,7 @@ PROC tQSet.queens 4 6 0x00200001
 !   IF k = N THEN
 LDLW 12
 CONST 8
-JNEQ 6
+JNEQ 12
 !     print(choice); done := TRUE
 LDLW 16
 GLOBAL tQSet.print
@@ -79,7 +79,7 @@ CALL 1
 CONST 1
 STGC tQSet.done
 RETURN
-LABEL 6
+LABEL 12
 !     y := 0;
 CONST 0
 STLW -4
@@ -87,9 +87,9 @@ LABEL 2
 !     WHILE (y < N) & ~done DO
 LDLW -4
 CONST 8
-JGEQ 3
+JGEQ 4
 LDGC tQSet.done
-JUMPT 3
+JUMPT 4
 !       IF (y IN rows) & (k+y IN diagdown) & (y-k+7 IN diagup) THEN 
 CONST 1
 LDLW -4
@@ -98,7 +98,7 @@ BOUND 34
 LSL
 LDLW 20
 BITAND
-JEQZ 5
+JEQZ 7
 CONST 1
 LDLW 12
 LDLW -4
@@ -108,7 +108,7 @@ BOUND 34
 LSL
 LDLW 24
 BITAND
-JEQZ 5
+JEQZ 7
 CONST 1
 LDLW -4
 LDLW 12
@@ -120,7 +120,7 @@ BOUND 34
 LSL
 LDLW 28
 BITAND
-JEQZ 5
+JEQZ 7
 ! 	choice[k] := y;
 LDLW -4
 LDLW 16
@@ -164,11 +164,11 @@ LDLW 12
 INC
 GLOBAL tQSet.queens
 CALL 5
-LABEL 5
+LABEL 7
 !       y := y+1
 INCL -4
 JUMP 2
-LABEL 3
+LABEL 4
 RETURN
 END
 
@@ -177,19 +177,19 @@ PROC tQSet.print 4 6 0x00100001
 !   x := 0;
 CONST 0
 STLW -4
-LABEL 7
+LABEL 13
 !   WHILE x < N DO
 LDLW -4
 CONST 8
-JGEQ 8
+JGEQ 15
 !     IF x > 0 THEN Out.Char(' ') END;
 LDLW -4
-JLEQZ 10
+JLEQZ 18
 CONST 32
 ALIGNC
 GLOBAL Out.Char
 CALL 1
-LABEL 10
+LABEL 18
 !     Out.Int(choice[x]+1, 0);
 CONST 0
 LDLW 12
@@ -202,8 +202,8 @@ GLOBAL Out.Int
 CALL 2
 !     x := x+1
 INCL -4
-JUMP 7
-LABEL 8
+JUMP 13
+LABEL 15
 !   Out.Ln()
 GLOBAL Out.Ln
 CALL 0

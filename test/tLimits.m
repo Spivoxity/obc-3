@@ -208,7 +208,7 @@ CALL 0
 GLOBAL tLimits.MaxReal
 CALLF 0
 FCONST 3.40282346639e+38
-FJEQ 9
+FJEQ 10
 !     Out.String("Fail: MAX(REAL)"); Out.Ln
 CONST 16
 GLOBAL tLimits.%1
@@ -216,14 +216,14 @@ GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 9
+LABEL 10
 !   SetMax;
 GLOBAL tLimits.SetMax
 CALL 0
 !   IF xPrelude.maxlong # mymax THEN 
 LDGD tLimits.mymax
 DCONST 1.79769313486e+308
-DJEQ 11
+DJEQ 13
 !     Out.String("Fail: MAX(LONG)"); Out.Ln
 CONST 16
 GLOBAL tLimits.%2
@@ -231,7 +231,7 @@ GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 11
+LABEL 13
 !   TestAsh(MAX(INTEGER), -1);
 CONST -1
 CONST 2147483647

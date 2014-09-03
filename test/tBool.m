@@ -34,10 +34,10 @@ FLEQ
 STGC tBool.b
 !   IF b THEN x := 5 END;
 LDGC tBool.b
-JUMPF 2
+JUMPF 3
 FCONST 5.
 STGF tBool.x
-LABEL 2
+LABEL 3
 !   Out.Fixed(x, 0, 0); Out.Ln
 CONST 0
 CONST 0

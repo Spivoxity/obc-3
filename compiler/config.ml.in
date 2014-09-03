@@ -44,6 +44,8 @@ let linecount = ref false
 let debug = ref 0
 let libpath = ref ["."]
 let lcflag = ref false
+let forflag = ref false
+let ob07flag = ref false
 
 let set_debug n = 
   debug := n; Yyparse.yydebug := (n > 2)

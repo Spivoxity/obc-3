@@ -41,17 +41,19 @@ PROCEDURE Cons(l, r: tree): tree;
 BEGIN
   NEW(p);
   p.left := l; p.right := r;
-  RETURN p;
+  RETURN p
 END Cons;
 
 PROCEDURE Build(n: INTEGER): tree;
+  VAR t: tree;
 BEGIN
   IF n <= 1 THEN
     GC.Collect;
-    RETURN NIL
+    t := NIL
   ELSE
-    RETURN Cons(Build(n-2), Build(n-1))
-  END
+    t := Cons(Build(n-2), Build(n-1))
+  END;
+  RETURN t
 END Build;
 
 PROCEDURE Print(t:tree);
@@ -67,12 +69,14 @@ BEGIN
 END Print;
 
 PROCEDURE count(t:tree): INTEGER;
+  VAR res: INTEGER;
 BEGIN
   IF t = NIL THEN
-    RETURN 1
+    res := 1
   ELSE
-    RETURN count(t.left) + count(t.right)
-  END
+    res := count(t.left) + count(t.right)
+  END;
+  RETURN res
 END count;
 
 VAR i: INTEGER; p: tree;

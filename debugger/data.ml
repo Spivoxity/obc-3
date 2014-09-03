@@ -58,7 +58,7 @@ let fetch t a =
     (t, Address a)
   else begin
     let r = match t.t_guts with
-	BasicType (IntT | CharT | BoolT | SetT | ByteT) 
+	BasicType (IntT | ByteT | CharT | BoolT | SetT | SysByteT) 
             | EnumType _ ->
 	  Simple (IntVal (integer_of_int32 (peek t.t_rep.m_size a)))
       | BasicType ShortT ->

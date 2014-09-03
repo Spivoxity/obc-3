@@ -215,6 +215,15 @@ let rec check_stmt i0 s =
 	    Universe arms in
 	let i2 = check_else i0 elsept in
 	inimeet i1 i2
+    | TypeCase (x, arms, elsept) ->
+        let i1 = check_expr i0 x in
+        let i2 =
+          List.fold_left
+            (fun i (_, body) ->
+              inimeet i (check_stmt i body))
+            Universe arms in
+        let i3 = check_else i1 elsept in
+        inimeet i2 i3
     | Seq ss ->
 	List.fold_left check_stmt i0 ss
     | Skip -> i0

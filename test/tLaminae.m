@@ -79,14 +79,14 @@ LDLW -8
 CONST 2
 TIMES
 LDLW -4
-JGEQ 4
+JGEQ 5
 LDLW -8
 LDLW -4
 LDLW -8
 MINUS
 TIMES
 CONST 250000
-JGT 4
+JGT 5
 !       INC(count[d*(a-d)]); d := d+1
 GLOBAL tLaminae.count
 LDLW -8
@@ -104,7 +104,7 @@ SWAP
 STOREW
 INCL -8
 JUMP 3
-LABEL 4
+LABEL 5
 INCL -4
 JUMP 1
 LABEL 2
@@ -122,19 +122,19 @@ INC
 STLW -16
 CONST 3
 STLW -4
-LABEL 5
+LABEL 7
 LDLW -4
 LDLW -16
-JGT 6
+JGT 8
 !     b := a-2;
 LDLW -4
 CONST 2
 MINUS
 STLW -8
-LABEL 7
+LABEL 9
 !     WHILE (b > 0) & ((a+b)*(a-b) <= 4*x) DO
 LDLW -8
-JLEQZ 8
+JLEQZ 11
 LDLW -4
 LDLW -8
 PLUS
@@ -145,18 +145,18 @@ TIMES
 LDLW 12
 CONST 4
 TIMES
-JGT 8
+JGT 11
 !       n := n+1; b := b-2
 INCL -12
 LDLW -8
 CONST 2
 MINUS
 STLW -8
+JUMP 9
+LABEL 11
+INCL -4
 JUMP 7
 LABEL 8
-INCL -4
-JUMP 5
-LABEL 6
 !   RETURN n
 LDLW -12
 RETURNW
@@ -199,34 +199,34 @@ CALL 0
 !   FOR i := 1 TO 250000 DO
 CONST 1
 STGW tLaminae.i
-LABEL 9
+LABEL 13
 LDGW tLaminae.i
 CONST 250000
-JGT 10
+JGT 14
 !     IF (count[i] > 0) & (count[i] <= 10) THEN
 GLOBAL tLaminae.count
 LDGW tLaminae.i
 CONST 250001
 BOUND 41
 LDIW
-JLEQZ 12
+JLEQZ 17
 GLOBAL tLaminae.count
 LDGW tLaminae.i
 CONST 250001
 BOUND 41
 LDIW
 CONST 10
-JGT 12
+JGT 17
 !       total := total + 1
 LDGW tLaminae.total
 INC
 STGW tLaminae.total
-LABEL 12
+LABEL 17
 LDGW tLaminae.i
 INC
 STGW tLaminae.i
-JUMP 9
-LABEL 10
+JUMP 13
+LABEL 14
 !   Out.Int(total, 0); Out.Ln
 CONST 0
 LDGW tLaminae.total

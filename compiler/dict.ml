@@ -272,6 +272,7 @@ let sys_type k r s =
 
 let voidtype = basic_type VoidT void_rep "VOID"
 let numtype = basic_type NumT void_rep "INTEGER"
+let bytetype = basic_type ByteT char_rep "BYTE"
 let shortint = basic_type ShortT short_rep "SHORTINT"
 let inttype = basic_type IntT int_rep "INTEGER"
 let longint = basic_type LongT long_rep "LONGINT"
@@ -284,11 +285,11 @@ let niltype = basic_type PtrT addr_rep "NIL"
 let errtype = basic_type ErrT int_rep "*errtype*"
 
 let ptrtype = sys_type PtrT addr_rep "PTR"
-let bytetype = sys_type ByteT char_rep "BYTE"
+let sysbyte = sys_type SysByteT char_rep "SYSBYTE"
 
 let basic_types = 
-  [voidtype; shortint; inttype; longint; character; boolean; 
-    realtype; longreal; settype; ptrtype; bytetype]
+  [voidtype; bytetype; shortint; inttype; longint; character; boolean; 
+    realtype; longreal; settype; ptrtype; sysbyte]
 
 let pointer d =
   (PointerType d, addr_rep, ptr_map)
@@ -434,6 +435,7 @@ let numtest k t =
 
 let numeric t = numtest DoubleT t
 let integral t = numtest LongT t
+let floating t = numeric t && not (integral t)
 
 let kind_of t =
   match t.t_guts with 
@@ -454,8 +456,8 @@ let is_enum t =
 
 let is_discrete t =
   match t.t_guts with
-      BasicType (LongT | IntT | ShortT | NumT | CharT | BoolT | ErrT) -> 
-	true
+      BasicType (LongT | IntT | ShortT | ByteT | NumT 
+          | CharT | BoolT | ErrT) -> true
     | EnumType n -> true
     | _ -> false
 
@@ -587,7 +589,7 @@ let make_env ds =
   List.iter defn ds; env
 
 let init_env () = 
-  make_env
+  let defs =
     [ "INTEGER", TypeDef, inttype;
       "SHORTINT", TypeDef, shortint;
       "LONGINT", TypeDef, longint;
@@ -596,8 +598,6 @@ let init_env () =
       "REAL", TypeDef, realtype;
       "LONGREAL", TypeDef, longreal;
       "SET", TypeDef, settype;
-      "TRUE", ConstDef (IntVal (integer 1)), boolean;
-      "FALSE", ConstDef (IntVal (integer 0)), boolean;
 
       (* These builtins are translated to inline code *)
       builtin "CHR" ChrFun 1 [inttype];      
@@ -609,30 +609,40 @@ let init_env () =
       builtin "DEC" DecProc (-1) [];
       builtin "ABS" AbsFun 1 [];
       builtin "ASSERT" Assert (-1) [];
-      builtin "ENTIER" Entier 1 [];
-      builtin "FLOOR" Entier 1 [];
-      builtin "SHORT" Short 1 [];
-      builtin "LONG" Long 1 [];
-      builtin "MIN" MinFun 1 [];
-      builtin "MAX" MaxFun 1 [];
-      builtin "SIZE" SizeFun 1 [];
       builtin "INCL" InclProc 2 [settype; inttype];
       builtin "EXCL" ExclProc 2 [settype; inttype];
-      builtin "ASH" AshFun 2 [inttype; inttype];
-      builtin "LSL" LslFun 2 [inttype; inttype];
-      builtin "LSR" LsrFun 2 [inttype; inttype];
-      builtin "ASR" AsrFun 2 [inttype; inttype];
-
+  
       (* These library procedures are genuine procedures *)
       libproc "HALT" 1 ["n", ParamDef, inttype] voidtype;
-      libproc "CAP" 1 ["c", ParamDef, character] character;
       libproc "COPY" 4 
 	["x", ParamDef, strtype; "v", VParamDef, strtype] voidtype ]
+    @ if !Config.ob07flag then 
+      [ "BYTE", TypeDef, bytetype;
+        builtin "FLT" FltFun 1 [inttype];
+        builtin "FLOOR" Entier 1 [];
+        builtin "PACK" PackProc 2 [];
+        builtin "UNPK" UnpkProc 2 [];
+        builtin "LSL" LslFun 2 [inttype; inttype];
+        builtin "LSR" LsrFun 2 [inttype; inttype];
+        builtin "ASR" AsrFun 2 [inttype; inttype];
+        builtin "ROR" RorFun 2 [inttype; inttype] ]
+    else 
+      [ "TRUE", ConstDef (IntVal (integer 1)), boolean;
+        "FALSE", ConstDef (IntVal (integer 0)), boolean;
+        libproc "CAP" 1 ["c", ParamDef, character] character;
+        builtin "MIN" MinFun 1 [];
+        builtin "MAX" MaxFun 1 [];
+        builtin "SHORT" Short 1 [];
+        builtin "LONG" Long 1 [];
+        builtin "SIZE" SizeFun 1 [];
+        builtin "ASH" AshFun 2 [inttype; inttype];
+        builtin "ENTIER" Entier 1 [] ] in 
+  make_env defs  
 
 let sysenv () = 
-  make_env
+  let defs =
     [ "PTR", TypeDef, ptrtype;
-      "BYTE", TypeDef, bytetype;
+      "BYTE", TypeDef, sysbyte;
       builtin "ADR" AdrFun 1 [];
       builtin "VAL" ValFun 2 [];
       builtin "BIT" BitFun 2 [inttype; inttype];
@@ -642,6 +652,12 @@ let sysenv () =
       libproc "MOVE" 3 
 	["src", ParamDef, inttype; "dest", ParamDef, inttype; 
 	  "nbytes", ParamDef, inttype] voidtype ]
+    @ if !Config.ob07flag then
+      [ builtin "SIZE" SizeFun 1 [] ]
+    else
+      [ ] in
+  make_env defs
+
 
 (* Debugger hooks *)
 

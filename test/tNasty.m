@@ -62,18 +62,18 @@ STGW tNasty.z
 !   IF (z = 7) OR (z = 11) THEN Out.String("OK"); Out.Ln END
 LDGW tNasty.z
 CONST 7
-JEQ 4
+JEQ 3
 LDGW tNasty.z
 CONST 11
-JNEQ 3
-LABEL 4
+JNEQ 4
+LABEL 3
 CONST 3
 GLOBAL tNasty.%1
 GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 3
+LABEL 4
 RETURN
 END
 

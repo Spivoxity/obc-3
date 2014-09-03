@@ -32,13 +32,13 @@ PROC tDblArg.f 0 3 0
 ! PROCEDURE f(b: BOOLEAN; x: LONGREAL); 
 !   IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x) END; 
 LDLC 12
-JUMPF 3
+JUMPF 4
 CONST 12
 GLOBAL tDblArg.%1
 GLOBAL Out.String
 CALL 2
 JUMP 2
-LABEL 3
+LABEL 4
 LDLD 16
 GLOBAL Out.LongReal
 CALL 2
@@ -58,32 +58,32 @@ STGW tDblArg.q
 !   m := (p < q) & (q DIV 0 > 2);
 LDGW tDblArg.p
 LDGW tDblArg.q
-JLT 4
+JLT 6
 CONST 0
-JUMP 5
-LABEL 4
+JUMP 7
+LABEL 6
 LDGW tDblArg.q
 CONST 0
 ZCHECK 15
 DIV
 CONST 2
 GT
-LABEL 5
+LABEL 7
 STGC tDblArg.m
 !   f((p < q) & (q DIV 2 > 0), 3.14)
 DCONST 3.14
 LDGW tDblArg.p
 LDGW tDblArg.q
-JLT 6
+JLT 9
 CONST 0
-JUMP 7
-LABEL 6
+JUMP 10
+LABEL 9
 LDGW tDblArg.q
 CONST 2
 DIV
 CONST 0
 GT
-LABEL 7
+LABEL 10
 ALIGNC
 GLOBAL tDblArg.f
 CALL 3

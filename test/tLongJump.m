@@ -65,26 +65,26 @@ LABEL 1
 !     CASE x OF
 LDGW tLongJump.x
 CONST 502
-TESTGEQ 7
-CONST 301
 TESTGEQ 8
+CONST 301
+TESTGEQ 9
 CONST 1
-JGEQ 5
-JUMP 2
-LABEL 8
+JGEQ 6
+JUMP 3
+LABEL 9
 CONST 499
-JLEQ 6
-JUMP 2
-LABEL 7
+JLEQ 7
+JUMP 3
+LABEL 8
 CONST 502
-JNEQ 2
+JNEQ 3
 !       x := x+3
 LDGW tLongJump.x
 CONST 3
 PLUS
 STGW tLongJump.x
-JUMP 3
-LABEL 5
+JUMP 4
+LABEL 6
 !       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
 LDGW tLongJump.x
 INC
@@ -405,20 +405,20 @@ STGW tLongJump.x
 LDGW tLongJump.x
 INC
 STGW tLongJump.x
-JUMP 3
-LABEL 6
+JUMP 4
+LABEL 7
 !       x := x+50
 LDGW tLongJump.x
 CONST 50
 PLUS
 STGW tLongJump.x
-JUMP 3
-LABEL 2
+JUMP 4
+LABEL 3
 !       x := x+1
 LDGW tLongJump.x
 INC
 STGW tLongJump.x
-LABEL 3
+LABEL 4
 !     Out.Char(' '); Out.Int(x,0)
 CONST 32
 ALIGNC

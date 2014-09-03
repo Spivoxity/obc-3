@@ -1,0 +1,166 @@
+MODULE tNestFunc07;
+
+IMPORT Out;
+
+PROCEDURE G(x: INTEGER); 
+BEGIN 
+  Out.Int(x, 0); Out.Ln 
+END G;
+
+PROCEDURE P;
+  VAR y: INTEGER;
+
+  PROCEDURE Q(F: PROCEDURE (x: INTEGER)); 
+  BEGIN 
+    F(y) 
+  END Q;
+
+BEGIN 
+  y := 3; 
+  Q(G) 
+END P;
+
+PROCEDURE R(F: PROCEDURE (x: INTEGER));
+  PROCEDURE S;
+  BEGIN
+    F(8)
+  END S;
+BEGIN
+  S
+END R;
+
+PROCEDURE U;
+  VAR y: INTEGER;
+
+  PROCEDURE V(x: INTEGER);
+  BEGIN
+    y := x
+  END V;
+BEGIN
+  y := 0;
+  R(V);
+  Out.Int(y, 0); Out.Ln;
+END U;
+
+BEGIN 
+  P;
+  U
+END tNestFunc07.
+
+(*<<
+3
+8
+>>*)
+
+(*[[
+!! SYMFILE #tNestFunc07 STAMP #tNestFunc07.%main 1
+!! END STAMP
+!! 
+MODULE tNestFunc07 STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tNestFunc07.G 0 3 0
+! PROCEDURE G(x: INTEGER); 
+!   Out.Int(x, 0); Out.Ln 
+CONST 0
+LDLW 12
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+PROC tNestFunc07.%1.Q 4 3 0
+!   PROCEDURE Q(F: PROCEDURE (x: INTEGER)); 
+SAVELINK
+!     F(y) 
+LDEW -4
+LDLW 16
+LINK
+LDLW 12
+NCHECK 15
+CALL 1
+RETURN
+END
+
+PROC tNestFunc07.P 4 3 0
+! PROCEDURE P;
+!   y := 3; 
+CONST 3
+STLW -4
+!   Q(G) 
+CONST 0
+GLOBAL tNestFunc07.G
+LOCAL 0
+LINK
+GLOBAL tNestFunc07.%1.Q
+CALL 2
+RETURN
+END
+
+PROC tNestFunc07.%2.S 4 3 0
+!   PROCEDURE S;
+SAVELINK
+!     F(8)
+CONST 8
+LDEW 16
+LINK
+LDEW 12
+NCHECK 26
+CALL 1
+RETURN
+END
+
+PROC tNestFunc07.R 0 3 0
+! PROCEDURE R(F: PROCEDURE (x: INTEGER));
+!   S
+LOCAL 0
+LINK
+GLOBAL tNestFunc07.%2.S
+CALL 0
+RETURN
+END
+
+PROC tNestFunc07.%3.V 4 3 0
+!   PROCEDURE V(x: INTEGER);
+SAVELINK
+!     y := x
+LDLW 12
+STEW -4
+RETURN
+END
+
+PROC tNestFunc07.U 4 3 0
+! PROCEDURE U;
+!   y := 0;
+CONST 0
+STLW -4
+!   R(V);
+LOCAL 0
+GLOBAL tNestFunc07.%3.V
+GLOBAL tNestFunc07.R
+CALL 2
+!   Out.Int(y, 0); Out.Ln;
+CONST 0
+LDLW -4
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+PROC tNestFunc07.%main 0 3 0
+!   P;
+GLOBAL tNestFunc07.P
+CALL 0
+!   U
+GLOBAL tNestFunc07.U
+CALL 0
+RETURN
+END
+
+! End of file
+]]*)

@@ -62,14 +62,14 @@ CALL 3
 LDGW tNewBug.q
 NCHECK 13
 LDNW 4
-JEQZ 5
+JEQZ 6
 !     Out.String("Pass")
 CONST 5
 GLOBAL tNewBug.%1
 GLOBAL Out.String
 CALL 2
 JUMP 4
-LABEL 5
+LABEL 6
 !     Out.String("Fail")
 CONST 5
 GLOBAL tNewBug.%2

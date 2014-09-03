@@ -62,11 +62,11 @@ PROC tGC2.Reverse 0 3 0x00100001
 ! PROCEDURE Reverse(a: ptr): ptr;
 !   IF a = NIL THEN
 LDLW 12
-JNEQZ 2
+JNEQZ 3
 !     RETURN NIL
 CONST 0
 RETURNW
-LABEL 2
+LABEL 3
 !     RETURN Snoc(Reverse(a.tl), a.hd)
 LDLW 12
 NCHECK 18
@@ -91,7 +91,7 @@ GLOBAL NEW
 CALL 3
 !   IF a = NIL THEN
 LDLW 12
-JNEQZ 4
+JNEQZ 6
 !     r.hd := x; r.tl := NIL
 LDLW 16
 LDLW -4
@@ -101,8 +101,8 @@ CONST 0
 LDLW -4
 NCHECK 27
 STNW 4
-JUMP 3
-LABEL 4
+JUMP 4
+LABEL 6
 !     r.hd := a.hd; r.tl := Snoc(a.tl, x)
 LDLW 12
 NCHECK 29
@@ -119,7 +119,7 @@ CALLW 2
 LDLW -4
 NCHECK 29
 STNW 4
-LABEL 3
+LABEL 4
 !   RETURN r
 LDLW -4
 RETURNW
@@ -129,11 +129,11 @@ PROC tGC2.Sum 0 4 0x00100001
 ! PROCEDURE Sum(a: ptr): INTEGER;
 !   IF a = NIL THEN
 LDLW 12
-JNEQZ 6
+JNEQZ 9
 !     RETURN 0
 CONST 0
 RETURNW
-LABEL 6
+LABEL 9
 !     RETURN a.hd + Sum(a.tl)
 LDLW 12
 NCHECK 39
@@ -154,10 +154,10 @@ STGW tGC2.a
 !   FOR n := 1 TO 1000 DO a := Snoc(a, n) END;
 CONST 1
 STGW tGC2.n
-LABEL 7
+LABEL 10
 LDGW tGC2.n
 CONST 1000
-JGT 8
+JGT 11
 LDGW tGC2.n
 LDGW tGC2.a
 GLOBAL tGC2.Snoc
@@ -166,8 +166,8 @@ STGW tGC2.a
 LDGW tGC2.n
 INC
 STGW tGC2.n
-JUMP 7
-LABEL 8
+JUMP 10
+LABEL 11
 !   Out.Int(Sum(Reverse(a)), 0); Out.Ln;
 CONST 0
 LDGW tGC2.a

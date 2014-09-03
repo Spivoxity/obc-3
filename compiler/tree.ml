@@ -48,7 +48,7 @@ type program =
 
 and import = name * ident * int ref
 
-and block = Block of decl list * stmt * int ref | NoBlock
+and block = Block of decl list * stmt * expr option * int ref | NoBlock
 
 and decl = 
     ConstDecl of name * expr * docstring
@@ -62,7 +62,7 @@ and decl =
 and proc_heading = Heading of decl list * name option
 
 and stmt = 
-  { s_guts: stmt_guts;		(* The statement itself *)
+  { mutable s_guts: stmt_guts;	(* The statement itself *)
     s_loc: location }		(* Starting line *)
 
 and stmt_guts =
@@ -77,6 +77,7 @@ and stmt_guts =
   | ExitStmt
   | ForStmt of expr * expr * expr * expr * stmt * def option ref
   | WithStmt of (expr * name * stmt) list * stmt option
+  | TypeCase of expr * (name * stmt) list * stmt option
   | Seq of stmt list
   | Skip
   | ErrStmt
@@ -313,6 +314,12 @@ let rec ppStmt s =
 	    prf " $_$ $" [ppExpr x; fQualId t; ppStmt body]) arms;
 	  (match elsept with Some s -> prf " ELSE $" [ppStmt s] | None -> ());
 	  prf ")" []
+      | TypeCase (switch, arms, elsept) ->
+          prf "(TYPECASE $" [ppExpr switch];
+          List.iter (function (t, body) ->
+            prf " $ $" [fQualId t; ppStmt body]) arms;
+	  (match elsept with Some s -> prf " ELSE $" [ppStmt s] | None -> ());
+	  prf ")" []
       | Seq stmts ->
 	  prf "(SEQ$)" [fTail(ppStmt) stmts]
       | Skip ->
@@ -362,10 +369,11 @@ and ppHeading (Heading (fps, rt)) =
 
 and ppBlock =
   function
-      Block (decls, stmts, fsize) ->
-	let f prf = 
-	  prf "(BLOCK (DECLS$) $)" [fTail(ppDecl) decls; ppStmt stmts] in
-	fExt f
+      Block (decls, stmts, ret, fsize) ->
+        fMeta "(BLOCK (DECLS$) $$)" 
+          [fTail(ppDecl) decls; ppStmt stmts;
+            (match ret with Some e -> fMeta " (RETURN $)" [ppExpr e]
+              | None -> fStr "")]
     | NoBlock -> fStr "(NOBLOCK)"
 
 let ppTree (Module (m, imports, body, _, _)) = 

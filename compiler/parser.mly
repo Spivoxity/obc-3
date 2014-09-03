@@ -54,10 +54,13 @@ open Print
 %token			FOR MODULE PROCEDURE RECORD REPEAT RETURN THEN TO TYPE 
 %token			UNTIL VAR WHILE NOT POINTER NIL WITH
 %token			CASE LOOP EXIT BY 
-%token			ABSTRACT
+%token			ABSTRACT RETURN07 TRUE FALSE
 
 /* operator priorities -- most needed only because of error productions */
 %right			error
+
+%right			RETURN
+%right			END
 
 %right			COMMA ADDOP RELOP EQUAL MINUS PLUS IS MULOP
 			STAR IDENT LPAR DOT SUB UPARROW RPAR BUS IF SEMI
@@ -95,6 +98,7 @@ let unmatched loc =
 
 let lloc () = (symbol_start (), symbol_end ())
 let rloc n = (rhs_start n, rhs_end n)
+let rend n = (rhs_end n, rhs_end n)
 
 let end_name = ref anon
 
@@ -118,6 +122,8 @@ let typexp tx = makeTypexpr (tx, lloc ())
 
 let has_proc ds = 
   List.exists (function ProcDecl _ -> true | _ -> false) ds
+
+let sequ ss loc = makeStmt (Seq (List.rev ss), loc)
 %}
     
 %%
@@ -142,16 +148,26 @@ import :
     name			{ ($name, $name.x_name, ref 0) }
   | name ASSIGN IDENT		{ ($name, $IDENT, ref 0) } ;
 
-block :	
-    blockid decls END ident
-      { check_end $blockid $ident (rloc 4); 
-        Block ($decls, makeStmt (Skip, no_loc), ref 0) }
-  | blockid decls BEGIN stmts END ident
+block :
+    blockid decls body END ident
+      { check_end $blockid $ident (rloc 5);
+        Block ($decls, $body, None, ref 0) } ;
+
+pblock :
+    blockid decls body ret END ident
       { check_end $blockid $ident (rloc 6);
-        Block ($decls, $stmts, ref 0) } ;
+        Block ($decls, $body, $ret, ref 0) } ;
 
 blockid :
     /* EMPTY */			{ !end_name } ;
+
+body :
+    /* empty */                 { makeStmt (Skip, no_loc) }
+  | BEGIN stmts		        { $stmts } ;  
+
+ret :
+    /* empty */		        { None }
+  | RETURN07 expr		{ Some $expr } ;
 
 decls :
     /* empty */ %prec error	{ [] }
@@ -214,17 +230,17 @@ fieldlist :
 							$texpr, $doc)] } ;
 
 proc :
-    doc PROCEDURE procid params semi block semi	
-      { ProcDecl (Procedure, $procid, $params, $block, $doc) }
-  | doc PROCEDURE rcvr procid params semi block semi
+    doc PROCEDURE procid params semi pblock semi	
+      { ProcDecl (Procedure, $procid, $params, $pblock, $doc) }
+  | doc PROCEDURE rcvr procid params semi pblock semi
       { let (Heading (ps, r)) = $params in
-        ProcDecl (Method, $procid, Heading ($rcvr::ps, r), $block, $doc) }
+        ProcDecl (Method, $procid, Heading ($rcvr::ps, r), $pblock, $doc) }
   | doc ABSTRACT PROCEDURE rcvr procid params semi
       { let (Heading (ps, r)) = $params in
         ProcDecl (AbsMeth, $procid, Heading ($rcvr::ps, r), NoBlock, $doc) }
   | doc PROCEDURE procid params IS STRING semi
       { PrimDecl ($procid, $params, $STRING, $doc) } 
-  | doc PROCEDURE error { end_name := anon } block semi
+  | doc PROCEDURE error { end_name := anon } pblock semi
       { DummyDecl } 
   | doc PROCEDURE UPARROW procid params semi
       { ForwardDecl (Procedure, $procid, $params, $doc) }
@@ -278,8 +294,8 @@ the next statement, and another (linked to stmts1) where it needs to
 see or insert a semicolon before continuing the sequence. */
 
 stmts :
-    stmts0			{ makeStmt (Seq (List.rev $stmts0), lloc ()) }
-  | stmts1			{ makeStmt (Seq (List.rev $stmts1), lloc ()) } ;
+    stmts0 %prec RETURN		{ sequ $stmts0 (rloc 1) }
+  | stmts1			{ sequ $stmts1 (rloc 1) } ;
 
 stmts0 :
     /* empty */			{ [] }
@@ -290,19 +306,17 @@ stmts0 :
 stmts1 :
     stmts0 stmt0		{ makeStmt ($stmt0, rloc 2) :: $stmts0 } 
   | stmts0 stmt1		{ makeStmt ($stmt1, rloc 2) :: $stmts0 } 
-  | stmts1 missing stmt1	{ makeStmt ($stmt1, rloc 3) :: $stmts1 } ;
-
-missing :
-    /* empty */ %prec error	{ missing_semi (lloc ()) } ;
+  | stmts1 stmt1	        { missing_semi (rend 1);
+                                  makeStmt ($stmt1, rloc 3) :: $stmts1 } ;
 
 stmt0 :
     desig ASSIGN expr		{ Assign ($desig, $expr) }
-  | desig			{ ProcCall (make_call $desig) } ;
+  | desig			{ ProcCall (make_call $desig) }
+  | RETURN %prec error		{ Return None }
+  | RETURN expr 		{ Return (Some $expr) } ;
 
 stmt1 :
-    RETURN %prec error		{ Return None }
-  | RETURN expr 		{ Return (Some $expr) }
-  | ifs END 			{ IfStmt ($ifs, makeStmt (Skip, no_loc)) }
+    ifs END 			{ IfStmt ($ifs, makeStmt (Skip, no_loc)) }
   | ifs ELSE stmts END 		{ IfStmt ($ifs, $stmts) }
   | whiles END			{ WhileStmt $whiles }
   | CASE expr OF cases else END { CaseStmt ($expr, $cases, $else) }
@@ -390,6 +404,8 @@ factor :
   | STRING			{ exp (String (save_string $STRING, 
 					    String.length $STRING)) }
   | NIL				{ exp Nil }
+  | TRUE                        { exp (Const (IntVal (integer 1), boolean)) }
+  | FALSE			{ exp (Const (IntVal (integer 0), boolean)) }
   | desig %prec error		{ $desig }
   | LBRACE RBRACE		{ exp (Set []) }
   | LBRACE elements RBRACE	{ exp (Set $elements) }
@@ -433,9 +449,15 @@ defids :
   | defid COMMA defids		{ $defid :: $defids } ;
 
 defid :
-    IDENT			{ makeDefId ($IDENT, Private, rloc 1) }
-  | IDENT MINUS			{ makeDefId ($IDENT, ReadOnly, rloc 1) }
-  | IDENT STAR			{ makeDefId ($IDENT, Visible, rloc 1) } ;
+    IDENT export		{ makeDefId ($IDENT, $export, rloc 1) } ;
+
+export :
+    /* empty */                 { Private }
+  | STAR			{ Visible }
+  | MINUS			
+      { if !Config.ob07flag then
+          parse_error "Read-only export is the only kind in Oberon07";
+        ReadOnly } ;
 
 semi :
     SEMI			{ () }

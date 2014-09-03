@@ -95,7 +95,8 @@ let spec =
     "-I", Arg.String (function s -> Config.libpath := !Config.libpath @ [s]),
       "dir Add dir as search directory for imported modules";
     "-d", Arg.Int Config.set_debug, "n Set debugging level to n";
-    "-rsb", Arg.Set Config.lcflag, " Keywords and built-ins in lower case" ]
+    "-rsb", Arg.Set Config.lcflag, " Keywords and built-ins in lower case";
+    "-07", Arg.Set Config.ob07flag, " Oberon-07 language rules"]
 
 let usage () = Arg.usage spec "Usage:"; exit 2
 

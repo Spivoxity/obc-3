@@ -66,11 +66,11 @@ LDGW tSegSum.u
 GLOBAL tSegSum.f
 CALLW 1
 CONST 120
-JGT 2
+JGT 3
 !     IF sum = A THEN
 LDGW tSegSum.sum
 CONST 120
-JNEQ 4
+JNEQ 6
 !       count := count+1;
 LDGW tSegSum.count
 INC
@@ -94,10 +94,10 @@ LDGW tSegSum.v
 INC
 STGW tSegSum.v
 JUMP 1
-LABEL 4
+LABEL 6
 LDGW tSegSum.sum
 CONST 120
-JGEQ 5
+JGEQ 8
 !       sum := sum + f(v);
 LDGW tSegSum.sum
 LDGW tSegSum.v
@@ -110,7 +110,7 @@ LDGW tSegSum.v
 INC
 STGW tSegSum.v
 JUMP 1
-LABEL 5
+LABEL 8
 !       sum := sum - f(u);
 LDGW tSegSum.sum
 LDGW tSegSum.u
@@ -123,7 +123,7 @@ LDGW tSegSum.u
 INC
 STGW tSegSum.u
 JUMP 1
-LABEL 2
+LABEL 3
 !   Out.Int(count, 0); Out.Ln
 CONST 0
 LDGW tSegSum.count

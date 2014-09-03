@@ -52,7 +52,7 @@ LABEL 1
 !   WHILE k < n DO
 LDLW -4
 LDLW 12
-JGEQ 2
+JGEQ 3
 !     k := k+1;
 INCL -4
 !     x, y, u, v := y, x+y, v, u+v+y
@@ -74,7 +74,7 @@ STOREW
 STOREW
 STOREW
 JUMP 1
-LABEL 2
+LABEL 3
 !   RETURN u
 LDLW -16
 RETURNW

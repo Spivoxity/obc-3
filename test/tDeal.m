@@ -174,7 +174,7 @@ LABEL 9
 !   WHILE n < NS*NR DO
 LDLW -4
 CONST 52
-JGEQ 10
+JGEQ 11
 !     r := Random.Roll(NP*NH - n);
 CONST 52
 LDLW -4
@@ -187,7 +187,7 @@ CONST 0
 STLW -8
 CONST 0
 STLW -16
-LABEL 11
+LABEL 12
 !       t := t + NH - k[p];
 LDLW -16
 CONST 13
@@ -202,11 +202,11 @@ STLW -16
 !       IF r < t THEN EXIT END;
 LDLW -12
 LDLW -16
-JLT 12
+JLT 13
 !       p := p+1
 INCL -8
-JUMP 11
-LABEL 12
+JUMP 12
+LABEL 13
 !     deal[p][k[p]] := deck[n];
 LDLW 12
 LDLW -8
@@ -244,7 +244,7 @@ STOREW
 !     n := n+1
 INCL -4
 JUMP 9
-LABEL 10
+LABEL 11
 RETURN
 END
 
@@ -260,17 +260,17 @@ CALL 1
 !   FOR i := 0 TO NP-1 DO
 CONST 0
 STLW -108
-LABEL 15
+LABEL 17
 LDLW -108
 CONST 3
-JGT 16
+JGT 18
 !     FOR j := 0 TO NH-1 DO
 CONST 0
 STLW -112
-LABEL 17
+LABEL 19
 LDLW -112
 CONST 12
-JGT 18
+JGT 20
 !       Out.Char(' '); Out.String(deal[i][j])
 CONST 32
 ALIGNC
@@ -291,14 +291,14 @@ INDEXS
 GLOBAL Out.String
 CALL 2
 INCL -112
-JUMP 17
-LABEL 18
+JUMP 19
+LABEL 20
 !     Out.Ln
 GLOBAL Out.Ln
 CALL 0
 INCL -108
-JUMP 15
-LABEL 16
+JUMP 17
+LABEL 18
 RETURN
 END
 

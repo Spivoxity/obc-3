@@ -94,14 +94,14 @@ PROC tFibTree.Build 4 4 0x00010001
 !   IF n <= 1 THEN
 LDLW 12
 CONST 1
-JGT 3
+JGT 4
 !     GC.Collect;
 GLOBAL GC.Collect
 CALL 0
 !     RETURN NIL
 CONST 0
 RETURNW
-LABEL 3
+LABEL 4
 !     NEW(t);
 CONST 8
 GLOBAL tFibTree.node
@@ -134,14 +134,14 @@ PROC tFibTree.Print 0 4 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
 LDLW 12
-JNEQZ 5
+JNEQZ 7
 !     Out.Char('.')
 CONST 46
 ALIGNC
 GLOBAL Out.Char
 CALL 1
 RETURN
-LABEL 5
+LABEL 7
 !     Out.Char('(');
 CONST 40
 ALIGNC
@@ -171,11 +171,11 @@ PROC tFibTree.count 0 4 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ 7
+JNEQZ 10
 !     RETURN 1
 CONST 1
 RETURNW
-LABEL 7
+LABEL 10
 !     RETURN count(t.left) + count(t.right)
 LDLW 12
 NCHECK 67
@@ -195,10 +195,10 @@ PROC tFibTree.%main 0 4 0
 !   FOR i := 0 TO 7 DO
 CONST 0
 STGW tFibTree.i
-LABEL 8
+LABEL 11
 LDGW tFibTree.i
 CONST 7
-JGT 9
+JGT 12
 !     p := Build(i);
 LDGW tFibTree.i
 GLOBAL tFibTree.Build
@@ -232,8 +232,8 @@ CALL 0
 LDGW tFibTree.i
 INC
 STGW tFibTree.i
-JUMP 8
-LABEL 9
+JUMP 11
+LABEL 12
 RETURN
 END
 

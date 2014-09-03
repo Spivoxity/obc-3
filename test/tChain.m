@@ -137,7 +137,7 @@ STLW -8
 LABEL 5
 !   WHILE xs # NIL DO
 LDLW -12
-JEQZ 6
+JEQZ 7
 !     s := (s + xs.head) MOD P;
 LDLW -8
 LDLW -12
@@ -154,7 +154,7 @@ LDNW 4
 LDLW -12
 NCHECK 49
 LDNW 8
-JEQ 8
+JEQ 10
 !       Out.String("Fail 1"); Out.Ln; RETURN 
 CONST 7
 GLOBAL tChain.%1
@@ -163,14 +163,14 @@ CALL 2
 GLOBAL Out.Ln
 CALL 0
 RETURN
-LABEL 8
+LABEL 10
 !     xs := xs.tail1
 LDLW -12
 NCHECK 52
 LDNW 4
 STLW -12
 JUMP 5
-LABEL 6
+LABEL 7
 !   Out.Int(s, 0); Out.Ln;
 CONST 0
 LDLW -8
@@ -190,17 +190,17 @@ CALL 2
 !   FOR i := 1 TO 10 DO Test END;
 CONST 1
 STGW tChain.i
-LABEL 9
+LABEL 11
 LDGW tChain.i
 CONST 10
-JGT 10
+JGT 12
 GLOBAL tChain.Test
 CALL 0
 LDGW tChain.i
 INC
 STGW tChain.i
-JUMP 9
-LABEL 10
+JUMP 11
+LABEL 12
 !   Out.Int((((((P+1) DIV 2) * (N MOD P)) MOD P) 
 CONST 0
 CONST 2415

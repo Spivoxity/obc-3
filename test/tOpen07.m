@@ -1,0 +1,100 @@
+MODULE tOpen07;
+
+(*<<
+15
+>>*)
+
+IMPORT Out;
+
+PROCEDURE Sum(a: ARRAY OF INTEGER): INTEGER;
+  VAR i, s: INTEGER;
+BEGIN
+  s := 0;
+  FOR i := 0 TO LEN(a)-1 DO s := s + a[i] END;
+  RETURN s
+END Sum;
+
+VAR b: ARRAY 5 OF INTEGER;
+
+BEGIN
+  VAR j: INTEGER; BEGIN
+    FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
+  END;
+  Out.Int(Sum(b), 0); Out.Ln
+END tOpen07.
+
+(*[[
+!! SYMFILE #tOpen07 STAMP #tOpen07.%main 1
+!! END STAMP
+!! 
+MODULE tOpen07 STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tOpen07.Sum 12 4 0x00100001
+! PROCEDURE Sum(a: ARRAY OF INTEGER): INTEGER;
+!   s := 0;
+CONST 0
+STLW -8
+!   FOR i := 0 TO LEN(a)-1 DO s := s + a[i] END;
+LDLW 16
+DEC
+STLW -12
+CONST 0
+STLW -4
+LABEL 1
+LDLW -4
+LDLW -12
+JGT 2
+LDLW -8
+LDLW 12
+LDLW -4
+LDLW 16
+BOUND 13
+LDIW
+PLUS
+STLW -8
+INCL -4
+JUMP 1
+LABEL 2
+!   RETURN s
+LDLW -8
+RETURNW
+END
+
+PROC tOpen07.%main 4 4 0
+!     FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
+CONST 0
+STLW -4
+LABEL 3
+LDLW -4
+CONST 4
+JGT 4
+LDLW -4
+INC
+GLOBAL tOpen07.b
+LDLW -4
+CONST 5
+BOUND 21
+STIW
+INCL -4
+JUMP 3
+LABEL 4
+!   Out.Int(Sum(b), 0); Out.Ln
+CONST 0
+CONST 5
+GLOBAL tOpen07.b
+GLOBAL tOpen07.Sum
+CALLW 2
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+! Global variables
+GLOVAR tOpen07.b 20
+
+! End of file
+]]*)

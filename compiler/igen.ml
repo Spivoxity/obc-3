@@ -598,10 +598,6 @@ and gen_builtin q args =
           SEQ [gen_expr e2; gen_expr e1; call_proc "ASH" 2 inttype]
         end
 
-    | LslFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsl)]
-    | LsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsr)]
-    | AsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Asr)]
-
     | NewProc, e1::es ->
 	let t = base_type e1.e_type in
 	begin match t.t_guts with
@@ -931,16 +927,14 @@ let rec gen_stmt exit_lab s =
 	      | None -> check (ERROR ("E_CASE", expr_line switch)));
 	    LABEL lab2]
 
-      | WhileStmt arms ->
+      | WhileStmt (test, body) ->
 	  (* Not the best translation, but one that makes it easier
 	     to get line numbers right for the debugger *)
-	  let lab_top = label () in
-	  SEQ [LABEL lab_top;
-	    SEQ (List.map (fun (test, body) ->
-		let lab1 = label () in
-		SEQ [LINE (expr_line test); gen_cond false lab1 test;
-		  gen_stmt exit_lab body; JUMP lab_top;
-		  LABEL lab1]) arms)]
+	  let lab1 = label () and lab2 = label () in
+	  SEQ [LABEL lab1;
+	    LINE (expr_line test); gen_cond false lab2 test;
+            gen_stmt exit_lab body; JUMP lab1;
+            LABEL lab2]
 
       | RepeatStmt (body, test) ->
 	  let lab1 = label () in

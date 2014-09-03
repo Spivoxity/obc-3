@@ -40,9 +40,9 @@ val fQual : ident * ident -> Print.arg
 
 (* |kind| -- basic types *)
 type kind = 
-    NumT | ShortT | IntT | LongT | FloatT | DoubleT  
+    NumT | ByteT | ShortT | IntT | LongT | FloatT | DoubleT  
 				(* Numerics in order of width *)
-  | CharT | BoolT | SetT | PtrT | ByteT
+  | CharT | BoolT | SetT | PtrT | SysByteT
 				(* Non-numerics *)
   | VoidT | ErrT		(* Fictitious types *)
 
@@ -51,7 +51,7 @@ type op =
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
   | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA
   | In | BitAnd | BitOr | BitNot | BitXor | BitSub 
-  | Inc | Dec | Lsl | Lsr | Asr
+  | Inc | Dec | Lsl | Lsr | Asr | Ror
 
 val fOp : op -> Print.arg
 
@@ -67,7 +67,8 @@ type libid =
   | IncProc | DecProc | Assert | Entier | Short | Long
   | MinFun | MaxFun | AshFun | SizeFun | InclProc | ExclProc 
   | AdrFun | ValFun | BitFun | GetProc | PutProc
-  | LslFun | LsrFun | AsrFun
+  | LslFun | LsrFun | AsrFun | RorFun | FltFun
+  | PackProc | UnpkProc
 
 type symbol = string
 
