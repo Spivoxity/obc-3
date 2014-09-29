@@ -95,15 +95,15 @@ let pack_item self ~packing ~show =
 let menu_item ?use_mnemonic ?label ?right_justified ?packing ?show () =
   let w = MenuItem.create ?use_mnemonic ?label () in
   may right_justified ~f:(MenuItem.set_right_justified w);
-  pack_item (new menu_item w) ?packing ?show
+  pack_item (new menu_item w) ~packing ~show
 
 let tearoff_item ?packing ?show () =
   let w = MenuItem.tearoff_create () in
-  pack_item (new menu_item w) ?packing ?show
+  pack_item (new menu_item w) ~packing ~show
 
 let separator_item ?packing ?show () =
   let w = MenuItem.separator_create () in
-  pack_item (new menu_item w) ?packing ?show
+  pack_item (new menu_item w) ~packing ~show
 
 
 class image_menu_item obj = object
@@ -120,7 +120,7 @@ let image_menu_item
   let w = ImageMenuItem.create ?label ?stock ~use_mnemonic () in
   may right_justified ~f:(MenuItem.set_right_justified w);
   may image ~f:(fun im -> set ImageMenuItem.P.image w im#as_widget);
-  pack_item (new image_menu_item w) ?packing ?show
+  pack_item (new image_menu_item w) ~packing ~show
 
 class check_menu_item_signals obj = object (self)
   inherit menu_item_signals obj
@@ -143,7 +143,7 @@ let check_menu_item ?label ?use_mnemonic ?active ?show_toggle ?right_justified
     ?packing ?show () =
   let w = CheckMenuItem.create ?use_mnemonic ?label () in
   CheckMenuItem.set w ?active ?show_toggle ?right_justified;
-  pack_item (new check_menu_item w) ?packing ?show
+  pack_item (new check_menu_item w) ~packing ~show
 
 class radio_menu_item obj = object
   inherit check_menu_item (obj : Gtk.radio_menu_item obj)
@@ -155,7 +155,7 @@ let radio_menu_item ?group ?label ?use_mnemonic ?active ?show_toggle
   ?right_justified ?packing ?show () =
   let w = RadioMenuItem.create ?use_mnemonic ?group ?label () in
   CheckMenuItem.set w ?active ?show_toggle ?right_justified;
-  pack_item (new radio_menu_item w) ?packing ?show
+  pack_item (new radio_menu_item w) ~packing ~show
 
 (* Menus *)
 

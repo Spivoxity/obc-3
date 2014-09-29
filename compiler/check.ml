@@ -176,7 +176,7 @@ let find_receiver rcvr =
 
 let add_method kind binder d =
   let bindrec = get_record binder in
-  if kind = AbsMeth & not bindrec.r_abstract then
+  if kind = AbsMeth && not bindrec.r_abstract then
     sem_error "only abstract records can have abstract methods" [] d.d_loc;
   begin try 
     let prev = find_field binder d.d_tag in
