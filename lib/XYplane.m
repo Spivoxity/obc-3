@@ -107,6 +107,8 @@ PROCEDURE Key*(): CHAR IS "XYplane_key";
      ob_res.i = '\0';
      if (display == NULL) return;
 
+     XFlush(display);
+
      while (XEventsQueued(display, QueuedAfterReading) > 0) {
 	  XNextEvent(display, &event);
 	  switch (event.type) {
