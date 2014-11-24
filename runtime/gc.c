@@ -326,6 +326,7 @@ static page_index *empty_index;
    it; NULL is returned if p does not point within a page that belongs
    to us. */
 
+#if 0
 /* find_start -- find the start of an object from an internal pointer */
 static inline uchar *find_start(uchar *p) {
      header *h = get_header(p);
@@ -333,6 +334,7 @@ static inline uchar *find_start(uchar *p) {
      ASSERT(h->h_objsize > 0); /* Block must be in use */
      return h->h_memory + round_down(p - h->h_memory, h->h_objsize);
 }
+#endif
 
 /* page_setup -- make page table entries point to a given header */
 static void page_setup(uchar *base, unsigned size, header *h) {

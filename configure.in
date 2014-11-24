@@ -290,12 +290,12 @@ CHECKMODS="In Random Strings"
 AC_SUBST(CHECKMODS)
 
 # These modules contain standard primitives:
-PRIMMODS1="Args GC Timer DynLink Files Conv Random"
-AC_SUBST(PRIMMODS1)
+PRIMMODS="Args GC Timer DynLink Files Conv Random"
+AC_SUBST(PRIMMODS)
 
 # These modules have primitives in separate shared libraries:
-PRIMMODS2="Math MathL $XYPLANE"
-AC_SUBST(PRIMMODS2)
+SHLMODS="Math MathL $XYPLANE"
+AC_SUBST(SHLMODS)
 
 # Resource files needed by GUI debugger 
 AC_SUBST(RESOURCES, "blank.png breakpoint.png continue.png here.png \

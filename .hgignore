@@ -1,4 +1,5 @@
 syntax: glob
+*.pkg
 *.cmi
 *.cmo
 *.o
@@ -7,6 +8,7 @@ syntax: glob
 *.exe
 *.x
 *.so
+.DS_Store
 Depend
 Makefile
 autom4te.cache

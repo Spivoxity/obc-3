@@ -974,16 +974,12 @@ CAMLprim value ml_gtk_set_platform_menubar(value x, value y)
 #ifdef MACOS
     GtkMenuShell *menubar = GTK_MENU_SHELL(GtkWidget_val(x));
     GtkMenuItem *about = GTK_MENU_ITEM(GtkWidget_val(y));
-    GtkOSXApplication *app = g_object_new(GTK_TYPE_OSX_APPLICATION, NULL); 
-    GtkOSXApplicationMenuGroup *group;
+    GtkosxApplication *app = g_object_new(GTKOSX_TYPE_APPLICATION, NULL); 
 
     gtk_widget_hide((GtkWidget *) menubar);
-    gtk_osxapplication_set_menu_bar(app, menubar);
-
-    group = gtk_osxapplication_add_app_menu_group(app);
-    gtk_osxapplication_add_app_menu_item(app, group, about);
-
-    gtk_osxapplication_ready(app);
+    gtkosx_application_set_menu_bar(app, menubar);
+    gtkosx_application_insert_app_menu_item(app, (GtkWidget *) about, 0);
+    gtkosx_application_ready(app);
 #endif
 
     return Val_unit;

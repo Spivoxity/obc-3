@@ -51,11 +51,9 @@ DEBUG = @DEBUG@
 VPATH = @srcdir@
 MODULES = @MODULES@
 MODULES_B = @MODULES_B@
-PRIMMODS1 = @PRIMMODS1@
-PRIMMODS2 = @PRIMMODS2@
-PRIMMODS = $(PRIMMODS1) $(PRIMMODS2)
+PRIMMODS = @PRIMMODS@
+SHLMODS = @SHLMODS@
 CHECKMODS = @CHECKMODS@
-BYTEMODS = @BYTEMODS@
 LIBS = @LIBS@
 MATHLIB = @MATHLIB@
 XLIB = @XLIB@
@@ -74,14 +72,14 @@ endif
 all:: _Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k) oblib.o \
 	lscript lscript-b
 
-STDMODS = Builtin $(PRIMMODS1)
-ALLMODS = Builtin $(PRIMMODS)
+STDMODS = Builtin $(PRIMMODS)
+ALLMODS := $(STDMODS) $(SHLMODS)
 
 ifdef DYNLINK
-all:: $(PRIMMODS2:%=%$(DLEXT))
+all:: $(SHLMODS:%=%$(DLEXT))
 else
 all:: primtab.o
-STDMODS += $(PRIMMODS2)
+STDMODS += $(SHLMODS)
 endif
 
 
@@ -102,7 +100,7 @@ _Builtin.k: Builtin.m ../revid
 _Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP)
 In.k Out.k Err.k In-b.k : Files.k
 In.k In-b.k : Conv.k
-$(PRIMMODS2:%=%.k) : DynLink.k
+$(SHLMODS:%=%.k) : DynLink.k
 
 %.k: %.m
 	$(OBC1) -O -g -x $< >$@
@@ -136,11 +134,11 @@ Math$(DLEXT) MathL$(DLEXT): %$(DLEXT): %.c
 %.o: %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
-$(ALLMODS:%=%.o) $(PRIMMODS2:%=%$(DLEXT)) primtab.o: \
+$(ALLMODS:%=%.o) $(SHLMODS:%=%$(DLEXT)) primtab.o: \
 	../config.h $(top_srcdir)/runtime/obx.h \
 	$(top_srcdir)/runtime/obcommon.h
 
-primtab.c: $(CMODULES:%=%.m)
+primtab.c: $(STDMODS:%=%.m)
 	$(TCLSH) $(srcdir)/makeprims.tcl -t $^ >$@
 
 
@@ -161,7 +159,7 @@ clean:
 
 quiteclean: clean
 	rm -f lscript* Builtin.m
-	rm -f Builtin.c $(PRIMMODS:%=%.c)
+	rm -f Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c)
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean

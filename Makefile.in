@@ -58,7 +58,6 @@ DEBUG = @DEBUG@
 MODULES = @MODULES@
 SHLMODS = @SHLMODS@
 CHECKMODS = @CHECKMODS@
-BYTEMODS = @BYTEMODS@
 DYNLINK = @DYNLINK@
 DLEXT = @DLEXT@
 DLFLAGS = @DLFLAGS@
@@ -71,7 +70,6 @@ WINDOWS = @WINDOWS@
 MACOS = @MACOS@
 EXEEXT = @EXEEXT@
 ENABLE_JIT = @ENABLE_JIT@
-ENABLE_GUI = @ENABLE_GUI@
 ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
 ABS_SRCDIR = @ABS_SRCDIR@
 ABS_BINDIR = @ABS_BINDIR@
@@ -135,10 +133,11 @@ ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
 obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
 
 LINK = $(CC) $(LDFLAGS) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
+JITPROC = $(shell nm runtime/obx-jd.a | sed -n '/jit_proc/s/.* //p')
 
 obx : runtime/obx.a $(PRIMS);		$(LINK)
 obxj : runtime/obx-j.a $(PRIMS);	$(LINK) $(CFLAGS_JIT)
-obxjd : runtime/obx-jd.a $(PRIMS);	$(LINK) $(CFLAGS_JIT) -u jit_proc
+obxjd : runtime/obx-jd.a $(PRIMS);	$(LINK) $(CFLAGS_JIT) -u $(JITPROC)
 obtrace : runtime/obx-t.a $(PRIMS);	$(LINK)
 obprof : runtime/obx-p.a $(PRIMS);	$(LINK)
 obxdeb : runtime/obx-d.a $(PRIMS);	$(LINK)
@@ -213,7 +212,7 @@ ETC = ObList.k
 INST = $(srcdir)/README $(srcdir)/THANKS $(srcdir)/Fac.m
 
 ifdef DYNLINK
-  LIB += lib/oblib$(DLEXT) $(SHLMODS:%=lib/%$(DLEXT))
+  LIB += $(SHLMODS:%=lib/%$(DLEXT))
 endif
 
 ifdef ENABLE_JIT

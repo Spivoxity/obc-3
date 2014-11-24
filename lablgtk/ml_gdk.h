@@ -96,9 +96,9 @@ CAMLexport value Val_GdkEvent (GdkEvent *);
 #ifdef _WIN32
 #define Val_XID(id) copy_int32((long) id)
 #else
-#define Val_XID copy_int32
+#define Val_XID(id) copy_int32((int32_t) id)
 #endif
-#define XID_val Int32_val
+#define XID_val(id) ((void *) Int32_val(id))
 
 
 CAMLexport int OptFlags_GdkModifier_val (value);

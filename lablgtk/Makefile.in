@@ -91,7 +91,7 @@ endif
 PKGS := gtk+-2.0 gtksourceview-2.0
 
 ifdef MACOS
-  PKGS += ige-mac-integration
+  PKGS += gtk-mac-integration
   GTKFLAGS := $(shell $(PKGCONF) --cflags $(PKGS)) -DHAS_GTKQUARTZ
   GTKLIBS := -L$(abs_top_builddir)/macport/gtklib \
 	$(shell $(PKGCONF) --libs-only-l $(PKGS))
