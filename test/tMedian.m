@@ -130,11 +130,11 @@ LABEL 1
 !   WHILE (j < n) OR (k < n) DO
 LDLW -4
 LDLW 12
-JLT 5
+JLT 2
 LDLW -8
 LDLW 12
-JGEQ 2
-LABEL 5
+JGEQ 3
+LABEL 2
 !     IF Random.Roll(2*n-j-k) < n-j THEN
 LDLW 12
 CONST 2
@@ -148,7 +148,7 @@ CALLW 1
 LDLW 12
 LDLW -4
 MINUS
-JGEQ 4
+JGEQ 6
 !       a[j] := j+k; j := j+1
 LDLW -4
 LDLW -8
@@ -160,7 +160,7 @@ BOUND 13
 STIW
 INCL -4
 JUMP 1
-LABEL 4
+LABEL 6
 !       b[k] := j+k; k := k+1
 LDLW -4
 LDLW -8
@@ -172,7 +172,7 @@ BOUND 15
 STIW
 INCL -8
 JUMP 1
-LABEL 2
+LABEL 3
 RETURN
 END
 
@@ -181,10 +181,10 @@ PROC tMedian.Max 0 4 0
 !   IF x > y THEN RETURN x ELSE RETURN y END 
 LDLW 12
 LDLW 16
-JLEQ 7
+JLEQ 10
 LDLW 12
 RETURNW
-LABEL 7
+LABEL 10
 LDLW 16
 RETURNW
 END
@@ -198,11 +198,11 @@ CONST 0
 STLW -8
 LDLW 12
 STLW -12
-LABEL 8
+LABEL 11
 !   WHILE m > 1 DO
 LDLW -12
 CONST 1
-JLEQ 9
+JLEQ 13
 !     r := m DIV 2;
 LDLW -12
 CONST 2
@@ -223,25 +223,25 @@ PLUS
 CONST 100
 BOUND 33
 LDIW
-JGEQ 11
+JGEQ 16
 LDLW -4
 LDLW -16
 PLUS
 STLW -4
-JUMP 10
-LABEL 11
+JUMP 14
+LABEL 16
 LDLW -8
 LDLW -16
 PLUS
 STLW -8
-LABEL 10
+LABEL 14
 !     m := m-r
 LDLW -12
 LDLW -16
 MINUS
 STLW -12
-JUMP 8
-LABEL 9
+JUMP 11
+LABEL 13
 !   RETURN Max(a[j], b[k])
 LDLW 20
 LDLW -8
@@ -262,10 +262,10 @@ PROC tMedian.%main 8 5 0
 !   FOR n := 1 TO 20 DO
 CONST 1
 STGW tMedian.n
-LABEL 12
+LABEL 17
 LDGW tMedian.n
 CONST 20
-JGT 13
+JGT 18
 !     Deal(n, a, b);
 GLOBAL tMedian.b
 GLOBAL tMedian.a
@@ -278,10 +278,10 @@ DEC
 STLW -4
 CONST 0
 STGW tMedian.i
-LABEL 14
+LABEL 19
 LDGW tMedian.i
 LDLW -4
-JGT 15
+JGT 20
 CONST 3
 GLOBAL tMedian.a
 LDGW tMedian.i
@@ -293,8 +293,8 @@ CALL 2
 LDGW tMedian.i
 INC
 STGW tMedian.i
-JUMP 14
-LABEL 15
+JUMP 19
+LABEL 20
 GLOBAL Out.Ln
 CALL 0
 !     FOR i := 0 TO n-1 DO Out.Int(b[i], 3) END; Out.Ln;
@@ -303,10 +303,10 @@ DEC
 STLW -8
 CONST 0
 STGW tMedian.i
-LABEL 16
+LABEL 21
 LDGW tMedian.i
 LDLW -8
-JGT 17
+JGT 22
 CONST 3
 GLOBAL tMedian.b
 LDGW tMedian.i
@@ -318,8 +318,8 @@ CALL 2
 LDGW tMedian.i
 INC
 STGW tMedian.i
-JUMP 16
-LABEL 17
+JUMP 21
+LABEL 22
 GLOBAL Out.Ln
 CALL 0
 !     Out.Int(Median(n, a, b), 0); Out.Ln
@@ -336,8 +336,8 @@ CALL 0
 LDGW tMedian.n
 INC
 STGW tMedian.n
-JUMP 12
-LABEL 13
+JUMP 17
+LABEL 18
 RETURN
 END
 

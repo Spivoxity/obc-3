@@ -92,7 +92,7 @@ JGT 3
 LABEL 4
 !     WHILE (p >= 0) & (s[p] # s[i]) DO p := a[p] END;
 LDLW -12
-JLTZ 5
+JLTZ 6
 LDLW 12
 LDLW -12
 LDLW 16
@@ -103,7 +103,7 @@ LDLW -8
 LDLW 16
 BOUND 13
 LDIC
-JEQ 5
+JEQ 6
 LDLW -4
 NCHECK 13
 LDLW -12
@@ -114,7 +114,7 @@ BOUND 13
 LDIW
 STLW -12
 JUMP 4
-LABEL 5
+LABEL 6
 !     p := p+1; a[i+1] := p;
 INCL -12
 LDLW -12

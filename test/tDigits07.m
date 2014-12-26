@@ -37,12 +37,15 @@ BEGIN
   END
 END Search;
 
+PROCEDURE Main;
+VAR s: UniSet;
 BEGIN
-  VAR s: UniSet;
-  BEGIN
-    NEW(s);
-    Search(1, 0, s)
-  END
+  NEW(s);
+  Search(1, 0, s)
+END Main;
+
+BEGIN
+  Main
 END tDigits07.
 
 (*[[
@@ -165,19 +168,27 @@ LABEL 8
 RETURN
 END
 
-PROC tDigits07.%main 4 4 0x00010001
-!     NEW(s);
+PROC tDigits07.Main 4 4 0x00010001
+! PROCEDURE Main;
+!   NEW(s);
 CONST 0
 GLOBAL tDigits07.%2
 LOCAL -4
 GLOBAL NEW
 CALL 3
-!     Search(1, 0, s)
+!   Search(1, 0, s)
 LDLW -4
 CONST 0
 CONST 1
 GLOBAL tDigits07.Search
 CALL 3
+RETURN
+END
+
+PROC tDigits07.%main 0 4 0
+!   Main
+GLOBAL tDigits07.Main
+CALL 0
 RETURN
 END
 

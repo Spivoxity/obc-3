@@ -499,12 +499,14 @@ LABEL 24
 LDLW -4
 CONST 7
 JGT 25
-!     Out.Int(Bit.And(LSR(v, j), 1), 0)
+!     Out.Int(Bit.And(ASH(v, -j), 1), 0)
 CONST 0
 CONST 1
-LDLW 12
 LDLW -4
-LSR
+UMINUS
+LDLW 12
+GLOBAL ASH
+CALLW 2
 GLOBAL Bit.And
 CALLW 2
 GLOBAL Out.Int

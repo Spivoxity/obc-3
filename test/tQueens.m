@@ -82,21 +82,21 @@ LABEL 2
 !     WHILE (y < N) & ~done DO
 LDLW -4
 CONST 8
-JGEQ 3
+JGEQ 4
 LDGC tQueens.done
-JUMPT 3
+JUMPT 4
 !       j := 0; ok := TRUE;
 CONST 0
 STLW -8
 CONST 1
 STLC -13
-LABEL 4
+LABEL 5
 !       WHILE ok & (j < k) DO
 LDLC -13
-JUMPF 5
+JUMPF 7
 LDLW -8
 LDLW 12
-JGEQ 5
+JGEQ 7
 !         q := choice[j];
 LDLW 16
 LDLW -8
@@ -127,11 +127,11 @@ AND
 STLC -13
 !         j := j+1
 INCL -8
-JUMP 4
-LABEL 5
+JUMP 5
+LABEL 7
 !       IF ok THEN 
 LDLC -13
-JUMPF 7
+JUMPF 11
 ! 	choice[k] := SHORT(y);
 LDLW -4
 CONVNS
