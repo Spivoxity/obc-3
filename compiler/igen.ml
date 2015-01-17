@@ -194,6 +194,9 @@ let constant k v =
 let check code =
   if !Config.boundchk then code else NOP
 
+let is_vparam x =
+  let d = get_def x in d.d_kind = VParamDef
+
 (* gen_addr -- code to push the address of a variable *)
 let rec gen_addr v = 
   match v.e_guts with
@@ -541,13 +544,10 @@ and gen_funarg inst a =
 (* gen_recarg -- push address and descriptor of record *)
 and gen_recarg a =
   match a.e_guts with
-      Name x ->
+      Name x when is_vparam x ->
 	let d = get_def x in
-	if d.d_kind = VParamDef then
-	  SEQ [local d.d_level (d.d_offset + word_size); load_addr;
-	    local d.d_level d.d_offset; load_addr]
-	else
-	  SEQ [GLOBAL a.e_type.t_desc; gen_addr a]
+        SEQ [local d.d_level (d.d_offset + word_size); load_addr;
+	        local d.d_level d.d_offset; load_addr]
     | Deref p -> 
 	SEQ [gen_expr p;
 	  check (null_check p);
