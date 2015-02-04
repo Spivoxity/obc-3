@@ -258,13 +258,3 @@ class AboutDialog abstract set wrap : Dialog {
   method set_documenters : "string list -> unit"
   method get_documenters : "string list"
 }
-
-class Plug abstract wrapsig : Bin {
-  signal embedded
-}
-
-class Socket wrapsig : Container {
-  method steal : "Gdk.xid -> unit"
-  signal plug_added
-  signal plug_removed
-}

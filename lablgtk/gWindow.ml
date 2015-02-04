@@ -345,44 +345,6 @@ let font_selection_dialog ?title =
     new font_selection_dialog (FontSelectionDialog.create pl))
 
 
-(** Plug **)
-
-class plug_signals obj = object
-  inherit container_signals_impl (obj : [> plug] obj)
-  inherit plug_sigs
-end
-
-class plug (obj : Gtk.plug obj) = object
-  inherit window_skel obj
-  method connect = new plug_signals obj
-end
-
-let plug ~window:xid =
-  Container.make_params [] ~cont:(fun pl ?(show=false) () ->
-    let w = Plug.create xid in
-    Gobject.set_params w pl;
-    if show then Widget.show w;
-    new plug w)
-
-(** Socket **)
-
-class socket_signals obj = object
-  inherit container_signals_impl (obj : [> socket] obj)
-  inherit socket_sigs
-end
-
-class socket obj = object (self)
-  inherit container (obj : Gtk.socket obj)
-  method connect = new socket_signals obj
-  method steal = Socket.steal obj
-  method xwindow =
-    self#misc#realize ();
-    Gdk.Window.get_xwindow self#misc#window
-end
-
-let socket =
-  pack_container [] ~create:(fun pl -> new socket (Socket.create pl))
-
 (** FileChooser *)
 class ['a] file_chooser_dialog_signals obj ~decode = object
   inherit ['a] dialog_signals obj ~decode

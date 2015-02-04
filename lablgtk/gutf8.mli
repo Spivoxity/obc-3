@@ -20,8 +20,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* $Id$ *)
-
 (** Pure ocaml module for conversion between UCS and UTF8 *)
 
 type unichar = int

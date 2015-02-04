@@ -73,12 +73,7 @@ CAMLprim value ml_gtkwindow_init(value unit)
         gtk_input_dialog_get_type() +
         gtk_color_selection_dialog_get_type() +
         gtk_file_selection_get_type() +
-        gtk_font_selection_dialog_get_type() 
-#ifndef _WIN32
-        + gtk_plug_get_type()
-        + gtk_socket_get_type()
-#endif
-;
+        gtk_font_selection_dialog_get_type() ;
     return Val_GType(t);
 }
 
@@ -930,21 +925,6 @@ Make_Extractor (gtk_font_selection_dialog, GtkFontSelectionDialog_val,
 Make_Extractor (gtk_font_selection_dialog, GtkFontSelectionDialog_val,
 		cancel_button, Val_GtkWidget)
 
-/* gtkplug.h */
-#ifdef _WIN32
-Unsupported(gtk_plug_new)
-#else
-ML_1 (gtk_plug_new, XID_val, Val_GtkWidget_window)
-#endif
-
-/* gtksocket.h */
-#ifdef _WIN32
-Unsupported(gtk_socket_steal)
-#else
-#define GtkSocket_val(val) check_cast(GTK_SOCKET,val)
-ML_2 (gtk_socket_steal, GtkSocket_val, XID_val, Unit)
-#endif
-
 /* gtkmain.h */
 
 CAMLprim value ml_gtk_init (value argv)
@@ -981,7 +961,7 @@ CAMLprim value ml_gtk_get_version (value unit)
 }
 
 ML_0 (gtk_get_current_event_time, copy_int32)
-ML_0 (gtk_get_current_event, Check_null(Val_GdkEvent))
+ML_0 (gtk_get_current_event, Val_GdkEvent)
 ML_1 (gtk_get_event_widget, GdkEvent_val, Val_GtkWidget)
 ML_2 (gtk_propagate_event, GtkWidget_val, GdkEvent_val, Unit)
 
