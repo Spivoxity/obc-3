@@ -1219,7 +1219,7 @@ and check_assign cxt args env lt e loc =
 
 and check_funarg env fd arg =
   let rt = check_param env arg in
-  if not (equal_types fd.d_type rt) then begin
+  if not (equal_types fd.d_type rt) && not (is_niltype rt) then begin
     sem_error "$ is needed as argument '$' of this procedure"
       [fOType fd.d_type; fId fd.d_tag] arg.e_loc;
     sem_type rt

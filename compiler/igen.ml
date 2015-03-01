@@ -834,6 +834,21 @@ let gen_rec_addr v desc =
     | _ ->
         gen_addr v
 
+let is_param x =
+  let d = get_def x in d.d_kind = ParamDef
+
+(* proc_assign -- assignment to procedure variable *)
+let proc_assign v e =
+  match v.e_guts with
+      Name x when is_param x ->
+        SEQ [gen_funarg (check (CHECK (GlobProc, expr_line v))) e;
+		gen_addr v; STORE IntT;
+                const 0; gen_addr v; const word_size; 
+                BINOP (PtrT, PlusA); STORE IntT]
+    | _ ->
+        SEQ [gen_funarg (check (CHECK (GlobProc, expr_line v))) e;
+		gen_addr v; STORE IntT]
+
 (* gen_stmt -- generate code for a statement *)
 let rec gen_stmt exit_lab s =
   let code =
@@ -841,8 +856,7 @@ let rec gen_stmt exit_lab s =
 	Assign (v, e) ->
 	  let t = v.e_type in
 	  if is_proc t then
-	    SEQ [gen_funarg (check (CHECK (GlobProc, expr_line v))) e;
-	      gen_addr v; STORE IntT]
+            proc_assign v e
 	  else if scalar t then
 	    SEQ [gen_expr e; gen_addr v; STORE (mem_kind t)]
 	  else if is_string_const e then
