@@ -495,11 +495,14 @@ let rec check_stmt env s =
 
 	  check_assign "as a starting value" [] env vt lo lo.e_loc;
 	  check_assign "as an ending value" [] env vt hi hi.e_loc;
-	  let (bt, _) = check_const env "a step value" step in
+	  let (bt, inc) = check_const env "a step value" step in
 	  if not (integral bt) then begin
 	    sem_error "the step value must be an integer" [] step.e_loc;
 	    sem_type bt
 	  end
+          else if int_value inc = integer 0 then begin
+            sem_error "the step value must be non-zero" [] step.e_loc
+          end
 	end;
 	begin
 	  match hi.e_guts with

@@ -418,8 +418,12 @@ in type INTEGER
 >               ^^^^
 
 "SemError.m", line 149: 'undecl' has not been declared
->   f[0] := f[undecl]
+>   f[0] := f[undecl];
 >             ^^^^^^
+
+"SemError.m", line 150: the step value must be non-zero
+>   FOR x := 0 TO 9 BY 0 DO END
+>                      ^
 
 "SemError.m", line 22: warning -- baz is declared but not used or exported
 > PROCEDURE baz(x: INTEGER);

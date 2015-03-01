@@ -146,5 +146,6 @@ BEGIN
   WITH q: ptr DO undef; undef END;
   x := 9999999999;
   f^[0] := f^[long];
-  f[0] := f[undecl]
+  f[0] := f[undecl];
+  FOR x := 0 TO 9 BY 0 DO END
 END SemError.
