@@ -75,9 +75,9 @@ CONST 1
 STGS tOver.s
 CONST 2
 STGW tOver.n
-FCONST 3.
+FCONST 3.0
 STGF tOver.f
-DCONST 4.
+DCONST 4.0
 STGD tOver.d
 !   x := s/s; Print(x);
 LDGS tOver.s

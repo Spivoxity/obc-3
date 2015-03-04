@@ -43,8 +43,8 @@ CALL 4
 GLOBAL Out.Ln
 CALL 0
 !   Out.Real(Math.Arctan2(-1.0,0.0)); Out.Ln;
-FCONST 0.
-FCONST -1.
+FCONST 0.0
+FCONST -1.0
 GLOBAL Math.Arctan2
 CALLF 2
 GLOBAL Out.Real
@@ -53,7 +53,7 @@ GLOBAL Out.Ln
 CALL 0
 !   IF 2.0 + r > 5.14 THEN
 LDGF tReal.r
-FCONST 2.
+FCONST 2.0
 FPLUS
 FCONST 5.14
 FJLEQ 4

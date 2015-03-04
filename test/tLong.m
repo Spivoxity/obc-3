@@ -42,11 +42,11 @@ END
 
 PROC tLong.%main 0 5 0
 !   x := 3.0;
-DCONST 3.
+DCONST 3.0
 STGD tLong.x
 !   IF x > 2.0 THEN Out.String("Greater"); Out.Ln END;
 LDGD tLong.x
-DCONST 2.
+DCONST 2.0
 DJLEQ 4
 CONST 8
 GLOBAL tLong.%1
@@ -57,7 +57,7 @@ CALL 0
 LABEL 4
 !   Out.LongReal(Mult(2.0, x)); Out.Ln;
 LDGD tLong.x
-DCONST 2.
+DCONST 2.0
 GLOBAL tLong.Mult
 CALLD 4
 GLOBAL Out.LongReal

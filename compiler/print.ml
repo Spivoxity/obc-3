@@ -32,13 +32,49 @@ type arg = vtable -> unit
 
 and vtable = { outch : char -> unit; prf : string -> arg list -> unit }
 
+external format_float : string -> float -> string = "caml_format_float"
+
 let portable_string_of_float x =
-  let s = string_of_float x in
+  let s = format_float "%.12g" x in
   let n = String.length s in
-  if String.contains s 'e' && s.[n-3] = '0' then
-    String.sub s 0 (n-3) ^ String.sub s (n-2) 2
-  else
-    s
+  let b = Bytes.create 32 in
+  let i = ref 0 and j = ref 0 in
+
+  let get () = if !i >= n then '\000' else (incr i; s.[!i-1]) in
+  let put c = Bytes.set b !j c; incr j in
+  let run f = f (get ()) in
+  
+  let rec state0 =
+    function
+        ('-' | '0' .. '9') as c -> put c; run state0
+      | '.' -> put '.'; run (state1 true)
+      | 'e' -> put '.'; put '0'; put 'e'; run (state2 true)
+      | '\000' -> put '.'; put '0'; ()
+      | _ -> failwith "flofmt0"
+
+  and state1 b =
+    function
+        ('0' .. '9') as c -> put c; run (state1 false)
+      | 'e' -> if b then put '0'; put 'e'; run (state2 true)
+      | '\000' -> if b then put '0'; ()
+      | _ -> failwith "flofmt1"
+
+  and state2 b =
+    function
+        '0' -> if b then put '+'; run (state2 false)
+      | ('1' .. '9') as c -> if b then put '+'; put c; run state3
+      | ('+' | '-') as c -> put c; run (state2 false)
+      | '\000' -> put '0'; ()
+      | _ -> failwith "flofmt2"
+
+  and state3 =
+    function
+        ('0' .. '9') as c -> put c; run state3
+      | '\000' -> () 
+      | _ -> failwith "flofmt3" in
+
+  run state0;
+  Bytes.sub_string b 0 !j
 
 let fChr c vtab = vtab.outch c
 

@@ -25,17 +25,17 @@ ENDHDR
 
 PROC tBool07.%main 0 5 0
 !   x := FLT(3);
-FCONST 3.
+FCONST 3.0
 STGF tBool07.x
 !   b := ~ (x > FLT(4));
 LDGF tBool07.x
-FCONST 4.
+FCONST 4.0
 FLEQ
 STGC tBool07.b
 !   IF b THEN x := FLT(5) END;
 LDGC tBool07.b
 JUMPF 3
-FCONST 5.
+FCONST 5.0
 STGF tBool07.x
 LABEL 3
 !   Out.Fixed(x, 0, 0); Out.Ln

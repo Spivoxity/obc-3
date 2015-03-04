@@ -20,7 +20,7 @@ ENDHDR
 
 PROC tBigReal07.%main 0 2 0
 !   Out.Real(2.0E+32); Out.Ln;
-FCONST 2e+32
+FCONST 2.0e+32
 GLOBAL Out.Real
 CALL 1
 GLOBAL Out.Ln

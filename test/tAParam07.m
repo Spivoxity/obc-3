@@ -39,7 +39,7 @@ ENDHDR
 PROC tAParam07.Sum 8 4 0x00400001
 ! PROCEDURE Sum(dummy: LONGREAL; a: row): INTEGER;
 !   dummy := 0.0;
-DCONST 0.
+DCONST 0.0
 STLD 12
 !   s := 0;
 CONST 0
@@ -92,7 +92,7 @@ LABEL 4
 !   Out.Int(Sum(FLT(0), b), 0); Out.Ln;
 CONST 0
 GLOBAL tAParam07.b
-DCONST 0.
+DCONST 0.0
 GLOBAL tAParam07.Sum
 CALLW 3
 GLOBAL Out.Int

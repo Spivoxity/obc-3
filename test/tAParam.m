@@ -43,7 +43,7 @@ LDLW 20
 CONST 20
 FIXCOPY
 !   dummy := 0.0;
-DCONST 0.
+DCONST 0.0
 STLD 12
 !   s := 0;
 CONST 0
@@ -96,7 +96,7 @@ LABEL 4
 !   Out.Int(Sum(0, b), 0); Out.Ln;
 CONST 0
 GLOBAL tAParam.b
-DCONST 0.
+DCONST 0.0
 GLOBAL tAParam.Sum
 CALLW 3
 GLOBAL Out.Int

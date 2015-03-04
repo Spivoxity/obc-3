@@ -27,11 +27,11 @@ ENDHDR
 
 PROC tFJump.%main 0 3 0
 !   x := 1.0;
-FCONST 1.
+FCONST 1.0
 STGF tFJump.x
 !   IF 0.0 < x THEN
 LDGF tFJump.x
-FCONST 0.
+FCONST 0.0
 FJLEQ 4
 !     IF x > 0.5 THEN
 LDGF tFJump.x

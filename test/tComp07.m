@@ -24,13 +24,13 @@ ENDHDR
 
 PROC tComp07.%main 0 3 0
 !   x := FLT(3); y := FLT(4);
-FCONST 3.
+FCONST 3.0
 STGF tComp07.x
-FCONST 4.
+FCONST 4.0
 STGF tComp07.y
 !   b := (x < FLT(4));
 LDGF tComp07.x
-FCONST 4.
+FCONST 4.0
 FLT
 STGC tComp07.b
 !   Out.Int(ORD(b), 0); Out.Ln

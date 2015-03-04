@@ -66,10 +66,10 @@ let split_string s =
   !words
 
 let hex_of_int n = 
-  if n = 0 then "0" else Printf.sprintf "%#.8x" n
+  if n = 0 then "0" else Printf.sprintf "0x%.8x" n
 
 let hex_of_int32 n = 
-  if n = Int32.of_int 0 then "0" else Printf.sprintf "%#.8lx" n
+  if n = Int32.of_int 0 then "0" else Printf.sprintf "0x%.8lx" n
 
 let float_as_string x = Printf.sprintf "%.20e" x
 

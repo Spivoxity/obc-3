@@ -72,12 +72,12 @@ DTIMES
 STLD -8
 !     IF r < eps THEN EXIT END;
 LDLD -8
-DCONST 1e-10
+DCONST 1.0e-10
 DJLT 2
 !     r := r/(4+r);
 LDLD -8
 LDLD -8
-DCONST 4.
+DCONST 4.0
 DPLUS
 DZCHECK 14
 DDIV
@@ -85,7 +85,7 @@ STLD -8
 !     x := x + 2*x*r;
 LDLD 12
 LDLD 12
-DCONST 2.
+DCONST 2.0
 DTIMES
 LDLD -8
 DTIMES
@@ -105,8 +105,8 @@ END
 
 PROC tPythag.%main 0 6 0
 !   Out.LongReal(Pythag(1, 1)); Out.Ln;
-DCONST 1.
-DCONST 1.
+DCONST 1.0
+DCONST 1.0
 GLOBAL tPythag.Pythag
 CALLD 4
 GLOBAL Out.LongReal
@@ -114,8 +114,8 @@ CALL 2
 GLOBAL Out.Ln
 CALL 0
 !   Out.LongReal(Pythag(3, 4)); Out.Ln
-DCONST 4.
-DCONST 3.
+DCONST 4.0
+DCONST 3.0
 GLOBAL tPythag.Pythag
 CALLD 4
 GLOBAL Out.LongReal

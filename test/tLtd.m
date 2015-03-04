@@ -25,9 +25,9 @@ ENDHDR
 
 PROC tLtd.%main 0 4 0
 !   a := 1.0; b := 2.0;
-DCONST 1.
+DCONST 1.0
 STGD tLtd.a
-DCONST 2.
+DCONST 2.0
 STGD tLtd.b
 !   c := (a < b);
 LDGD tLtd.a

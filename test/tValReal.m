@@ -27,7 +27,7 @@ ENDHDR
 PROC tValReal.%main 0 3 0
 !   x := SYSTEM.VAL(REAL, {0}) + 1.0E-45;
 CONST 1
-FCONST 1e-45
+FCONST 1.0e-45
 FPLUS
 STGF tValReal.x
 !   Out.Real(x); Out.Ln;

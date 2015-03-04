@@ -95,7 +95,7 @@ GLOBAL Out.Ln
 CALL 0
 !   s := s + 3;
 LDGD tMixIt.s
-DCONST 3.
+DCONST 3.0
 DPLUS
 STGD tMixIt.s
 !   Out.LongReal(s); Out.Ln; (* 9.14000034332 *)
@@ -177,7 +177,7 @@ CALL 1
 GLOBAL Out.Ln
 CALL 0
 !   r := SHORT(65535); Out.Real(r); Out.Ln;
-FCONST -1.
+FCONST -1.0
 STGF tMixIt.r
 LDGF tMixIt.r
 GLOBAL Out.Real

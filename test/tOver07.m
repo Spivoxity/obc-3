@@ -75,9 +75,9 @@ CONST 1
 STGS tOver07.s
 CONST 2
 STGW tOver07.n
-FCONST 3.
+FCONST 3.0
 STGF tOver07.f
-DCONST 4.
+DCONST 4.0
 STGD tOver07.d
 !   x := FLT(s)/FLT(s); Print(x);
 LDGS tOver07.s
