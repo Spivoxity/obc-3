@@ -59,9 +59,6 @@ open Print
 /* operator priorities -- most needed only because of error productions */
 %right			error
 
-%right			RETURN
-%right			END
-
 %right			COMMA ADDOP RELOP EQUAL MINUS PLUS IS MULOP
 			STAR IDENT LPAR DOT SUB UPARROW RPAR BUS IF SEMI
 
@@ -77,7 +74,8 @@ let parse_error2 msg loc1 =
   syn_error2 "$ at token '$'" [fStr msg; fToken] loc1 (here ()) 
 
 let missing_semi loc =
-  syn_error "missing ';'" [] loc
+  if yyerrstate () = 0 then
+    syn_error "missing ';'" [] loc
 
 (*
 let _ = Random.self_init ()
@@ -294,7 +292,7 @@ the next statement, and another (linked to stmts1) where it needs to
 see or insert a semicolon before continuing the sequence. */
 
 stmts :
-    stmts0 %prec RETURN		{ sequ $stmts0 (rloc 1) }
+    stmts0      		{ sequ $stmts0 (rloc 1) }
   | stmts1			{ sequ $stmts1 (rloc 1) } ;
 
 stmts0 :
@@ -311,12 +309,12 @@ stmts1 :
 
 stmt0 :
     desig ASSIGN expr		{ Assign ($desig, $expr) }
-  | desig			{ ProcCall (make_call $desig) }
-  | RETURN %prec error		{ Return None }
-  | RETURN expr 		{ Return (Some $expr) } ;
+  | desig			{ ProcCall (make_call $desig) } ;
 
 stmt1 :
-    ifs END 			{ IfStmt ($ifs, makeStmt (Skip, no_loc)) }
+    RETURN %prec error		{ Return None }
+  | RETURN expr 		{ Return (Some $expr) }
+  | ifs END 			{ IfStmt ($ifs, makeStmt (Skip, no_loc)) }
   | ifs ELSE stmts END 		{ IfStmt ($ifs, $stmts) }
   | whiles END			{ WhileStmt $whiles }
   | CASE expr OF cases else END { CaseStmt ($expr, $cases, $else) }
