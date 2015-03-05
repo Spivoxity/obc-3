@@ -285,7 +285,7 @@ let niltype = basic_type PtrT addr_rep "NIL"
 let errtype = basic_type ErrT int_rep "*errtype*"
 
 let ptrtype = sys_type PtrT addr_rep "PTR"
-let sysbyte = sys_type SysByteT char_rep "SYSBYTE"
+let sysbyte = sys_type SysByteT char_rep "BYTE"
 
 let basic_types = 
   [voidtype; bytetype; shortint; inttype; longint; character; boolean; 

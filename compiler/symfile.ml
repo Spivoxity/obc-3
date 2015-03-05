@@ -241,7 +241,8 @@ and out_type t =
   if same_types t numtype then
       xprintf "INTCONST" []
     else if is_basic t then
-      xprintf "$" [fId t.t_name]
+      (* Allow SYSTEM.BYTE etc. *)
+      xprintf "$" [fQual (t.t_module, t.t_name)]
     else
       try xprintf "$" [fNum (find_type t)] with 
 	Not_found -> def_type t

@@ -44,7 +44,9 @@ let kwtab = Util.make_hash 64
     ("STRING", STRING); ("TYPE", TYPE); ("GLOBAL", GLOBAL); ("ANON", ANON);
     ("CPARAM", CPARAM); ("VPARAM", VPARAM); ("ENUM", ENUM);
     ("LOCAL", LOCAL); ("ABSREC", ABSREC); ("ABSMETH", ABSMETH)]
-  @ List.map (function t -> (extern t.t_name, BASICTYPE t)) basic_types)
+  @ List.map (function t -> 
+      (sprintf "$" [fQual (t.t_module, t.t_name)], BASICTYPE t))
+    basic_types)
 
 let lookup s =
   try Hashtbl.find kwtab s with
@@ -54,7 +56,7 @@ let line = ref 1
 }
 
 rule token = parse
-    ['A'-'Z']+ as s	{ lookup s }
+    ['A'-'Z''a'-'z''.']+ as s	{ lookup s }
   | '#'(['A'-'Z''a'-'z''0'-'9''%''.']+ as s)
 			{ TAG s }
   | '-'?['0'-'9']+ as s	{ NUM s }
