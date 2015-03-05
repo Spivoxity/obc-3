@@ -850,6 +850,7 @@ BOUND 195
 LDIW
 GLOBAL Out.Int
 CALL 2
+!   FOR k := 0 TO n-1 DO 
 LDGW tMerge.k
 INC
 STGW tMerge.k

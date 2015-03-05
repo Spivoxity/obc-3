@@ -140,9 +140,11 @@ INC
 STIC
 !       i := i+1
 INCL -4
+!     FOR r := 0 TO NR-1 DO
 INCL -12
 JUMP 5
 LABEL 6
+!   FOR s := 0 TO NS-1 DO
 INCL -8
 JUMP 3
 LABEL 4
@@ -290,12 +292,14 @@ PLUS
 INDEXS
 GLOBAL Out.String
 CALL 2
+!     FOR j := 0 TO NH-1 DO
 INCL -112
 JUMP 19
 LABEL 20
 !     Out.Ln
 GLOBAL Out.Ln
 CALL 0
+!   FOR i := 0 TO NP-1 DO
 INCL -108
 JUMP 17
 LABEL 18

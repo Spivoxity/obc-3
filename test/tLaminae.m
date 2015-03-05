@@ -105,6 +105,7 @@ STOREW
 INCL -8
 JUMP 3
 LABEL 5
+!   FOR a := 3 TO 250001 DO
 INCL -4
 JUMP 1
 LABEL 2
@@ -154,6 +155,7 @@ MINUS
 STLW -8
 JUMP 9
 LABEL 11
+!   FOR a := 3 TO x+1 DO
 INCL -4
 JUMP 7
 LABEL 8
@@ -222,6 +224,7 @@ LDGW tLaminae.total
 INC
 STGW tLaminae.total
 LABEL 17
+!   FOR i := 1 TO 250000 DO
 LDGW tLaminae.i
 INC
 STGW tLaminae.i

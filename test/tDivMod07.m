@@ -175,6 +175,7 @@ CALL 0
 CONST 1
 STGC tDivMod07.failed
 LABEL 10
+!   FOR a := -10 TO 10 DO
 INCL -4
 JUMP 6
 LABEL 7

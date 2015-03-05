@@ -361,6 +361,7 @@ GLOBAL Out.Ln
 CALL 0
 GLOBAL Out.Ln
 CALL 0
+!   FOR i := 0 TO 10 DO
 LDGW tFibTree3.i
 INC
 STGW tFibTree3.i

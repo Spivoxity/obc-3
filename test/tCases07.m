@@ -145,7 +145,7 @@ ALIGNC
 GLOBAL Out.Char
 CALL 1
 LABEL 13
-!     ELSE
+!   FOR i := 0 TO 127 DO
 LDGW tCases07.i
 INC
 STGW tCases07.i

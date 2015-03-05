@@ -511,6 +511,7 @@ GLOBAL Bit.And
 CALLW 2
 GLOBAL Out.Int
 CALL 2
+!   FOR j := 0 TO 7 DO
 INCL -4
 JUMP 24
 LABEL 25
@@ -783,6 +784,7 @@ LDIW
 GLOBAL tSignals.Print
 CALL 1
 LABEL 40
+!   FOR i := 0 TO sp-1 DO
 INCL -4
 JUMP 36
 LABEL 37
@@ -964,6 +966,7 @@ LDLW -16
 GLOBAL tSignals.Pop
 CALL 1
 LABEL 55
+!       FOR j := i+1 TO v-1 DO
 INCL -8
 JUMP 51
 LABEL 52
@@ -972,6 +975,7 @@ LDLW -12
 GLOBAL tSignals.Pop
 CALL 1
 LABEL 50
+!   FOR i := 0 TO u-1 DO
 INCL -4
 JUMP 46
 LABEL 47

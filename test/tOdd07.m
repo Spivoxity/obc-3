@@ -61,6 +61,7 @@ LDGW tOdd07.i
 GLOBAL Out.Int
 CALL 2
 LABEL 8
+!   FOR i := 0 TO 10 DO
 LDGW tOdd07.i
 INC
 STGW tOdd07.i

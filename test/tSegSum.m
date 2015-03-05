@@ -95,6 +95,7 @@ INC
 STGW tSegSum.v
 JUMP 1
 LABEL 6
+!     ELSIF sum < A THEN
 LDGW tSegSum.sum
 CONST 120
 JGEQ 8

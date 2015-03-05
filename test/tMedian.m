@@ -333,6 +333,7 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
+!   FOR n := 1 TO 20 DO
 LDGW tMedian.n
 INC
 STGW tMedian.n

@@ -128,6 +128,7 @@ LDLW -4
 GLOBAL tChain.Cons
 CALLW 2
 STLW -12
+!   FOR n := N TO 1 BY -1 DO 
 DECL -4
 JUMP 3
 LABEL 4

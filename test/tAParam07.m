@@ -60,6 +60,7 @@ BOUND 17
 LDIW
 PLUS
 STLW -8
+!   FOR i := 0 TO LEN(a)-1 DO 
 INCL -4
 JUMP 1
 LABEL 2
@@ -84,6 +85,7 @@ LDGW tAParam07.j
 CONST 5
 BOUND 26
 STIW
+!   FOR j := 0 TO LEN(b)-1 DO 
 LDGW tAParam07.j
 INC
 STGW tAParam07.j

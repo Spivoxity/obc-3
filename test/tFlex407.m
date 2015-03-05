@@ -92,9 +92,11 @@ PLUS
 LDIW
 GLOBAL Out.Int
 CALL 2
+!     FOR j := 0 TO LEN(m, 1)-1 DO
 INCL -8
 JUMP 3
 LABEL 4
+!   FOR i := 0 TO LEN(m, 0)-1 DO
 INCL -4
 JUMP 1
 LABEL 2

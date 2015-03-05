@@ -108,6 +108,7 @@ GLOBAL tEnum.Print
 CALL 1
 GLOBAL Out.Ln
 CALL 0
+!   FOR x := MIN(X.colour) TO MAX(X.colour) DO
 LDGW tEnum.x
 INC
 STGW tEnum.x

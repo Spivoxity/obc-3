@@ -158,6 +158,7 @@ GLOBAL Out.Char
 CALL 1
 GLOBAL Out.Ln
 CALL 0
+!   FOR i := 0 TO n-1 DO
 INCL -8
 JUMP 2
 LABEL 3

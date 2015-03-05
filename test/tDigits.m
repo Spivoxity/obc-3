@@ -162,6 +162,7 @@ INC
 GLOBAL tDigits.Search
 CALL 3
 LABEL 11
+!     FOR d := 1 TO 9 DO
 INCL -4
 JUMP 7
 LABEL 8

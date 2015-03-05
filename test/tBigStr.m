@@ -66,6 +66,7 @@ PLUS
 CONST 48
 MINUS
 STGW tBigStr.sum
+!   FOR i := 0 TO Strings.Length(s)-1 DO
 LDGW tBigStr.i
 INC
 STGW tBigStr.i

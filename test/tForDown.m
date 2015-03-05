@@ -46,6 +46,7 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
+!   FOR i := 10 TO 1 BY -1 DO
 LDGS tForDown.i
 DEC
 STGS tForDown.i

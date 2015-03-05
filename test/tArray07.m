@@ -45,6 +45,7 @@ LDGW tArray07.i
 CONST 10
 BOUND 14
 STIS
+!   FOR i := 0 TO 9 DO 
 LDGW tArray07.i
 INC
 STGW tArray07.i
@@ -69,6 +70,7 @@ BOUND 19
 LDIS
 PLUS
 STGW tArray07.s
+!   FOR i := 0 TO 9 DO 
 LDGW tArray07.i
 INC
 STGW tArray07.i

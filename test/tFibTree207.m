@@ -283,6 +283,7 @@ GLOBAL Out.Ln
 CALL 0
 GLOBAL Out.Ln
 CALL 0
+!   FOR i := 0 TO 7 DO
 LDGW tFibTree207.i
 INC
 STGW tFibTree207.i

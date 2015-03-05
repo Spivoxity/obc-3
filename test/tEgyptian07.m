@@ -163,6 +163,7 @@ BOUND 31
 LDIQ
 GLOBAL Out.LongInt
 CALL 3
+!   FOR i := 0 TO n-1 DO
 LDGW tEgyptian07.i
 INC
 STGW tEgyptian07.i

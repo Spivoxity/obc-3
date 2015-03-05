@@ -114,9 +114,11 @@ LDLW 32
 BOUND 10
 PLUS
 STIW
+!     FOR j := 0 TO LEN(dst, 1) - 1 DO
 INCL -8
 JUMP 6
 LABEL 7
+!   FOR i := 0 TO LEN(dst, 0) - 1 DO
 INCL -4
 JUMP 4
 LABEL 5

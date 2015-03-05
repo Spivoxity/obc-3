@@ -227,9 +227,9 @@ INC
 STLW -4
 JUMP 11
 LABEL 13
+!     ELSIF N = 0 THEN val := Ack2(M-1, 1)
 LDLW 16
 JNEQZ 15
-!     ELSIF N = 0 THEN val := Ack2(M-1, 1)
 CONST 1
 LDLW 12
 DEC

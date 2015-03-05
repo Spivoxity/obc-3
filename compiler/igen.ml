@@ -921,7 +921,8 @@ let rec gen_stmt exit_lab s =
 	  SEQ [
 	    SEQ (List.map (fun (cond, thenpt) ->
 	      let lab0 = label() and lab1 = label () in
-	      SEQ [gen_cond lab0 lab1 cond; LABEL lab0;
+	      SEQ [LINE (expr_line cond); 
+                gen_cond lab0 lab1 cond; LABEL lab0;
 		gen_stmt exit_lab thenpt; JUMP lab_end;
 		LABEL lab1]) arms);
 	    gen_stmt exit_lab elsept;
@@ -1002,7 +1003,8 @@ let rec gen_stmt exit_lab s =
 	    gen_stmt exit_lab body;
 
 	    (* var := var + inc; goto lab1 *)
-	    gen_expr var; constant kind (IntVal inc);
+            LINE (line_num s.s_loc); 
+            gen_expr var; constant kind (IntVal inc);
 	    BINOP (kind, Plus); gen_addr var; STORE memk;
 	    JUMP lab1;
 	    

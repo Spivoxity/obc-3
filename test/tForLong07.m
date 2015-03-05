@@ -53,6 +53,7 @@ GLOBAL Out.LongInt
 CALL 3
 GLOBAL Out.Ln
 CALL 0
+!   FOR i := -2 TO 2 BY 2 DO
 LDGQ tForLong07.i
 CONST 2
 CONVNQ

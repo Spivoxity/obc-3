@@ -221,6 +221,7 @@ LDNW -4
 LDNW 4
 BOUND 27
 STIC
+!   FOR i := 0 TO Strings.Length(s^)-2 DO
 LDGW tString07.i
 INC
 STGW tString07.i
@@ -320,6 +321,7 @@ GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
+!   FOR i := 0 TO 10 DO
 LDGW tString07.i
 INC
 STGW tString07.i
@@ -388,6 +390,7 @@ GLOBAL Strings.Pos
 CALLW 5
 GLOBAL Out.Int
 CALL 2
+!   FOR i := 0 TO 3 DO
 LDGW tString07.i
 INC
 STGW tString07.i

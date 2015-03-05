@@ -81,6 +81,7 @@ LDNW 4
 SWAP
 GLOBAL Out.String
 CALL 2
+!   FOR i := 1 TO Args.argc-1 DO
 INCL -4
 JUMP 1
 LABEL 2
