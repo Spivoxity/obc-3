@@ -76,9 +76,6 @@ let simulate i =
 	Hashtbl.add labstate lab s; stk := s
     | DUP n ->
 	stk := push_stack (nth_stack !stk n) !stk
-    | JUMPB (_, lab) ->
-	let s = pop_stack 1 !stk in
-	Hashtbl.add labstate lab s; stk := s
     | JUMPC (_, _, lab) ->
 	let s = pop_stack 2 !stk in
 	Hashtbl.add labstate lab s; stk := s

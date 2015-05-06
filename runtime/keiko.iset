@@ -230,9 +230,6 @@ inst JGTZ S		S1 {if ($1.i > 0) jump($a);}
 inst JLEQZ S		S1 {if ($1.i <= 0) jump($a);}
 inst JGEQZ S		S1 {if ($1.i >= 0) jump($a);}
 
-equiv JUMPF R		{JEQZ $a}
-equiv JUMPT R		{JNEQZ $a}
-
 equiv JLTZ R		{PUSH 0, JLT $a}
 equiv JGTZ R		{PUSH 0, JGT $a}
 equiv JLEQZ R		{PUSH 0, JLEQ $a}
@@ -439,12 +436,6 @@ checkdef(fzerocheck, double, x,, x == 0.0, E_FDIV)
 checkdef(lzerocheck, longint, n,, n == 0, E_DIV)
 checkdef(globcheck, value *, p,, p != NULL, E_GLOB)
 
-/* TYPETEST n expects two descriptor addresses d1 and d2:
-   it test whether the ancestor of d1 at level n is d2. */
-static inline int typetest(value *d1, value *d2, int n) {
-     return (d1[DESC_DEPTH].i >= n && d1[DESC_ANCES].p[n].p == d2);
-}
-
 #define czech(chk, a, n) chk(a, n, bp, pc0)
 #define czech2(chk, a, b, n) chk(a, b, n, bp, pc0)
 #define error(msg, n) runtime_error(msg, n, bp, pc0);
@@ -504,8 +495,6 @@ defs {
        d[0].x = (uchar *) sp;}
 }
 inst FLEXCOPY 0		S2 {flexcopy($1.x, $2.i);}
-
-inst TYPETEST 1		B.i {typetest($1.p, $2.p, $a)}
 
 # In the interpreter, the CALLW and CALLD instructions are implemented as 
 # two operations, an ordinary CALL followed by a SLIDE; the return address 

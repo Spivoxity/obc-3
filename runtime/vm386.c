@@ -411,13 +411,13 @@ static void aluop_rr(OPDECL, int r1, int r2) {
 }
 
 /* General form of instr2_r for shifts and floating point ops */
-static void instr2_r_(ifdebug(char *fmt) OPDECL, int op2, int r) {
+static void instr2_fmt(ifdebug(char *fmt) OPDECL, int op2, int r) {
      dbg(fmt, mnem, regname[r]);
      opcode(op); addr(3, op2, r);
 }
 
 /* instr2_r -- two opcodes and a register */
-#define instr2_r(ispec, r) instr2_r_(ifdebug("%s %s") ispec, r)
+#define instr2_r(ispec, r) instr2_fmt(ifdebug("%s %s") ispec, r)
 
 /* instr2_ri8 -- twin opcode plus register and 8-bit immediate */
 static void instr2_ri8(OPDECL, int op2, int rm, int imm) {
@@ -475,18 +475,18 @@ static void instr_m(OPDECL, int rs, int imm) {
 
 /* SPECIFIC INSTRUCTIONS */
 
-#define add_i(rd, imm) 		instr2_ri(zz("add", xALU_i, aluADD), rd, imm)
-#define sub_i(rd, imm)		instr2_ri(zz("sub", xALU_i, aluSUB), rd, imm)
+#define add_i(rd, imm)	instr2_ri(zz("add", xALU_i, aluADD), rd, imm)
+#define sub_i(rd, imm)	instr2_ri(zz("sub", xALU_i, aluSUB), rd, imm)
 
-#define push(r)			instr_reg(opPUSH, r)
-#define pop(r)			instr_reg(opPOP, r)
-#define fld_r(r) instr_reg(opFLD_r, r)
-#define fst_r(r) instr_reg(opFST_r, r)
-#define fstp_r(r) instr_reg(opFSTP_r, r)
+#define push(r)		instr_reg(opPUSH, r)
+#define pop(r)		instr_reg(opPOP, r)
+#define fld_r(r) 	instr_reg(opFLD_r, r)
+#define fst_r(r) 	instr_reg(opFST_r, r)
+#define fstp_r(r) 	instr_reg(opFSTP_r, r)
 
 /* shift instruction with one operand in CL */
 #define shift2cl_r(ispec, r) \
-     instr2_r_(ifdebug("%s %s, cl") zz(mnem, xSHIFT_r, op), r)
+     instr2_fmt(ifdebug("%s %s, cl") zz(mnem, xSHIFT_r, op), r)
 
 /* shift by constant */
 static void shift2_i(OPDECL, int rd, int imm) {
@@ -682,14 +682,14 @@ static void fmonop(OPDECL, int rd, int rs) {
 static void flop2(OPDECL, int op_r, int rd, int rs) {
      if (rd == FPR0)
 	  /* 1: st0 := st0 op stX */
-	  instr2_r_(ifdebug("%s F0, %s") zz(mnem, xFLOP_0, op), rs);
+	  instr2_fmt(ifdebug("%s F0, %s") zz(mnem, xFLOP_0, op), rs);
      else if (rs == FPR0)
 	  /* 4: stX := stX op st0 */
-	  instr2_r_(ifdebug("%s %s, F0") zz(mnem, xFLOP_r, op_r), rd);
+	  instr2_fmt(ifdebug("%s %s, F0") zz(mnem, xFLOP_r, op_r), rd);
      else {
 	  /* stX := stX op stY becomes push stY; 6: stX := stX op st0; pop*/
 	  fld_r(rs);
-          instr2_r_(ifdebug("%sp %s, F0") zz(mnem, xFLOPP_r, op_r), rd+1);
+          instr2_fmt(ifdebug("%sp %s, F0") zz(mnem, xFLOPP_r, op_r), rd+1);
      }
 }
 

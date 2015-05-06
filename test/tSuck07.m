@@ -35,7 +35,7 @@ STGC tSuck07.b
 LABEL 3
 !     IF (b = (TRUE & TRUE)) & TRUE THEN Out.String("A") END;
 LDGC tSuck07.b
-JUMPF 7
+JEQZ 7
 CONST 2
 GLOBAL tSuck07.%1
 GLOBAL Out.String
@@ -43,7 +43,7 @@ CALL 2
 LABEL 7
 !     IF b = FALSE THEN Out.String("B") END;
 LDGC tSuck07.b
-JUMPT 11
+JNEQZ 11
 CONST 2
 GLOBAL tSuck07.%2
 GLOBAL Out.String
@@ -55,7 +55,7 @@ NOT
 STGC tSuck07.b
 !   UNTIL b # TRUE;
 LDGC tSuck07.b
-JUMPT 3
+JNEQZ 3
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

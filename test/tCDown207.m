@@ -509,7 +509,7 @@ LABEL 25
 LDLW -8
 JEQZ 27
 LDLC -9
-JUMPT 27
+JNEQZ 27
 !     IF (r.val = val) & (Bit.And(r.used, Bit.Not(used)) = 0) THEN
 LDLW -8
 NCHECK 118
@@ -538,7 +538,7 @@ JUMP 25
 LABEL 27
 ! IF ~useless THEN
 LDLC -9
-JUMPT 35
+JNEQZ 35
 !   NEW(r);
 CONST 28
 GLOBAL tCDown207.blob

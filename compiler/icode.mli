@@ -64,7 +64,6 @@ type icode =
   | ERROR of symbol * int	(* Runtime error (kind, line) *)
   | EASSERT of int		(* Assertion failed (line) *)
   | JUMP of codelab		(* Unconditional branch (dest) *)
-  | JUMPB of bool * codelab	(* Jump on boolean *)
   | JCASE of codelab list       (* Case jump *)
   | JRANGE of codelab		(* Range jump *)
   | TYPETEST of int		(* Type test (level) *)

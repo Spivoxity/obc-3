@@ -84,7 +84,7 @@ LDLW -4
 CONST 8
 JGEQ 4
 LDGC tQueens07.done
-JUMPT 4
+JNEQZ 4
 !       j := 0; ok := TRUE;
 CONST 0
 STLW -8
@@ -93,7 +93,7 @@ STLC -13
 LABEL 5
 !       WHILE ok & (j < k) DO
 LDLC -13
-JUMPF 7
+JEQZ 7
 LDLW -8
 LDLW 12
 JGEQ 7
@@ -131,7 +131,7 @@ JUMP 5
 LABEL 7
 !       IF ok THEN 
 LDLC -13
-JUMPF 11
+JEQZ 11
 ! 	choice[k] := y;
 LDLW -4
 CONVNS

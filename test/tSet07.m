@@ -101,7 +101,7 @@ NEQ
 STLC -5
 !     IF b THEN Out.Int(i, 3) END
 LDLC -5
-JUMPF 11
+JEQZ 11
 CONST 3
 LDLW -4
 GLOBAL Out.Int

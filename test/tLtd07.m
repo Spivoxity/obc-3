@@ -36,7 +36,7 @@ DLT
 STGC tLtd07.c
 !   IF c THEN Out.String("yes") ELSE Out.String("no") END;
 LDGC tLtd07.c
-JUMPF 5
+JEQZ 5
 CONST 4
 GLOBAL tLtd07.%1
 GLOBAL Out.String

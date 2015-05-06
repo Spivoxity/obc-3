@@ -107,7 +107,7 @@ LINK
 LDLW 20
 NCHECK 22
 CALLW 1
-JUMPF 10
+JEQZ 10
 !         Search(k+1, nn, s1)
 LOCAL 0
 GLOBAL tDigits207.%1.s1

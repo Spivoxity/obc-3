@@ -89,7 +89,7 @@ LDLW -4
 CONST 8
 JGEQ 4
 LDGC tQSet07.done
-JUMPT 4
+JNEQZ 4
 !       IF (y IN rows) & (k+y IN diagdown) & (y-k+7 IN diagup) THEN 
 CONST 1
 LDLW -4

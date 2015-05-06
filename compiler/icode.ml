@@ -65,7 +65,6 @@ type icode =
   | ERROR of symbol * int	(* Runtime error (kind, line) *)
   | EASSERT of int		(* Assertion failed (line) *)
   | JUMP of codelab		(* Unconditional branch (dest) *)
-  | JUMPB of bool * codelab	(* Jump on boolean *)
   | JCASE of codelab list       (* Case jump *)
   | JRANGE of codelab		(* Range jump *)
   | TYPETEST of int		(* Type test (level) *)
@@ -193,8 +192,6 @@ let fInst =
     | ERROR (k, ln) ->	fMeta "ERROR $ $" [fSym k; fNum ln]
     | EASSERT ln ->     fMeta "EASSERT $" [fNum ln]
     | JUMP lab ->	fMeta "JUMP $" [fLab lab]
-    | JUMPB (b, lab) -> 
-	fMeta "JUMP$ $" [fStr (if b then "T" else "F"); fLab lab]
     | JUMPC (t, w, lab) ->	
 	fMeta "$J$ $" [fType t; fOpcode w; fLab lab]
     | TESTGEQ lab ->	fMeta "TESTGEQ $" [fLab lab]

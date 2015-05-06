@@ -328,7 +328,7 @@ let rec bad_paramtype t =
 
 (* check_caselab -- check case label *)
 let check_caselab env t lab =
-  let check_lab e = check_tconst env t "this case label" e in 
+  let check_lab e = check_tconst env t "a case label" e in 
   match lab with
       Single e -> 
 	let v = check_lab e in

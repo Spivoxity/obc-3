@@ -46,13 +46,9 @@
      LDKW, LDKF        val     konst_4[val]
      LDKD, LDKQ        val     konst_8[val]
      LOADs         reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
-     TYPETEST+n    reg val     [ancestor_n(reg) == val]
 
-Of these, LDKW and LDKD refer to the pool of constants for the procedure
-being compiled.  TYPETEST refers to the result of a type test to determine
-whether the level n ancestor of the type whose descriptor is in reg is
-equal to val: it's delayed to find out whether the next operation is an
-assignment or a jump. */
+LDKW and LDKD refer to the pool of constants for the procedure
+being compiled.  */
 
 #ifdef DEBUG
 /* show -- print a value for debugging */
@@ -69,11 +65,6 @@ static void show(ctvalue v) {
 
      case I_STACKD: 
 	  printf("stackd %d", v->v_val); break;
-
-     case I_TYPETEST:
-	  printf("[TYPETEST %d %s %d]", v->v_op >> 16, 
-		 v->v_reg->r_name, v->v_val);
-	  break;
 
      default:
 	  printf("[%s %s", instrs[v->v_op & 0xff].i_name, fmt_val(v->v_val));
@@ -408,7 +399,6 @@ static reg load(operation op, int cl, reg r, int val) {
 reg move_to_reg(int i, int ty) {
      ctvalue v = &vstack[sp-i];
      reg r, r2;
-     codepoint lab;
 
      if (v->v_op != I_REG) {
 	  for_regs (r) {
@@ -487,21 +477,6 @@ reg move_to_reg(int i, int ty) {
      case I_STACKD:
 	  assert(ty == FLO);
 	  r = load(LDD, FLO, breg, base + v->v_val);
-	  break;
-
-     case I_TYPETEST:
-	  lab = new_label();
-	  rlock(v->v_reg);
-	  r = ralloc(INT); 
-	  r2 = ralloc_avoid(INT, r);
-	  runlock(v->v_reg);
-	  g2ri(MOV, r, 0);
-	  g3rri(LDW, r2, v->v_reg, 4*DESC_DEPTH);
-	  g3rib(BLT, r2, v->v_op >> 16, lab);
-	  g3rri(LDW, r2, v->v_reg, 4*DESC_ANCES);
-	  g3rri(LDW, r2, r2, 4 * (v->v_op >> 16));
-	  g3rri(EQ, r, r2, v->v_val);
-	  label(lab);
 	  break;
 
      default:

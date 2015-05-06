@@ -72,7 +72,7 @@ PROC tFCmp07.PBool 0 5 0
 ! PROCEDURE PBool(b: BOOLEAN);
 !   IF b THEN
 LDLC 12
-JUMPF 7
+JEQZ 7
 !     Out.String("true")
 CONST 5
 GLOBAL tFCmp07.%1

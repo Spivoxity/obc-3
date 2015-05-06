@@ -398,7 +398,7 @@ STLC -9
 LABEL 26
 !   WHILE ~done DO
 LDLC -9
-JUMPT 28
+JNEQZ 28
 !     IF n - m = 1 THEN
 LDLW 20
 LDLW 16

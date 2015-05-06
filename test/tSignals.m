@@ -721,7 +721,7 @@ LDLW 12
 NCHECK 109
 CONST 20
 LDIC
-JUMPT 34
+JNEQZ 34
 !     s.marked := TRUE;
 CONST 1
 LDLW 12
@@ -764,7 +764,7 @@ LDIW
 NCHECK 119
 CONST 20
 LDIC
-JUMPF 40
+JEQZ 40
 !       stack[i].marked := FALSE;
 CONST 0
 GLOBAL tSignals.stack
@@ -924,7 +924,7 @@ BOUND 149
 LDIW
 GLOBAL tSignals.Negate
 CALLW 1
-JUMPF 50
+JEQZ 50
 !       Closure(sp-1);
 LDGW tSignals.sp
 DEC
@@ -952,7 +952,7 @@ BOUND 153
 LDIW
 GLOBAL tSignals.Negate
 CALLW 1
-JUMPF 55
+JEQZ 55
 !           Closure(sp-1);
 LDGW tSignals.sp
 DEC

@@ -34,7 +34,7 @@ FLEQ
 STGC tBool.b
 !   IF b THEN x := 5 END;
 LDGC tBool.b
-JUMPF 3
+JEQZ 3
 FCONST 5.0
 STGF tBool.x
 LABEL 3

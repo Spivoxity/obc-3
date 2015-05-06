@@ -888,15 +888,15 @@ and check_builtin env p args e loc =
 
       | OrdFun, [e1] ->
 	  let t1 = check_expr env e1 in
-	  if not (is_discrete t1) || same_types t1 longint then begin
+	  if not (is_discrete t1) && not (same_types t1 settype)
+              || same_types t1 longint then begin
 	    let reqd = if !Config.extensions then 
-	        "a discrete type assignable to INTEGER"
-	      else "type CHAR" in
+	        "a discrete type" else "type CHAR" in
 	    sem_error "the argument of ORD must have $"
 	      [fStr reqd] e1.e_loc;
 	    sem_type t1
 	  end 
-	  else if not (same_types t1 character) 
+	  else if not (same_types t1 character) && not (same_types t1 settype)
 	      && not !Config.extensions then begin
 	    sem_extend "ORD expects an argument of type CHAR" [] e1.e_loc;
 	    sem_type t1

@@ -616,6 +616,7 @@ let init_env () =
       libproc "HALT" 1 ["n", ParamDef, inttype] voidtype;
       libproc "COPY" 4 
 	["x", ParamDef, strtype; "v", VParamDef, strtype] voidtype ]
+
     @ if !Config.ob07flag then 
       [ "BYTE", TypeDef, bytetype;
         builtin "FLT" FltFun 1 [inttype];
@@ -637,6 +638,7 @@ let init_env () =
         builtin "SIZE" SizeFun 1 [];
         builtin "ASH" AshFun 2 [inttype; inttype];
         builtin "ENTIER" Entier 1 [] ] in 
+
   make_env defs  
 
 let sysenv () = 
@@ -652,10 +654,12 @@ let sysenv () =
       libproc "MOVE" 3 
 	["src", ParamDef, inttype; "dest", ParamDef, inttype; 
 	  "nbytes", ParamDef, inttype] voidtype ]
+
     @ if !Config.ob07flag then
       [ builtin "SIZE" SizeFun 1 [] ]
     else
       [ ] in
+
   make_env defs
 
 

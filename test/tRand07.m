@@ -412,7 +412,7 @@ GLOBAL tRand07.u
 GLOBAL tRand07.m
 GLOBAL tRand07.Greater
 CALLW 2
-JUMPT 19
+JNEQZ 19
 !     IF (u[3] > 0) OR (u[2] > m[2]) THEN
 GLOBAL tRand07.u
 LDNW 12

@@ -558,7 +558,7 @@ JUMP 15
 LABEL 16
 !   UNTIL ~changed;
 LDLC -13
-JUMPT 9
+JNEQZ 9
 !   FOR i := 0 TO N-1 DO
 CONST 0
 STLW -4

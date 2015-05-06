@@ -32,7 +32,7 @@ PROC tDblArg07.f 0 3 0
 ! PROCEDURE f(b: BOOLEAN; x: LONGREAL); 
 !   IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x) END; 
 LDLC 12
-JUMPF 4
+JEQZ 4
 CONST 12
 GLOBAL tDblArg07.%1
 GLOBAL Out.String

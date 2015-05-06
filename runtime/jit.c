@@ -181,46 +181,11 @@ static void fcondj(operation op, int lab) {
      g3rrb(op, r1, r2, to_label(lab));
 }
 
-/* typejump -- jump on type test */
-static void typejump(int op, ctvalue v, int lab) {
-     int d; reg r1, r2; codepoint lab2;
-
-     d = v->v_op >> 16;
-     r1 = v->v_reg;
-     r2 = ralloc_avoid(INT, r1);
-     pop(1); 
-
-     switch (op) {
-     case BEQ:
-	  /* if r.depth < d or r.ancestor[n] != v->v_val goto lab */
-	  g3rri(LDW, r2, r1, 4*DESC_DEPTH);
-	  g3rib(BLT, r2, d, to_label(lab));
-	  g3rri(LDW, r2, r1, 4*DESC_ANCES);
-	  g3rri(LDW, r2, r2, 4*d);
-	  g3rib(BNEQ, r2, v->v_val, to_label(lab));
-	  break;
-
-     case BNEQ:
-	  /* if r.depth >= d and r.ancestor[n] == v->v_val goto lab */
-	  lab2 = new_label();
-	  g3rri(LDW, r2, r1, 4*DESC_DEPTH);
-	  g3rib(BLT, r2, d, lab2);
-	  g3rri(LDW, r2, r1, 4*DESC_ANCES);
-	  g3rri(LDW, r2, r2, 4*d);
-	  g3rib(BEQ, r2, v->v_val, to_label(lab));
-	  label(lab2);
-	  break;
-
-     default:
-	  panic("?typejump");
-     }
-}
-
 /* icondj -- integer conditional jump */
 #define icondj(op, lab) icondj1(op, op##F, op##D, lab)
 
 static void icondj1(operation op, operation opf, operation opd, int lab) {
-     reg r1; ctvalue v, v2;
+     reg r1; ctvalue v;
 
      switch (cmpflag) {
      case I_FCMP:
@@ -230,20 +195,12 @@ static void icondj1(operation op, operation opf, operation opd, int lab) {
      default:
 	  flush(2); 
 	  v = move_to_rc(1);
-	  v2 = peek(2);
-	  if ((v2->v_op & 0xff) == I_TYPETEST
-	      && v->v_op == I_CON && v->v_val == 0
-	      && (op == BEQ || op == BNEQ)) {
-	       pop(1);
-	       typejump(op, v2, lab);
-	  } else {							
-	       r1 = move_to_reg(2, INT); 
-	       pop(2); unlock(2);	
-	       if (v->v_op == I_CON)					
-		    g3rib(op, r1, v->v_val, to_label(lab));
-	       else						
-		    g3rrb(op, r1, v->v_reg, to_label(lab));
-	  }							
+          r1 = move_to_reg(2, INT); 
+          pop(2); unlock(2);	
+          if (v->v_op == I_CON)					
+               g3rib(op, r1, v->v_val, to_label(lab));
+          else						
+               g3rrb(op, r1, v->v_reg, to_label(lab));
      }
 
      cmpflag = 0;
@@ -533,13 +490,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           g3rri(LDW, r3, r1, 0);
           g3rri(STW, rSP, r1, 0);
 	  gcall(memcpy, 3, rSP, r3, r2);
-	  break;
-
-     case I_TYPETEST:
-	  r1 = move_to_reg(2, INT); 
-	  v = fix_const(1, FALSE); 
-	  pop(2); unlock(2);
-	  push(I_TYPETEST|(arg1<<16), INT, r1, v->v_val, 1);
 	  break;
 
      case I_LINK:

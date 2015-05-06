@@ -78,7 +78,6 @@ let set_return x =
 let do_refs f =
   function
       JUMP x -> f (ref_count x)
-    | JUMPB (b, x) -> f (ref_count x)
     | JUMPC (t, w, x) -> f (ref_count x)
     | JUMPCZ (w, x) -> f (ref_count x)
     | TESTGEQ x -> f (ref_count x)
@@ -91,7 +90,6 @@ let rename_labs =
   function
       LABEL x -> LABEL (rename x)
     | JUMP x -> JUMP (rename x)
-    | JUMPB (b, x) -> JUMPB (b, rename x)
     | JUMPC (t, w, x) -> JUMPC (t, w, rename x)
     | JUMPCZ (w, x) -> JUMPCZ (w, rename x)
     | TESTGEQ x -> TESTGEQ (rename x)
@@ -104,9 +102,7 @@ let is_label = function LABEL _ -> true | _ -> false
 let ruleset1 replace =
   function
     (* Temporarily expand abbreviations *)
-      JUMPC (k, w, lab) :: _ ->
-	replace 1 [BINOP (k, w); JUMPB (true, lab)]
-    | MONOP (IntT, Inc) :: _ ->
+      MONOP (IntT, Inc) :: _ ->
 	replace 1 [CONST (integer 1); BINOP (IntT, Plus)]
     | MONOP (IntT, Dec) :: _ ->
 	replace 1 [CONST (integer 1); BINOP (IntT, Minus)]
@@ -137,10 +133,11 @@ let ruleset1 replace =
 	replace 3 [LOCAL (o + int_of_integer n)]
     | CONST a :: MONOP (IntT, w) :: _ ->
 	replace 2 [CONST (int_monop w a)]
-    | CONST a :: JUMPB (true, lab) :: _ ->
-	replace 2 (if a <> integer 0 then [JUMP lab] else [])
-    | CONST a :: JUMPB (false, lab) :: _ ->
-	replace 2 (if a = integer 0 then [JUMP lab] else [])
+    | CONST a :: CONST b :: JUMPC (IntT, w, lab) :: _ ->
+        if int_binop w a b <> integer 0 then
+          replace 3 [JUMP lab]
+        else
+          replace 3 []
 
     | CONST a :: BINOP (IntT, Minus) :: _ ->
 	replace 2 [CONST (integer_neg a); BINOP (IntT, Plus)]
@@ -160,13 +157,16 @@ let ruleset1 replace =
     | CONST n :: BINOP (IntT, Times) :: _ when n = integer 1 ->
 	replace 2 []
 
-    | MONOP (BoolT, Not) :: JUMPB (b, lab) :: _ ->
-	replace 2 [JUMPB (not b, lab)]
+    | BINOP (k, (Eq|Neq|Gt|Lt|Geq|Leq as w)) :: CONST z 
+          :: JUMPC (IntT, (Eq | Neq as w1), lab) :: _ when z = integer 0 ->
+        replace 3 [JUMPC (k, (if w1 = Neq then w else opposite w), lab)]
+
     | BINOP (k, w) :: MONOP (BoolT, Not) :: _ ->
 	begin
 	  try let w' = opposite w in replace 2 [BINOP (k, w')]
 	  with Not_found -> ()
 	end
+
 
     (* Convert int to char or short, then store char *)
     | CONV (IntT, (CharT | ShortT)) 
@@ -207,6 +207,9 @@ let ruleset1 replace =
     | CONST n :: BINOP (BoolT, (Eq | Neq as w)) :: _ ->
 	let w' = if n = integer 0 then w else opposite w in
 	replace 2 (if w' = Neq then [] else [MONOP (BoolT, Not)])
+    | MONOP (BoolT, Not) :: CONST z 
+          :: JUMPC (IntT, (Eq | Neq as w), lab) :: _ when z = integer 0 ->
+        replace 3 [CONST z; JUMPC (IntT, opposite w, lab)]
 
     (* Void returns *)
     | CALL (n, k) :: POP s :: _ when k <> VoidT ->
@@ -223,15 +226,14 @@ let ruleset1 replace =
 	replace 2 []
 
     (* Tidy up jumps and labels: *)
+    | JUMPC (k, w, lab) :: JUMP lab2 :: LABEL lab1 :: _ 
+        when same_lab lab lab1 -> replace 2 [JUMPC (k, opposite w, lab2)]
     | JUMP lab :: LABEL lab1 :: _ when same_lab lab lab1 ->
 	replace 1 []
     | JUMP lab :: i :: _ when not (is_label i) -> 
 	replace 2 [JUMP lab]
     | RETURN s :: i :: _ when not (is_label i) -> 
 	replace 2 [RETURN s]
-    | JUMPB (b, lab1) :: JUMP lab2 :: LABEL lab1a :: _
-	  when same_lab lab1 lab1a ->
-	replace 2 [JUMPB (not b, lab2)]
     | LABEL lab1 :: JUMP lab2 :: _ when not (same_lab lab1 lab2) ->
 	replace 1 []; equate lab1 lab2
     | LINE n :: JUMP lab2 :: _ -> 
@@ -281,8 +283,6 @@ let ruleset2 replace =
 	replace 2 [MONOP (IntT, Dec)]
     | CONST n :: BINOP (IntT, Plus) :: _ when n < integer 0 ->
 	replace 2 [CONST (integer_neg n); BINOP (IntT, Minus)]
-    | BINOP (k, (Eq|Neq|Gt|Lt|Geq|Leq as w)) :: JUMPB (b, lab) :: _ ->
-	replace 2 [JUMPC (k, (if b then w else opposite w), lab)]
 
     | LOCAL n :: LOAD s :: _ -> replace 2 [LDL (s, n)]
     | LOCAL n :: STORE s :: _ -> replace 2 [STL (s, n)]

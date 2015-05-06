@@ -310,7 +310,7 @@ JUMP 13
 LABEL 14
 !   IF failed THEN Out.String("Failed!"); Out.Ln END  
 LDGC tDivMod07.failed
-JUMPF 17
+JEQZ 17
 CONST 8
 GLOBAL tDivMod07.%5
 GLOBAL Out.String

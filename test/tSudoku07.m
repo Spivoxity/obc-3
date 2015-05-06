@@ -1413,7 +1413,7 @@ LDNW 16
 NCHECK 267
 CONST 16
 LDIC
-JUMPF 77
+JEQZ 77
 !       Out.String("Conflict for "); PrintCol(q.column); Out.Ln
 CONST 14
 GLOBAL tSudoku07.%5
