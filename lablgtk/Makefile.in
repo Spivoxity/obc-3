@@ -115,8 +115,11 @@ gtkThread.cmi: gtkThread.mli
 gtkThread.cmo: gtkThread.ml
 	ocamlc -c -thread -w s -o $@ $<
 
+CCOPTS = -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' \
+	-ccopt -Wno-deprecated-declarations
+
 %.o: %.c
-	ocamlc -c -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' -o $@ $<
+	ocamlc -c $(CCOPTS) -o $@ $<
 
 $(COBJS): gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
 	gtk_tags.h pango_tags.h sourceView2_tags.h \
@@ -130,8 +133,11 @@ $(COBJS): gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
 %_tags.c %_tags.h %Enums.ml: %_tags.var varcc
 	./varcc $<
 
-propcc varcc: %: %.ml4
-	ocamlc -pp "camlp4o -impl" -o $@ -impl $<
+propcc varcc: %: %.ml
+	ocamlc -o $@ $<
+
+#propcc.ml varcc.ml: %.ml: %.ml4
+#	camlp4 pa_o.cmo pa_op.cmo pr_o.cmo -impl $< >$@
 
 %.cmo: %.ml
 	ocamlc $(OCAMLFLAGS) -c -w s -o $@ $< 
