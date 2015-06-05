@@ -38,6 +38,7 @@ top_srcdir = @top_srcdir@
 datarootdir = @datarootdir@
 bindir = @bindir@
 libdir = @libdir@
+mandir = @mandir@
 export AUTOCONF = @AUTOCONF@
 export AUTOHEADER = @AUTOHEADER@
 CC = @CC@
@@ -75,12 +76,22 @@ ABS_SRCDIR = @ABS_SRCDIR@
 ABS_BINDIR = @ABS_BINDIR@
 # end of Configuration stuff
 
-all : config.h revid predirs subdirs build sanity
+all : revid subdirs build sanity
 
 PREDIRS = yacc
 SUBDIRS = compiler runtime lib
 BUILD = obx obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
+
+PRIMS = lib/oblib.o
+
+ifndef DYNLINK
+  PRIMS += lib/primtab.o
+  EXTRA_LIBS = $(MATHLIB) $(XLIB)
+endif
+
+ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
+obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
 
 ifdef ENABLE_JIT
   BUILD += obxj
@@ -100,7 +111,6 @@ ifdef ENABLE_DEBUGGER
   endif
 endif
 
-predirs : $(PREDIRS)
 subdirs : $(SUBDIRS)
 build :: $(BUILD)
 
@@ -110,11 +120,20 @@ endif
 
 .PHONY: subdirs build $(PREDIRS) $(SUBDIRS) 
 
-$(PREDIRS) $(SUBDIRS) :
-	$(MAKE) -C $@ all
+compiler/obc1: compiler; $(SKIP)
 
+runtime/obx.a runtime/obx-j.a runtime/obx-jd.a runtime/obx-t.a \
+runtime/obx-p.a runtime/obx-d.a runtime/oblink: runtime; $(SKIP)
+
+$(PRIMS) lib/Files.k: lib; $(SKIP)
+
+compiler: yacc
 lib: compiler
 debugger: compiler lablgtk
+$(PREDIRS) $(SUBDIRS): config.h
+
+$(PREDIRS) $(SUBDIRS) :
+	$(MAKE) -C $@ all
 
 ifdef MACOS
 lablgtk: macport/gtklib
@@ -164,8 +183,8 @@ ObList.k : ObList.m compiler/obc1 lib/Files.k
 macdebug : force
 	$(MAKE) -C macport debugger
 
-sanity : Fac.m force
-	compiler/obc1 -x -g -pl -I lib $< >Fac.k
+sanity : subdirs $(INTERP) Fac.m force
+	compiler/obc1 -x -g -pl -I lib Fac.m >Fac.k
 	runtime/oblink -g -pl -L lib Fac.k -o Fac.x
 	./$(INTERP) ./Fac.x 20
 	@echo "The factorial of 20 is 2432902008176640000"
@@ -195,14 +214,16 @@ LIBX = compiler/obc1 compiler/obb1 runtime/oblink obx
 LIBSRC = $(MODULES:%=$(srcdir)/lib/%.m)
 
 # Other files installed in {prefix}/lib
-LIB = runtime/obx.a runtime/obx-j.a runtime/obx-p.a $(PRIMS) \
-	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h \
-	lib/lscript lib/lscript-b \
-	$(srcdir)/lib/Builtin.m lib/_Builtin.k \
-	$(MODULES:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k)
+LIB = lib/lscript lib/lscript-b $(srcdir)/lib/Builtin.m lib/_Builtin.k \
+	$(MODULES:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k) \
+	runtime/obx.a runtime/obx-j.a runtime/obx-p.a $(PRIMS) \
+	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h
+
+# Manual pages
+MAN = obb.1 obc.1 obdump.1 obprof.1
 
 # Installation directories
-DIRS = $(bindir) $(libdir)/obc
+DIRS = $(bindir) $(mandir) $(libdir)/obc
 
 # Inputs for bindist config process
 SCRIPTS = obc.in obb.in
@@ -239,6 +260,7 @@ install:: force
 	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in $(LIB); do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in $(LIBX); do $(INSTALL_PROG) $$f $(libdir)/obc; done
+	for f in $(MAN); do $(INSTALL_DATA) man/$$f $(mandir)/man1; done
 
 ifdef ENABLE_DEBUGGER
   ifdef MACOS
@@ -289,13 +311,13 @@ EXTRADIRS = test winport macport
 
 .PHONY: cleanhere distcleanhere clean distclean quitecleanhere quiteclean
 
-cleanhere:
+cleanhere: force
 	rm -f a.out fac tartan *.[kio] Fac.[cx] FacPrims.c config.log \
-		$(patsubst %,%$(EXEEXT),obx obxdeb obprof obtrace oblist obxj)
+	    $(patsubst %,%$(EXEEXT),obx obxdeb obprof obtrace oblist obxj obxjd)
 	rm -rf $(BINDIST) $(BINDIST).tgz build-stamp
 
 quitecleanhere: cleanhere
-	rm -f obc obb obdb obc0 obb0 obdb0 config0 revid
+	rm -f obc obb obdb obc0 obb0 obdb0 config0 revid dump
 
 distcleanhere: quitecleanhere
 	rm -f $(CONFIG)
@@ -356,6 +378,3 @@ dump: %: scripts/%.in
 	    -e "/# Config/r config0" \
 	    -e "/# Config/,/# End of config/d" $< >$@
 	chmod +x $@
-
-
-

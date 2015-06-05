@@ -170,7 +170,7 @@ AC_ARG_ENABLE(dynlink,
 if test "$DYNLINK" = 1; then
   AC_DEFINE(DYNLINK, 1, [Define if dynamic linking enabled])
   AC_SEARCH_LIBS(dlopen, dl)
-  AC_TEST_RDYNAMIC(DLFLAGS="$DLFLAGS -rdynamic")
+  AC_TEST_RDYNAMIC(DLFLAGS="-rdynamic")
 fi
 AC_SUBST(DYNLINK)
 AC_SUBST(DLFLAGS)

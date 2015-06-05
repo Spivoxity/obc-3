@@ -97,7 +97,8 @@ _Builtin.k: Builtin.m ../revid
 	$(OBC1) -w -b $< | \
 	    sed -e 's/Builtin\.\([^%]\)/\1/g' -e 's/Builtin/_Builtin/' >$@
 
-_Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP)
+_Builtin.k: $(LIBDEP)
+$(MODULES:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP) _Builtin.k
 In.k Out.k Err.k In-b.k : Files.k
 In.k In-b.k : Conv.k
 $(SHLMODS:%=%.k) : DynLink.k
@@ -159,7 +160,7 @@ clean:
 
 quiteclean: clean
 	rm -f lscript* Builtin.m
-	rm -f Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c)
+	rm -f _Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c)
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean
@@ -167,7 +168,6 @@ realclean distclean: quiteclean
 
 
 .DELETE_ON_ERROR:
-
 
 ## Configuration
 

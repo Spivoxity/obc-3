@@ -357,8 +357,6 @@ static void get_options(int argc, char **argv) {
 	  } else if (strcmp(argv[i], "-script") == 0) {
 	       if (++i == argc) panic("missing argument after -script");
 	       lscript = argv[i];
-	  } else if (strcmp(argv[i], "-custom") == 0) {
-	       custom = TRUE;
 	  } else if (strcmp(argv[i], "-dump") == 0) {
 	       dump = TRUE;
 	  } else if (strcmp(argv[i], "-nostdlib") == 0) {

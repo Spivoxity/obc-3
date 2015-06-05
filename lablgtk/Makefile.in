@@ -102,23 +102,23 @@ else
 endif
 
 lablgtk.cma: $(MLOBJS)
-	ocamlc -a -o $@ $^ -cclib -llablgtk -cclib "$(GTKLIBS)"
+	ocamlc $(MLFLAGS) -a -o $@ $^ -cclib -llablgtk -cclib "$(GTKLIBS)"
 
 liblablgtk.a: $(COBJS)
 	ar cr $@ $^
 	$(RANLIB) $@	
 
 gtkThread.cmi: gtkThread.mli
-	ocamlc -c -thread -o $@ $<
+	ocamlc $(MLFLAGS) -c -thread -o $@ $<
 
 gtkThread.cmo: gtkThread.ml
-	ocamlc -c -thread -w s -o $@ $<
+	ocamlc $(MLFLAGS) -c -thread -w s -o $@ $<
 
 CCOPTS = -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' \
 	-ccopt -Wno-deprecated-declarations
 
 %.o: %.c
-	ocamlc -c $(CCOPTS) -o $@ $<
+	ocamlc $(MLFLAGS) -c $(CCOPTS) -o $@ $<
 
 $(COBJS): gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
 	gtk_tags.h pango_tags.h sourceView2_tags.h \
@@ -133,16 +133,16 @@ $(COBJS): gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
 	./varcc -c $*_tags.c -h $*_tags.h $<
 
 propcc varcc: %: %.ml
-	ocamlc -o $@ $<
+	ocamlc $(MLFLAGS) -o $@ $<
 
 #propcc.ml varcc.ml: %.ml: %.ml4
 #	camlp4 pa_o.cmo pa_op.cmo pr_o.cmo -impl $< >$@
 
 %.cmo: %.ml
-	ocamlc $(OCAMLFLAGS) -c -w s -o $@ $< 
+	ocamlc $(MLFLAGS) -c -w s -o $@ $< 
 
 %.cmi: %.mli
-	ocamlc $(OCAMLFLAGS) -c -o $@ $< 
+	ocamlc $(MLFLAGS) -c -o $@ $< 
 
 clean: force
 	rm -f *.cma *.cmi *.cmo *.o *.a propcc varcc
@@ -197,6 +197,13 @@ $(srcdir)/Depend: $(ML)
 endif
 
 include $(srcdir)/Depend
+
+# Extra dependencies not found by script
+gtkActionProps.cmo gtkBaseProps.cmo gtkBinProps.cmo gtkBrokenProps.cmo \
+gtkButtonProps.cmo gtkEditProps.cmo gtkFileProps.cmo gtkListProps.cmo \
+gtkMenuProps.cmo gtkMiscProps.cmo gtkPackProps.cmo \
+gtkSourceView2Props.cmo gtkTextProps.cmo gtkTreeProps.cmo: \
+	gtkObject.cmo
 
 force:
 

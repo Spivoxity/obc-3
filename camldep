@@ -87,7 +87,7 @@ foreach ifn $infiles {
     close $f
 
     set deps2 {}
-    foreach d $deps {lappend deps2 [string tolower $d 0 1]}
+    foreach d $deps {lappend deps2 [string tolower $d 0 0]}
     set depend($fn) $deps2
 }
 
