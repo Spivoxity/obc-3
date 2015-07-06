@@ -145,6 +145,12 @@ let typejump t tlab flab =
     offset (r.r_depth * word_size); load_addr;
     GLOBAL t.t_desc; JUMPC (PtrT, Eq, tlab); JUMP flab]
 
+let typecheck t e =
+ let lab1 = label () and lab2 = label () in
+ SEQ [typejump t lab1 lab2;
+   LABEL lab2; ERROR ("E_CAST", expr_line e);
+   LABEL lab1]
+
 (* convert -- code for type conversion *)
 let convert t1 t2 =
   let rec conv k1 k2 =
@@ -265,14 +271,18 @@ let rec gen_addr v =
 	    Name x ->
 	      let dx = get_def x in
               if dx.d_kind <> VParamDef then failwith "addr of cast 3";
-	      let lab1 = label () and lab2 = label () in
 	      SEQ [
 		check (SEQ [
 		  local dx.d_level (dx.d_offset + word_size);
-		  typejump d.d_type lab1 lab2;
-                  LABEL lab2; ERROR ("E_CAST", expr_line v);
-		  LABEL lab1]);
+                  typecheck d.d_type v]);
 		local dx.d_level dx.d_offset; load_addr]
+
+          | Deref p ->
+              SEQ [gen_expr p;
+                check (SEQ [DUP 0; null_check p;
+                  CONST (integer (-word_size)); BINOP (PtrT, PlusA);
+                  typecheck (base_type d.d_type) v])]
+
 	  | _ -> failwith "addr of cast 2"
 	end
 
@@ -418,13 +428,9 @@ and gen_expr e =
       | Cast (e1, tn) ->
 	  let d = get_def tn in
 	  if not (is_pointer d.d_type) then failwith "val of cast";
-	  let lab1 = label () and lab2 = label () in
 	  SEQ [gen_expr e1;
-	    check (SEQ [DUP 0; null_check e1;
-	      offset (-word_size);
-	      typejump (base_type d.d_type) lab1 lab2;
-	      LABEL lab2; ERROR ("E_CAST", expr_line e);
-	      LABEL lab1])]
+	    check (SEQ [DUP 0; null_check e1; offset (-word_size);
+              typecheck (base_type d.d_type) e])]
 
       | Set els ->
 	  if els = [] then
@@ -834,6 +840,11 @@ and gen_element =
 	  MONOP (IntT, BitNot);		(* {0..y} *)
 	  BINOP (IntT, BitAnd)]
 
+let check_assign v desc =
+  let lab1 = label () in
+  SEQ [load_addr; GLOBAL desc; JUMPC (PtrT, Eq, lab1);
+    ERROR ("E_ASSIGN", expr_line v); LABEL lab1]
+
 let gen_rec_addr v desc =
   match v.e_guts with
       Name x ->
@@ -841,22 +852,17 @@ let gen_rec_addr v desc =
 	if d.d_kind <> VParamDef then 
 	  gen_addr v
 	else begin
-	  let lab1 = label () in
 	  SEQ [
 	    check (SEQ [local d.d_level (d.d_offset + word_size);
-	      LOAD IntT; GLOBAL desc; JUMPC (PtrT, Eq, lab1);
-	      ERROR ("E_ASSIGN", expr_line v);
-	      LABEL lab1]);
+              check_assign v desc]);
 	    gen_addr v]
 	end
+
     | Deref p ->
-	let lab1 = label () in
 	SEQ [gen_expr p;
 	  check (SEQ [check (null_check p);
-	    DUP 0; offset (-word_size); load_addr; 
-            GLOBAL desc; JUMPC (PtrT, Eq, lab1);
-	    ERROR ("E_ASSIGN", expr_line v);
-	    LABEL lab1])]
+	    DUP 0; offset (-word_size); check_assign v desc])]
+
     | _ ->
         gen_addr v
 
