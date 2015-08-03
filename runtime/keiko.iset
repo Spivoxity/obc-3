@@ -535,7 +535,7 @@ defs {
 
 inst JPROC 0 S0 {
      value *p = sp[0].p;
-     sp -= HEAD-1; sp[BP].p = bp; sp[PC].x = pc; sp[CP].p = p;
+     sp -= HEAD-1; sp[BP].p = bp; sp[PC].x = pc;
      if (p[CP_PRIM].z != interp) {
 #ifdef PROFILE
 	  /* Calling a native-code routine */
