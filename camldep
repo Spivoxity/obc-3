@@ -37,6 +37,7 @@
 # Command-line flags:
 # -M file	name of the makefile to copy (default none)
 # -I dir 	add to list of directories to search for includes
+# -f file	treat file as known though it doesn't exist
 
 # The variables:
 # files		is the set of files seen
@@ -49,19 +50,19 @@ set debug 0
 set infiles {}
 set incl {}
 set makefile ""
+set files {};			# Root names of files
 
 set i 0
 while {$i < [llength $argv]} {
     switch -- [lindex $argv $i] {
 	-M {incr i; set makefile [lindex $argv $i]}
 	-I {incr i; lappend incl [lindex $argv $i]}
+	-f {incr i; lappend files [lindex $argv $i]}
 	-d {incr debug}
 	default {lappend infiles [lindex $argv $i]}
     }
     incr i
 }
-
-set files {};			# Root names of files
 
 foreach ifn $infiles {
     if {$debug > 0} {puts stderr "Reading $ifn"}
@@ -72,14 +73,14 @@ foreach ifn $infiles {
 
     set f [open $ifn "r"]
     while {[gets $f line] >= 0} {
-	if {[regexp {open[ \t]*([A-Z][A-Za-z0-9]*)} $line dummy used]} {
+	if {[regexp {open[ \t]*([A-Z][A-Za-z0-9_]*)} $line _ used]} {
 	    if {$debug > 0} {puts stderr "$fn opens $used"}
 	    ladd deps $used
 	} else {
-	    while {[regexp {([A-Z][A-Za-z0-9]*)\.[A-Za-z]} $line dummy used]} {
+	    while {[regexp {([A-Z][A-Za-z0-9_]*)\.[A-Za-z]} $line _ used]} {
 		if {$debug > 0} {puts stderr "$fn uses $used"}
 		ladd deps $used
-		regsub {([A-z][a-z0-9]*)\.} $line " " line
+		regsub {([A-z][a-z0-9_]*)\.} $line " " line
 	    }
 	}
     }
@@ -110,6 +111,9 @@ proc deporder {a b} {
 }
 
 foreach fn $files {
+    # Ignore dummy files specified with -f
+    if {! [info exists depend($fn)]} continue
+
     if {$debug > 0} {puts stderr "Dependencies for $fn:"}
     set modname [file rootname $fn]
     set ext [file extension $fn]
@@ -151,8 +155,11 @@ foreach fn $files {
 	} else {
 	    # Look for a .cmi file along the include path
 	    foreach d $incl {
-		set fn1 "$d/$m.cmi"
-		if {[file readable $fn1]} {lappend deps $fn1; break}
+		set fn1 "$d/$m.cmi"; set fn2 "$d/$m.mli"; set fn3 "$d/$m.ml"
+		if {[file readable $fn1] || [file readable $fn2] \
+                        || [file readable $fn3]} {
+                    lappend deps $fn1; break
+                }
 	    }
 	}
     }
