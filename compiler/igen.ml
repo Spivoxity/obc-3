@@ -586,8 +586,19 @@ and gen_builtin q args =
       ChrFun, [e1] -> SEQ [gen_expr e1; CONV (IntT, CharT)]
     | OrdFun, [e1] -> gen_expr e1
     | OddFun, [e1] -> SEQ [gen_expr e1; const 1; BINOP (IntT, BitAnd)]
+
     | AshFun, [e1; e2] -> 
-	SEQ [gen_expr e2; gen_expr e1; call_proc "ASH" 2 inttype]
+        if is_const e2 then begin
+          let n = int_of_integer (int_value (value_of e2)) in
+          if n >= 0 then
+            SEQ [gen_expr e1; const n; BINOP (IntT, Lsl)]
+          else
+            SEQ [gen_expr e1; const (-n); BINOP (IntT, Asr)]
+        end
+        else begin
+          SEQ [gen_expr e2; gen_expr e1; call_proc "ASH" 2 inttype]
+        end
+
     | LslFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsl)]
     | LsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsr)]
     | AsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Asr)]
