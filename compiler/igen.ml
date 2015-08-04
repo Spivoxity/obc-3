@@ -117,12 +117,13 @@ let load_addr = SEQ [LOAD IntT; XMARK]
 
 let offset n = SEQ [const n; BINOP (PtrT, PlusA)]
 
-let schain n =
+let rec schain n =
   if n = 0 then
     LOCAL 0
+  else if n = 1 then
+    SEQ [LOCAL stat_link; load_addr]
   else
-    SEQ [LOCAL stat_link; load_addr;
-      SEQ (Util.copy (n-1) (SEQ [offset stat_link; load_addr]))]
+    SEQ [schain (n-1); offset stat_link; load_addr]
 
 (* local -- instructions to push local address *)
 let local l o =
