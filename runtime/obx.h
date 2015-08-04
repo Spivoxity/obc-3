@@ -174,8 +174,6 @@ void xmain_exit(int status);
 void error_exit(int status);
 
 /* support.c */
-extern int bit[];
-
 int ob_div(int a, int b);
 int ob_mod(int a, int b);
 

@@ -51,7 +51,7 @@ type op =
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
   | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA
   | In | BitAnd | BitOr | BitNot | BitXor | BitSub 
-  | Inc | Dec | Bit | Lsl | Lsr | Asr
+  | Inc | Dec | Lsl | Lsr | Asr
 
 val fOp : op -> Print.arg
 

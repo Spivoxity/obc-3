@@ -118,7 +118,7 @@ let opcode =
     | And -> "AND" | Or -> "OR" | Not -> "NOT" | PlusA -> "PLUSA"
     | BitAnd -> "BITAND" | BitOr -> "BITOR" 
     | BitNot -> "BITNOT" | BitXor -> "BITXOR" | BitSub -> "BITSUB"
-    | Inc -> "INC" | Dec -> "DEC" | Bit -> "BIT" 
+    | Inc -> "INC" | Dec -> "DEC"
     | Lsl -> "LSL" | Lsr -> "LSR" | Asr -> "ASR"
     | w -> failwith (sprintf "opcode $" [fOp w])
 

@@ -373,10 +373,9 @@ and gen_expr e =
 	    BINOP (t, Div)]
 
       | Binop (In, e1, e2) ->
-	  SEQ [gen_expr e1;
+	  SEQ [const 1; gen_expr e1;
 	    check (SEQ [const set_size; BOUND (expr_line e)]);
-	    MONOP (IntT, Bit);
-	    gen_expr e2;
+	    BINOP (IntT, Lsl); gen_expr e2;
 	    BINOP (IntT, BitAnd); const 0; BINOP (IntT, Neq)]
 
       | Binop (w, e1, e2) ->
@@ -662,9 +661,9 @@ and gen_builtin q args =
 
     | (InclProc | ExclProc), [e1; e2] ->
 	SEQ [gen_addr e1; DUP 0; LOAD IntT;
-	  gen_expr e2;
+          const 1; gen_expr e2;
 	  check (SEQ [const set_size; BOUND (expr_line e2)]);
-	  MONOP (IntT, Bit);
+	  BINOP (IntT, Lsl);
 	  if q.b_id = InclProc then
 	    BINOP (IntT, BitOr)
 	  else
@@ -701,7 +700,8 @@ and gen_builtin q args =
     | ValFun, [e1; e2] -> gen_expr e2
 
     | BitFun, [e1; e2] ->
-	SEQ [gen_expr e1; LOAD IntT; gen_expr e2; MONOP (IntT, Bit); 
+	SEQ [gen_expr e1; LOAD IntT; 
+          const 1; gen_expr e2; BINOP (IntT, Lsl); 
 	  BINOP (IntT, BitAnd);  const 0; BINOP (IntT, Neq)]
 
     | GetProc, [e1; e2] ->
@@ -797,26 +797,18 @@ and gen_typetest e tn =
 and gen_element =
   function
       Single x ->
-	SEQ [gen_expr x;
+	SEQ [const 1; gen_expr x;
 	  check (SEQ [const set_size; BOUND (expr_line x)]);
-	  MONOP (IntT, Bit)]
+	  BINOP (IntT, Lsl)]
     | Range (x, y) ->
 	(* {x..y} = {0..y} * {x..31} *)
-	(* For bound checks, the allowable range for x is 0..32,
-	   and the allowable range for y is -1..31: the actual 
-	   check is that y+1 is in 0..32. *)
-	SEQ [gen_expr y;
-	  MONOP (IntT, Inc);		(* y+1 *)
-	  check (SEQ [const (set_size+1); BOUND (expr_line y)]);
-	  MONOP (IntT, Bit);		(* bit(y+1) *)
-	  MONOP (IntT, Dec);		(* bits(0..y) *)
-
-	  gen_expr x;
-	  check (SEQ [const (set_size+1); BOUND (expr_line x)]);
-	  MONOP (IntT, Bit);		(* bit(x) *)
-	  MONOP (IntT, Dec);		(* bits(0..x-1) *)
-	  MONOP (IntT, BitNot);		(* bits(x..31) *)
-
+	SEQ [const (-1); gen_expr x;
+	  check (SEQ [const set_size; BOUND (expr_line x)]);
+	  BINOP (IntT, Lsl);		(* {x..31} *)
+          const (-2); gen_expr y;
+	  check (SEQ [const set_size; BOUND (expr_line y)]);
+	  BINOP (IntT, Lsl);		(* {y+1..31} *)
+	  MONOP (IntT, BitNot);		(* {0..y} *)
 	  BINOP (IntT, BitAnd)]
 
 let gen_rec_addr v desc =

@@ -384,14 +384,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  ibinop(XOR);
 	  break;
 
-     case I_BIT:
-	  push(I_CON, INT, rZERO, 2, 1);
-	  ibinop(LSH); 
-	  r1 = move_to_reg(1, INT);
-	  pop(1); unlock(1);
-	  push(I_LOADW, INT, r1, (unsigned) bit, 1);
-	  break;
-
      case I_EQ:		icomp(EQ); break;
      case I_LT:		icomp(LT); break;
      case I_GT:		icomp(GT); break;

@@ -58,15 +58,22 @@ let integer_sub a b = Int64.sub a b
 let integer_mul a b = Int64.mul a b
 let integer_div a b = fst (divmod a b)
 let integer_mod a b = snd (divmod a b)
-let integer_lsr a b = Int64.shift_right_logical a b
-let integer_asr a b = Int64.shift_right a b
-let integer_lsl a b = Int64.shift_left a b
+
+(* Bit operations are done in 32 bits and sign extended *)
+let fix a = Int64.shift_right (Int64.shift_left a 32) 32
+
+let mask = Int64.of_string "0xffffffff"
+
+let integer_lsr a b = 
+  fix (Int64.shift_right_logical (Int64.logand a mask) b)
+let integer_asr a b = Int64.shift_right (fix a) b
+let integer_lsl a b = fix (Int64.shift_left a b)
 let integer_bitand a b = Int64.logand a b
 let integer_bitor a b = Int64.logor a b
 let integer_bitxor a b = Int64.logxor a b
 
 let integer_neg a = Int64.neg a
-let integer_bitnot a = Int64.lognot a
+let integer_bitnot a = fix (Int64.lognot a)
 
 let signext w a =
   let b = 64 - w in
@@ -114,9 +121,6 @@ let int_monop w x =
       | BitNot -> integer_bitnot x
       | Inc -> integer_add x (integer 1)
       | Dec -> integer_sub x (integer 1)
-      | Bit -> 
-	  if x < integer 0 || x >= integer 32 then integer 0
-	  else integer_lsl (integer 1) (int_of_integer x)
       | _ -> failwith (sprintf "int_monop $" [fOp w])
 
 (* int_binop -- evaluate binary operators *)
@@ -203,8 +207,7 @@ let fVal =
 
 let bit_range lo32 hi32 =
   let lo = int_of_integer lo32 and hi = int_of_integer hi32 in
-  let x = if lo >= 32 then integer 0
-    else integer_lsl (integer (-1)) lo
-  and y = if hi >= 31 then integer 0
-    else integer_lsl (integer (-1)) (hi+1) in
-  integer_bitand x (integer_bitnot y)
+  if lo < 0 || lo > 31 || hi < 0 || hi > 31 then raise Not_found;
+  integer_bitand 
+    (integer_lsl (integer (-1)) lo) 
+    (integer_bitnot (integer_lsl (integer (-2)) hi))

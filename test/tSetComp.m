@@ -15,7 +15,7 @@ END tSetComp.
 MODULE tSetComp STAMP 0
 ENDHDR
 
-PROC tSetComp.%main 0 2 0
+PROC tSetComp.%main 0 3 0
 !   b := (x <= y);
 LDGW tSetComp.x
 LDGW tSetComp.y
@@ -25,10 +25,11 @@ CONST 0
 EQ
 STGC tSetComp.b
 !   b := ({n} <= y);
+CONST 1
 LDGW tSetComp.n
 CONST 32
 BOUND 7
-BIT
+LSL
 LDGW tSetComp.y
 BITNOT
 BITAND

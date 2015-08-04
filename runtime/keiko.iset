@@ -194,7 +194,6 @@ inst BITOR 0		B.i {$1.i | $2.i}
 inst BITXOR 0		B.i {$1.i ^ $2.i}
 inst BITNOT 0		M.i {~ $1.i}
 inst BITSUB 0		B.i {$1.i & ~$2.i}
-inst BIT 0		M.i {bit[$1.i]}
 inst LSL 0		B.i {$1.i << $2.i}
 inst LSR 0		B.i {((unsigned) $1.i) >> $2.i}
 inst ASR 0		B.i {$1.i >> $2.i}
