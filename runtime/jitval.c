@@ -306,6 +306,9 @@ ctvalue move_from_frame(int i) {
      return v;
 }
 
+#define choose(size, opw, opd) \
+     ((size) == 1 ? opw : (size) == 2 ? opd : (panic("choose"), 999))
+
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
      ctvalue v = &vstack[sp-i];
@@ -328,10 +331,7 @@ void move_to_frame(int i) {
 
 	  case FLO:
 	       r = move_to_reg(i, FLO); runlock(r); rfree(r);
-	       if (v->v_size == 1)
-		    g3rri(STW, r, breg, base+offset[sp-i]);
-	       else
-		    g3rri(STD, r, breg, base+offset[sp-i]);
+               g3rri(choose(v->v_size, STW, STD), r, breg, base+offset[sp-i]);
 	       break;
 
 	  default:
@@ -378,19 +378,46 @@ void flush_stack(int a, int b) {
 	       move_to_frame(j);
 }
 
+/* spill -- scan stack and spill values that use a given reg */
 void spill(reg r) {
      int i;
-     
-     for (i = 0; i < sp; i++) {
-	  if (vstack[i].v_reg == r)
-	       move_to_frame(i);
+     int *rc = &r->r_refct;
+     mybool saved = FALSE;
+
+     static double _tmp;
+     int tmp = (int) &_tmp;
+
+     for (i = sp; i > 0 && *rc > 0; i--) {
+          ctvalue v = &vstack[sp-i];
+	  if (vstack[sp-i].v_reg == r) {
+               if (*rc == 1 || v->v_op == I_REG)
+                    move_to_frame(i);
+               else {
+                    /* If r is a least-used register and has multiple
+                       references, then we are going to have to help 
+                       out the register allocator a bit. */
+                    int c = *rc;
+
+                    if (!saved) {
+                         g3rri(choose(v->v_size, STW, STD), r, rZERO, tmp);
+                         saved = TRUE;
+                    }
+
+                    *rc = 1;
+                    move_to_frame(i);
+                    g3rri(choose(v->v_size, LDW, LDD), r, rZERO, tmp);
+                    *rc = c-1;
+               }
+          }
      }
 }
 
 /* load -- load from memory into register */
 static reg load(operation op, int cl, reg r, int val) {
      reg r1;
-     rfree(r); r1 = ralloc(cl);
+     rfree(r); rlock(r);
+     r1 = ralloc(cl);
+     runlock(r);
      g3rri(op, r1, r, val);
      return r1;
 }
@@ -399,6 +426,14 @@ static reg load(operation op, int cl, reg r, int val) {
 reg move_to_reg(int i, int ty) {
      ctvalue v = &vstack[sp-i];
      reg r, r2;
+
+#ifdef DEBUG
+     if (dflag > 1) {
+          printf("move_to_reg(%d: ", sp-i);
+          show(v);
+          printf(")\n");
+     }
+#endif
 
      if (v->v_op != I_REG) {
 	  for_regs (r) {
@@ -448,7 +483,9 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case I_ADDR:
-	  rfree(v->v_reg); r = ralloc_suggest(INT, v->v_reg);
+	  rfree(v->v_reg); rlock(v->v_reg);
+          r = ralloc_suggest(INT, v->v_reg);
+          runlock(v->v_reg);
 	  g3rri(ADD, r, v->v_reg, v->v_val);
 	  break;
 
@@ -554,8 +591,10 @@ static void unalias(int a, ctvalue v) {
 	  if (alias(v, w)) {
 	       if (w->v_op == I_LOADQ)
 		    move_to_frame(i);
-	       else
-		    move_to_reg(i, w->v_type);
+	       else {
+		    reg r = move_to_reg(i, w->v_type);
+                    runlock(r);
+               }
 	  }
      }
 }

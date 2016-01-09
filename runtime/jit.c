@@ -250,7 +250,13 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      switch (i) {
      case I_PUSH:	push(I_CON, INT, rZERO, arg1, 1); break;
-     case I_LOCAL:	push(I_ADDR, INT, rBP, arg1, 1); break;
+
+     case I_LOCAL:
+          if (arg1 == 0)
+               push(I_REG, INT, rBP, 0, 1);
+          else
+               push(I_ADDR, INT, rBP, arg1, 1); 
+          break;
 
      case I_LDKW:	
 	  push(I_LDKW, INT, rZERO, (unsigned) &konst(arg1), 1); 
