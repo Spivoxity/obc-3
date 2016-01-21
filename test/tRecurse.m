@@ -56,11 +56,11 @@ TIMES
 FLEXCOPY
 !   IF n = 0 THEN
 LDLW 12
-JNEQZ 3
+JNEQZ L3
 !     RETURN 0
 CONST 0
 RETURNW
-LABEL 3
+LABEL L3
 !     RETURN a[n-1] + Sum(n-1, a)
 LDLW 16
 LDLW 12
@@ -82,11 +82,11 @@ PROC tRecurse.Sumorial 0 5 0
 ! PROCEDURE Sumorial(n: INTEGER): INTEGER;
 !   IF n = 0 THEN
 LDLW 12
-JNEQZ 6
+JNEQZ L6
 !     RETURN 0
 CONST 0
 RETURNW
-LABEL 6
+LABEL L6
 !     RETURN n + Sumorial(n-1)
 LDLW 12
 LDLW 12
@@ -101,10 +101,10 @@ PROC tRecurse.%main 0 5 0
 !   FOR n := 0 TO N-1 DO a[n] := N-n END;
 CONST 0
 STGW tRecurse.n
-LABEL 7
+LABEL L7
 LDGW tRecurse.n
 CONST 199
-JGT 8
+JGT L8
 CONST 200
 LDGW tRecurse.n
 MINUS
@@ -116,8 +116,8 @@ STIW
 LDGW tRecurse.n
 INC
 STGW tRecurse.n
-JUMP 7
-LABEL 8
+JUMP L7
+LABEL L8
 !   Out.Int(Sum(N, a), 0); Out.Ln;
 CONST 0
 CONST 200

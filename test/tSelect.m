@@ -120,10 +120,10 @@ PROC tSelect.Randomize 4 4 0
 !   FOR i := 0 TO N-1 DO a[i] := Random.Random() END;
 CONST 0
 STLW -4
-LABEL 1
+LABEL L1
 LDLW -4
 CONST 99
-JGT 2
+JGT L2
 GLOBAL Random.Random
 CALLW 0
 GLOBAL tSelect.a
@@ -132,8 +132,8 @@ CONST 100
 BOUND 13
 STIW
 INCL -4
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 !   k := Random.Roll(N)
 CONST 100
 GLOBAL Random.Roll
@@ -147,11 +147,11 @@ PROC tSelect.Sort 12 4 0x00100001
 !   r := 0;
 CONST 0
 STLW -4
-LABEL 3
+LABEL L3
 !   WHILE r < N DO
 LDLW -4
 LDLW 20
-JGEQ 5
+JGEQ L5
 !     j := r; t := u[r];
 LDLW -4
 STLW -8
@@ -161,10 +161,10 @@ LDLW 16
 BOUND 22
 LDIW
 STLW -12
-LABEL 6
+LABEL L6
 !     WHILE (j > 0) & (u[j-1] > t) DO
 LDLW -8
-JLEQZ 8
+JLEQZ L8
 LDLW 12
 LDLW -8
 DEC
@@ -172,7 +172,7 @@ LDLW 16
 BOUND 23
 LDIW
 LDLW -12
-JLEQ 8
+JLEQ L8
 !       u[j] := u[j-1]; j := j-1
 LDLW 12
 LDLW -8
@@ -186,8 +186,8 @@ LDLW 16
 BOUND 24
 STIW
 DECL -8
-JUMP 6
-LABEL 8
+JUMP L6
+LABEL L8
 !     u[j] := t;
 LDLW -12
 LDLW 12
@@ -197,8 +197,8 @@ BOUND 26
 STIW
 !     r := r+1
 INCL -4
-JUMP 3
-LABEL 5
+JUMP L3
+LABEL L5
 RETURN
 END
 
@@ -253,11 +253,11 @@ STLW -4
 LDLW 16
 DEC
 STLW -8
-LABEL 10
+LABEL L10
 !   WHILE i < j DO
 LDLW -4
 LDLW -8
-JGEQ 12
+JGEQ L12
 !     IF a[i] < pivot THEN
 GLOBAL tSelect.a
 LDLW -4
@@ -265,11 +265,11 @@ CONST 100
 BOUND 45
 LDIW
 LDLW -12
-JGEQ 15
+JGEQ L15
 !       i := i+1
 INCL -4
-JUMP 10
-LABEL 15
+JUMP L10
+LABEL L15
 !       j := j-1;
 DECL -8
 !       Swap(a[i], a[j])
@@ -285,8 +285,8 @@ BOUND 49
 INDEXW
 GLOBAL tSelect.Swap
 CALL 2
-JUMP 10
-LABEL 12
+JUMP L10
+LABEL L12
 !   a[n-1] := a[i]; a[i] := pivot;
 GLOBAL tSelect.a
 LDLW -4
@@ -317,20 +317,20 @@ LDLW 20
 LDLW 16
 MINUS
 CONST 1
-JNEQ 23
+JNEQ L23
 !     ASSERT(k = 0); RETURN a[m]
 LDLW 12
-JEQZ 25
+JEQZ L25
 CONST 0
 EASSERT 61
-LABEL 25
+LABEL L25
 GLOBAL tSelect.a
 LDLW 16
 CONST 100
 BOUND 61
 LDIW
 RETURNW
-LABEL 23
+LABEL L23
 !     r := Partition(m, n);
 LDLW 20
 LDLW 16
@@ -342,7 +342,7 @@ LDLW -4
 LDLW 16
 LDLW 12
 PLUS
-JNEQ 19
+JNEQ L19
 !       RETURN a[r]
 GLOBAL tSelect.a
 LDLW -4
@@ -350,13 +350,13 @@ CONST 100
 BOUND 65
 LDIW
 RETURNW
-LABEL 19
+LABEL L19
 !     ELSIF r > m+k THEN
 LDLW -4
 LDLW 16
 LDLW 12
 PLUS
-JLEQ 21
+JLEQ L21
 !       RETURN Select(k, m, r)
 LDLW -4
 LDLW 16
@@ -364,7 +364,7 @@ LDLW 12
 GLOBAL tSelect.Select
 CALLW 3
 RETURNW
-LABEL 21
+LABEL L21
 !       RETURN Select(m+k-r-1, r+1, n)
 LDLW 20
 LDLW -4
@@ -382,13 +382,13 @@ END
 
 PROC tSelect.Select2 4 4 0
 ! PROCEDURE Select2(k, m, n: INTEGER): INTEGER;
-LABEL 26
+LABEL L26
 !     IF n - m = 1 THEN
 LDLW 20
 LDLW 16
 MINUS
 CONST 1
-JNEQ 35
+JNEQ L35
 !       RETURN a[m]
 GLOBAL tSelect.a
 LDLW 16
@@ -396,7 +396,7 @@ CONST 100
 BOUND 79
 LDIW
 RETURNW
-LABEL 35
+LABEL L35
 !       r := Partition(m, n);
 LDLW 20
 LDLW 16
@@ -406,7 +406,7 @@ STLW -4
 !       IF r = k THEN
 LDLW -4
 LDLW 12
-JNEQ 31
+JNEQ L31
 ! 	RETURN a[r]
 GLOBAL tSelect.a
 LDLW -4
@@ -414,21 +414,21 @@ CONST 100
 BOUND 83
 LDIW
 RETURNW
-LABEL 31
+LABEL L31
 !       ELSIF r > k THEN
 LDLW -4
 LDLW 12
-JLEQ 33
+JLEQ L33
 ! 	n := r
 LDLW -4
 STLW 20
-JUMP 26
-LABEL 33
+JUMP L26
+LABEL L33
 !         m := r+1
 LDLW -4
 INC
 STLW 16
-JUMP 26
+JUMP L26
 END
 
 PROC tSelect.%main 0 5 0

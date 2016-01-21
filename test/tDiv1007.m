@@ -58,10 +58,10 @@ PROC tDiv1007.Test 12 3 0
 !   FOR x := 0 TO LSL(1, 12) - 1 DO
 CONST 0
 STLW -4
-LABEL 4
+LABEL L4
 LDLW -4
 CONST 4095
-JGT 5
+JGT L5
 !     y := x DIV 10;
 LDLW -4
 CONST 10
@@ -75,7 +75,7 @@ STLW -12
 !     IF y # z THEN 
 LDLW -8
 LDLW -12
-JEQ 8
+JEQ L8
 !       Out.Int(x, 0); Out.String(": "); Out.Int(y, 0);
 CONST 0
 LDLW -4
@@ -100,11 +100,11 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 8
+LABEL L8
 !   FOR x := 0 TO LSL(1, 12) - 1 DO
 INCL -4
-JUMP 4
-LABEL 5
+JUMP L4
+LABEL L5
 RETURN
 END
 

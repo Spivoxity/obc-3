@@ -30,10 +30,10 @@ PROC tGC1.%main 0 4 0
 !   FOR i := 1 TO 128 * 1024 DO
 CONST 1
 STGW tGC1.i
-LABEL 2
+LABEL L2
 LDGW tGC1.i
 CONST 131072
-JGT 3
+JGT L3
 !     NEW(p)
 CONST 1024
 CONST 0
@@ -44,8 +44,8 @@ CALL 3
 LDGW tGC1.i
 INC
 STGW tGC1.i
-JUMP 2
-LABEL 3
+JUMP L2
+LABEL L3
 !   Out.String("Done "); Out.Int(GC.HeapSize(), 0); Out.Ln
 CONST 6
 GLOBAL tGC1.%1

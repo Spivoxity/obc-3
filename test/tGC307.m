@@ -98,12 +98,12 @@ PROC tGC307.Size 4 3 0x00100001
 ! PROCEDURE Size(t: tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ 3
+JNEQZ L3
 ! s := 0
 CONST 0
 STLW -4
-JUMP 1
-LABEL 3
+JUMP L1
+LABEL L3
 ! s:= Size(t.left) + Size(t.right) + 1
 LDLW 12
 NCHECK 31
@@ -118,7 +118,7 @@ CALLW 1
 PLUS
 INC
 STLW -4
-LABEL 1
+LABEL L1
 ! RETURN s
 LDLW -4
 RETURNW
@@ -132,10 +132,10 @@ DEC
 STLW -28
 CONST 0
 STLW -4
-LABEL 4
+LABEL L4
 LDLW -4
 LDLW -28
-JGT 5
+JGT L5
 !     x := Random(N); y := Random(N); z := Random(N); w := Random(N);
 CONST 1000
 GLOBAL tGC307.Random
@@ -216,8 +216,8 @@ BOUND 50
 STIW
 !   FOR i := 0 TO count-1 DO
 INCL -4
-JUMP 4
-LABEL 5
+JUMP L4
+LABEL L5
 RETURN
 END
 
@@ -231,10 +231,10 @@ STLW -12
 !   FOR i := 0 TO N-1 DO s := s + Size(pool[i]); r := r + aa[i] END;
 CONST 0
 STLW -4
-LABEL 6
+LABEL L6
 LDLW -4
 CONST 999
-JGT 7
+JGT L7
 LDLW -8
 GLOBAL tGC307.pool
 LDLW -4
@@ -254,8 +254,8 @@ LDIW
 PLUS
 STLW -12
 INCL -4
-JUMP 6
-LABEL 7
+JUMP L6
+LABEL L7
 !   Out.Int(s, 8); Out.Int(r, 8); Out.Ln
 CONST 8
 LDLW -8

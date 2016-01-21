@@ -46,7 +46,7 @@ ENDHDR
 
 PROC tPythag07.Pythag 8 6 0
 ! PROCEDURE Pythag(x, y: LONGREAL): LONGREAL;
-LABEL 1
+LABEL L1
 !     Out.LongReal(x); Out.Char(' '); Out.LongReal(y); Out.Ln;
 LDLD 12
 GLOBAL Out.LongReal
@@ -73,7 +73,7 @@ STLD -8
 !     IF r < eps THEN EXIT END;
 LDLD -8
 DCONST 1.0e-10
-DJLT 2
+DJLT L2
 !     r := r/(4.0+r);
 LDLD -8
 LDLD -8
@@ -96,8 +96,8 @@ LDLD 20
 LDLD -8
 DTIMES
 STLD 20
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 !   RETURN x
 LDLD 12
 RETURND

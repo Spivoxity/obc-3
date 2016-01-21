@@ -46,10 +46,10 @@ CALL 0
 !         ASSERT( x = -32768 ); (* here *)
 LDGS tTrunc.x
 CONST -32768
-JEQ 2
+JEQ L2
 CONST 0
 EASSERT 12
-LABEL 2
+LABEL L2
 ! 	y := 50000; x := SHORT(y);
 CONST 50000
 STGW tTrunc.y

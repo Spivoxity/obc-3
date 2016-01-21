@@ -110,8 +110,9 @@ int write_symtab(void);
 void module_data(symbol s, unsigned checksum, int nlines);
 
 void init_labels(void);
-void def_label(int n, phrase val);
-void sort_labels(void);
+int make_label(symbol s);
+const char *label_name(int n);
+void def_label(symbol s, phrase val);
 phrase find_label(int n);
 
 /* linker.c */

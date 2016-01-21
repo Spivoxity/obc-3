@@ -45,6 +45,7 @@ struct _symbol {
      segment s_seg;		/* Segment, or UNDEFINED */
      int s_kind;		/* Kind of symbol -- X_PROC, etc. */
      int s_value;		/* Numeric value */
+     unsigned s_index;          /* Index as a local label */
      unsigned s_check;		/* Checksum for module */
      int s_nlines;		/* Line count for module */
      symbol s_next;		/* Next in hash chain */
@@ -69,6 +70,7 @@ symbol make_symbol(const char *name) {
      s->s_kind = X_NONE;
      s->s_value = -1;
      s->s_next = NULL;
+     s->s_index = 0;
      s->s_uchain = -1;
      s->s_check = s->s_nlines = 0;
      s->s_file = NULL;
@@ -179,6 +181,8 @@ void fix_data(uchar *base, int bss) {
 	  symbol s = dict[i];
 	  int val;
 
+          if (s->s_uchain == -1) continue;
+
 	  if (dflag > 0) printf("Fixing %s\n", s->s_name);
 
 	  val = sym_value(s);
@@ -214,7 +218,7 @@ int write_symtab(void) {
      for (i = 0; i < ndict; i++) {
 	  symbol s = dict[i];
 
-	  if (s->s_kind == X_SYM) continue;
+	  if (s->s_kind == X_SYM || s->s_kind == X_NONE) continue;
 
 	  write_int(4, s->s_kind);
 	  write_string(s->s_name);
@@ -237,12 +241,12 @@ int write_symtab(void) {
 /* The table contains local symbols for the current procedure only.
    As the procedure is initially assembled into the linker's buffer,
    the value of each label is defined as its location in the buffer.
-   When the procedure is complete, we sort the labels, then use binary
-   search to replace each use of a label by the corresponding value.
-   The values are turned into offsets as the code is output. */
+   When the procedure is complete, we replace each use of a 
+   label by the corresponding value.  The values are turned into 
+   offsets as the code is output. */ 
 
 struct _locdef {
-     int l_lab;
+     symbol l_lab;
      phrase l_val;
 };
 
@@ -256,43 +260,34 @@ void init_labels(void) {
      n_locs = 0;
 }
 
-void def_label(int n, phrase val) {
-     buf_grow(locdefs);
-     locdefs[n_locs].l_lab = n;
-     locdefs[n_locs].l_val = val;
-     n_locs++;
+int make_label(symbol s) {
+     int n = s->s_index;
+
+     if (s->s_index >= n_locs || locdefs[s->s_index].l_lab != s) {
+          buf_grow(locdefs);
+          n = n_locs++;
+          locdefs[n].l_lab = s;
+          locdefs[n].l_val = NULL;
+          s->s_index = n;
+     }
+
+     return n;
 }
 
-static int cf_labels(struct _locdef *a, struct _locdef *b) {
-     return a->l_lab - b->l_lab;
+const char *label_name(int n) {
+     return sym_name(locdefs[n].l_lab);
 }
 
-void sort_labels(void) {
-#ifdef DEBUG
-     if (dflag) fprintf(stderr, "Sorting %d labels\n", n_locs);
-#endif
-
-     /* Sort the definitions into ascending order of l_lab */
-     qsort(locdefs, n_locs, sizeof(struct _locdef),
-	   (int (*)(const void *, const void *)) cf_labels);
+void def_label(symbol s, phrase val) {
+     int n = make_label(s);
+     if (locdefs[n].l_val != NULL)
+          error("multiply defined label %s", s->s_name);
+     locdefs[n].l_val = val;
 }
 
 phrase find_label(int n) {
-     /* Find the definition by binary search */
-     int a = 0, b = n_locs;
-     
-     /* Invariant: 0 <= a <= b <= n_locs,
-  	  locdefs[0..a) < n, locdefs[b..n_locs) >= n */
-     while (a != b) {
-	  int m = (a+b)/2;
-	  if (locdefs[m].l_lab < n)
-	       a = m+1;
-	  else
-	       b = m;
-     }
-
-     if (locdefs[a].l_lab != n) 
-	  error("undefined label %d", n);
-
-     return locdefs[a].l_val;
+     phrase val = locdefs[n].l_val;
+     if (val == NULL)
+          error("undefined label %s", locdefs[n].l_lab->s_name);
+     return val;
 }

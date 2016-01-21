@@ -764,21 +764,21 @@ static int *map_next(int *p) {
      if (*p % 4 == 0)
 	  return p+1;		/* A pointer offset */
      
-     switch (*p) {
-     case GC_BASE:
-     case GC_MAP:
+     switch (*p >> 2) {
+     case GC_BASE >> 2:
+     case GC_MAP >> 2:
 	  return p+2;
 
-     case GC_REPEAT:
-     case GC_FLEX:
+     case GC_REPEAT >> 2:
+     case GC_FLEX >> 2:
 	  p += 4;
 	  while (*p != GC_END) p = map_next(p);
 	  return p+1;
 
-     case GC_BLOCK:
+     case GC_BLOCK >> 2:
 	  return p+3;
 			 
-     case GC_END:
+     case GC_END >> 2:
 	  return p+1;
 
      default:

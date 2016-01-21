@@ -51,10 +51,10 @@ DEC
 STLW -4
 CONST 0
 STGW tBigStr.i
-LABEL 2
+LABEL L2
 LDGW tBigStr.i
 LDLW -4
-JGT 3
+JGT L3
 !     sum := sum + ORD(s[i]) - ORD('0')
 LDGW tBigStr.sum
 GLOBAL tBigStr.%1
@@ -70,8 +70,8 @@ STGW tBigStr.sum
 LDGW tBigStr.i
 INC
 STGW tBigStr.i
-JUMP 2
-LABEL 3
+JUMP L2
+LABEL L3
 !   Out.Int(sum, 0); Out.Ln
 CONST 0
 LDGW tBigStr.sum

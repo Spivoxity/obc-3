@@ -73,15 +73,15 @@ LDLW -4
 STLS -12
 CONST -1
 STLS -8
-LABEL 1
+LABEL L1
 LDLS -8
 LDLS -12
-JGT 2
+JGT L2
 LDLS -8
 INC
 STLS -8
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 !   Out.Int(x, 7); Out.Int(y, 7); Out.Int(z, 7); Out.Ln;
 CONST 7
 LDLS -6

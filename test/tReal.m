@@ -56,7 +56,7 @@ LDGF tReal.r
 FCONST 2.0
 FPLUS
 FCONST 5.14
-FJLEQ 4
+FJLEQ L4
 !      Out.String("yes"); Out.Ln
 CONST 4
 GLOBAL tReal.%1
@@ -64,7 +64,7 @@ GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 4
+LABEL L4
 RETURN
 END
 

@@ -88,7 +88,7 @@ let label () = incr sym_count; !sym_count
 
 let nolab = 0
 
-let fLab n = fNum n
+let fLab n = fMeta "L$" [fNum n]
 
 (* put -- generate a directive *)
 let put fmt args = printf "$\n" [fMeta fmt args]

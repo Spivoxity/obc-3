@@ -35,10 +35,10 @@ PROC tForDown.%main 0 3 0
 !   FOR i := 10 TO 1 BY -1 DO
 CONST 10
 STGS tForDown.i
-LABEL 1
+LABEL L1
 LDGS tForDown.i
 CONST 1
-JLT 2
+JLT L2
 !     Out.Int(i, 0); Out.Ln
 CONST 0
 LDGS tForDown.i
@@ -50,8 +50,8 @@ CALL 0
 LDGS tForDown.i
 DEC
 STGS tForDown.i
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 RETURN
 END
 

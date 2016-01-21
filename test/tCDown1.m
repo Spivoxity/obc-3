@@ -315,7 +315,7 @@ LDIW
 STLW -8
 !     IF k = Const THEN
 LDLW -8
-JNEQZ 19
+JNEQZ L19
 !       Conv.ConvInt(val[e], cbuf);
 CONST 10
 LOCAL -30
@@ -329,14 +329,14 @@ CALL 3
 !       j := 0;
 CONST 0
 STLW -12
-LABEL 20
+LABEL L20
 !       WHILE cbuf[j] # 0X DO Put(cbuf[j]); j := j+1 END
 LOCAL -30
 LDLW -12
 CONST 10
 BOUND 59
 LDIC
-JEQZ 17
+JEQZ L17
 LOCAL -30
 LDLW -12
 CONST 10
@@ -348,8 +348,8 @@ LINK
 GLOBAL tCDown1.%9.Put
 CALL 1
 INCL -12
-JUMP 20
-LABEL 19
+JUMP L20
+LABEL L19
 !       kp := ORD(pri[k]) - ORD('0');
 GLOBAL tCDown1.%2
 LDLW -8
@@ -371,14 +371,14 @@ STLW -20
 !       IF kp < p THEN Put('(') END;
 LDLW -16
 LDLW 16
-JGEQ 14
+JGEQ L14
 CONST 40
 ALIGNC
 LDLW -4
 LINK
 GLOBAL tCDown1.%9.Put
 CALL 1
-LABEL 14
+LABEL L14
 !       Walk(lnk[e-1], kp);
 LDLW -16
 GLOBAL tCDown1.lnk
@@ -425,14 +425,14 @@ CALL 2
 !       IF kp < p THEN Put(')') END
 LDLW -16
 LDLW 16
-JGEQ 17
+JGEQ L17
 CONST 41
 ALIGNC
 LDLW -4
 LINK
 GLOBAL tCDown1.%9.Put
 CALL 1
-LABEL 17
+LABEL L17
 RETURN
 END
 
@@ -463,7 +463,7 @@ PROC tCDown1.Try 20 5 0
 !   IF d = 1 THEN
 LDLW 16
 CONST 1
-JNEQ 25
+JNEQ L25
 !     dist := ABS(val[i-1] - target);
 GLOBAL tCDown1.val
 LDLW 12
@@ -479,7 +479,7 @@ STLW -20
 !     IF dist <= bestdist THEN
 LDLW -20
 LDGW tCDown1.bestdist
-JGT 25
+JGT L25
 !       Grind(i-1, temp);
 GLOBAL tCDown1.temp
 LDLW 12
@@ -489,7 +489,7 @@ CALL 2
 !       IF (dist < bestdist) 
 LDLW -20
 LDGW tCDown1.bestdist
-JLT 30
+JLT L30
 CONST 80
 GLOBAL tCDown1.temp
 GLOBAL Strings.Length
@@ -498,8 +498,8 @@ CONST 80
 GLOBAL tCDown1.best
 GLOBAL Strings.Length
 CALLW 2
-JGEQ 25
-LABEL 30
+JGEQ L25
+LABEL L30
 ! 	bestval := val[i-1];
 GLOBAL tCDown1.val
 LDLW 12
@@ -518,16 +518,16 @@ CONST 80
 GLOBAL tCDown1.temp
 GLOBAL COPY
 CALL 4
-LABEL 25
+LABEL L25
 !   p := 0; q := next[0];
 CONST 0
 STLW -4
 LDGW tCDown1.next
 STLW -8
-LABEL 33
+LABEL L33
 !   WHILE q # 0 DO
 LDLW -8
-JEQZ 35
+JEQZ L35
 !     IF draw[q] # draw[p] THEN
 GLOBAL tCDown1.draw
 LDLW -8
@@ -539,7 +539,7 @@ LDLW -4
 CONST 21
 BOUND 115
 LDIW
-JEQ 38
+JEQ L38
 !       exp[i] := Const;
 CONST 0
 GLOBAL tCDown1.exp
@@ -591,7 +591,7 @@ LDLW -4
 CONST 21
 BOUND 123
 STIW
-LABEL 38
+LABEL L38
 !     p := q; q := next[p];
 LDLW -8
 STLW -4
@@ -601,12 +601,12 @@ CONST 21
 BOUND 125
 LDIW
 STLW -8
-JUMP 33
-LABEL 35
+JUMP L33
+LABEL L35
 !   IF d >= 2 THEN
 LDLW 16
 CONST 2
-JLT 41
+JLT L41
 !     a := val[lnk[i-1]]; b := val[i-1];
 GLOBAL tCDown1.val
 GLOBAL tCDown1.lnk
@@ -645,7 +645,7 @@ STIW
 !     IF (a >= b) & (exp[i-1] # Plus) & (exp[i-1] # Minus)
 LDLW -12
 LDLW -16
-JLT 44
+JLT L44
 GLOBAL tCDown1.exp
 LDLW 12
 DEC
@@ -653,7 +653,7 @@ CONST 40
 BOUND 149
 LDIW
 CONST 1
-JEQ 44
+JEQ L44
 GLOBAL tCDown1.exp
 LDLW 12
 DEC
@@ -661,7 +661,7 @@ CONST 40
 BOUND 149
 LDIW
 CONST 2
-JEQ 44
+JEQ L44
 GLOBAL tCDown1.exp
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -673,7 +673,7 @@ CONST 40
 BOUND 150
 LDIW
 CONST 2
-JEQ 44
+JEQ L44
 GLOBAL tCDown1.exp
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -685,7 +685,7 @@ CONST 40
 BOUND 151
 LDIW
 CONST 1
-JNEQ 43
+JNEQ L43
 GLOBAL tCDown1.val
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -703,8 +703,8 @@ DEC
 CONST 40
 BOUND 151
 LDIW
-JLT 44
-LABEL 43
+JLT L44
+LABEL L43
 !       exp[i] := Plus;
 CONST 1
 GLOBAL tCDown1.exp
@@ -728,11 +728,11 @@ LDLW 12
 INC
 GLOBAL tCDown1.Try
 CALL 2
-LABEL 44
+LABEL L44
 !     IF (a > b) & (exp[i-1] # Plus) & (exp[i-1] # Minus)
 LDLW -12
 LDLW -16
-JLEQ 52
+JLEQ L52
 GLOBAL tCDown1.exp
 LDLW 12
 DEC
@@ -740,7 +740,7 @@ CONST 40
 BOUND 157
 LDIW
 CONST 1
-JEQ 52
+JEQ L52
 GLOBAL tCDown1.exp
 LDLW 12
 DEC
@@ -748,7 +748,7 @@ CONST 40
 BOUND 157
 LDIW
 CONST 2
-JEQ 52
+JEQ L52
 GLOBAL tCDown1.exp
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -760,7 +760,7 @@ CONST 40
 BOUND 158
 LDIW
 CONST 2
-JNEQ 51
+JNEQ L51
 GLOBAL tCDown1.val
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -778,8 +778,8 @@ DEC
 CONST 40
 BOUND 158
 LDIW
-JLT 52
-LABEL 51
+JLT L52
+LABEL L51
 !       exp[i] := Minus;
 CONST 2
 GLOBAL tCDown1.exp
@@ -803,17 +803,17 @@ LDLW 12
 INC
 GLOBAL tCDown1.Try
 CALL 2
-LABEL 52
+LABEL L52
 !     IF (a > 1) & (b > 1) & (a >= b)
 LDLW -12
 CONST 1
-JLEQ 59
+JLEQ L59
 LDLW -16
 CONST 1
-JLEQ 59
+JLEQ L59
 LDLW -12
 LDLW -16
-JLT 59
+JLT L59
 GLOBAL tCDown1.exp
 LDLW 12
 DEC
@@ -821,7 +821,7 @@ CONST 40
 BOUND 165
 LDIW
 CONST 3
-JEQ 59
+JEQ L59
 GLOBAL tCDown1.exp
 LDLW 12
 DEC
@@ -829,7 +829,7 @@ CONST 40
 BOUND 165
 LDIW
 CONST 4
-JEQ 59
+JEQ L59
 GLOBAL tCDown1.exp
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -841,7 +841,7 @@ CONST 40
 BOUND 166
 LDIW
 CONST 4
-JEQ 59
+JEQ L59
 GLOBAL tCDown1.exp
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -853,7 +853,7 @@ CONST 40
 BOUND 167
 LDIW
 CONST 3
-JNEQ 58
+JNEQ L58
 GLOBAL tCDown1.val
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -871,8 +871,8 @@ DEC
 CONST 40
 BOUND 167
 LDIW
-JLT 59
-LABEL 58
+JLT L59
+LABEL L58
 !       exp[i] := Times;
 CONST 3
 GLOBAL tCDown1.exp
@@ -896,16 +896,16 @@ LDLW 12
 INC
 GLOBAL tCDown1.Try
 CALL 2
-LABEL 59
+LABEL L59
 !     IF (b > 1) & (a MOD b = 0) & (exp[i-1] # Divide)
 LDLW -16
 CONST 1
-JLEQ 41
+JLEQ L41
 LDLW -12
 LDLW -16
 ZCHECK 174
 MOD
-JNEQZ 41
+JNEQZ L41
 GLOBAL tCDown1.exp
 LDLW 12
 DEC
@@ -913,7 +913,7 @@ CONST 40
 BOUND 174
 LDIW
 CONST 4
-JEQ 41
+JEQ L41
 GLOBAL tCDown1.exp
 GLOBAL tCDown1.lnk
 LDLW 12
@@ -925,7 +925,7 @@ CONST 40
 BOUND 175
 LDIW
 CONST 4
-JEQ 41
+JEQ L41
 !       exp[i] := Divide;
 CONST 4
 GLOBAL tCDown1.exp
@@ -950,7 +950,7 @@ LDLW 12
 INC
 GLOBAL tCDown1.Try
 CALL 2
-LABEL 41
+LABEL L41
 RETURN
 END
 
@@ -974,10 +974,10 @@ LDLW 12
 STLW -16
 CONST 1
 STLW -4
-LABEL 73
+LABEL L73
 LDLW -4
 LDLW -16
-JGT 74
+JGT L74
 CONST 32
 ALIGNC
 GLOBAL Out.Char
@@ -991,8 +991,8 @@ LDIW
 GLOBAL Out.Int
 CALL 2
 INCL -4
-JUMP 73
-LABEL 74
+JUMP L73
+LABEL L74
 !   Out.Char(':'); Out.Ln;
 CONST 58
 ALIGNC
@@ -1005,10 +1005,10 @@ LDLW 12
 STLW -20
 CONST 2
 STLW -4
-LABEL 75
+LABEL L75
 LDLW -4
 LDLW -20
-JGT 76
+JGT L76
 !     t := draw[i]; j := i;
 GLOBAL tCDown1.draw
 LDLW -4
@@ -1018,11 +1018,11 @@ LDIW
 STLW -12
 LDLW -4
 STLW -8
-LABEL 77
+LABEL L77
 !     WHILE (j > 1) & (t > draw[j-1]) DO
 LDLW -8
 CONST 1
-JLEQ 79
+JLEQ L79
 LDLW -12
 GLOBAL tCDown1.draw
 LDLW -8
@@ -1030,7 +1030,7 @@ DEC
 CONST 21
 BOUND 198
 LDIW
-JLEQ 79
+JLEQ L79
 !       draw[j] := draw[j-1]; j := j-1
 GLOBAL tCDown1.draw
 LDLW -8
@@ -1044,8 +1044,8 @@ CONST 21
 BOUND 199
 STIW
 DECL -8
-JUMP 77
-LABEL 79
+JUMP L77
+LABEL L79
 !     draw[j] := t
 LDLW -12
 GLOBAL tCDown1.draw
@@ -1055,18 +1055,18 @@ BOUND 201
 STIW
 !   FOR i := 2 TO n DO
 INCL -4
-JUMP 75
-LABEL 76
+JUMP L75
+LABEL L76
 !   FOR i := 0 TO n-1 DO next[i] := i+1 END;
 LDLW 12
 DEC
 STLW -24
 CONST 0
 STLW -4
-LABEL 81
+LABEL L81
 LDLW -4
 LDLW -24
-JGT 82
+JGT L82
 LDLW -4
 INC
 GLOBAL tCDown1.next
@@ -1075,8 +1075,8 @@ CONST 21
 BOUND 205
 STIW
 INCL -4
-JUMP 81
-LABEL 82
+JUMP L81
+LABEL L82
 !   next[n] := 0;
 CONST 0
 GLOBAL tCDown1.next
@@ -1117,7 +1117,7 @@ GLOBAL Out.Int
 CALL 2
 !   IF bestdist > 0 THEN 
 LDGW tCDown1.bestdist
-JLEQZ 85
+JLEQZ L85
 !     Out.String(" (off by "); Out.Int(bestdist, 0); Out.Char(')')
 CONST 10
 GLOBAL tCDown1.%8
@@ -1131,7 +1131,7 @@ CONST 41
 ALIGNC
 GLOBAL Out.Char
 CALL 1
-LABEL 85
+LABEL L85
 !   Out.Ln; Out.Ln
 GLOBAL Out.Ln
 CALL 0

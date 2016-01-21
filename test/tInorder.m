@@ -78,7 +78,7 @@ PROC tInorder.Traverse1 0 3 0x00100001
 ! PROCEDURE Traverse1(t: Tree);
 !   IF t # NIL THEN
 LDLW 12
-JEQZ 3
+JEQZ L3
 !     Traverse1(t.left);
 LDLW 12
 NCHECK 12
@@ -98,7 +98,7 @@ NCHECK 14
 LDNW 8
 GLOBAL tInorder.Traverse1
 CALL 1
-LABEL 3
+LABEL L3
 RETURN
 END
 
@@ -109,10 +109,10 @@ LDLW 12
 STLW -4
 CONST 0
 STLW -8
-LABEL 4
+LABEL L4
 !     WHILE u # NIL DO
 LDLW -4
-JEQZ 8
+JEQZ L8
 !       stack[sp] := u; sp := sp+1;
 LDLW -4
 LOCAL -4008
@@ -126,11 +126,11 @@ LDLW -4
 NCHECK 32
 LDNW 4
 STLW -4
-JUMP 4
-LABEL 8
+JUMP L4
+LABEL L8
 !     IF sp = 0 THEN EXIT END;
 LDLW -8
-JEQZ 5
+JEQZ L5
 !     sp := sp-1; u := stack[sp];
 DECL -8
 LOCAL -4008
@@ -151,8 +151,8 @@ LDLW -4
 NCHECK 39
 LDNW 8
 STLW -4
-JUMP 4
-LABEL 5
+JUMP L4
+LABEL L5
 RETURN
 END
 
@@ -163,10 +163,10 @@ CONST 8
 GLOBAL Random.Roll
 CALLW 1
 LDLW 12
-JGEQ 14
+JGEQ L14
 CONST 0
 RETURNW
-LABEL 14
+LABEL L14
 !   NEW(t);
 CONST 12
 GLOBAL tInorder.Node

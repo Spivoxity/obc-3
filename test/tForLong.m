@@ -41,11 +41,11 @@ PROC tForLong.%main 0 6 0
 CONST -2
 CONVNQ
 STGQ tForLong.i
-LABEL 1
+LABEL L1
 LDGQ tForLong.i
 CONST 2
 CONVNQ
-QJGT 2
+QJGT L2
 !     Out.LongInt(i, 0); Out.Ln()
 CONST 0
 LDGQ tForLong.i
@@ -59,18 +59,18 @@ CONST 2
 CONVNQ
 QPLUS
 STGQ tForLong.i
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 !   i := -2;
 CONST -2
 CONVNQ
 STGQ tForLong.i
-LABEL 3
+LABEL L3
 !   WHILE i <= 2 DO
 LDGQ tForLong.i
 CONST 2
 CONVNQ
-QJGT 5
+QJGT L5
 !     Out.LongInt(i, 0); Out.Ln;
 CONST 0
 LDGQ tForLong.i
@@ -84,8 +84,8 @@ CONVNQ
 GLOBAL tForLong.i
 GLOBAL INCLONG
 CALLQ 3
-JUMP 3
-LABEL 5
+JUMP L3
+LABEL L5
 RETURN
 END
 

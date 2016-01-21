@@ -33,10 +33,10 @@ PROC tArray07.%main 0 4 0
 !   FOR i := 0 TO 9 DO 
 CONST 0
 STGW tArray07.i
-LABEL 1
+LABEL L1
 LDGW tArray07.i
 CONST 9
-JGT 2
+JGT L2
 !     a[i] := i
 LDGW tArray07.i
 CONVNS
@@ -49,18 +49,18 @@ STIS
 LDGW tArray07.i
 INC
 STGW tArray07.i
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 !   s := 0;
 CONST 0
 STGW tArray07.s
 !   FOR i := 0 TO 9 DO 
 CONST 0
 STGW tArray07.i
-LABEL 3
+LABEL L3
 LDGW tArray07.i
 CONST 9
-JGT 4
+JGT L4
 !     s := s + a[i] 
 LDGW tArray07.s
 GLOBAL tArray07.a
@@ -74,8 +74,8 @@ STGW tArray07.s
 LDGW tArray07.i
 INC
 STGW tArray07.i
-JUMP 3
-LABEL 4
+JUMP L3
+LABEL L4
 !   Out.Int(s, 0); Out.Ln
 CONST 0
 LDGW tArray07.s

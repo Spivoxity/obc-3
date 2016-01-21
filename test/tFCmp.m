@@ -78,20 +78,20 @@ PROC tFCmp.PBool 0 5 0
 ! PROCEDURE PBool(b: BOOLEAN);
 !   IF b THEN
 LDLC 12
-JEQZ 7
+JEQZ L7
 !     Out.String("true")
 CONST 5
 GLOBAL tFCmp.%1
 GLOBAL Out.String
 CALL 2
-JUMP 5
-LABEL 7
+JUMP L5
+LABEL L7
 !     Out.String("false")
 CONST 6
 GLOBAL tFCmp.%2
 GLOBAL Out.String
 CALL 2
-LABEL 5
+LABEL L5
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

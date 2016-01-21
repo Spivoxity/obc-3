@@ -147,12 +147,12 @@ CONST 10
 GLOBAL Random.Roll
 CALLW 1
 LDLW 12
-JGEQ 3
+JGEQ L3
 !     p := NIL
 CONST 0
 STLW -4
-JUMP 1
-LABEL 3
+JUMP L1
+LABEL L3
 !     p := NewNode(Random.Roll(10));
 CONST 10
 GLOBAL Random.Roll
@@ -176,7 +176,7 @@ CALLW 1
 LDLW -4
 NCHECK 22
 STNW 8
-LABEL 1
+LABEL L1
 ! RETURN p
 LDLW -4
 RETURNW
@@ -186,14 +186,14 @@ PROC tTreeCopy07.PrintTree 0 4 0x00100001
 ! PROCEDURE PrintTree(t: Tree);
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ 6
+JNEQZ L6
 !     Out.Char('.')
 CONST 46
 ALIGNC
 GLOBAL Out.Char
 CALL 1
 RETURN
-LABEL 6
+LABEL L6
 !     Out.Int(t.data, 0); PrintTree(t.left); PrintTree(t.right)
 CONST 0
 LDLW 12
@@ -218,12 +218,12 @@ PROC tTreeCopy07.Copy 8020 4 tTreeCopy07.Copy.%map
 ! PROCEDURE Copy(t: Tree): Tree;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ 19
+JNEQZ L19
 !     u := NIL
 CONST 0
 STLW -16
-JUMP 10
-LABEL 19
+JUMP L10
+LABEL L19
 !     sp := 0; 
 CONST 0
 STLW -20
@@ -257,16 +257,16 @@ LDNW 4
 STLW -4
 LDLW -16
 STLW -8
-LABEL 8
+LABEL L8
 !     WHILE (p # NIL) OR (sp > 0) DO
 LDLW -4
-JNEQZ 9
+JNEQZ L9
 LDLW -20
-JLEQZ 10
-LABEL 9
+JLEQZ L10
+LABEL L9
 !       WHILE p # NIL DO
 LDLW -4
-JEQZ 13
+JEQZ L13
 ! 	r := NewNode(p.data);
 LDLW -4
 NCHECK 53
@@ -302,8 +302,8 @@ LDNW 4
 STLW -4
 LDLW -12
 STLW -8
-JUMP 9
-LABEL 13
+JUMP L9
+LABEL L13
 !       sp := sp-1; p := astack[sp]; q := bstack[sp]; 
 DECL -20
 LOCAL -4020
@@ -320,7 +320,7 @@ LDIW
 STLW -8
 !       IF p # NIL THEN
 LDLW -4
-JEQZ 8
+JEQZ L8
 !         r := NewNode(p.data);
 LDLW -4
 NCHECK 61
@@ -356,8 +356,8 @@ LDNW 4
 STLW -4
 LDLW -12
 STLW -8
-JUMP 8
-LABEL 10
+JUMP L8
+LABEL L10
 ! RETURN u
 LDLW -16
 RETURNW
@@ -367,7 +367,7 @@ PROC tTreeCopy07.FlatPrint 0 4 0x00100001
 ! PROCEDURE FlatPrint(t: Tree);
 !   IF t # NIL THEN
 LDLW 12
-JEQZ 22
+JEQZ L22
 !     FlatPrint(t.left);
 LDLW 12
 NCHECK 74
@@ -387,21 +387,21 @@ NCHECK 76
 LDNW 8
 GLOBAL tTreeCopy07.FlatPrint
 CALL 1
-LABEL 22
+LABEL L22
 RETURN
 END
 
 PROC tTreeCopy07.PrintFlat 4 4 0x00110001
 ! PROCEDURE PrintFlat(t: Tree);
-LABEL 23
+LABEL L23
 !   WHILE t # NIL DO
 LDLW 12
-JEQZ 25
+JEQZ L25
 !     IF t.left = NIL THEN
 LDLW 12
 NCHECK 84
 LDNW 4
-JNEQZ 28
+JNEQZ L28
 !       Out.Int(t.data, 0);
 CONST 0
 LDLW 12
@@ -414,8 +414,8 @@ LDLW 12
 NCHECK 86
 LDNW 8
 STLW 12
-JUMP 23
-LABEL 28
+JUMP L23
+LABEL L28
 !       p := t.left;
 LDLW 12
 NCHECK 88
@@ -436,8 +436,8 @@ STNW 8
 !       t := p
 LDLW -4
 STLW 12
-JUMP 23
-LABEL 25
+JUMP L23
+LABEL L25
 RETURN
 END
 

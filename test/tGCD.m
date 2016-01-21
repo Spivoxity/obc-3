@@ -34,29 +34,29 @@ CONST 4551
 STGW tGCD.x
 CONST 7011
 STGW tGCD.y
-LABEL 1
+LABEL L1
 !   WHILE x # y DO
 LDGW tGCD.x
 LDGW tGCD.y
-JEQ 3
+JEQ L3
 !     IF x > y THEN
 LDGW tGCD.x
 LDGW tGCD.y
-JLEQ 6
+JLEQ L6
 !       x := x - y
 LDGW tGCD.x
 LDGW tGCD.y
 MINUS
 STGW tGCD.x
-JUMP 1
-LABEL 6
+JUMP L1
+LABEL L6
 !       y := y - x
 LDGW tGCD.y
 LDGW tGCD.x
 MINUS
 STGW tGCD.y
-JUMP 1
-LABEL 3
+JUMP L1
+LABEL L3
 !   Out.Int(x, 0); Out.Ln
 CONST 0
 LDGW tGCD.x

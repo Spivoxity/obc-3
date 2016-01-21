@@ -54,33 +54,33 @@ PROC tCases.%main 0 3 0
 !   i := 0;
 CONST 0
 STGW tCases.i
-LABEL 2
+LABEL L2
 !   WHILE i < 10 DO
 LDGW tCases.i
 CONST 10
-JGEQ 4
+JGEQ L4
 !     CASE i OF
 LDGW tCases.i
 DEC
 JCASE 10
-CASEL 10
-CASEL 7
-CASEL 10
-CASEL 10
-CASEL 10
-CASEL 7
-CASEL 5
-CASEL 9
-CASEL 8
-CASEL 8
-JUMP 5
-LABEL 7
+CASEL L10
+CASEL L7
+CASEL L10
+CASEL L10
+CASEL L10
+CASEL L7
+CASEL L5
+CASEL L9
+CASEL L8
+CASEL L8
+JUMP L5
+LABEL L7
 !         i := i - 1;
 LDGW tCases.i
 DEC
 STGW tCases.i
-JUMP 6
-LABEL 8
+JUMP L6
+LABEL L8
 ! 	Out.String("Fail"); Out.Ln
 CONST 5
 GLOBAL tCases.%1
@@ -88,15 +88,15 @@ GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-JUMP 6
-LABEL 9
+JUMP L6
+LABEL L9
 !         i := i + 2;
 LDGW tCases.i
 CONST 2
 PLUS
 STGW tCases.i
-JUMP 6
-LABEL 10
+JUMP L6
+LABEL L10
 ! 	i := i + 1;
 LDGW tCases.i
 INC
@@ -106,13 +106,13 @@ LDGW tCases.i
 CONST 2
 PLUS
 STGW tCases.i
-JUMP 6
-LABEL 5
+JUMP L6
+LABEL L5
 !       i := i + 1
 LDGW tCases.i
 INC
 STGW tCases.i
-LABEL 6
+LABEL L6
 !     Out.Int(i, 0); Out.Ln()
 CONST 0
 LDGW tCases.i
@@ -120,15 +120,15 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-JUMP 2
-LABEL 4
+JUMP L2
+LABEL L4
 !   FOR i := 0 TO 127 DO
 CONST 0
 STGW tCases.i
-LABEL 11
+LABEL L11
 LDGW tCases.i
 CONST 127
-JGT 12
+JGT L12
 !     c := CHR(i);
 LDGW tCases.i
 STGC tCases.c
@@ -136,21 +136,21 @@ STGC tCases.c
 LDGC tCases.c
 CONST 97
 CONST 122
-JRANGE 15
-JUMP 13
-LABEL 15
+JRANGE L15
+JUMP L13
+LABEL L15
 !        'a'..'z': Out.Char(c)
 LDGC tCases.c
 ALIGNC
 GLOBAL Out.Char
 CALL 1
-LABEL 13
+LABEL L13
 !   FOR i := 0 TO 127 DO
 LDGW tCases.i
 INC
 STGW tCases.i
-JUMP 11
-LABEL 12
+JUMP L11
+LABEL L12
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

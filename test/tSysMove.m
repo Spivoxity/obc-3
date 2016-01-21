@@ -29,10 +29,10 @@ PROC tSysMove.%main 0 5 0
 !   FOR i := 0 TO 9 DO a[i]:= i END;
 CONST 0
 STGW tSysMove.i
-LABEL 1
+LABEL L1
 LDGW tSysMove.i
 CONST 9
-JGT 2
+JGT L2
 LDGW tSysMove.i
 GLOBAL tSysMove.a
 LDGW tSysMove.i
@@ -42,8 +42,8 @@ STIW
 LDGW tSysMove.i
 INC
 STGW tSysMove.i
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 !   SYSTEM.MOVE(SYSTEM.ADR(a[2]), SYSTEM.ADR(a[4]), 4*SIZE(INTEGER));
 CONST 16
 GLOBAL tSysMove.a
@@ -57,10 +57,10 @@ CALL 3
 !   FOR i := 0 TO 9 DO Out.Int(a[i], 2) END;
 CONST 0
 STGW tSysMove.i
-LABEL 3
+LABEL L3
 LDGW tSysMove.i
 CONST 9
-JGT 4
+JGT L4
 CONST 2
 GLOBAL tSysMove.a
 LDGW tSysMove.i
@@ -72,8 +72,8 @@ CALL 2
 LDGW tSysMove.i
 INC
 STGW tSysMove.i
-JUMP 3
-LABEL 4
+JUMP L3
+LABEL L4
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

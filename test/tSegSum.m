@@ -60,17 +60,17 @@ CONST 0
 STGW tSegSum.count
 CONST 0
 STGW tSegSum.sum
-LABEL 1
+LABEL L1
 !   WHILE f(u) <= A DO
 LDGW tSegSum.u
 GLOBAL tSegSum.f
 CALLW 1
 CONST 120
-JGT 3
+JGT L3
 !     IF sum = A THEN
 LDGW tSegSum.sum
 CONST 120
-JNEQ 6
+JNEQ L6
 !       count := count+1;
 LDGW tSegSum.count
 INC
@@ -93,12 +93,12 @@ STGW tSegSum.u
 LDGW tSegSum.v
 INC
 STGW tSegSum.v
-JUMP 1
-LABEL 6
+JUMP L1
+LABEL L6
 !     ELSIF sum < A THEN
 LDGW tSegSum.sum
 CONST 120
-JGEQ 8
+JGEQ L8
 !       sum := sum + f(v);
 LDGW tSegSum.sum
 LDGW tSegSum.v
@@ -110,8 +110,8 @@ STGW tSegSum.sum
 LDGW tSegSum.v
 INC
 STGW tSegSum.v
-JUMP 1
-LABEL 8
+JUMP L1
+LABEL L8
 !       sum := sum - f(u);
 LDGW tSegSum.sum
 LDGW tSegSum.u
@@ -123,8 +123,8 @@ STGW tSegSum.sum
 LDGW tSegSum.u
 INC
 STGW tSegSum.u
-JUMP 1
-LABEL 3
+JUMP L1
+LABEL L3
 !   Out.Int(count, 0); Out.Ln
 CONST 0
 LDGW tSegSum.count

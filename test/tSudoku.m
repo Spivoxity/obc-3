@@ -411,7 +411,7 @@ PROC tSudoku.PrintRow 8 3 0x00110001
 !   q := p;
 LDLW 12
 STLW -4
-LABEL 11
+LABEL L11
 !     Out.String(" "); PrintCol(q.column); q := q.right
 CONST 2
 GLOBAL tSudoku.%9
@@ -429,7 +429,7 @@ STLW -4
 !   UNTIL q = p;
 LDLW -4
 LDLW 12
-JNEQ 11
+JNEQ L11
 !   n := 0; q := p.column.head;
 CONST 0
 STLW -8
@@ -439,18 +439,18 @@ LDNW 16
 NCHECK 55
 LDNW 28
 STLW -4
-LABEL 13
+LABEL L13
 !   WHILE q # p DO INC(n); q := q.down END;
 LDLW -4
 LDLW 12
-JEQ 15
+JEQ L15
 INCL -8
 LDLW -4
 NCHECK 56
 LDNW 4
 STLW -4
-JUMP 13
-LABEL 15
+JUMP L13
+LABEL L15
 !   Out.String("; # "); Out.Int(n,0); Out.String(" of ");
 CONST 5
 GLOBAL tSudoku.%1
@@ -499,7 +499,7 @@ CALL 3
 !   IF p = NIL THEN
 LDLW 16
 LOADW
-JNEQZ 18
+JNEQZ L18
 !     q.right := q; q.left := q; p := q
 LDLW -4
 LDLW -4
@@ -512,8 +512,8 @@ STNW 8
 LDLW -4
 LDLW 16
 STOREW
-JUMP 16
-LABEL 18
+JUMP L16
+LABEL L18
 !     q.left := p.left; q.right := p;
 LDLW 16
 LOADW
@@ -540,7 +540,7 @@ LDLW 16
 LOADW
 NCHECK 82
 STNW 8
-LABEL 16
+LABEL L16
 !   q.up := r.head.up; q.down := r.head;
 LDLW 12
 NCHECK 84
@@ -594,20 +594,20 @@ DEC
 STLW -16
 CONST 0
 STLW -4
-LABEL 19
+LABEL L19
 LDLW -4
 LDLW -16
-JGT 20
+JGT L20
 !     FOR j := 0 TO n-1 DO
 LDLW 32
 DEC
 STLW -20
 CONST 0
 STLW -8
-LABEL 21
+LABEL L21
 LDLW -8
 LDLW -20
-JGT 22
+JGT L22
 !       NEW(p); p.name := name; p.x := i+1; p.y := j+1; 
 CONST 32
 GLOBAL tSudoku.%7
@@ -700,12 +700,12 @@ PLUS
 STIW
 !     FOR j := 0 TO n-1 DO
 INCL -8
-JUMP 21
-LABEL 22
+JUMP L21
+LABEL L22
 !   FOR i := 0 TO m-1 DO
 INCL -4
-JUMP 19
-LABEL 20
+JUMP L19
+LABEL L20
 RETURN
 END
 
@@ -864,24 +864,24 @@ CALL 6
 !   FOR i := 0 TO N-1 DO
 CONST 0
 STLW -4
-LABEL 23
+LABEL L23
 LDLW -4
 CONST 8
-JGT 24
+JGT L24
 !     FOR j := 0 TO N-1 DO
 CONST 0
 STLW -8
-LABEL 25
+LABEL L25
 LDLW -8
 CONST 8
-JGT 26
+JGT L26
 !       FOR k := 0 TO N-1 DO
 CONST 0
 STLW -12
-LABEL 27
+LABEL L27
 LDLW -12
 CONST 8
-JGT 28
+JGT L28
 !         MakeMove(i, j, k);
 LDLW -12
 LDLW -8
@@ -890,16 +890,16 @@ GLOBAL tSudoku.MakeMove
 CALL 3
 !       FOR k := 0 TO N-1 DO
 INCL -12
-JUMP 27
-LABEL 28
+JUMP L27
+LABEL L28
 !     FOR j := 0 TO N-1 DO
 INCL -8
-JUMP 25
-LABEL 26
+JUMP L25
+LABEL L26
 !   FOR i := 0 TO N-1 DO
 INCL -4
-JUMP 23
-LABEL 24
+JUMP L23
+LABEL L24
 RETURN
 END
 
@@ -935,23 +935,23 @@ LDNW 28
 NCHECK 154
 LDNW 4
 STLW -4
-LABEL 29
+LABEL L29
 !   WHILE q # p.head DO
 LDLW -4
 LDLW 12
 NCHECK 155
 LDNW 28
-JEQ 31
+JEQ L31
 !     r := q.right;
 LDLW -4
 NCHECK 156
 LDNW 12
 STLW -8
-LABEL 32
+LABEL L32
 !     WHILE r # q DO
 LDLW -8
 LDLW -4
-JEQ 34
+JEQ L34
 !       r.up.down := r.down; r.down.up := r.up;
 LDLW -8
 NCHECK 158
@@ -983,15 +983,15 @@ LDLW -8
 NCHECK 159
 LDNW 12
 STLW -8
-JUMP 32
-LABEL 34
+JUMP L32
+LABEL L34
 !     q := q.down
 LDLW -4
 NCHECK 161
 LDNW 4
 STLW -4
-JUMP 29
-LABEL 31
+JUMP L29
+LABEL L31
 RETURN
 END
 
@@ -1017,23 +1017,23 @@ LDNW 28
 NCHECK 173
 LOADW
 STLW -4
-LABEL 35
+LABEL L35
 !   WHILE q # p.head DO
 LDLW -4
 LDLW 12
 NCHECK 174
 LDNW 28
-JEQ 37
+JEQ L37
 !     r := q.left;
 LDLW -4
 NCHECK 175
 LDNW 8
 STLW -8
-LABEL 38
+LABEL L38
 !     WHILE r # q DO
 LDLW -8
 LDLW -4
-JEQ 40
+JEQ L40
 !       r.up.down := r; r.down.up := r;
 LDLW -8
 LDLW -8
@@ -1061,15 +1061,15 @@ LDLW -8
 NCHECK 178
 LDNW 8
 STLW -8
-JUMP 38
-LABEL 40
+JUMP L38
+LABEL L40
 !     q := q.up
 LDLW -4
 NCHECK 180
 LOADW
 STLW -4
-JUMP 35
-LABEL 37
+JUMP L35
+LABEL L37
 !   p.covered := FALSE
 CONST 0
 LDLW 12
@@ -1091,11 +1091,11 @@ LDLW -8
 NCHECK 192
 LDNW 24
 STLW -4
-LABEL 41
+LABEL L41
 !   WHILE c # root DO
 LDLW -4
 LDGW tSudoku.root
-JEQ 43
+JEQ L43
 !     IF c.size < col.size THEN col := c END;
 LDLW -4
 NCHECK 194
@@ -1103,17 +1103,17 @@ LDNW 12
 LDLW -8
 NCHECK 194
 LDNW 12
-JGEQ 46
+JGEQ L46
 LDLW -4
 STLW -8
-LABEL 46
+LABEL L46
 !     c := c.next
 LDLW -4
 NCHECK 195
 LDNW 24
 STLW -4
-JUMP 41
-LABEL 43
+JUMP L41
+LABEL L43
 !   RETURN col
 LDLW -8
 RETURNW
@@ -1124,17 +1124,17 @@ PROC tSudoku.PrintState 104 7 0x00002001
 !   FOR i := 0 TO N-1 DO
 CONST 0
 STLW -4
-LABEL 47
+LABEL L47
 LDLW -4
 CONST 8
-JGT 48
+JGT L48
 !     FOR j := 0 TO N-1 DO
 CONST 0
 STLW -8
-LABEL 49
+LABEL L49
 LDLW -8
 CONST 8
-JGT 50
+JGT L50
 !       board[i, j] := '.'
 CONST 46
 LOCAL -97
@@ -1150,22 +1150,22 @@ PLUS
 STIC
 !     FOR j := 0 TO N-1 DO
 INCL -8
-JUMP 49
-LABEL 50
+JUMP L49
+LABEL L50
 !   FOR i := 0 TO N-1 DO
 INCL -4
-JUMP 47
-LABEL 48
+JUMP L47
+LABEL L48
 !   FOR k := 0 TO level-1 DO
 LDLW 12
 DEC
 STLW -104
 CONST 0
 STLW -12
-LABEL 51
+LABEL L51
 LDLW -12
 LDLW -104
-JGT 52
+JGT L52
 !     p := choice[k];
 GLOBAL tSudoku.choice
 LDLW -12
@@ -1173,7 +1173,7 @@ CONST 81
 BOUND 213
 LDIW
 STLW -16
-LABEL 53
+LABEL L53
 !     WHILE p.column.name # 'Q' DO p := p.right END;
 LDLW -16
 NCHECK 214
@@ -1181,13 +1181,13 @@ LDNW 16
 NCHECK 214
 LOADC
 CONST 81
-JEQ 55
+JEQ L55
 LDLW -16
 NCHECK 214
 LDNW 12
 STLW -16
-JUMP 53
-LABEL 55
+JUMP L53
+LABEL L55
 !     i := p.column.x - 1; j := p.column.y - 1;
 LDLW -16
 NCHECK 215
@@ -1227,15 +1227,15 @@ PLUS
 STIC
 !   FOR k := 0 TO level-1 DO
 INCL -12
-JUMP 51
-LABEL 52
+JUMP L51
+LABEL L52
 !   FOR i := 0 TO N-1 DO
 CONST 0
 STLW -4
-LABEL 56
+LABEL L56
 LDLW -4
 CONST 8
-JGT 57
+JGT L57
 !     Out.String(board[i]); Out.Ln
 CONST 9
 LOCAL -97
@@ -1251,8 +1251,8 @@ GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO N-1 DO
 INCL -4
-JUMP 56
-LABEL 57
+JUMP L56
+LABEL L57
 RETURN
 END
 
@@ -1263,7 +1263,7 @@ LDGW tSudoku.root
 NCHECK 228
 LDNW 24
 LDGW tSudoku.root
-JNEQ 60
+JNEQ L60
 !     Out.String("Solution:"); Out.Ln;
 CONST 10
 GLOBAL tSudoku.%4
@@ -1276,7 +1276,7 @@ LDLW 12
 GLOBAL tSudoku.PrintState
 CALL 1
 RETURN
-LABEL 60
+LABEL L60
 !   col := ChooseColumn();
 GLOBAL tSudoku.ChooseColumn
 CALLW 0
@@ -1285,9 +1285,9 @@ STLW -4
 LDLW -4
 NCHECK 234
 LDNW 12
-JNEQZ 63
+JNEQZ L63
 RETURN
-LABEL 63
+LABEL L63
 !   Cover(col);
 LDLW -4
 GLOBAL tSudoku.Cover
@@ -1299,13 +1299,13 @@ LDNW 28
 NCHECK 238
 LDNW 4
 STLW -8
-LABEL 64
+LABEL L64
 !   WHILE p # col.head DO
 LDLW -8
 LDLW -4
 NCHECK 239
 LDNW 28
-JEQ 66
+JEQ L66
 !     choice[level] := p;
 LDLW -8
 GLOBAL tSudoku.choice
@@ -1330,11 +1330,11 @@ LDLW -8
 NCHECK 245
 LDNW 12
 STLW -12
-LABEL 67
+LABEL L67
 !     WHILE q # p DO Cover(q.column); q := q.right END;
 LDLW -12
 LDLW -8
-JEQ 69
+JEQ L69
 LDLW -12
 NCHECK 246
 LDNW 16
@@ -1344,8 +1344,8 @@ LDLW -12
 NCHECK 246
 LDNW 12
 STLW -12
-JUMP 67
-LABEL 69
+JUMP L67
+LABEL L69
 !     Solve(level+1);
 LDLW 12
 INC
@@ -1356,11 +1356,11 @@ LDLW -8
 NCHECK 251
 LDNW 8
 STLW -12
-LABEL 70
+LABEL L70
 !     WHILE q # p DO Uncover(q.column); q := q.left END;
 LDLW -12
 LDLW -8
-JEQ 72
+JEQ L72
 LDLW -12
 NCHECK 252
 LDNW 16
@@ -1370,15 +1370,15 @@ LDLW -12
 NCHECK 252
 LDNW 8
 STLW -12
-JUMP 70
-LABEL 72
+JUMP L70
+LABEL L72
 !     p := p.down
 LDLW -8
 NCHECK 254
 LDNW 4
 STLW -8
-JUMP 64
-LABEL 66
+JUMP L64
+LABEL L66
 !   Uncover(col)
 LDLW -4
 GLOBAL tSudoku.Uncover
@@ -1405,7 +1405,7 @@ STOREW
 !   q := p;
 LDLW 16
 STLW -4
-LABEL 73
+LABEL L73
 !     IF q.column.covered THEN
 LDLW -4
 NCHECK 266
@@ -1413,7 +1413,7 @@ LDNW 16
 NCHECK 266
 CONST 16
 LDIC
-JEQZ 77
+JEQZ L77
 !       Out.String("Conflict for "); PrintCol(q.column); Out.Ln
 CONST 14
 GLOBAL tSudoku.%5
@@ -1426,7 +1426,7 @@ GLOBAL tSudoku.PrintCol
 CALL 1
 GLOBAL Out.Ln
 CALL 0
-LABEL 77
+LABEL L77
 !     Cover(q.column); q := q.right
 LDLW -4
 NCHECK 269
@@ -1440,7 +1440,7 @@ STLW -4
 !   UNTIL q = p
 LDLW -4
 LDLW 16
-JNEQ 73
+JNEQ L73
 RETURN
 END
 
@@ -1449,17 +1449,17 @@ PROC tSudoku.Input 16 7 0x00100001
 !   FOR i := 0 TO N-1 DO
 CONST 0
 STLW -4
-LABEL 78
+LABEL L78
 LDLW -4
 CONST 8
-JGT 79
+JGT L79
 !     FOR j := 0 TO N-1 DO
 CONST 0
 STLW -8
-LABEL 80
+LABEL L80
 LDLW -8
 CONST 8
-JGT 81
+JGT L81
 !       ch := input[10*i+j];
 GLOBAL tSudoku.%6
 LDLW -4
@@ -1479,7 +1479,7 @@ CALL 1
 !       IF ch # '.' THEN
 LDLC -13
 CONST 46
-JEQ 84
+JEQ L84
 !         k := ORD(ch) - ORD('1');
 LDLC -13
 CONST 49
@@ -1506,18 +1506,18 @@ LDIW
 LDLW 12
 GLOBAL tSudoku.ChooseRow
 CALL 2
-LABEL 84
+LABEL L84
 !     FOR j := 0 TO N-1 DO
 INCL -8
-JUMP 80
-LABEL 81
+JUMP L80
+LABEL L81
 !     Out.Ln
 GLOBAL Out.Ln
 CALL 0
 !   FOR i := 0 TO N-1 DO
 INCL -4
-JUMP 78
-LABEL 79
+JUMP L78
+LABEL L79
 RETURN
 END
 

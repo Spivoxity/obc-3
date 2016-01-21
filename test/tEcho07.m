@@ -49,10 +49,10 @@ DEC
 STLW -12
 CONST 1
 STLW -4
-LABEL 1
+LABEL L1
 LDLW -4
 LDLW -12
-JGT 2
+JGT L2
 !     Args.GetArg(i, s^);
 LDLW -8
 NCHECK 15
@@ -66,12 +66,12 @@ CALL 3
 !     IF i > 1 THEN Out.Char(' ') END;
 LDLW -4
 CONST 1
-JLEQ 5
+JLEQ L5
 CONST 32
 ALIGNC
 GLOBAL Out.Char
 CALL 1
-LABEL 5
+LABEL L5
 !     Out.String(s^)
 LDLW -8
 NCHECK 17
@@ -83,8 +83,8 @@ GLOBAL Out.String
 CALL 2
 !   FOR i := 1 TO Args.argc-1 DO
 INCL -4
-JUMP 1
-LABEL 2
+JUMP L1
+LABEL L2
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

@@ -36,18 +36,18 @@ DLT
 STGC tLtd.c
 !   IF c THEN Out.String("yes") ELSE Out.String("no") END;
 LDGC tLtd.c
-JEQZ 5
+JEQZ L5
 CONST 4
 GLOBAL tLtd.%1
 GLOBAL Out.String
 CALL 2
-JUMP 3
-LABEL 5
+JUMP L3
+LABEL L5
 CONST 3
 GLOBAL tLtd.%2
 GLOBAL Out.String
 CALL 2
-LABEL 3
+LABEL L3
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

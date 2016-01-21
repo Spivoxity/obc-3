@@ -91,11 +91,11 @@ CONVNQ
 STGQ tLongInt.m
 CONST 0
 STGW tLongInt.k
-LABEL 3
+LABEL L3
 !   WHILE m < n DO 
 LDGQ tLongInt.m
 LDGQ tLongInt.n
-QJGEQ 5
+QJGEQ L5
 !     m := r * m;
 LDGW tLongInt.r
 CONVNQ
@@ -106,8 +106,8 @@ STGQ tLongInt.m
 LDGW tLongInt.k
 INC
 STGW tLongInt.k
-JUMP 3
-LABEL 5
+JUMP L3
+LABEL L5
 !   Out.LongInt(m, 0); Out.Ln;
 CONST 0
 LDGQ tLongInt.m
@@ -168,18 +168,18 @@ CALL 0
 LDGQ tLongInt.m
 CONST 0
 CONVNQ
-QJLT 8
+QJLT L8
 CONST 6
 GLOBAL tLongInt.%1
 GLOBAL Out.String
 CALL 2
-JUMP 6
-LABEL 8
+JUMP L6
+LABEL L8
 CONST 5
 GLOBAL tLongInt.%2
 GLOBAL Out.String
 CALL 2
-LABEL 6
+LABEL L6
 GLOBAL Out.Ln
 CALL 0
 RETURN

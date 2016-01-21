@@ -32,30 +32,30 @@ PROC tSuck07.%main 0 3 0
 !   b := FALSE;
 CONST 0
 STGC tSuck07.b
-LABEL 3
+LABEL L3
 !     IF (b = (TRUE & TRUE)) & TRUE THEN Out.String("A") END;
 LDGC tSuck07.b
-JEQZ 7
+JEQZ L7
 CONST 2
 GLOBAL tSuck07.%1
 GLOBAL Out.String
 CALL 2
-LABEL 7
+LABEL L7
 !     IF b = FALSE THEN Out.String("B") END;
 LDGC tSuck07.b
-JNEQZ 11
+JNEQZ L11
 CONST 2
 GLOBAL tSuck07.%2
 GLOBAL Out.String
 CALL 2
-LABEL 11
+LABEL L11
 !     b := (b = FALSE)
 LDGC tSuck07.b
 NOT
 STGC tSuck07.b
 !   UNTIL b # TRUE;
 LDGC tSuck07.b
-JNEQZ 3
+JNEQZ L3
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

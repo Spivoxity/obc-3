@@ -61,30 +61,30 @@ PROC tLongJump07.%main 0 3 0
 !   x := 0;
 CONST 0
 STGW tLongJump07.x
-LABEL 1
+LABEL L1
 !     CASE x OF
 LDGW tLongJump07.x
 CONST 502
-TESTGEQ 8
+TESTGEQ L8
 CONST 301
-TESTGEQ 9
+TESTGEQ L9
 CONST 1
-JGEQ 6
-JUMP 3
-LABEL 9
+JGEQ L6
+JUMP L3
+LABEL L9
 CONST 499
-JLEQ 7
-JUMP 3
-LABEL 8
+JLEQ L7
+JUMP L3
+LABEL L8
 CONST 502
-JNEQ 3
+JNEQ L3
 !       x := x+3
 LDGW tLongJump07.x
 CONST 3
 PLUS
 STGW tLongJump07.x
-JUMP 4
-LABEL 6
+JUMP L4
+LABEL L6
 !       x := x + 1; x := x + 1; x := x + 1; x := x + 1; x := x + 1; 
 LDGW tLongJump07.x
 INC
@@ -405,20 +405,20 @@ STGW tLongJump07.x
 LDGW tLongJump07.x
 INC
 STGW tLongJump07.x
-JUMP 4
-LABEL 7
+JUMP L4
+LABEL L7
 !       x := x+50
 LDGW tLongJump07.x
 CONST 50
 PLUS
 STGW tLongJump07.x
-JUMP 4
-LABEL 3
+JUMP L4
+LABEL L3
 !       x := x+1
 LDGW tLongJump07.x
 INC
 STGW tLongJump07.x
-LABEL 4
+LABEL L4
 !     Out.Char(' '); Out.Int(x,0)
 CONST 32
 ALIGNC
@@ -431,7 +431,7 @@ CALL 2
 !   UNTIL x >= 503;
 LDGW tLongJump07.x
 CONST 503
-JLT 1
+JLT L1
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0
