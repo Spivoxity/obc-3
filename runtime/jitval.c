@@ -75,16 +75,21 @@ static void show(ctvalue v) {
 
 /* dumpregs -- print values cached in all registers */
 void dumpregs(void) {
+     mybool blank = TRUE;
      reg r;
 
      for_regs (r) {
-	  if (r->r_class == 0) continue;
+	  if (r->r_class == 0 || (r->r_refct == 0 && ! cached(r))) continue;
+          if (blank) {
+               printf("Regs:");
+               blank = FALSE;
+          }
 	  printf("  %s(%d)", r->r_name, r->r_refct);
 	  if (cached(r)) {
 	       printf(" = "); show(&r->r_value);
 	  }
      }
-     printf("\n");
+     if (! blank) printf("\n");
 }
 #endif
 
