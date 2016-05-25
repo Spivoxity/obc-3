@@ -122,14 +122,14 @@ PROC tTypeCase07.%main 0 4 0
 !   NEW(p); NEW(q);
 CONST 0
 GLOBAL tTypeCase07.Empty
-GLOBAL tTypeCase07.p
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tTypeCase07.p
 CONST 12
 GLOBAL tTypeCase07.OpNode
-GLOBAL tTypeCase07.q
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tTypeCase07.q
 !   q.name := "+"; q.left := p; q.right := p;
 CONST 43
 LDGW tTypeCase07.q

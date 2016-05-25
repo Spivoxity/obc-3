@@ -65,14 +65,14 @@ PROC tParamGC07.%main 0 4 0
 !   NEW(x); NEW(x);
 CONST 8
 GLOBAL tParamGC07.blob
-GLOBAL tParamGC07.x
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tParamGC07.x
 CONST 8
 GLOBAL tParamGC07.blob
-GLOBAL tParamGC07.x
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tParamGC07.x
 !   b[0] := x;
 LDGW tParamGC07.x
 STGW tParamGC07.b

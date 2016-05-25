@@ -38,9 +38,9 @@ CALL 2
 !   NEW(x); p := x; x := p(xPrelude.xptr)
 CONST 4
 GLOBAL xPrelude.xrec
-GLOBAL tTypeRef.x
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tTypeRef.x
 LDGW tTypeRef.x
 STGW tTypeRef.p
 LDGW tTypeRef.p

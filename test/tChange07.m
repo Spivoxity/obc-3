@@ -287,7 +287,7 @@ LABEL L16
 RETURN
 END
 
-PROC tChange07.Pay 28 6 0x00a02001
+PROC tChange07.Pay 28 5 0x00a02001
 ! PROCEDURE Pay(goal: INTEGER; coin: ARRAY OF INTEGER; VAR ans: bignum);
 !   NEW(ways, goal+1);
 LDLW 12
@@ -295,9 +295,9 @@ INC
 CONST 1
 CONST 40
 CONST 0
-LOCAL -16
 GLOBAL NEWFLEX
-CALL 5
+CALLW 4
+STLW -16
 !   Set(ways[0], 1);
 CONST 1
 LDLW -16
@@ -413,7 +413,7 @@ FIXCOPY
 RETURN
 END
 
-PROC tChange07.%main 0 6 0
+PROC tChange07.%main 0 5 0
 !   goal := 10000;
 CONST 10000
 STGW tChange07.goal

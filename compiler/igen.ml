@@ -625,14 +625,14 @@ and gen_builtin q args =
 	    (RecordType _ | ArrayType _) -> 
 	      SEQ [const t.t_rep.m_size;
 		if t.t_desc = nosym then const 0 else GLOBAL t.t_desc;
-		gen_addr e1; call_proc "NEW" 3 voidtype]
+                call_proc "NEW" 2 ptrtype; gen_addr e1; STORE IntT]
 	  | FlexType _ -> 
  	      let n = flexity t in
  	      let t0 = flex_base t in
 	      SEQ [SEQ (List.map gen_expr (List.rev es));
-		const n; const t0.t_rep.m_size;
-		push_map t0; gen_addr e1;
-		call_proc "NEWFLEX" (n+4) voidtype]
+		const n; const t0.t_rep.m_size; push_map t0; 
+		call_proc "NEWFLEX" (n+3) ptrtype;
+                gen_addr e1; STORE IntT]
 	  | _ -> failwith "NewProc"
 	end
 

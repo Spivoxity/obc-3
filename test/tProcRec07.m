@@ -47,13 +47,13 @@ CALL 0
 RETURN
 END
 
-PROC tProcRec07.%main 0 4 0
+PROC tProcRec07.%main 0 3 0
 !   NEW(noqueue);
 CONST 8
 GLOBAL tProcRec07.QueueRec
-GLOBAL tProcRec07.noqueue
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tProcRec07.noqueue
 !   noqueue.Clear := Clear;
 GLOBAL tProcRec07.Clear
 LDGW tProcRec07.noqueue

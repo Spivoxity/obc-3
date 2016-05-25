@@ -91,7 +91,7 @@ IMPORT Out STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tFibTree07.Build 4 4 0x00010001
+PROC tFibTree07.Build 4 3 0x00010001
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -108,9 +108,9 @@ LABEL L4
 !     NEW(t);
 CONST 8
 GLOBAL tFibTree07.node
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !     t.left := Build(n-2);
 LDLW 12
 CONST 2
@@ -134,7 +134,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tFibTree07.Print 0 4 0x00100001
+PROC tFibTree07.Print 0 3 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
 LDLW 12
@@ -171,7 +171,7 @@ CALL 1
 RETURN
 END
 
-PROC tFibTree07.count 4 4 0x00100001
+PROC tFibTree07.count 4 3 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
@@ -200,7 +200,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tFibTree07.%main 0 4 0
+PROC tFibTree07.%main 0 3 0
 !   FOR i := 0 TO 7 DO
 CONST 0
 STGW tFibTree07.i

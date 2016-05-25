@@ -139,14 +139,14 @@ PLUS
 RETURNW
 END
 
-PROC tGC5.Cons 4 4 0x00c10001
+PROC tGC5.Cons 4 3 0x00c10001
 ! PROCEDURE Cons(key, value: INTEGER; left, right: tree): tree;
 !   NEW(t);
 CONST 16
 GLOBAL tGC5.cell
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   t.key := key; t.value := value;
 LDLW 12
 LDLW -4

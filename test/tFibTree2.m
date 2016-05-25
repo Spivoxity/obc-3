@@ -103,9 +103,9 @@ PROC tFibTree2.Cons 4 4 0x00310001
 !   NEW(p);
 CONST 160
 GLOBAL tFibTree2.node
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   p[0].b[3] := l; p[6].b[2] := r;
 LDLW 12
 LDLW -4

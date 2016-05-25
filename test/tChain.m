@@ -74,14 +74,14 @@ IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChain.Cons 4 4 0x00210001
+PROC tChain.Cons 4 3 0x00210001
 ! PROCEDURE Cons(hd: INTEGER; tl: list): list;
 !   NEW(p);
 CONST 12
 GLOBAL tChain.cell
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   p.head := hd;
 LDLW 12
 LDLW -4
@@ -102,7 +102,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tChain.Test 12 4 0x00004001
+PROC tChain.Test 12 3 0x00004001
 ! PROCEDURE Test;
 !   xs := NIL;
 CONST 0
@@ -182,7 +182,7 @@ CALL 0
 RETURN
 END
 
-PROC tChain.%main 0 4 0
+PROC tChain.%main 0 3 0
 !   GC.Debug('gs');
 CONST 3
 GLOBAL tChain.%2

@@ -172,9 +172,9 @@ LABEL L14
 !   NEW(t);
 CONST 12
 GLOBAL tInorder07.Node
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   t.data := Random.Roll(1000);
 CONST 1000
 GLOBAL Random.Roll

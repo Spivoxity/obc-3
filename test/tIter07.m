@@ -102,7 +102,7 @@ MODULE tIter07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tIter07.MakeList 12 4 0x0010c001
+PROC tIter07.MakeList 12 3 0x0010c001
 ! PROCEDURE MakeList(s: ARRAY OF CHAR): List;
 !   p := NIL;
 CONST 0
@@ -118,9 +118,9 @@ JLTZ L3
 !     NEW(q); 
 CONST 8
 GLOBAL tIter07.Cell
-LOCAL -12
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -12
 !     q.head := ORD(s[i]) - ORD('0');
 LDLW 12
 LDLW -4
@@ -213,9 +213,9 @@ PROC tIter07.Length 4 4 0x00110001
 !   NEW(c); c.visit := CVisit; c.count := 0;
 CONST 8
 GLOBAL tIter07.CRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 GLOBAL tIter07.CVisit
 LDLW -4
 NCHECK 45
@@ -261,9 +261,9 @@ STLW -4
 !   NEW(p); p.head := n; p.tail := self.list; self.list := p
 CONST 8
 GLOBAL tIter07.Cell
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 LDLW 16
 LDLW -8
 NCHECK 57
@@ -286,9 +286,9 @@ PROC tIter07.Reverse 4 4 0x00110001
 !   NEW(r); r.visit := RVisit; r.list := NIL;
 CONST 8
 GLOBAL tIter07.RRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 GLOBAL tIter07.RVisit
 LDLW -4
 NCHECK 63
@@ -324,9 +324,9 @@ PROC tIter07.Print 4 4 0x00110001
 !   NEW(v); v.visit := PVisit;
 CONST 4
 GLOBAL tIter07.VRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 GLOBAL tIter07.PVisit
 LDLW -4
 NCHECK 76

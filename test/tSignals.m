@@ -331,9 +331,9 @@ LABEL L14
 !   NEW(p);
 CONST 24
 GLOBAL tSignals.Blob
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   p.op := op; p.left := left; p.right := right; p.value := value;
 LDLC 12
 LDLW -4

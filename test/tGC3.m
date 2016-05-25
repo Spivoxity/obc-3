@@ -149,9 +149,9 @@ STLW -20
 !     NEW(t);
 CONST 8
 GLOBAL tGC3.cell
-LOCAL -24
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -24
 !     t.left := pool[x];
 GLOBAL tGC3.pool
 LDLW -8

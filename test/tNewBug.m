@@ -31,7 +31,7 @@ IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tNewBug.%main 0 4 0
+PROC tNewBug.%main 0 3 0
 !   GC.Debug("z");
 CONST 2
 GLOBAL tNewBug.%3
@@ -40,24 +40,23 @@ CALL 2
 !   NEW(p); NEW(q); p := NIL; NEW(q.next);
 CONST 8
 GLOBAL tNewBug.blob
-GLOBAL tNewBug.p
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tNewBug.p
 CONST 8
 GLOBAL tNewBug.blob
-GLOBAL tNewBug.q
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tNewBug.q
 CONST 0
 STGW tNewBug.p
 CONST 8
 GLOBAL tNewBug.blob
+GLOBAL NEW
+CALLW 2
 LDGW tNewBug.q
 NCHECK 12
-CONST 4
-PLUSA
-GLOBAL NEW
-CALL 3
+STNW 4
 !   IF q.next # NIL THEN
 LDGW tNewBug.q
 NCHECK 13

@@ -36,13 +36,13 @@ CALL 0
 RETURN
 END
 
-PROC tSuper3.%main 0 4 0
+PROC tSuper3.%main 0 3 0
 !   NEW(p); p.f^ 
 CONST 0
 GLOBAL tSuper3.d
-GLOBAL tSuper3.p
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tSuper3.p
 LDGW tSuper3.p
 GLOBAL tSuper3.b.f
 CALL 1

@@ -40,9 +40,9 @@ PROC tSamson.%main 0 4 0
 !   NEW(b);
 CONST 4
 GLOBAL tSamson.BDesc
-GLOBAL tSamson.b
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tSamson.b
 !   b^.s := 3;
 CONST 3
 LDGW tSamson.b

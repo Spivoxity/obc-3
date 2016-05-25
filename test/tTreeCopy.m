@@ -126,14 +126,14 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tTreeCopy.NewNode 4 4 0x00010001
+PROC tTreeCopy.NewNode 4 3 0x00010001
 ! PROCEDURE NewNode(x: INTEGER): Tree;
 !   NEW(p); p.data := x; RETURN p
 CONST 12
 GLOBAL tTreeCopy.Node
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 LDLW 12
 LDLW -4
 NCHECK 11
@@ -142,7 +142,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tTreeCopy.RandTree 4 4 0x00010001
+PROC tTreeCopy.RandTree 4 3 0x00010001
 ! PROCEDURE RandTree(d: INTEGER): Tree;
 !   IF Random.Roll(10) < d THEN
 CONST 10
@@ -182,7 +182,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tTreeCopy.PrintTree 0 4 0x00100001
+PROC tTreeCopy.PrintTree 0 3 0x00100001
 ! PROCEDURE PrintTree(t: Tree);
 !   IF t = NIL THEN
 LDLW 12

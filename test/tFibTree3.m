@@ -117,7 +117,7 @@ IMPORT GC STAMP
 IMPORT Random STAMP
 ENDHDR
 
-PROC tFibTree3.Alloc 16 6 tFibTree3.Alloc.%map
+PROC tFibTree3.Alloc 16 5 tFibTree3.Alloc.%map
 ! PROCEDURE Alloc(a: node; VAR b: node): tree;
 LOCAL 12
 LDLW 16
@@ -155,9 +155,9 @@ PLUS
 CONST 1
 CONST 4
 CONST 3
-LOCAL -8
 GLOBAL NEWFLEX
-CALL 5
+CALLW 4
+STLW -8
 !   FOR i := 0 TO LEN(a)-1 DO p[i] := a[i] END;
 LDLW 16
 DEC
@@ -189,7 +189,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tFibTree3.Cons 8 6 0x00318001
+PROC tFibTree3.Cons 8 5 0x00318001
 ! PROCEDURE Cons(l, r: tree): tree;
 !   a[0] := l; a[1] := r;
 LDLW 12
@@ -211,7 +211,7 @@ CALLW 4
 RETURNW
 END
 
-PROC tFibTree3.Build 0 6 0
+PROC tFibTree3.Build 0 5 0
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -237,7 +237,7 @@ CALLW 2
 RETURNW
 END
 
-PROC tFibTree3.Print 0 6 0x00100001
+PROC tFibTree3.Print 0 5 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
@@ -284,7 +284,7 @@ CALL 1
 RETURN
 END
 
-PROC tFibTree3.count 0 6 0x00100001
+PROC tFibTree3.count 0 5 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
@@ -318,7 +318,7 @@ PLUS
 RETURNW
 END
 
-PROC tFibTree3.%main 0 6 0
+PROC tFibTree3.%main 0 5 0
 !   GC.Debug("s");
 CONST 2
 GLOBAL tFibTree3.%2

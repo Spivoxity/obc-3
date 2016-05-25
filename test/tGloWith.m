@@ -32,13 +32,13 @@ MODULE tGloWith STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tGloWith.%main 0 4 0
+PROC tGloWith.%main 0 3 0
 !   NEW(b); b.x := 37; a := b;
 CONST 4
 GLOBAL tGloWith.BB
-GLOBAL tGloWith.b
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tGloWith.b
 CONST 37
 LDGW tGloWith.b
 NCHECK 13
@@ -76,9 +76,9 @@ CALL 0
 !   NEW(c); a := c;
 CONST 0
 GLOBAL tGloWith.CC
-GLOBAL tGloWith.c
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tGloWith.c
 LDGW tGloWith.c
 STGW tGloWith.a
 !   WITH a: B DO Out.Int(a.x, 0) ELSE Out.String("none") END;

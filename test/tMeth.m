@@ -82,9 +82,9 @@ CALL 0
 !   NEW(p); p.doit
 CONST 0
 GLOBAL tMeth.foo
-GLOBAL tMeth.p
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tMeth.p
 LDGW tMeth.p
 NCHECK 34
 DUP 0

@@ -129,14 +129,15 @@ LDLW -4
 RETURNW
 END
 
-PROC tSort07.Sort 4 4 0x00310001
+PROC tSort07.Sort 4 3 0x00310001
 ! PROCEDURE Sort(xs: List; VAR ys: List);
 !   NEW(ys);
 CONST 12
 GLOBAL tSort07.Cell
-LDLW 16
 GLOBAL NEW
-CALL 3
+CALLW 2
+LDLW 16
+STOREW
 !   ys.prev := ys; ys.next := ys;
 LDLW 16
 LOADW
@@ -210,14 +211,14 @@ LABEL L11
 RETURN
 END
 
-PROC tSort07.Append 4 4 0x00110001
+PROC tSort07.Append 4 3 0x00110001
 ! PROCEDURE Append(xs: List; d: INTEGER);
 !   NEW(p); p.data := d;
 CONST 12
 GLOBAL tSort07.Cell
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 LDLW 16
 LDLW -4
 NCHECK 38
@@ -247,14 +248,14 @@ STNW 4
 RETURN
 END
 
-PROC tSort07.Test 20 4 0x00007001
+PROC tSort07.Test 20 3 0x00007001
 ! PROCEDURE Test;
 !   NEW(xs);
 CONST 12
 GLOBAL tSort07.Cell
-LOCAL -16
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -16
 !   xs.prev := xs; xs.next := xs;
 LDLW -16
 LDLW -16
@@ -333,7 +334,7 @@ CALL 0
 RETURN
 END
 
-PROC tSort07.%main 0 4 0
+PROC tSort07.%main 0 3 0
 !   Test 
 GLOBAL tSort07.Test
 CALL 0

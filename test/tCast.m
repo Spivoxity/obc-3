@@ -140,9 +140,9 @@ PROC tCast.%main 0 5 0
 !   NEW(a); 
 CONST 4
 GLOBAL tCast.Node
-GLOBAL tCast.a
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tCast.a
 !   a.val := 17;
 CONST 17
 LDGW tCast.a

@@ -110,9 +110,9 @@ CONST 3
 CONST 1
 CONST 1
 CONST 0
-GLOBAL tString.s
 GLOBAL NEWFLEX
-CALL 5
+CALLW 4
+STGW tString.s
 !   j := StackPtr();
 GLOBAL tString.StackPtr
 CALLW 0
@@ -473,9 +473,9 @@ CONST 0
 CONST 1
 CONST 1
 CONST 0
-GLOBAL tString.s
 GLOBAL NEWFLEX
-CALL 5
+CALLW 4
+STGW tString.s
 !   Out.Int(LEN(s^), 0); Out.Ln
 CONST 0
 LDGW tString.s

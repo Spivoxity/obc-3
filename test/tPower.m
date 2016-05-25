@@ -268,9 +268,9 @@ JNEQZ L26
 !         NEW(p);
 CONST 32
 GLOBAL tPower.node
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 !         p.set := newset;
 LDLW 12
 LDLW -8
@@ -426,9 +426,9 @@ STLW -8
 !   NEW(ss);
 CONST 32
 GLOBAL tPower.node
-LOCAL -20
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -20
 !   ss.set := {1};
 CONST 2
 LDLW -20

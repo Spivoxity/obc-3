@@ -542,9 +542,9 @@ JNEQZ L35
 !   NEW(r);
 CONST 28
 GLOBAL tCDown207.blob
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 !   r.op := op; r.left := p; r.right := q; r.val := val; r.used := used;
 LDLW 12
 LDLW -8
@@ -1105,9 +1105,9 @@ CALL 2
 !   NEW(htable);
 CONST 80000
 GLOBAL tCDown207.%10
-GLOBAL tCDown207.htable
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tCDown207.htable
 !   Main;
 GLOBAL tCDown207.Main
 CALL 0

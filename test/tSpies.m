@@ -65,9 +65,9 @@ PROC tSpies.Unit 20 6 0x00010001
 !   NEW(r);
 CONST 24
 GLOBAL tSpies.%2
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   c := M.Cos(M.pi*lat/180);
 LDLD 12
 DCONST 3.14159265359
@@ -129,9 +129,9 @@ PROC tSpies.Cross 4 6 0x00310001
 !   NEW(r);
 CONST 24
 GLOBAL tSpies.%2
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   r.x := a.y*b.z - b.y*a.z;
 LDLW 12
 NCHECK 25

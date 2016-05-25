@@ -157,9 +157,9 @@ STLC -13
 ! 	NEW(s1); s1.del := d; s1.parent := s;
 CONST 8
 GLOBAL tDigits.%1
-LOCAL -12
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -12
 LDLW -4
 LDLW -12
 NCHECK 33
@@ -188,9 +188,9 @@ PROC tDigits.Main 4 4 0x00010001
 !   NEW(s);
 CONST 0
 GLOBAL tDigits.%2
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   Search(1, 0, s)
 LDLW -4
 CONST 0

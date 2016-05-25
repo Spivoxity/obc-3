@@ -532,9 +532,9 @@ LABEL L27
 !   NEW(r);
 CONST 28
 GLOBAL tCDown2.blob
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 !   r.op := op; r.left := p; r.right := q; r.val := val; r.used := used;
 LDLW 12
 LDLW -8
@@ -1100,9 +1100,9 @@ CALL 2
 !   NEW(htable);
 CONST 80000
 GLOBAL tCDown2.%10
-GLOBAL tCDown2.htable
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tCDown2.htable
 !   Main;
 GLOBAL tCDown2.Main
 CALL 0

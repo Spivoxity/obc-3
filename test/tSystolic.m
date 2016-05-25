@@ -703,9 +703,9 @@ PROC tSystolic.MakeChannel 4 4 0x00010001
 !   NEW(ch); ch.Init(chid); RETURN ch
 CONST 12
 GLOBAL tSystolic.ChanRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 LDLW 12
 LDLW -4
 NCHECK 127
@@ -799,9 +799,9 @@ PROC tSystolic.MakeInjector 4 6 0x00210001
 !   NEW(p); p.Init(pid, NIL, right); RETURN p
 CONST 36
 GLOBAL tSystolic.%5
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 LDLW 16
 CONST 0
 LDLW 12
@@ -920,9 +920,9 @@ PROC tSystolic.MakeComparator 4 6 0x00610001
 !   NEW(p); p.Init(pid, left, right); RETURN p
 CONST 36
 GLOBAL tSystolic.%6
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 LDLW 20
 LDLW 16
 LDLW 12
@@ -1073,9 +1073,9 @@ PROC tSystolic.MakeCollector 4 6 0x00210001
 !   NEW(p); p.Init(pid, left, NIL); RETURN p
 CONST 32
 GLOBAL tSystolic.%7
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 CONST 0
 LDLW 16
 LDLW 12

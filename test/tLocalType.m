@@ -98,7 +98,7 @@ MODULE tLocalType STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLocalType.%2.Build 8 4 0x00008001
+PROC tLocalType.%2.Build 8 3 0x00008001
 ! PROCEDURE Build(n: INTEGER): tree;
 SAVELINK
 !   IF n <= 1 THEN
@@ -112,9 +112,9 @@ LABEL L9
 !     NEW(t);
 CONST 8
 GLOBAL tLocalType.%1
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 !     t.left := Build(n-2);
 LDLW 12
 CONST 2
@@ -141,7 +141,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tLocalType.%3.Print 4 4 0x00100001
+PROC tLocalType.%3.Print 4 3 0x00100001
 ! PROCEDURE Print(t:tree);
 SAVELINK
 !   IF NIL = t THEN
@@ -183,7 +183,7 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType.First 4 4 0x00010001
+PROC tLocalType.First 4 3 0x00010001
 ! PROCEDURE First;
 !   p := Build(7);
 CONST 7
@@ -203,7 +203,7 @@ CALL 0
 RETURN
 END
 
-PROC tLocalType.%5.Build 8 4 0x00008001
+PROC tLocalType.%5.Build 8 3 0x00008001
 ! PROCEDURE Build(n: INTEGER): tree;
 SAVELINK
 !   IF n <= 2 THEN
@@ -217,9 +217,9 @@ LABEL L15
 !     NEW(t);
 CONST 12
 GLOBAL tLocalType.%4
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 !     t.left := Build(n-3);
 LDLW 12
 CONST 3
@@ -257,7 +257,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tLocalType.%6.Print 4 4 0x00100001
+PROC tLocalType.%6.Print 4 3 0x00100001
 ! PROCEDURE Print(t:tree);
 SAVELINK
 !   IF NIL = t THEN
@@ -307,7 +307,7 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType.Second 4 4 0x00010001
+PROC tLocalType.Second 4 3 0x00010001
 ! PROCEDURE Second;
 !   p := Build(7);
 CONST 7
@@ -327,7 +327,7 @@ CALL 0
 RETURN
 END
 
-PROC tLocalType.%main 0 4 0
+PROC tLocalType.%main 0 3 0
 !   First;
 GLOBAL tLocalType.First
 CALL 0

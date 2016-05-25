@@ -69,15 +69,15 @@ LDLW -8
 RETURNW
 END
 
-PROC tOpen207.%main 0 6 0
+PROC tOpen207.%main 0 5 0
 !   NEW(b, 5);
 CONST 5
 CONST 1
 CONST 4
 CONST 0
-GLOBAL tOpen207.b
 GLOBAL NEWFLEX
-CALL 5
+CALLW 4
+STGW tOpen207.b
 !   FOR j := 0 TO 4 DO b[j] := j+1 END;
 CONST 0
 STGW tOpen207.j

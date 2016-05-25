@@ -730,14 +730,14 @@ STNW 4
 RETURN
 END
 
-PROC tSystolic07.MakeChannel 4 4 0x00010001
+PROC tSystolic07.MakeChannel 4 3 0x00010001
 ! PROCEDURE MakeChannel(chid: INTEGER): Channel;
 !   NEW(ch); InitChan(ch, chid); RETURN ch
 CONST 12
 GLOBAL tSystolic07.ChanRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 LDLW 12
 LDLW -4
 GLOBAL tSystolic07.InitChan
@@ -746,7 +746,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSystolic07.InitChan 0 4 0x00100001
+PROC tSystolic07.InitChan 0 3 0x00100001
 ! PROCEDURE InitChan(self: Channel; chid: INTEGER);
 !   self.chid := chid;
 LDLW 16
@@ -765,7 +765,7 @@ STNW 8
 RETURN
 END
 
-PROC tSystolic07.Eval 4 4 0x00100001
+PROC tSystolic07.Eval 4 3 0x00100001
 ! PROCEDURE Eval(self: Channel);
 !   IF (self.sender # NIL) & (self.receiver # NIL) THEN
 LDLW 12
@@ -828,9 +828,9 @@ PROC tSystolic07.MakeInjector 4 7 0x00210001
 !   NEW(p); Init(p, pid, NIL, right, StepInj); RETURN p
 CONST 40
 GLOBAL tSystolic07.%5
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 CONST 0
 GLOBAL tSystolic07.StepInj
 LDLW 16
@@ -953,9 +953,9 @@ PROC tSystolic07.MakeComparator 4 7 0x00610001
 !   NEW(p); Init(p, pid, left, right, StepComp); RETURN p
 CONST 40
 GLOBAL tSystolic07.%6
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 CONST 0
 GLOBAL tSystolic07.StepComp
 LDLW 20
@@ -1101,9 +1101,9 @@ PROC tSystolic07.MakeCollector 4 7 0x00210001
 !   NEW(p); Init(p, pid, left, NIL, StepColl); RETURN p
 CONST 36
 GLOBAL tSystolic07.%7
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 CONST 0
 GLOBAL tSystolic07.StepColl
 CONST 0

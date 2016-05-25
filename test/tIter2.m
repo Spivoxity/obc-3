@@ -99,7 +99,7 @@ MODULE tIter2 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tIter2.MakeList 12 4 0x0000c001
+PROC tIter2.MakeList 12 3 0x0000c001
 ! PROCEDURE MakeList(s: ARRAY OF CHAR): List;
 LOCAL 12
 LDLW 16
@@ -118,9 +118,9 @@ JLTZ L3
 !     NEW(q); 
 CONST 8
 GLOBAL tIter2.Cell
-LOCAL -12
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -12
 !     q.head := ORD(s[i]) - ORD('0');
 LDLW 12
 LDLW -4
@@ -148,7 +148,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tIter2.VRec.Visit 0 4 0x00100001
+PROC tIter2.VRec.Visit 0 3 0x00100001
 ! PROCEDURE (self: Visitor) Visit(n: INTEGER);
 !   Out.Int(n, 0)
 CONST 0
@@ -158,14 +158,14 @@ CALL 2
 RETURN
 END
 
-PROC tIter2.Print 4 4 0x00110001
+PROC tIter2.Print 4 3 0x00110001
 ! PROCEDURE Print(p: List);
 !   NEW(v);
 CONST 0
 GLOBAL tIter2.VRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   Accept(p, v)
 LDLW -4
 LDLW 12
@@ -219,9 +219,9 @@ PROC tIter2.Length 4 4 0x00110001
 !   NEW(c); c.count := 0;
 CONST 4
 GLOBAL tIter2.CRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 CONST 0
 LDLW -4
 NCHECK 55
@@ -243,9 +243,9 @@ PROC tIter2.RRec.Visit 4 4 0x00110001
 !   NEW(p); p.head := n; p.tail := self.list; self.list := p
 CONST 8
 GLOBAL tIter2.Cell
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 LDLW 16
 LDLW -4
 NCHECK 66
@@ -268,9 +268,9 @@ PROC tIter2.Reverse 4 4 0x00110001
 !   NEW(r); r.list := NIL;
 CONST 4
 GLOBAL tIter2.RRec
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 CONST 0
 LDLW -4
 NCHECK 72

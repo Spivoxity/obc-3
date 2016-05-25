@@ -488,14 +488,14 @@ CALL 0
 RETURN
 END
 
-PROC tSudoku.ColumnLink 4 4 0x00310001
+PROC tSudoku.ColumnLink 4 3 0x00310001
 ! PROCEDURE ColumnLink(r: Column; VAR p: Cell);
 !   NEW(q);
 CONST 20
 GLOBAL tSudoku.%8
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   IF p = NIL THEN
 LDLW 16
 LOADW
@@ -611,9 +611,9 @@ JGT L22
 !       NEW(p); p.name := name; p.x := i+1; p.y := j+1; 
 CONST 32
 GLOBAL tSudoku.%7
-LOCAL -12
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -12
 LDLC 24
 LDLW -12
 NCHECK 97
@@ -641,12 +641,11 @@ STIC
 !       NEW(p.head); p.head.down := p.head; p.head.up := p.head;
 CONST 20
 GLOBAL tSudoku.%8
+GLOBAL NEW
+CALLW 2
 LDLW -12
 NCHECK 99
-CONST 28
-PLUSA
-GLOBAL NEW
-CALL 3
+STNW 28
 LDLW -12
 NCHECK 99
 LDNW 28
@@ -809,9 +808,9 @@ PROC tSudoku.MakePuzzle 12 7 0
 !   NEW(root);
 CONST 32
 GLOBAL tSudoku.%7
-GLOBAL tSudoku.root
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tSudoku.root
 !   root.prev := root; root.next := root;
 LDGW tSudoku.root
 LDGW tSudoku.root

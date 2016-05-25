@@ -30,6 +30,8 @@
 
 MODULE Builtin;
 
+IMPORT SYSTEM;
+
 (* COPY #include <ctype.h> *)
 (* COPY #include <math.h> *)
 
@@ -43,14 +45,11 @@ char *lib_version =
 PROCEDURE HALT(n: INTEGER) IS "HALT";
 (* CODE xmain_exit(args[0].i); *)
 
-PROCEDURE NEW(VAR p: INTEGER; desc, size: INTEGER) IS "NEW";
+PROCEDURE NEW(desc: SYSTEM.PTR; size: INTEGER): SYSTEM.PTR IS "NEW";
 (* CODE 
-     value *desc = args[1].p, *block;
-     int size = args[2].i;
-
-     ( *args[0].p ).p = NULL;		/* Free old storage */
-     block = (value * ) gc_alloc(desc, size, bp);
-     ( *args[0].p ).p = block;
+     value *desc = args[0].p;
+     int size = args[1].i;
+     ob_res.p = (value * ) gc_alloc(desc, size, bp);
 *)
 
 (*
@@ -80,21 +79,19 @@ map:	-4
 
 size = align(n*elsize) + 4*k + 16 + (28 if elmap != 0)
 
-Parameters NEWFLEX(VAR p: INTEGER; elmap, elsize, k: INTEGER;
-			dim_0, ..., dim_{k-1}: INTEGER)
+Parameters NEWFLEX(elmap, elsize, k: INTEGER;
+			dim_0, ..., dim_{k-1}: INTEGER): SYSTEM.PTR
 *)
 
-PROCEDURE NEWFLEX(VAR p: INTEGER; eldesc, elsize, k: INTEGER) IS "NEWFLEX";
+PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 (* CODE 
-     value *elmap = args[1].p;
-     int elsize = args[2].i;
-     int k = args[3].i;
-     value *dim = &args[4];		/* Array of bounds */
+     value *elmap = args[0].p;
+     int elsize = args[1].i;
+     int k = args[2].i;
+     value *dim = &args[3];		/* Array of bounds */
 
      int size, arsize, i, n;
      value *q, *desc, *map;
-
-     ( *args[0].p ).p = NULL;		/* Free old storage */
 
      /* Compute no. of elements */
      n = 1;
@@ -115,7 +112,7 @@ PROCEDURE NEWFLEX(VAR p: INTEGER; eldesc, elsize, k: INTEGER) IS "NEWFLEX";
 
      /* Fill in the descriptor */
      desc[DESC_MAP].p = map;
-     dim = &args[4];			/* In case our stack moved */
+     dim = &args[3];			/* In case our stack moved */
      for (i = 0; i < k; i++) desc[DESC_BOUND+i].i = dim[i].i;
 
      /* Fill in the map */
@@ -134,7 +131,7 @@ PROCEDURE NEWFLEX(VAR p: INTEGER; eldesc, elsize, k: INTEGER) IS "NEWFLEX";
 	  map[9].i = GC_END;
      }
 
-     ( *args[0].p ).p = q; 
+     ob_res.p = q; 
 *)
 
 PROCEDURE COMPARE(s, t: ARRAY OF CHAR): INTEGER IS "COMPARE";

@@ -207,14 +207,14 @@ MODULE tBrack STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBrack.MakeExp 4 4 0x00610001
+PROC tBrack.MakeExp 4 3 0x00610001
 ! PROCEDURE MakeExp(rator: INTEGER; left, right: Exp): Exp;
 !   NEW(p);
 CONST 12
 GLOBAL tBrack.Blob
-LOCAL -4
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -4
 !   p.rator := rator; p.left := left; p.right := right;
 LDLW 12
 LDLW -4

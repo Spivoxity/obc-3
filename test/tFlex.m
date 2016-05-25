@@ -79,25 +79,24 @@ STIW
 RETURN
 END
 
-PROC tFlex.%main 0 7 0
+PROC tFlex.%main 0 5 0
 !   NEW(xxx[0], 5);
 CONST 5
 CONST 1
 CONST 4
 CONST 0
-GLOBAL tFlex.xxx
 GLOBAL NEWFLEX
-CALL 5
+CALLW 4
+STGW tFlex.xxx
 !   NEW(xxx[1], 5);
 CONST 5
 CONST 1
 CONST 4
 CONST 0
-GLOBAL tFlex.xxx
-CONST 4
-PLUSA
 GLOBAL NEWFLEX
-CALL 5
+CALLW 4
+GLOBAL tFlex.xxx
+STNW 4
 !   i := 0;
 CONST 0
 STGW tFlex.i

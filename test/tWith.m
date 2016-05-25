@@ -94,18 +94,18 @@ LABEL L1
 ERROR E_RETURN 17
 END
 
-PROC tWith.%main 0 4 0
+PROC tWith.%main 0 3 0
 !   NEW(p); NEW(q);
 CONST 0
 GLOBAL tWith.Empty
-GLOBAL tWith.p
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tWith.p
 CONST 12
 GLOBAL tWith.OpNode
-GLOBAL tWith.q
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tWith.q
 !   q.name := "+"; q.left := p; q.right := p;
 CONST 43
 LDGW tWith.q

@@ -80,9 +80,9 @@ PROC tLen07.%main 0 4 0
 !   NEW(foo); Say(foo^)
 CONST 2000
 CONST 0
-GLOBAL tLen07.foo
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW tLen07.foo
 LDGW tLen07.foo
 NCHECK 21
 CONST 25
