@@ -1179,11 +1179,16 @@ and check_builtin env p args e loc =
 	  (* Don't edit the expression, since this can result in constants
 	     that are labelled with the wrong type. *)
 	  check_qual env e1;
-	  let _ = check_expr env e2 in
+	  let t2 = check_expr env e2 in
 	  begin match e1.e_guts with
 	      Name x ->
 		begin try
-		  let d = lookup_typename env x in d.d_type
+		  let d = lookup_typename env x in 
+                  if t2.t_rep.m_size != d.d_type.t_rep.m_size then
+                    sem_error 
+                      "argument size must match result type in SYSTEM.VAL" 
+                      [] e2.e_loc;
+                  d.d_type
 		with Not_found -> errtype
 		end
 	    | _ ->

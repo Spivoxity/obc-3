@@ -517,6 +517,8 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case I_LOADD: 
+     case I_LOADQ:
+          /* Could be LOADQ if the result of SYSTEM.VAL(LONGREAL, ...) */
 	  assert(ty == FLO);
 	  r = load(LDD, FLO, v->v_reg, v->v_val); 
 	  break;
@@ -787,6 +789,8 @@ void move_longval(ctvalue src, reg rd, int offd) {
 
      switch (src->v_op) {
      case I_LOADQ:
+     case I_LOADD:
+          /* Could be LOADD if the result of SYSTEM.VAL(LONGINT, ...) */
 	  move_long(src->v_reg, src->v_val, rd, offd);
 	  break;
      case I_STACKD:
@@ -800,6 +804,11 @@ void move_longval(ctvalue src, reg rd, int offd) {
 	  vm_gen2ri(MOV, r->r_reg, half_const(src, 1));
 	  vm_gen3rri(STW, r->r_reg, rd->r_reg, offd+4);
 	  break;
+     case I_REG:
+          /* Must be result of SYSTEM.VAL(LONGINT, x) */
+          assert(src->v_type == FLO);
+          vm_gen3rri(STD, src->v_reg->r_reg, rd->r_reg, offd);
+          break;
      default:
 	  panic("move_longval %s", instrs[src->v_op].i_name);
      }
