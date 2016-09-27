@@ -46,18 +46,6 @@ val subscript : dynvalue -> int -> dynvalue
 
 val select : dynvalue -> Dict.def -> dynvalue
 
-(*
-
-val get_addr : dynvalue -> int32
-
-val fetch_value : Dict.otype -> int32 -> dynvalue
-
-val deref_type : Dict.otype -> dynvalue -> Dict.otype
-
-val index : Dict.otype -> int32 -> int -> Dict.otype * dynvalue
-
-*)
-
 (* fDynVal -- format a dynamic value *)   
 val fDynVal : dynvalue -> Print.arg
 

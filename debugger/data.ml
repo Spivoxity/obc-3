@@ -53,6 +53,7 @@ let get_addr =
 
 let void_value = (voidtype, Simple (intval 0))
 
+(* fetch -- retrieve value given its type and address *)
 let fetch t a =
   if not (scalar t) then
     (t, Address a)
@@ -113,7 +114,7 @@ let dynamic_record desc =
     raise Not_found
   end
 
-(* def_value -- compute value from definition *)
+(* def_value -- compute value from frame base and definition *)
 let def_value base d =
   match d.d_kind with
       ParamDef -> 

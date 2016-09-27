@@ -28,7 +28,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-(* This module keeps tables of information about procedures and lines
+(* This module keeps tables of information about procedures and line numbers
    in the binary program.  The tables are filled in from data that
    comes from the symbol table in the bytecode file, and is sent over
    the pipe by the debugging monitor at the start of the session. *)
