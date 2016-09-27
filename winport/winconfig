@@ -1,6 +1,3 @@
-if [ ! -r configure ]; then autoconf; autoheader; fi
-(cd thunder; if [ ! -r configure ]; then autoconf; autoheader; fi)
-(cd yacc; if [ ! -r configure ]; then autoconf; fi)
-
+sh scripts/myauto
 export CC=i686-w64-mingw32-gcc CFLAGS=-O2 LDFLAGS=-s
 ./configure -C --disable-dynlink

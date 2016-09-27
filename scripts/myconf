@@ -11,10 +11,6 @@ if [ ! -r $srcdir/configure.in ]; then
     exit 1
 fi
 
-(cd $srcdir; autoconf; autoheader)
-(cd $srcdir/yacc; autoconf)
-(cd $srcdir/thunder; autoconf; autoheader)
-
-# export CFLAGS="-g -O2 -fno-strict-aliasing"
+(cd $srcdir && sh scripts/myauto)
 
 $srcdir/configure --enable-debug "$@"

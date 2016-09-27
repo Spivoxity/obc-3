@@ -52,7 +52,7 @@ $compiler -pl $srcdir/Planner.m >Planner.k \
 	sed -f $srcdir/stamp.sed Planner.k >Plan.code; \
         diff $srcdir/Planner.code Plan.code; \
 	$fixup Plan.pro | diff $srcdir/Planner.pro -; \
-	../obxj ../obdump $srcdir/Planner.m >Plan.dmp; \
+	../obxj ../oblist $srcdir/Planner.m >Plan.dmp; \
 	$fixup Plan.dmp | diff $srcdir/Planner.dmp -)
 
 echo Fib

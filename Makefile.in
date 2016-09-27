@@ -228,14 +228,14 @@ LIBSRC = $(MODULES:%=$(srcdir)/lib/%.m)
 # Other files installed in {prefix}/lib
 LIB = lib/lscript lib/lscript-b $(srcdir)/lib/Builtin.m lib/_Builtin.k \
 	$(MODULES:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k) \
-	runtime/obx.a runtime/obx-j.a runtime/obx-p.a $(PRIMS) \
+	runtime/obx.a runtime/obx-p.a $(PRIMS) \
 	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h
 
 # Manual pages
-MAN = obb.1 obc.1 obdump.1 obprof.1
+MAN = obb.1 obc.1 obdump.1 obprof.1 obdb.1
 
 # Installation directories
-DIRS = $(bindir) $(mandir) $(libdir)/obc
+DIRS = $(bindir) $(mandir)/man1 $(libdir)/obc
 
 # Inputs for bindist config process
 SCRIPTS = obc.in obb.in
@@ -249,6 +249,7 @@ ifdef DYNLINK
 endif
 
 ifdef ENABLE_JIT
+  LIB += runtime/obx-j.a thunder/libthunder.a
   LIBX += obxj
 endif
 

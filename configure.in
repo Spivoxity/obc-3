@@ -194,18 +194,13 @@ AC_ARG_ENABLE(jit,
 if test "$enable_jit" != no; then
     case $host in
 	i?86-*|x86_64-*) 
-	    ENABLE_JIT=1; VM=vm386.o; OBJFMT=i386
+	    ENABLE_JIT=1; OBJFMT=i386
             AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive]);;
         armv6l-*|armv7l-*)
-            ENABLE_JIT=1; VM=vmpi.o;;
+            ENABLE_JIT=1;;
     esac
-    case $host in
-        *-*-darwin*|*-*-linux*) 
-	    AC_DEFINE(USE_MPROTECT, 1, [Whether to call mprotect from JIT]);;
-    esac		
 fi
 if test "$ENABLE_JIT" = 1; then
-  AC_DEFINE(ENABLE_JIT, 1, [Whether JIT is enabled])
   AC_CONFIG_SUBDIRS(thunder)
 fi
 AC_SUBST(ENABLE_JIT)
