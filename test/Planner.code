@@ -31,7 +31,7 @@ CALL 1
 RETURN
 END
 
-PROC Planner.Split 2 5 0x00500001
+PROC Planner.Split 8 5 0x00500001
 ! PROCEDURE Split(VAR line: ARRAY OF CHAR; VAR words: ARRAY OF word): SHORTINT;
 LINE 54
 !   n := 0; i := 0;
@@ -40,12 +40,7 @@ CONST 0
 STLW -8
 CONST 0
 STLS -2
-JUMP 22
-LABEL 21
-LDLS -2
-INC
-STLS -2
-LABEL 22
+LABEL L19
 !     WHILE line[i] = ' ' DO INC(i) END;
 LINE 59
 LDLW 12
@@ -54,7 +49,12 @@ LDLW 16
 BOUND 59
 LDIC
 CONST 32
-JEQ 21
+JNEQ L23
+LDLS -2
+INC
+STLS -2
+JUMP L19
+LABEL L23
 !     IF line[i] = 0X THEN EXIT END;
 LINE 60
 LDLW 12
@@ -62,7 +62,7 @@ LDLS -2
 LDLW 16
 BOUND 60
 LDIC
-JEQZ 20
+JEQZ L20
 !     IF line[i] = '{' THEN
 LINE 61
 LDLW 12
@@ -71,7 +71,7 @@ LDLW 16
 BOUND 61
 LDIC
 CONST 123
-JNEQ 26
+JNEQ L33
 !       INC(i); j := 0;
 LINE 62
 LDLS -2
@@ -79,8 +79,22 @@ INC
 STLS -2
 CONST 0
 STLS -4
-JUMP 28
-LABEL 27
+LABEL L34
+!       WHILE (line[i] # '}') & (line[i] # 0X) DO
+LINE 63
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 63
+LDIC
+CONST 125
+JEQ L36
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 63
+LDIC
+JEQZ L36
 ! 	words[n][j] := line[i];
 LINE 64
 LDLW 12
@@ -107,23 +121,8 @@ STLS -2
 LDLS -4
 INC
 STLS -4
-LABEL 28
-!       WHILE (line[i] # '}') & (line[i] # 0X) DO
-LINE 63
-LDLW 12
-LDLS -2
-LDLW 16
-BOUND 63
-LDIC
-CONST 125
-JEQ 29
-LDLW 12
-LDLS -2
-LDLW 16
-BOUND 63
-LDIC
-JNEQZ 27
-LABEL 29
+JUMP L34
+LABEL L36
 !       words[n][j] := 0X;
 LINE 67
 CONST 0
@@ -146,18 +145,32 @@ LDLW 16
 BOUND 68
 LDIC
 CONST 125
-JNEQ 25
+JNEQ L27
 LDLS -2
 INC
 STLS -2
-JUMP 25
-LABEL 26
+JUMP L27
+LABEL L33
 !       j := 0;
 LINE 70
 CONST 0
 STLS -4
-JUMP 33
-LABEL 32
+LABEL L28
+!       WHILE (line[i] # ' ') & (line[i] # 0X) DO
+LINE 71
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 71
+LDIC
+CONST 32
+JEQ L30
+LDLW 12
+LDLS -2
+LDLW 16
+BOUND 71
+LDIC
+JEQZ L30
 ! 	words[n][j] := line[i];
 LINE 72
 LDLW 12
@@ -184,23 +197,8 @@ STLS -2
 LDLS -4
 INC
 STLS -4
-LABEL 33
-!       WHILE (line[i] # ' ') & (line[i] # 0X) DO
-LINE 71
-LDLW 12
-LDLS -2
-LDLW 16
-BOUND 71
-LDIC
-CONST 32
-JEQ 34
-LDLW 12
-LDLS -2
-LDLW 16
-BOUND 71
-LDIC
-JNEQZ 32
-LABEL 34
+JUMP L28
+LABEL L30
 !       words[n][j] := 0X
 LINE 75
 CONST 0
@@ -215,12 +213,12 @@ CONST 32
 BOUND 75
 PLUS
 STIC
-LABEL 25
+LABEL L27
 !     INC(n)
 LINE 77
 INCL -8
-JUMP 22
-LABEL 20
+JUMP L19
+LABEL L20
 !   RETURN SHORT(n)
 LINE 79
 LDLW -8
@@ -228,7 +226,7 @@ CONVNS
 RETURNW
 END
 
-PROC Planner.Euclid 4 6 0x00300001
+PROC Planner.Euclid 16 6 0x00300001
 ! PROCEDURE Euclid(t, u: town): R;
 LINE 83
 !   dx := t.Tx - u.Tx; dy := t.Ty - u.Ty;
@@ -265,7 +263,7 @@ CALLD 2
 RETURND
 END
 
-PROC Planner.Hash 2 6 0x00100001
+PROC Planner.Hash 8 6 0x00100001
 ! PROCEDURE Hash(VAR name: word): INTEGER;
 LINE 93
 !   h := 0; i := 0;
@@ -274,8 +272,15 @@ CONST 0
 STLW -4
 CONST 0
 STLS -6
-JUMP 36
-LABEL 35
+LABEL L41
+!   WHILE name[i] # 0X DO
+LINE 97
+LDLW 12
+LDLS -6
+CONST 32
+BOUND 97
+LDIC
+JEQZ L43
 !     h := (5 * h + ORD(name[i])) MOD HSIZE;
 LINE 98
 LDLW -4
@@ -295,22 +300,15 @@ LINE 99
 LDLS -6
 INC
 STLS -6
-LABEL 36
-!   WHILE name[i] # 0X DO
-LINE 97
-LDLW 12
-LDLS -6
-CONST 32
-BOUND 97
-LDIC
-JNEQZ 35
+JUMP L41
+LABEL L43
 !   RETURN h
 LINE 101
 LDLW -4
 RETURNW
 END
 
-PROC Planner.Lookup 2 6 0x00108001
+PROC Planner.Lookup 8 6 0x00108001
 ! PROCEDURE Lookup(VAR name: word): town;
 LINE 105
 !   h := Hash(name);
@@ -327,8 +325,11 @@ CONST 127
 BOUND 109
 LDIW
 STLW -8
-JUMP 38
-LABEL 37
+LABEL L44
+!   WHILE t # NIL DO
+LINE 110
+LDLW -8
+JEQZ L46
 !     IF name = t.Tname THEN RETURN t END;
 LINE 111
 LDLW -8
@@ -341,21 +342,18 @@ CONST 32
 LDLW 12
 GLOBAL COMPARE
 CALLW 4
-JNEQZ 40
+JNEQZ L49
 LDLW -8
 RETURNW
-LABEL 40
+LABEL L49
 !     t := t.Thlink
 LINE 112
 LDLW -8
 NCHECK 112
 LDNW 28
 STLW -8
-LABEL 38
-!   WHILE t # NIL DO
-LINE 110
-LDLW -8
-JNEQZ 37
+JUMP L44
+LABEL L46
 !   Panic("Unknown town");
 LINE 114
 CONST 13
@@ -368,7 +366,7 @@ CONST 0
 RETURNW
 END
 
-PROC Planner.AddTown 2 6 0x00108001
+PROC Planner.AddTown 8 6 0x00108001
 ! PROCEDURE AddTown(VAR name: word; x, y: R);
 LINE 119
 !   h := Hash(name);
@@ -381,14 +379,14 @@ STLW -4
 LINE 123
 CONST 76
 GLOBAL Planner.townrec
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 CONST 76
 GLOBAL Planner.townrec
-LOCAL -8
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -8
 !   t.Tname := name;
 LINE 124
 LDLW -8
@@ -411,7 +409,7 @@ CONST 1
 STID
 !   t.Tdist := 0.0;
 LINE 126
-DCONST 0.
+DCONST 0.0
 LDLW -8
 NCHECK 126
 CONST 2
@@ -459,7 +457,7 @@ STIW
 RETURN
 END
 
-PROC Planner.AddRoad 4 6 0x0031e001
+PROC Planner.AddRoad 16 6 0x0031e001
 ! PROCEDURE AddRoad(VAR name1, name2: word; leng: R);
 LINE 135
 !   t1 := Lookup(name1); t2 := Lookup(name2);
@@ -476,19 +474,19 @@ STLW -8
 LINE 139
 CONST 16
 GLOBAL Planner.roadrec
-LOCAL -12
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -12
 CONST 16
 GLOBAL Planner.roadrec
-LOCAL -12
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -12
 CONST 16
 GLOBAL Planner.roadrec
-LOCAL -16
 GLOBAL NEW
-CALL 3
+CALLW 2
+STLW -16
 !   IF leng < Euclid(t1, t2) THEN
 LINE 141
 LDLD 20
@@ -496,7 +494,7 @@ LDLW -8
 LDLW -4
 GLOBAL Planner.Euclid
 CALLD 2
-DJGEQ 42
+DJGEQ L52
 !     Out.LongReal(leng); Out.Ln;
 LINE 142
 LDLD 20
@@ -520,7 +518,7 @@ CONST 18
 GLOBAL Planner.%2
 GLOBAL Planner.Panic
 CALL 2
-LABEL 42
+LABEL L52
 !   r1.Rdest := t2; r2.Rdest := t1;
 LINE 147
 LDLW -8
@@ -579,12 +577,12 @@ LINE 159
 LINE 161
 CONST 76
 GLOBAL Planner.townrec
-GLOBAL Planner.qhead
 GLOBAL NEW
-CALL 3
+CALLW 2
+STGW Planner.qhead
 !   qhead.Tdist := -1.0;
 LINE 162
-DCONST -1.
+DCONST -1.0
 LDGW Planner.qhead
 NCHECK 162
 CONST 2
@@ -622,7 +620,7 @@ STNW 32
 RETURN
 END
 
-PROC Planner.Enqueue 2 6 0x00118001
+PROC Planner.Enqueue 8 6 0x00118001
 ! PROCEDURE Enqueue(t: town);
 LINE 175
 !      p := qhead.Tprev;
@@ -631,13 +629,7 @@ LDGW Planner.qhead
 NCHECK 182
 LDNW 32
 STLW -4
-JUMP 44
-LABEL 43
-LDLW -4
-NCHECK 183
-LDNW 32
-STLW -4
-LABEL 44
+LABEL L53
 !      WHILE t.Tdist < p.Tdist DO p := p.Tprev END;
 LINE 183
 LDLW 12
@@ -648,7 +640,13 @@ LDLW -4
 NCHECK 183
 CONST 2
 LDID
-DJLT 43
+DJGEQ L55
+LDLW -4
+NCHECK 183
+LDNW 32
+STLW -4
+JUMP L53
+LABEL L55
 !      q := p.Tnext;
 LINE 184
 LDLW -4
@@ -678,7 +676,7 @@ STNW 32
 RETURN
 END
 
-PROC Planner.Delmin 2 6 0x00018001
+PROC Planner.Delmin 8 6 0x00018001
 ! PROCEDURE Delmin(): town;
 LINE 190
 !      p := qhead.Tnext;
@@ -691,10 +689,10 @@ STLW -4
 LINE 194
 LDLW -4
 LDGW Planner.qhead
-JNEQ 46
+JNEQ L58
 CONST 0
 RETURNW
-LABEL 46
+LABEL L58
 !      q := p.Tnext;
 LINE 195
 LDLW -4
@@ -717,7 +715,7 @@ LDLW -4
 RETURNW
 END
 
-PROC Planner.Requeue 2 6 0x00118001
+PROC Planner.Requeue 8 6 0x00118001
 ! PROCEDURE Requeue(t: town);
 LINE 201
 !      p := t.Tprev; q := t.Tnext;
@@ -740,13 +738,7 @@ LDLW -4
 LDLW -8
 NCHECK 205
 STNW 32
-JUMP 48
-LABEL 47
-LDLW -4
-NCHECK 206
-LDNW 32
-STLW -4
-LABEL 48
+LABEL L59
 !      WHILE t.Tdist < p.Tdist DO p := p.Tprev END;
 LINE 206
 LDLW 12
@@ -757,7 +749,13 @@ LDLW -4
 NCHECK 206
 CONST 2
 LDID
-DJLT 47
+DJGEQ L61
+LDLW -4
+NCHECK 206
+LDNW 32
+STLW -4
+JUMP L59
+LABEL L61
 !      q := p.Tnext;
 LINE 207
 LDLW -4
@@ -787,7 +785,7 @@ STNW 32
 RETURN
 END
 
-PROC Planner.Init 2 6 0x00308001
+PROC Planner.Init 8 6 0x00308001
 ! PROCEDURE Init(src, dst: town; heur: BOOLEAN);
 LINE 217
 !   ClearQueue();
@@ -798,8 +796,10 @@ CALL 0
 LINE 222
 CONST 0
 STLW -4
-JUMP 50
-LABEL 49
+LABEL L62
+LDLW -4
+CONST 126
+JGT L63
 !     t := hashtable[i];
 LINE 223
 GLOBAL Planner.hashtable
@@ -808,8 +808,11 @@ CONST 127
 BOUND 223
 LDIW
 STLW -8
-JUMP 52
-LABEL 51
+LABEL L64
+!     WHILE t # NIL DO
+LINE 224
+LDLW -8
+JEQZ L66
 !       t.Tbacklink := NIL;
 LINE 225
 CONST 0
@@ -822,21 +825,16 @@ LDLW -8
 NCHECK 226
 LDNW 28
 STLW -8
-LABEL 52
-!     WHILE t # NIL DO
-LINE 224
-LDLW -8
-JNEQZ 51
+JUMP L64
+LABEL L66
 !   FOR i := 0 TO HSIZE-1 DO
 LINE 222
 INCL -4
-LABEL 50
-LDLW -4
-CONST 126
-JLEQ 49
+JUMP L62
+LABEL L63
 !   src.Tdist := 0.0;
 LINE 230
-DCONST 0.
+DCONST 0.0
 LDLW 12
 NCHECK 230
 CONST 2
@@ -909,7 +907,7 @@ CALL 0
 RETURN
 END
 
-PROC Planner.VisitNeighbours 4 6 0x00118001
+PROC Planner.VisitNeighbours 16 6 0x00118001
 ! PROCEDURE VisitNeighbours(t: town);
 LINE 245
 !   r := t.Troads;
@@ -918,8 +916,11 @@ LDLW 12
 NCHECK 248
 LDNW 24
 STLW -4
-JUMP 54
-LABEL 53
+LABEL L67
+!   WHILE r # NIL DO
+LINE 249
+LDLW -4
+JEQZ L69
 !     u := r.Rdest;
 LINE 250
 LDLW -4
@@ -942,7 +943,7 @@ STLD -16
 !     IF hflag THEN d := d - Euclid(t, goal) + Euclid(u, goal) END;
 LINE 255
 LDGC Planner.hflag
-JUMPF 56
+JEQZ L72
 LDLD -16
 LDGW Planner.goal
 LDLW 12
@@ -955,13 +956,13 @@ GLOBAL Planner.Euclid
 CALLD 2
 DPLUS
 STLD -16
-LABEL 56
+LABEL L72
 !     IF u.Tbacklink = NIL THEN
 LINE 257
 LDLW -8
 NCHECK 257
 LDNW 40
-JNEQZ 58
+JNEQZ L75
 !       u.Tdist := d;
 LINE 259
 LDLD -16
@@ -987,8 +988,8 @@ LINE 262
 LDLW -8
 GLOBAL Planner.Enqueue
 CALL 1
-JUMP 59
-LABEL 58
+JUMP L77
+LABEL L75
 !     ELSIF d < u.Tdist THEN
 LINE 263
 LDLD -16
@@ -996,7 +997,7 @@ LDLW -8
 NCHECK 263
 CONST 2
 LDID
-DJGEQ 59
+DJGEQ L77
 !       ShowLink(u, "brown");
 LINE 265
 CONST 6
@@ -1029,22 +1030,19 @@ LINE 269
 LDLW -8
 GLOBAL Planner.Requeue
 CALL 1
-LABEL 59
+LABEL L77
 !     r := r.Rnext
 LINE 272
 LDLW -4
 NCHECK 272
 LDNW 12
 STLW -4
-LABEL 54
-!   WHILE r # NIL DO
-LINE 249
-LDLW -4
-JNEQZ 53
+JUMP L67
+LABEL L69
 RETURN
 END
 
-PROC Planner.Search 5 6 0x0031c001
+PROC Planner.Search 20 6 0x0031c001
 ! PROCEDURE Search(VAR sname, dname: word; heur: BOOLEAN);
 LINE 277
 !   src := Lookup(sname);
@@ -1075,13 +1073,17 @@ STLW -4
 LINE 286
 GLOBAL GC.Collect
 CALL 0
-JUMP 61
-LABEL 60
+LABEL L78
+!   WHILE t # dst DO
+LINE 288
+LDLW -4
+LDLW -12
+JEQ L80
 !     IF t # src THEN
 LINE 289
 LDLW -4
 LDLW -8
-JEQ 63
+JEQ L83
 !       Out.String("paint {"); Out.String(t.Tname); 
 LINE 290
 CONST 8
@@ -1104,7 +1106,7 @@ GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL 63
+LABEL L83
 !     VisitNeighbours(t);
 LINE 293
 LDLW -4
@@ -1126,7 +1128,7 @@ STLW -4
 !     IF t = NIL THEN
 LINE 297
 LDLW -4
-JNEQZ 65
+JNEQZ L86
 !       Out.String("unreachable"); Out.Ln;
 LINE 298
 CONST 12
@@ -1138,7 +1140,7 @@ CALL 0
 !       RETURN
 LINE 299
 RETURN
-LABEL 65
+LABEL L86
 !     ShowLink(t, "blue");
 LINE 302
 CONST 5
@@ -1146,12 +1148,8 @@ GLOBAL Planner.%12
 LDLW -4
 GLOBAL Planner.ShowLink
 CALL 3
-LABEL 61
-!   WHILE t # dst DO
-LINE 288
-LDLW -4
-LDLW -12
-JNEQ 60
+JUMP L78
+LABEL L80
 !   Out.String("pause"); Out.Ln;
 LINE 305
 CONST 6
@@ -1164,8 +1162,12 @@ CALL 0
 LINE 308
 LDLW -12
 STLW -4
-JUMP 67
-LABEL 66
+LABEL L87
+!   WHILE t # src DO
+LINE 309
+LDLW -4
+LDLW -8
+JEQ L89
 !     ShowLink(t, "yellow");
 LINE 310
 CONST 7
@@ -1179,12 +1181,8 @@ LDLW -4
 NCHECK 311
 LDNW 40
 STLW -4
-LABEL 67
-!   WHILE t # src DO
-LINE 309
-LDLW -4
-LDLW -8
-JNEQ 66
+JUMP L87
+LABEL L89
 !   d := dst.Tdist;
 LINE 314
 LDLW -12
@@ -1195,7 +1193,7 @@ STLD -20
 !   IF hflag THEN d := d + Euclid(src, dst) END;
 LINE 315
 LDGC Planner.hflag
-JUMPF 69
+JEQZ L92
 LDLD -20
 LDLW -12
 LDLW -8
@@ -1203,7 +1201,7 @@ GLOBAL Planner.Euclid
 CALLD 2
 DPLUS
 STLD -20
-LABEL 69
+LABEL L92
 !   Out.String("found "); Out.Fixed(d, 0, 1); Out.Ln;
 LINE 316
 CONST 7
@@ -1220,14 +1218,14 @@ CALL 0
 RETURN
 END
 
-PROC Planner.Main 145 7 0
+PROC Planner.Main 580 7 0
 ! PROCEDURE Main();
 LINE 320
 !   InitQueue();
 LINE 325
 GLOBAL Planner.InitQueue
 CALL 0
-LABEL 70
+LABEL L93
 !     In.Line(buf);
 LINE 328
 CONST 256
@@ -1237,7 +1235,7 @@ CALL 2
 !     IF ~ In.Done THEN EXIT END;
 LINE 329
 LDGC In.Done
-JUMPF 71
+JEQZ L94
 !     nwords := Split(buf, words);
 LINE 331
 CONST 10
@@ -1251,14 +1249,14 @@ STLW -4
 LINE 333
 LDLW -4
 CONST 4
-JNEQ 75
+JNEQ L100
 CONST 5
 GLOBAL Planner.%15
 CONST 32
 LOCAL -580
 GLOBAL COMPARE
 CALLW 4
-JNEQZ 75
+JNEQZ L100
 !       AddTown(words[1], Conv.RealVal(words[2]), Conv.RealVal(words[3]))
 LINE 334
 CONST 32
@@ -1278,20 +1276,20 @@ CONVFD
 LOCAL -548
 GLOBAL Planner.AddTown
 CALL 5
-JUMP 70
-LABEL 75
+JUMP L93
+LABEL L100
 !     ELSIF (nwords = 4) & (words[0] = "road") THEN
 LINE 335
 LDLW -4
 CONST 4
-JNEQ 76
+JNEQ L103
 CONST 5
 GLOBAL Planner.%16
 CONST 32
 LOCAL -580
 GLOBAL COMPARE
 CALLW 4
-JNEQZ 76
+JNEQZ L103
 !       AddRoad(words[1], words[2], Conv.RealVal(words[3]))
 LINE 336
 CONST 32
@@ -1305,20 +1303,20 @@ LOCAL -516
 LOCAL -548
 GLOBAL Planner.AddRoad
 CALL 4
-JUMP 70
-LABEL 76
+JUMP L93
+LABEL L103
 !     ELSIF (nwords = 4) & (words[0] = "search") THEN
 LINE 337
 LDLW -4
 CONST 4
-JNEQ 77
+JNEQ L106
 CONST 7
 GLOBAL Planner.%17
 CONST 32
 LOCAL -580
 GLOBAL COMPARE
 CALLW 4
-JNEQZ 77
+JNEQZ L106
 !       Search(words[1], words[2], (words[3][0] = '1'))
 LINE 338
 LDLC -484
@@ -1329,16 +1327,16 @@ LOCAL -516
 LOCAL -548
 GLOBAL Planner.Search
 CALL 3
-JUMP 70
-LABEL 77
+JUMP L93
+LABEL L106
 !       Panic("bad command")
 LINE 340
 CONST 12
 GLOBAL Planner.%18
 GLOBAL Planner.Panic
 CALL 2
-JUMP 70
-LABEL 71
+JUMP L93
+LABEL L94
 RETURN
 END
 

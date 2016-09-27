@@ -98,7 +98,7 @@ parameters
 >   RETURN 7
 >   ^^^^^^^^
 
-"SemError.m", line 43: warning -- this function contains no RETURN statement
+"SemError.m", line 43: warning -- this typed procedure returns no result
 > PROCEDURE (VAR r: rec2) m*(q: REAL): REAL; END m;
 >                         ^
 
@@ -112,7 +112,7 @@ not support method 'mm'
 >        ^
 > This expression has record type 'rec'
 
-"SemError.m", line 67: warning -- this function contains no RETURN statement
+"SemError.m", line 67: warning -- this typed procedure returns no result
 > PROCEDURE flopsy(): rec; END flopsy;
 >           ^^^^^^
 
@@ -125,7 +125,7 @@ procedure value
 >   f := digest
 >        ^^^^^^
 
-"SemError.m", line 90: this argument of LEN should be an array of at least 3
+"SemError.m", line 90: the argument of LEN must be an array of at least 3
 dimensions
 >   RETURN LEN(a, 2)
 >              ^
@@ -135,7 +135,7 @@ dimensions
 >   CASE x OF 3..2: | 1: | 1: | 'a': END;
 >             ^^^^
 
-"SemError.m", line 94: this case label should have type INTEGER
+"SemError.m", line 94: a case label should have type INTEGER
 >   CASE x OF 3..2: | 1: | 1: | 'a': END;
 >                               ^^^
 > This expression has type CHAR
@@ -231,9 +231,10 @@ statement
 >          ^^^^^
 > This expression has type BOOLEAN
 
-"SemError.m", line 113: the argument of NEW must be a variable
+"SemError.m", line 113: the argument of NEW must be a pointer variable
 >   NEW(NIL);
 >       ^^^
+> This expression has type NIL
 
 "SemError.m", line 114: 'qqq' has not been declared
 >   x := qqq^;
@@ -292,7 +293,7 @@ statement
 > The left operand has type INTEGER
 > The right operand has type BOOLEAN
 
-"SemError.m", line 126: the operands of / must be both numeric or both sets
+"SemError.m", line 126: the operands of / must be both real or both sets
 >   x := x / FALSE;
 >        ^^^^^^^^^
 > The left operand has type INTEGER

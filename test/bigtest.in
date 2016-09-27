@@ -41,8 +41,7 @@ else
 fi
 
 echo Library
-../runtime/oblink -custom -nostdlib -L $lib \
-    `sed "s:^:$lib/:" $lib/lscript` >/dev/null
+../runtime/oblink -nostdlib -L $lib `sed "s:^:$lib/:" $lib/lscript`
 
 echo Planner
 rm -f Planner.k planner
