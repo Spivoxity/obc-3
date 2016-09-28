@@ -107,7 +107,6 @@ obc
 obc0
 obdb
 obdb0
-obdump
 obprof
 obtrace
 obx
@@ -184,6 +183,7 @@ armtest/data
 armtest/obxj-arm
 armtest/out
 armtest/out.0
+oblist
 test/a.out
 test/code
 test/code.0

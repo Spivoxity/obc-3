@@ -549,28 +549,28 @@ and check_subexp env e =
 	end;
 	boolean
     | Set els ->
-	  let check_elem =
-	    function
-		Single x ->
-		  check_assign "in this set element" [] 
-		    env inttype x x.e_loc
-	      | Range (x, y) ->
-		  check_assign "in this set element" [] 
-		    env inttype x x.e_loc;
-		  check_assign "in this set element" []
-		    env inttype y y.e_loc
+        let check_elem =
+          function
+              Single x ->
+                check_assign "in this set element" [] 
+                  env inttype x x.e_loc
+            | Range (x, y) ->
+                check_assign "in this set element" [] 
+                  env inttype x x.e_loc;
+                check_assign "in this set element" []
+                  env inttype y y.e_loc
 
-	  and set_const els = 
-	    let set_val =
-	      function
-		  Single x -> 
-		    bit_range (int_value (const_value x)) 
-		      (int_value (const_value x))
-		| Range (x, y) -> 
-		    bit_range (int_value (const_value x)) 
-		      (int_value (const_value y)) in
-	    List.fold_left integer_bitor (integer 0) 
-	      (List.map set_val els) in
+        and set_const els = 
+          let set_val =
+            function
+                Single x -> 
+                  bit_range (int_value (const_value x)) 
+                    (int_value (const_value x))
+              | Range (x, y) -> 
+                  bit_range (int_value (const_value x)) 
+                    (int_value (const_value y)) in
+          List.fold_left integer_bitor (integer 0) 
+            (List.map set_val els) in
 
 	  List.iter check_elem els; 
 	  ( try let v = set_const els in 

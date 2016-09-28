@@ -111,7 +111,7 @@ AC_SUBST(SANSFONT)
 
 
 # Misc paths
-OBDB1='"$LIBDIR/obdb1 -R $LIBDIR"'
+OBDB1='"$LIBDIR/obdb1 -R $LIBDIR/resources"'
 OBDB1_DEBUG='"$BINDIR/debugger/obdb1 -R $ROOT$TOPDIR/resources"'
 if test "$MACOS" = 1; then
   OBDB1='"$LIBDIR/Obdb.app/Contents/MacOS/obdb"'

@@ -566,38 +566,44 @@ let align alignment offset =
 
 (* Initial environment *)
 
-let make_def s x k t =
+let make_def1 s x k lab t =
   { d_tag = intern (if !Config.lcflag then String.lowercase s else s); 
     d_module = anon; d_export = x; d_kind = k; d_used = true; 
-    d_loc = no_loc; d_line = 0; d_type = t; d_lab = s; d_level = 0; 
+    d_loc = no_loc; d_line = 0; d_type = t; d_lab = lab; d_level = 0; 
     d_offset = 0; d_param = 0; d_comment = None; d_env = empty_env; 
     d_map = null_map }
 
+let make_def s k t =
+  make_def1 s Visible k nosym t
+
 let builtin name i n ats = 
   let data = { b_name = name; b_id = i; b_nargs = n; b_argtypes = ats } in
-  (name, PrimDef, new_type 0 (BuiltinType data, void_rep, null_map))
+  make_def name PrimDef
+    (new_type 0 (BuiltinType data, void_rep, null_map))
 
-let libproc name n fps rt =
-  let fparam (s, k, t) = make_def s Private k t in
+let libproc1 name n fps rt lab =
+  let fparam (s, k, t) = make_def1 s Private k nosym t in
   let p = { p_kind = Procedure; p_fparams = List.map fparam fps;
                                 p_pcount = n; p_result = rt } in
-  (name, ProcDef, new_type 0 (proctype p))
+  make_def1 name Visible ProcDef lab (new_type 0 (proctype p))
+
+let libproc name n fps rt =
+  libproc1 name n fps rt name
 
 let make_env ds =
   let env = new_block empty_env in 
-  let defn (s, k, t) = define env (make_def s Visible k t) in
-  List.iter defn ds; env
+  List.iter (define env) ds; env
 
 let init_env () = 
   let defs =
-    [ "INTEGER", TypeDef, inttype;
-      "SHORTINT", TypeDef, shortint;
-      "LONGINT", TypeDef, longint;
-      "CHAR", TypeDef, character;
-      "BOOLEAN", TypeDef, boolean;
-      "REAL", TypeDef, realtype;
-      "LONGREAL", TypeDef, longreal;
-      "SET", TypeDef, settype;
+    [ make_def "INTEGER" TypeDef inttype;
+      make_def "SHORTINT" TypeDef shortint;
+      make_def "LONGINT" TypeDef longint;
+      make_def "CHAR" TypeDef character;
+      make_def "BOOLEAN" TypeDef boolean;
+      make_def "REAL" TypeDef realtype;
+      make_def "LONGREAL" TypeDef longreal;
+      make_def "SET" TypeDef settype;
 
       (* These builtins are translated to inline code *)
       builtin "CHR" ChrFun 1 [inttype];      
@@ -613,12 +619,10 @@ let init_env () =
       builtin "EXCL" ExclProc 2 [settype; inttype];
   
       (* These library procedures are genuine procedures *)
-      libproc "HALT" 1 ["n", ParamDef, inttype] voidtype;
-      libproc "COPY" 4 
-	["x", ParamDef, strtype; "v", VParamDef, strtype] voidtype ]
+      libproc "HALT" 1 ["n", ParamDef, inttype] voidtype ]
 
     @ if !Config.ob07flag then 
-      [ "BYTE", TypeDef, bytetype;
+      [ make_def "BYTE" TypeDef bytetype;
         builtin "FLT" FltFun 1 [inttype];
         builtin "FLOOR" Entier 1 [];
         builtin "PACK" PackProc 2 [];
@@ -628,8 +632,10 @@ let init_env () =
         builtin "ASR" AsrFun 2 [inttype; inttype];
         builtin "ROR" RorFun 2 [inttype; inttype] ]
     else 
-      [ "TRUE", ConstDef (IntVal (integer 1)), boolean;
-        "FALSE", ConstDef (IntVal (integer 0)), boolean;
+      [ make_def "TRUE" (ConstDef (IntVal (integer 1))) boolean;
+        make_def "FALSE" (ConstDef (IntVal (integer 0))) boolean;
+        libproc "COPY" 4 
+  	  ["x", ParamDef, strtype; "v", VParamDef, strtype] voidtype;
         libproc "CAP" 1 ["c", ParamDef, character] character;
         builtin "MIN" MinFun 1 [];
         builtin "MAX" MaxFun 1 [];
@@ -638,28 +644,21 @@ let init_env () =
         builtin "SIZE" SizeFun 1 [];
         builtin "ASH" AshFun 2 [inttype; inttype];
         builtin "ENTIER" Entier 1 [] ] in 
-
   make_env defs  
 
 let sysenv () = 
   let defs =
-    [ "PTR", TypeDef, ptrtype;
-      "BYTE", TypeDef, sysbyte;
+    [ make_def "PTR" TypeDef ptrtype;
+      make_def "BYTE" TypeDef sysbyte;
       builtin "ADR" AdrFun 1 [];
       builtin "VAL" ValFun 2 [];
       builtin "BIT" BitFun 2 [inttype; inttype];
       builtin "GET" GetProc 2 [];
       builtin "PUT" PutProc 2 [];
-
-      libproc "MOVE" 3 
-	["src", ParamDef, inttype; "dest", ParamDef, inttype; 
-	  "nbytes", ParamDef, inttype] voidtype ]
-
-    @ if !Config.ob07flag then
-      [ builtin "SIZE" SizeFun 1 [] ]
-    else
-      [ ] in
-
+      libproc1 (if !Config.ob07flag then "COPY" else "MOVE") 3
+          ["src", ParamDef, inttype; "dest", ParamDef, inttype; 
+	    "nbytes", ParamDef, inttype] voidtype "SYSMOVE" ]
+    @ if !Config.ob07flag then [ builtin "SIZE" SizeFun 1 [] ] else [] in
   make_env defs
 
 

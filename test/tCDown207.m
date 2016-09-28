@@ -137,7 +137,7 @@ IF ~useless THEN
         OR (Strings.Length(temp) < Strings.Length(best)) THEN
       (* Actually closer, or anyway shorter *)
       bestval := val; bestdist := dist;
-      COPY(temp, best)
+      best := temp
     END
   END
 END
@@ -638,13 +638,11 @@ LDLW 24
 STGW tCDown207.bestval
 LDLW -4
 STGW tCDown207.bestdist
-!       COPY(temp, best)
-CONST 80
+!       best := temp
 GLOBAL tCDown207.best
-CONST 80
 GLOBAL tCDown207.temp
-GLOBAL COPY
-CALL 4
+CONST 80
+FIXCOPY
 LABEL L35
 RETURN
 END

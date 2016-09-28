@@ -101,7 +101,7 @@ BEGIN
         (* Actually closer, or anyway shorter *)
 	bestval := val[i-1];
 	bestdist := dist;
-	COPY(temp, best)
+	best := temp
       END
     END
   END;
@@ -511,13 +511,11 @@ STGW tCDown107.bestval
 ! 	bestdist := dist;
 LDLW -20
 STGW tCDown107.bestdist
-! 	COPY(temp, best)
-CONST 80
+! 	best := temp
 GLOBAL tCDown107.best
-CONST 80
 GLOBAL tCDown107.temp
-GLOBAL COPY
-CALL 4
+CONST 80
+FIXCOPY
 LABEL L25
 !   p := 0; q := next[0];
 CONST 0

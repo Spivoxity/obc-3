@@ -94,9 +94,9 @@ obx-j.a : $(JIT) xmain-j.o decode.o $(COMMON) gc.o;		$(PACK)
 obx-jd.a : $(OBX) $(JIT) xmain.o decode.o $(COMMON) gc.o; 	$(PACK)
 
 REVID := $(shell cat ../revid)
-
-xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o oblink.o: \
-	CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
+REVDEP = xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o oblink.o
+$(REVDEP): ../revid
+$(REVDEP): CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
 
 # Cancel default rule
 %.o: %.c

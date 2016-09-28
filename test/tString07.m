@@ -48,7 +48,7 @@ BEGIN
   END;
   Out.Ln;
 
-  COPY('abcdefabcdeabfabc', t);
+  t := 'abcdefabcdeabfabc';
   i := Strings.Pos('abc', t, 0);
   Out.Int(i, 0);
   WHILE i >= 0 DO
@@ -399,7 +399,7 @@ LABEL L19
 !   Out.Ln;
 GLOBAL Out.Ln
 CALL 0
-!   COPY('abcdefabcdeabfabc', t);
+!   t := 'abcdefabcdeabfabc';
 CONST 20
 GLOBAL tString07.t
 CONST 18

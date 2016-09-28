@@ -12,7 +12,7 @@ IMPORT Out;
 VAR s: ARRAY 10 OF CHAR;
 
 BEGIN
-  COPY("foo", s);
+  s := "foo";
   Out.String(s); Out.Ln
 END tCopy07.
 
@@ -25,7 +25,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tCopy07.%main 0 5 0
-!   COPY("foo", s);
+!   s := "foo";
 CONST 10
 GLOBAL tCopy07.s
 CONST 4
