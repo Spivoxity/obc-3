@@ -34,8 +34,6 @@
 OCAMLC = ocamlc
 OCAMLLEX = ocamllex
 MYACC = ../yacc/myacc
-YYLIB = -I ../yacc
-YYPARSE = ../yacc/yyparse.cmo
 CAMLDEP = @top_srcdir@/camldep
 MLFLAGS = @MLFLAGS@
 TCLSH = tclsh
@@ -47,17 +45,20 @@ SHELL = /bin/sh
 EXEEXT = @EXEEXT@
 VPATH = @srcdir@
 DEPEND = @DEPEND@
+COMPAT = @COMPAT@
 # End
 
 all : obc1 obb1
 
-OBC1 = $(YYPARSE) basis.cma compiler.cma main.cmo 
-obc1: $(OBC1)
-	$(OCAMLC) $(MLFLAGS) -custom -o $@ $^
+INCLUDE = -I ../compat -I ../yacc
 
-OBB1 = $(YYPARSE) basis.cma browser.cmo
+OBC1 = basis.cma compiler.cma main.cmo 
+obc1: $(OBC1)
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -custom -o $@ $(COMPAT) yyparse.cmo $^
+
+OBB1 = basis.cma browser.cmo
 obb1: $(OBB1)
-	$(OCAMLC) $(MLFLAGS) -custom -o $@ $^
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -custom -o $@ $(COMPAT) yyparse.cmo $^
 
 COMPILER = icode.cmo peepopt.cmo tree.cmo lexer.cmo \
 	parser.cmo expr.cmo inicheck.cmo check.cmo switch.cmo \
@@ -76,9 +77,6 @@ REVID := $(shell cat ../revid)
 revid.ml: ../revid
 	echo "let hash = \"$(REVID)\"" >$@
 
-main.cmo lexer.cmo parser.cmo symparse.cmo config.cmo symfile.cmo: %.cmo: %.ml
-	$(OCAMLC) $(MLFLAGS) $(YYLIB) -c -o $@ $<
-
 ## Rules
 
 %.ml %.mli: %.mly
@@ -88,10 +86,10 @@ main.cmo lexer.cmo parser.cmo symparse.cmo config.cmo symfile.cmo: %.cmo: %.ml
 	$(OCAMLLEX) -o $@ $<
 
 %.cmi: %.mli
-	$(OCAMLC) $(MLFLAGS) -c -o $@ $<
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -c -o $@ $<
 
 %.cmo: %.ml
-	$(OCAMLC) $(MLFLAGS) -c -o $@ $<
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -c -o $@ $<
 
 .DELETE_ON_ERROR:
 

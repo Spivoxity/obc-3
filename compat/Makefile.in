@@ -1,7 +1,7 @@
 #
 # @configure_input@
 #
-# debugger/Makefile.in
+# compat/Makefile.in
 # 
 # This file is part of the Oxford Oberon-2 compiler
 # Copyright (c) 2006 J. M. Spivey
@@ -33,94 +33,54 @@
 # Config stuff
 OCAMLC = ocamlc
 OCAMLLEX = ocamllex
-MYACC = ../yacc/myacc
-YYPARSE = ../yacc/yyparse.cmo
-YYLIB = -I ../yacc
-CAMLDEP = @top_srcdir@/camldep
 MLFLAGS = @MLFLAGS@
-MLLINKFLAGS = @MLLINKFLAGS@
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
-subdir = debugger
-SHELL = /bin/sh
-DEPEND = @DEPEND@
-EXEEXT = @EXEEXT@
-VPATH = @srcdir@
-OCAMLDIR = @OCAMLDIR@
+subdir = compat
 COMPAT = @COMPAT@
+SHELL = /bin/sh
+VPATH = @srcdir@
+DEPEND = @DEPEND@
+CAMLDEP = @top_srcdir@/camldep
 # End
 
-all: obdb1
-
-INCLUDE = -I ../compat -I ../compiler -I ../lablgtk
-
-LIBS = unix.cma threads.cma lablgtk.cma str.cma gtkThread.cmo $(YYPARSE) 
-OBDB1 = ../compiler/basis.cma debugger.cma debmain.cmo
-obdb1: $(OBDB1) debprims.o ../lablgtk/lablgtk.cma ../lablgtk/liblablgtk.a
-	$(OCAMLC) $(MLFLAGS) -custom -thread $(INCLUDE) -o $@ \
-		$(COMPAT) $(LIBS) $(OBDB1) debprims.o $(MLLINKFLAGS)
-
-DEBUGGER = debconf.cmo binary.cmo info.cmo procio.cmo data.cmo \
-	control.cmo sourcebook.cmo varsview.cmo stackview.cmo
-debugger.cma: $(DEBUGGER)
-	ocamlc $(MLFLAGS) -a -o $@ $^
-
-debprims.o: debprims.c
-	$(OCAMLC) -c -ccopt "-I .." -o $@ $<
+all : $(COMPAT)
 
 ## Rules
 
-%.mli %.ml: %.mly
-	$(MYACC) -v $<
-
-%.ml: %.mll
-	$(OCAMLLEX) -o $@ $<
-
 %.cmi: %.mli
-	$(OCAMLC) $(MLFLAGS) -c $(INCLUDE) -o $@ $<
+	$(OCAMLC) $(MLFLAGS) -c -o $@ $<
 
 %.cmo: %.ml
-	$(OCAMLC) $(MLFLAGS) -c $(INCLUDE) -thread -o $@ $<
+	$(OCAMLC) $(MLFLAGS) -c -o $@ $<
 
 .DELETE_ON_ERROR:
 
 ## Cleanup
 
-ifdef DEPEND
-DEPFILE = $(srcdir)/Depend
-endif
-
+# clean: remove object files
 clean:
-	rm -f obdb1$(EXEEXT) debrun$(EXEEXT) obdb1.x *.cmi *.cmo *.cma *.o
+	rm -f *.cmi *.cmo
 
+# quiteclean: remove generated files too
 quiteclean: clean
 
+# distclean: also remove all non-distributed files
 distclean: quiteclean
-	rm -f Makefile
 
 realclean: distclean
-	rm -f $(srcdir)/Depend debconf.ml
+	rm -f $(srcdir)/Depend
 
 ## Configuration and dependencies
 
 Makefile: $(srcdir)/Makefile.in ../config.status
-	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
+	cd .. && ./config.status $(subdir)/$@
 
-debconf.ml: $(srcdir)/debconf.ml.in ../config.status
-	cd .. && ./config.status --file=$(subdir)/$@
-
-deblex.mli: %: %.in
-	cp $< $@
-
-ML = procio.mli procio.ml binary.mli binary.ml \
-	info.mli info.ml data.mli data.ml control.mli control.ml \
-	debmain.ml sourcebook.ml \
-	sourcebook.mli varsview.ml varsview.mli stackview.ml \
-	stackview.mli debconf.ml
+ML = bytes.ml
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
-	$(CAMLDEP) -I ../compiler $^ >$@
+	$(CAMLDEP) $^ >$@
 endif
 
 include $(srcdir)/Depend

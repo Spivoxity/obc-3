@@ -78,6 +78,8 @@ MLOBJS =  gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo \
 	gBin.cmo gEdit.cmo gAction.cmo gBroken.cmo \
 	gUtil.cmo gMain.cmo gToolbox.cmo gSourceView2.cmo 
 
+INCLUDE = -I ../compat
+
 all: $(ALL)
 
 PKGCONF = $(PKG_ENV) $(PKG_CONFIG) $(PKG_FLAGS)
@@ -109,10 +111,10 @@ liblablgtk.a: $(COBJS)
 	$(RANLIB) $@	
 
 gtkThread.cmi: gtkThread.mli
-	ocamlc $(MLFLAGS) -c -thread -o $@ $<
+	ocamlc $(MLFLAGS) $(INCLUDE) -c -thread -o $@ $<
 
 gtkThread.cmo: gtkThread.ml
-	ocamlc $(MLFLAGS) -c -thread -w s -o $@ $<
+	ocamlc $(MLFLAGS) $(INCLUDE) -c -thread -w s -o $@ $<
 
 CCOPTS = -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' \
 	-ccopt -Wno-deprecated-declarations
@@ -139,10 +141,10 @@ propcc varcc: %: %.ml
 #	camlp4 pa_o.cmo pa_op.cmo pr_o.cmo -impl $< >$@
 
 %.cmo: %.ml
-	ocamlc $(MLFLAGS) -c -w s -o $@ $< 
+	ocamlc $(MLFLAGS) $(INCLUDE) -c -w s -o $@ $< 
 
 %.cmi: %.mli
-	ocamlc $(MLFLAGS) -c -o $@ $< 
+	ocamlc $(MLFLAGS) $(INCLUDE) -c -o $@ $< 
 
 clean: force
 	rm -f *.cma *.cmi *.cmo *.o *.a propcc varcc

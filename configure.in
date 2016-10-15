@@ -40,7 +40,7 @@ AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
 	test/Makefile winport/Makefile debugger/Makefile \
-	lablgtk/Makefile macport/Makefile)
+	lablgtk/Makefile macport/Makefile compat/Makefile)
 AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
 AC_CONFIG_FILES(test/regress, chmod +x test/regress)
 AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)
@@ -222,6 +222,16 @@ AC_ARG_WITH(lablgtk2,
   LABLGTK2=$with_lablgtk2, LABLGTK2='${OCAMLDIR}/lablgtk2')
 AC_SUBST(LABLGTK2)
 
+# Check ocaml version
+echo -n "checking ocaml version... "
+if ! ocamlc; then echo not found; else
+  OCAML_VERSION=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
+  echo $OCAML_VERSION
+  TMP=`echo $OCAML_VERSION | sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
+  if test $TMP -lt 40002; then
+      AC_SUBST(COMPAT, bytes.cmo)
+  fi
+fi
 
 # Checks for libraries.
 AC_CHECK_LIB(m, sin, MATHLIB=-lm)

@@ -78,7 +78,7 @@ ABS_BINDIR = @ABS_BINDIR@
 
 all : revid subdirs build sanity
 
-PREDIRS = yacc
+PREDIRS = compat yacc
 SUBDIRS = compiler runtime lib
 BUILD = obx obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
@@ -131,6 +131,7 @@ thunder/libthunder.a: thunder; $(SKIP)
 
 $(PRIMS) lib/Files.k: lib; $(SKIP)
 
+compiler lablgtk debugger: compat
 compiler: yacc
 lib: compiler
 debugger: compiler lablgtk
