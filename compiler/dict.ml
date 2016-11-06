@@ -496,18 +496,14 @@ let rec array_match t1 t2 =
     | (_, _) ->
 	same_types t1 t2
 
+(* This is used to match argument lists of procedure types *)
 let rec equal_types t1 t2 = 
-  (* This is used to match argument lists of procedure types *)
   match (t1.t_guts, t2.t_guts) with
-      (ProcType p1, ProcType p2) ->
-	p1.p_kind = p2.p_kind
-	&& match_args p1.p_fparams p2.p_fparams 
-	&& same_types p1.p_result p2.p_result
-    | (FlexType u1, FlexType u2) ->
+      (FlexType u1, FlexType u2) ->
 	equal_types u1 u2
     | _ -> same_types t1 t2
 
-and match_args fp1 fp2 = 
+let match_args fp1 fp2 = 
   begin try 
     let match_one (f1, f2) =
       match (f1.d_kind, f2.d_kind) with
@@ -520,8 +516,16 @@ and match_args fp1 fp2 =
     false
   end
 
+let proc_match t1 t2 =
+  match (t1.t_guts, t2.t_guts) with
+      (ProcType p1, ProcType p2) ->
+        p1.p_kind = p2.p_kind
+        && match_args p1.p_fparams p2.p_fparams 
+        && same_types p1.p_result p2.p_result
+    | (_, _) -> false
+
+(* This is used to detect confusing clashes of anonymous types *)
 let rec approx_same t1 t2 =
-  (* This is used to detect confusing clashes of anonymous types *)
   if t1.t_module = t2.t_module && t1.t_id = t2.t_id then
     true
   else
@@ -532,6 +536,8 @@ let rec approx_same t1 t2 =
 	  b1 = b2 && approx_same u1 u2
       | (RecordType _, RecordType _) ->
 	  t1.t_name = anon && t2.t_name = anon
+      | (ProcType p1, ProcType p2) ->
+          proc_match t1 t2
       | _ -> false
 
 (* This is used for matching types in assignment and value parameters *)

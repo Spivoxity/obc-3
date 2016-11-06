@@ -336,6 +336,13 @@ let op_of e =
     | Monop (w, _) -> w
     | _ -> failwith "op_of"
 
+let type_mismatch cxt args lt e =
+  if approx_same lt e.e_type then       
+    sem_error "types do not match exactly $" [fMeta cxt args] e.e_loc
+  else
+    sem_error "$ is needed $" [fOType lt; fMeta cxt args] e.e_loc;
+  sem_type e.e_type
+
 (* check_desig -- check and annotate a designator, return its type *)
 let rec check_desig env e =
   let t = check_desig1 env e in
@@ -438,42 +445,8 @@ and check_desig1 env e =
 
 (* check_expr -- check and annotate an expression, return its type *)
 and check_expr env e =
-  check_expr1 true env e
-
-and check_param env e =
-  check_expr1 false env e
-
-and check_expr1 strict env e =
   let t = check_subexp env e in
-  e.e_type <- t;
-  if not (is_proc t) then 
-    t
-  else begin
-    match e.e_guts with
-	Name x ->
-	  if undefined x then 
-	    t
-	  else begin
-	    let d = get_def x in
-	    match d.d_kind with
-		ProcDef ->
-		  if d.d_level > 0 then begin
-		    if strict then
-		      sem_error ("local procedure '$' may not be used"
-			  ^ " as a procedure value") [fId x.x_name] x.x_loc
-		    else if not !Config.extensions then
-		      sem_extend ("local procedure '$' may not be used"
-			  ^ " as an argument") [fId x.x_name] x.x_loc
-		  end;
-		  t
- 	      | PrimDef ->
-		  sem_error ("built-in procedure '$' may not be used"
-		    ^ " as a procedure value") [fId x.x_name] x.x_loc;
-		  errtype
-	      | _ -> t
-	  end
-      | _ -> t
-  end
+  e.e_type <- t; t
 
 and check_subexp env e =
   match e.e_guts with
@@ -552,13 +525,10 @@ and check_subexp env e =
         let check_elem =
           function
               Single x ->
-                check_assign "in this set element" [] 
-                  env inttype x x.e_loc
+                check_assign "in this set element" [] env inttype x
             | Range (x, y) ->
-                check_assign "in this set element" [] 
-                  env inttype x x.e_loc;
-                check_assign "in this set element" []
-                  env inttype y y.e_loc
+                check_assign "in this set element" [] env inttype x;
+                check_assign "in this set element" [] env inttype y
 
         and set_const els = 
           let set_val =
@@ -821,11 +791,8 @@ and check_arg env (formal, arg) =
   else begin
     match formal.d_kind with
 	(ParamDef | CParamDef) ->
-	  if is_proc formal.d_type then
-	    check_funarg env formal arg
-	  else
-	    check_assign "as argument '$' of this procedure call" 
-	      [fId formal.d_tag] env formal.d_type arg arg.e_loc
+          check_assign1 "as argument '$' of this procedure call" 
+	    [fId formal.d_tag] env formal.d_type arg false
       | VParamDef ->
 	  let t1 = check_expr env arg in
  	  if not (same_types t1 formal.d_type || is_record formal.d_type 
@@ -852,8 +819,7 @@ and check_builtin env p args e loc =
   else begin
     if p.b_argtypes <> [] then begin
       let check (e, t) =
-	check_assign "as an argument of $" [fStr p.b_name]
-	  env t e e.e_loc in
+	check_assign "as an argument of $" [fStr p.b_name] env t e in
       List.iter check (List.combine args p.b_argtypes)
     end;
 
@@ -1066,8 +1032,7 @@ and check_builtin env p args e loc =
 		    else begin
 		      for i = 0 to dim-1 do
 			let e2 = List.nth args (i+1) in
-			check_assign "as bound of NEW" []
-			  env inttype e2 e2.e_loc
+			check_assign "as bound of NEW" [] env inttype e2
 		      done
 		    end;
 		| _ -> 
@@ -1138,13 +1103,13 @@ and check_builtin env p args e loc =
 	  if List.length args = 2 && integral t1 then begin
 	    let e2 = List.nth args 1 in
 	    check_assign "as the second argument of $" [fStr p.b_name]
-	      env t1 e2 e2.e_loc
+	      env t1 e2
 	  end;
 	  voidtype
 
       | PackProc, [e1; e2] ->
           ignore (check_var floating "a real" e1);
-          check_assign "as argument of PACK" [] env inttype e2 e2.e_loc;
+          check_assign "as argument of PACK" [] env inttype e2;
           voidtype
 
       | UnpkProc, [e1; e2] ->
@@ -1161,10 +1126,10 @@ and check_builtin env p args e loc =
       | Assert, e1::_ ->
 	  if List.length args < 1 || List.length args > 2 then
 	    sem_error "ASSERT expects 1 or 2 arguments" [] e.e_loc;
-	  check_assign "as argument of ASSERT" [] env boolean e1 e1.e_loc;
+	  check_assign "as argument of ASSERT" [] env boolean e1;
 	  if List.length args = 2 then begin
 	    let e2 = List.nth args 1 in
-	    check_assign "as argument of ASSERT" [] env inttype e2 e2.e_loc
+	    check_assign "as argument of ASSERT" [] env inttype e2
 	  end;
 	  voidtype
 
@@ -1228,7 +1193,10 @@ and check_builtin env p args e loc =
 	    [fStr p.b_name; fNum (List.length args)])
   end
 
-and check_assign cxt args env lt e loc =
+and check_assign cxt args env lt e =
+  check_assign1 cxt args env lt e true
+  
+and check_assign1 cxt args env lt e glob =
   let rt = check_expr env e in
   if not !Config.ob07flag
       && numeric lt && numeric rt && kind_of lt >= kind_of rt then
@@ -1240,25 +1208,41 @@ and check_assign cxt args env lt e loc =
     promote_char e
   else if is_address lt && is_niltype rt then
     e.e_type <- lt
+  else if is_proc lt then
+    proc_assign cxt args lt e glob
   else if not (subtype rt lt 
-      || is_proc lt && equal_types lt rt
       || is_string lt && is_string_const e && bound lt >= bound rt
-      || same_types lt ptrtype && is_address rt) then begin
-    if approx_same lt rt then       
-      sem_error "types do not match exactly $" [fMeta cxt args] loc
-    else
-      sem_error "$ is needed $" [fOType lt; fMeta cxt args] loc;
-    sem_type rt
-  end
+      || same_types lt ptrtype && is_address rt) then
+    type_mismatch cxt args lt e
 
-and check_funarg env fd arg =
-  let rt = check_param env arg in
-  if not (equal_types fd.d_type rt) && not (is_niltype rt) then begin
-    sem_error "$ is needed as argument '$' of this procedure"
-      [fOType fd.d_type; fId fd.d_tag] arg.e_loc;
-    sem_type rt
-  end
-
+and proc_assign cxt args lt e glob =
+  match e.e_guts with
+      Name x ->
+        if not (undefined x) then begin
+          let d = get_def x in
+          match d.d_kind with
+              ProcDef ->
+                if d.d_level > 0 then begin
+                  if glob then
+                    sem_error ("local procedure '$' may not be used"
+                        ^ " as a procedure value") [fId x.x_name] x.x_loc
+                  else if not !Config.extensions then
+                    sem_extend ("local procedure '$' may not be used"
+                        ^ " as an argument") [fId x.x_name] x.x_loc
+                end;
+                if not (proc_match lt e.e_type) then
+                  type_mismatch cxt args lt e
+            | PrimDef ->
+                sem_error ("built-in procedure '$' may not be used"
+                  ^ " as a procedure value") [fId x.x_name] x.x_loc
+            | _ ->
+                if not (same_types lt e.e_type) then
+                  type_mismatch cxt args lt e
+        end
+    | _ ->
+        if not (same_types lt e.e_type) then
+          type_mismatch cxt args lt e
+            
 (* check_const -- check a constant expression, returning type and value *)
 and check_const env cxt e =
   let t = check_expr env e in

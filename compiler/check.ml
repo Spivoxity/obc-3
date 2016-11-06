@@ -419,7 +419,7 @@ let rec check_stmt env s =
         let lt = check_desig env lhs in
 	if not (is_var lhs) then
 	  sem_error "the LHS of an assignment must be a variable" [] lhs.e_loc;
-	check_assign "on the RHS of this assignment" [] env lt rhs rhs.e_loc
+	check_assign "on the RHS of this assignment" [] env lt rhs
 
     | ProcCall e ->
 	begin match e.e_guts with
@@ -444,7 +444,7 @@ let rec check_stmt env s =
 		  [] s.s_loc
 	      else
 		check_assign "in this RETURN statement" []
-		  env !return_type e e.e_loc
+		  env !return_type e
           | None ->
 	      if not (same_types !return_type voidtype) then
 	        sem_error "this RETURN statement should specify a result" 
@@ -545,8 +545,8 @@ let rec check_stmt env s =
 	    sem_type vt
 	  end;
 
-	  check_assign "as a starting value" [] env vt lo lo.e_loc;
-	  check_assign "as an ending value" [] env vt hi hi.e_loc;
+	  check_assign "as a starting value" [] env vt lo;
+	  check_assign "as an ending value" [] env vt hi;
 	  let (bt, inc) = check_const env "a step value" step in
 	  if not (integral bt) then begin
 	    sem_error "the step value must be an integer" [] step.e_loc;
@@ -857,7 +857,7 @@ and check_body env =
                     [] e.e_loc
                 else
                   check_assign "in this RETURN clause" []
-		    env' !return_type e e.e_loc
+		    env' !return_type e
             | None ->
                 if not (same_types p.p_result voidtype) 
                     && not (check_return body) then

@@ -54,8 +54,7 @@ val check_expr : environment -> expr -> otype
 
 (* check_assign -- check for assignment compatibility *)
 val check_assign : 
-  string -> Print.arg list -> 
-    environment -> otype -> expr -> location -> unit
+  string -> Print.arg list -> environment -> otype -> expr -> unit
 
 (* dynamic -- check if an expression has dynamic type *)
 val dynamic : expr -> bool

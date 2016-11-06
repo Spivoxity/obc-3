@@ -286,12 +286,12 @@ val is_errtype : otype -> bool
 
 (* same_types -- test if two types are 'the same' *)
 val same_types : otype -> otype -> bool
-
-(* equal_types -- test if two types are 'equal' *)
-val equal_types : otype -> otype -> bool
-
+  
 (* array_match -- test if type Ta is 'array compatible' with type Tf *)
 val array_match : otype -> otype -> bool
+
+(* proc_match -- test if procedure types match *)
+val proc_match : otype -> otype -> bool
 
 (* approx_same -- test if two types are similar enough to cause confusion *)
 val approx_same : otype -> otype -> bool

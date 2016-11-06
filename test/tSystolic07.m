@@ -50,13 +50,15 @@ TYPE
   Process = POINTER TO ProcRec;
   Channel = POINTER TO ChanRec;
 
+  StepProc = PROCEDURE (self: Process);
+
   ProcRec = RECORD 
       pid: INTEGER;
       status: INTEGER; 
       pc, next: INTEGER;
       left, right: Channel;
       buf: INTEGER;
-      step: PROCEDURE (self: Process);
+      step: StepProc;
     END;
 
   ChanRec = RECORD
@@ -65,7 +67,7 @@ TYPE
     END;
 
 PROCEDURE Init(self: Process; pid: INTEGER; left, right: Channel; 
-                     step: PROCEDURE (self: Process)); 
+                     step: StepProc); 
 BEGIN
   self.pid := pid;
   self.left := left; self.right := right;
@@ -536,33 +538,33 @@ PROC tSystolic07.Init 0 3 0x00d00001
 !   self.pid := pid;
 LDLW 16
 LDLW 12
-NCHECK 70
+NCHECK 72
 STOREW
 !   self.left := left; self.right := right;
 LDLW 20
 LDLW 12
-NCHECK 71
+NCHECK 73
 STNW 16
 LDLW 24
 LDLW 12
-NCHECK 71
+NCHECK 73
 STNW 20
 !   self.step := step;
 LDLW 32
-GCHECK 72
+GCHECK 74
 LDLW 28
 LDLW 12
-NCHECK 72
+NCHECK 74
 STNW 28
 !   self.status := Ready;
 CONST 1
 LDLW 12
-NCHECK 73
+NCHECK 75
 STNW 4
 !   self.pc := 0
 CONST 0
 LDLW 12
-NCHECK 74
+NCHECK 76
 STNW 8
 RETURN
 END
@@ -572,37 +574,37 @@ PROC tSystolic07.Run 0 3 0x00100001
 LABEL L18
 !   WHILE (self.status = Ready) OR (self.status = Waking) DO
 LDLW 12
-NCHECK 80
+NCHECK 82
 LDNW 4
 CONST 1
 JEQ L19
 LDLW 12
-NCHECK 80
+NCHECK 82
 LDNW 4
 CONST 3
 JNEQ L20
 LABEL L19
 !     self.next := self.pc+1;
 LDLW 12
-NCHECK 81
+NCHECK 83
 LDNW 8
 INC
 LDLW 12
-NCHECK 81
+NCHECK 83
 STNW 12
 !     self.step(self);
 LDLW 12
 LDLW 12
-NCHECK 82
+NCHECK 84
 LDNW 28
-NCHECK 82
+NCHECK 84
 CALL 1
 !     self.pc := self.next
 LDLW 12
-NCHECK 83
+NCHECK 85
 LDNW 12
 LDLW 12
-NCHECK 83
+NCHECK 85
 STNW 8
 JUMP L18
 LABEL L20
@@ -613,7 +615,7 @@ PROC tSystolic07.Get 0 3 0x00300001
 ! PROCEDURE Get(self: Process; VAR x: INTEGER);
 !   CASE self.status OF
 LDLW 12
-NCHECK 90
+NCHECK 92
 LDNW 4
 DEC
 JCASE 3
@@ -625,38 +627,38 @@ LABEL L24
 !         self.left.receiver := self;
 LDLW 12
 LDLW 12
-NCHECK 93
+NCHECK 95
 LDNW 16
-NCHECK 93
+NCHECK 95
 STNW 8
 !         self.status := Sleeping;
 CONST 2
 LDLW 12
-NCHECK 94
+NCHECK 96
 STNW 4
 !         self.next := self.pc (* Try input again when we wake *)
 LDLW 12
-NCHECK 95
+NCHECK 97
 LDNW 8
 LDLW 12
-NCHECK 95
+NCHECK 97
 STNW 12
 RETURN
 LABEL L25
 !         x := self.buf;
 LDLW 12
-NCHECK 98
+NCHECK 100
 LDNW 24
 LDLW 16
 STOREW
 !         self.status := Ready
 CONST 1
 LDLW 12
-NCHECK 99
+NCHECK 101
 STNW 4
 RETURN
 LABEL L22
-ERROR E_CASE 90
+ERROR E_CASE 92
 RETURN
 END
 
@@ -664,7 +666,7 @@ PROC tSystolic07.Put 0 3 0x00100001
 ! PROCEDURE Put(self: Process; x: INTEGER);
 !   CASE self.status OF
 LDLW 12
-NCHECK 106
+NCHECK 108
 LDNW 4
 DEC
 JCASE 3
@@ -676,37 +678,37 @@ LABEL L28
 !         self.buf := x;
 LDLW 16
 LDLW 12
-NCHECK 108
+NCHECK 110
 STNW 24
 !         self.right.sender := self;
 LDLW 12
 LDLW 12
-NCHECK 109
+NCHECK 111
 LDNW 20
-NCHECK 109
+NCHECK 111
 STNW 4
 !         self.status := Sleeping;
 CONST 2
 LDLW 12
-NCHECK 110
+NCHECK 112
 STNW 4
 !         self.next := self.pc
 LDLW 12
-NCHECK 111
+NCHECK 113
 LDNW 8
 LDLW 12
-NCHECK 111
+NCHECK 113
 STNW 12
 RETURN
 LABEL L29
 !         self.status := Ready
 CONST 1
 LDLW 12
-NCHECK 113
+NCHECK 115
 STNW 4
 RETURN
 LABEL L26
-ERROR E_CASE 106
+ERROR E_CASE 108
 RETURN
 END
 
@@ -715,7 +717,7 @@ PROC tSystolic07.Goto 0 3 0x00100001
 !   self.next := lab
 LDLW 16
 LDLW 12
-NCHECK 120
+NCHECK 122
 STNW 12
 RETURN
 END
@@ -725,7 +727,7 @@ PROC tSystolic07.Halt 0 3 0x00100001
 !   self.status := Dead
 CONST 0
 LDLW 12
-NCHECK 126
+NCHECK 128
 STNW 4
 RETURN
 END
@@ -751,16 +753,16 @@ PROC tSystolic07.InitChan 0 3 0x00100001
 !   self.chid := chid;
 LDLW 16
 LDLW 12
-NCHECK 138
+NCHECK 140
 STOREW
 !   self.sender := NIL; self.receiver := NIL
 CONST 0
 LDLW 12
-NCHECK 139
+NCHECK 141
 STNW 4
 CONST 0
 LDLW 12
-NCHECK 139
+NCHECK 141
 STNW 8
 RETURN
 END
@@ -769,55 +771,55 @@ PROC tSystolic07.Eval 4 3 0x00100001
 ! PROCEDURE Eval(self: Channel);
 !   IF (self.sender # NIL) & (self.receiver # NIL) THEN
 LDLW 12
-NCHECK 146
+NCHECK 148
 LDNW 4
 JEQZ L32
 LDLW 12
-NCHECK 146
+NCHECK 148
 LDNW 8
 JEQZ L32
 !     x := self.sender.buf;
 LDLW 12
-NCHECK 148
+NCHECK 150
 LDNW 4
-NCHECK 148
+NCHECK 150
 LDNW 24
 STLW -4
 !     Trace(self.chid, x);
 LDLW -4
 LDLW 12
-NCHECK 149
+NCHECK 151
 LOADW
 GLOBAL tSystolic07.Trace
 CALL 2
 !     self.receiver.buf := x;
 LDLW -4
 LDLW 12
-NCHECK 150
+NCHECK 152
 LDNW 8
-NCHECK 150
+NCHECK 152
 STNW 24
 !     self.sender.status := Waking; self.receiver.status := Waking;
 CONST 3
 LDLW 12
-NCHECK 151
+NCHECK 153
 LDNW 4
-NCHECK 151
+NCHECK 153
 STNW 4
 CONST 3
 LDLW 12
-NCHECK 151
+NCHECK 153
 LDNW 8
-NCHECK 151
+NCHECK 153
 STNW 4
 !     self.sender := NIL; self.receiver := NIL
 CONST 0
 LDLW 12
-NCHECK 152
+NCHECK 154
 STNW 4
 CONST 0
 LDLW 12
-NCHECK 152
+NCHECK 154
 STNW 8
 LABEL L32
 RETURN
@@ -848,7 +850,7 @@ PROC tSystolic07.StepInj 4 7 0x00110001
 !   self := self0(Injector);
 LDLW 12
 DUP 0
-NCHECK 185
+NCHECK 187
 LDNW -4
 DUP 0
 LDNW 4
@@ -862,12 +864,12 @@ LDNW 4
 GLOBAL tSystolic07.%5
 JEQ L34
 LABEL L35
-ERROR E_CAST 185
+ERROR E_CAST 187
 LABEL L34
 STLW -4
 !   CASE self.pc OF
 LDLW -4
-NCHECK 186
+NCHECK 188
 LDNW 8
 JCASE 7
 CASEL L39
@@ -882,13 +884,13 @@ LABEL L39
 !       0: self.r := 0
 CONST 0
 LDLW -4
-NCHECK 187
+NCHECK 189
 STNW 32
 RETURN
 LABEL L40
 !     | 1: IF self.r = N THEN Goto(self, 5) END
 LDLW -4
-NCHECK 188
+NCHECK 190
 LDNW 32
 CONST 10
 JNEQ L38
@@ -903,13 +905,13 @@ CONST 100
 GLOBAL Random.Roll
 CALLW 1
 LDLW -4
-NCHECK 189
+NCHECK 191
 STNW 36
 RETURN
 LABEL L42
 !     | 3: Put(self, self.x);
 LDLW -4
-NCHECK 190
+NCHECK 192
 LDNW 36
 LDLW -4
 GLOBAL tSystolic07.Put
@@ -918,7 +920,7 @@ RETURN
 LABEL L43
 !     | 4: INC(self.r); Goto(self, 1)
 LDLW -4
-NCHECK 191
+NCHECK 193
 DUP 0
 LDNW 32
 INC
@@ -943,7 +945,7 @@ GLOBAL tSystolic07.Halt
 CALL 1
 RETURN
 LABEL L37
-ERROR E_CASE 186
+ERROR E_CASE 188
 LABEL L38
 RETURN
 END
@@ -973,7 +975,7 @@ PROC tSystolic07.StepComp 4 7 0x00110001
 !   self := self0(Comparator);
 LDLW 12
 DUP 0
-NCHECK 210
+NCHECK 212
 LDNW -4
 DUP 0
 LDNW 4
@@ -987,12 +989,12 @@ LDNW 4
 GLOBAL tSystolic07.%6
 JEQ L49
 LABEL L50
-ERROR E_CAST 210
+ERROR E_CAST 212
 LABEL L49
 STLW -4
 !   CASE self.pc OF
 LDLW -4
-NCHECK 211
+NCHECK 213
 LDNW 8
 JCASE 8
 CASEL L54
@@ -1007,7 +1009,7 @@ JUMP L52
 LABEL L54
 !       0: Get(self, self.x)
 LDLW -4
-NCHECK 212
+NCHECK 214
 CONST 32
 PLUSA
 LDLW -4
@@ -1017,7 +1019,7 @@ RETURN
 LABEL L55
 !     | 1: Get(self, self.y)
 LDLW -4
-NCHECK 213
+NCHECK 215
 CONST 36
 PLUSA
 LDLW -4
@@ -1027,7 +1029,7 @@ RETURN
 LABEL L56
 !     | 2: IF self.y = INF THEN Goto(self, 5) END
 LDLW -4
-NCHECK 214
+NCHECK 216
 LDNW 36
 CONST 859
 JNEQ L53
@@ -1039,10 +1041,10 @@ RETURN
 LABEL L57
 !     | 3: Put(self, Min(self.x, self.y))
 LDLW -4
-NCHECK 215
+NCHECK 217
 LDNW 36
 LDLW -4
-NCHECK 215
+NCHECK 217
 LDNW 32
 GLOBAL tSystolic07.Min
 CALLW 2
@@ -1053,15 +1055,15 @@ RETURN
 LABEL L58
 !     | 4: self.x := Max(self.x, self.y); Goto(self, 1)
 LDLW -4
-NCHECK 216
+NCHECK 218
 LDNW 36
 LDLW -4
-NCHECK 216
+NCHECK 218
 LDNW 32
 GLOBAL tSystolic07.Max
 CALLW 2
 LDLW -4
-NCHECK 216
+NCHECK 218
 STNW 32
 CONST 1
 LDLW -4
@@ -1071,7 +1073,7 @@ RETURN
 LABEL L59
 !     | 5: Put(self, self.x)
 LDLW -4
-NCHECK 217
+NCHECK 219
 LDNW 32
 LDLW -4
 GLOBAL tSystolic07.Put
@@ -1091,7 +1093,7 @@ GLOBAL tSystolic07.Halt
 CALL 1
 RETURN
 LABEL L52
-ERROR E_CASE 211
+ERROR E_CASE 213
 LABEL L53
 RETURN
 END
@@ -1121,7 +1123,7 @@ PROC tSystolic07.StepColl 4 7 0x00110001
 !   self := self0(Collector);
 LDLW 12
 DUP 0
-NCHECK 236
+NCHECK 238
 LDNW -4
 DUP 0
 LDNW 4
@@ -1135,12 +1137,12 @@ LDNW 4
 GLOBAL tSystolic07.%7
 JEQ L65
 LABEL L66
-ERROR E_CAST 236
+ERROR E_CAST 238
 LABEL L65
 STLW -4
 !   CASE self.pc OF
 LDLW -4
-NCHECK 237
+NCHECK 239
 LDNW 8
 JCASE 4
 CASEL L70
@@ -1151,7 +1153,7 @@ JUMP L68
 LABEL L70
 !       0: Get(self, self.x)
 LDLW -4
-NCHECK 238
+NCHECK 240
 CONST 32
 PLUSA
 LDLW -4
@@ -1161,7 +1163,7 @@ RETURN
 LABEL L71
 !     | 1: IF self.x = INF THEN Goto(self, 3) END
 LDLW -4
-NCHECK 239
+NCHECK 241
 LDNW 32
 CONST 859
 JNEQ L69
@@ -1173,7 +1175,7 @@ RETURN
 LABEL L72
 !     | 2: Print(self.x); Goto(self, 0)
 LDLW -4
-NCHECK 240
+NCHECK 242
 LDNW 32
 GLOBAL tSystolic07.Print
 CALL 1
@@ -1189,7 +1191,7 @@ GLOBAL tSystolic07.Halt
 CALL 1
 RETURN
 LABEL L68
-ERROR E_CASE 237
+ERROR E_CASE 239
 LABEL L69
 RETURN
 END
@@ -1209,7 +1211,7 @@ CALLW 1
 GLOBAL tSystolic07.chan
 LDLW -4
 CONST 11
-BOUND 256
+BOUND 258
 STIW
 INCL -4
 JUMP L77
@@ -1230,13 +1232,13 @@ JGT L80
 GLOBAL tSystolic07.chan
 LDLW -4
 CONST 11
-BOUND 259
+BOUND 261
 LDIW
 GLOBAL tSystolic07.chan
 LDLW -4
 DEC
 CONST 11
-BOUND 259
+BOUND 261
 LDIW
 LDLW -4
 GLOBAL tSystolic07.MakeComparator
@@ -1244,7 +1246,7 @@ CALLW 3
 GLOBAL tSystolic07.proc
 LDLW -4
 CONST 12
-BOUND 259
+BOUND 261
 STIW
 INCL -4
 JUMP L79
@@ -1269,7 +1271,7 @@ LABEL L81
 !   WHILE proc[N+1].status # Dead DO
 GLOBAL tSystolic07.proc
 LDNW 44
-NCHECK 268
+NCHECK 270
 LDNW 4
 JEQZ L83
 !     FOR i := 0 TO N+1 DO Run(proc[i]) END;
@@ -1282,7 +1284,7 @@ JGT L85
 GLOBAL tSystolic07.proc
 LDLW -4
 CONST 12
-BOUND 269
+BOUND 271
 LDIW
 GLOBAL tSystolic07.Run
 CALL 1
@@ -1303,7 +1305,7 @@ JGT L81
 GLOBAL tSystolic07.chan
 LDLW -4
 CONST 11
-BOUND 271
+BOUND 273
 LDIW
 GLOBAL tSystolic07.Eval
 CALL 1
