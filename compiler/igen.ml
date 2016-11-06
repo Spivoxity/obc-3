@@ -894,20 +894,24 @@ let rec gen_stmt exit_lab s =
 	  else if is_string_const e then
 	    SEQ [gen_flexarg strtype v;
 	      gen_flexarg strtype e; call_proc "COPY" 4 voidtype]
-	  else if is_flex t then begin
-	    let t0 = flex_base t in
-	    SEQ [gen_flexarg t v; gen_flexarg t e; 
-	      const (flexity t); const t0.t_rep.m_size;
-	      call_proc "FLEXASSIGN" 6 voidtype]
-	  end
-	  else begin
+	  else if is_flex t then
+	    (let t0 = flex_base t in
+  	      SEQ [gen_flexarg t v; gen_flexarg t e; 
+	        const (flexity t); const t0.t_rep.m_size;
+	        call_proc "FLEXASSIGN" (4 + 2 * flexity t) voidtype])
+          else if is_flex e.e_type then
+            (* Oberon07 form array := flex *)
+            (let t0 = flex_base e.e_type in
+              SEQ [gen_flexarg e.e_type v; gen_flexarg e.e_type e;
+                const 1; const t0.t_rep.m_size;
+                call_proc "FLEXASSIGN" 6 voidtype])
+	  else
 	    SEQ [
 	      if is_record t then
 		gen_rec_addr v t.t_desc
 	      else
 		gen_addr v;
 	      gen_addr e; const t.t_rep.m_size; FIXCOPY]
-	  end
 
       | ProcCall e ->
 	  SEQ [gen_expr e;

@@ -1212,7 +1212,9 @@ and check_assign1 cxt args env lt e glob =
     proc_assign cxt args lt e glob
   else if not (subtype rt lt 
       || is_string lt && is_string_const e && bound lt >= bound rt
-      || same_types lt ptrtype && is_address rt) then
+      || same_types lt ptrtype && is_address rt
+      || !Config.ob07flag && is_array lt && is_flex rt
+            && same_types (base_type lt) (base_type rt)) then
     type_mismatch cxt args lt e
 
 and proc_assign cxt args lt e glob =

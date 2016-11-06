@@ -163,10 +163,10 @@ PROCEDURE FLEXASSIGN(elsize, dim: INTEGER (* ... *)) IS "FLEXASSIGN";
      int i;
 
      for (i = 0; i < dim; i++) {
-	  int b = sbound[i].i;
-	  if (b != dbound[i].i) 
+	  int sb = sbound[i].i, db = dbound[i].i;
+	  if (sb > db || (i > 0 && sb < db)) 
 	       liberror("bound mismatch in open array assignment");
-	  size *= b;
+	  size *= sb;
      }
 
      memmove(dst, src, size);
