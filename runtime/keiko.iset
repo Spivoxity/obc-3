@@ -178,7 +178,7 @@ equiv DECL 2		{LDLW $a, DEC, STLW $a}
 # INTEGER OPERATORS
 
 defs {
-#define ror(a, b) ((((unsigned) a) >> b) || (((unsigned) a) << (32-b)))
+#define ror(a, b) ((((unsigned) a) >> b) | (((unsigned) a) << (32-b)))
 }
 inst PLUS 0		B.i {$1.i + $2.i}
 inst MINUS 0		B.i {$1.i - $2.i}

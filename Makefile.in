@@ -94,9 +94,11 @@ ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
 obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
 
 ifdef ENABLE_JIT
+  PREDIRS += thunder
   BUILD += obxj
   DEBUILD += obxjd dump
   INTERP = obxj
+  runtime: thunder
 else
   INTERP = obx
 endif
@@ -112,10 +114,10 @@ ifdef ENABLE_DEBUGGER
 endif
 
 subdirs : $(SUBDIRS)
-build :: $(BUILD)
+build : $(BUILD)
 
 ifdef DEBUG
-  build :: $(DEBUILD)
+  build : $(DEBUILD)
 endif
 
 .PHONY: subdirs build $(PREDIRS) $(SUBDIRS) 
@@ -124,6 +126,8 @@ compiler/obc1: compiler; $(SKIP)
 
 runtime/obx.a runtime/obx-j.a runtime/obx-jd.a runtime/obx-t.a \
 runtime/obx-p.a runtime/obx-d.a runtime/oblink: runtime; $(SKIP)
+
+thunder/libthunder.a: thunder; $(SKIP)
 
 $(PRIMS) lib/Files.k: lib; $(SKIP)
 
@@ -155,11 +159,15 @@ LINK = $(CC) $(LDFLAGS) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
 JITPROC = $(shell nm runtime/obx-jd.a | sed -n '/jit_proc/s/.* //p')
 
 obx : runtime/obx.a $(PRIMS);		$(LINK)
-obxj : runtime/obx-j.a $(PRIMS);	$(LINK) $(CFLAGS_JIT)
-obxjd : runtime/obx-jd.a $(PRIMS);	$(LINK) $(CFLAGS_JIT) -u $(JITPROC)
 obtrace : runtime/obx-t.a $(PRIMS);	$(LINK)
 obprof : runtime/obx-p.a $(PRIMS);	$(LINK)
 obxdeb : runtime/obx-d.a $(PRIMS);	$(LINK)
+
+obxj : runtime/obx-j.a $(PRIMS) thunder/libthunder.a
+	$(LINK) $(CFLAGS_JIT)
+
+obxjd : runtime/obx-jd.a $(PRIMS) thunder/libthunder.a
+	$(LINK) $(CFLAGS_JIT) -u $(JITPROC)
 
 oblist : ObList.k runtime/oblink lib/Files.k
 
@@ -183,8 +191,8 @@ ObList.k : ObList.m compiler/obc1 lib/Files.k
 macdebug : force
 	$(MAKE) -C macport debugger
 
-sanity : subdirs $(INTERP) Fac.m force
-	compiler/obc1 -x -g -pl -I lib Fac.m >Fac.k
+sanity : subdirs $(INTERP) force
+	compiler/obc1 -x -g -pl -I lib $(srcdir)/Fac.m >Fac.k
 	runtime/oblink -g -pl -L lib Fac.k -o Fac.x
 	./$(INTERP) ./Fac.x 20
 	@echo "The factorial of 20 is 2432902008176640000"
@@ -198,6 +206,10 @@ tartan : Tartan.m lib/XYplane.k force
 test: force
 	$(MAKE) -C test all
 	cd test; ./regress
+
+test0: force
+	$(MAKE) -C test all
+	cd test; ./regress -nojit
 
 # Installation stuff:
 # This supports two kinds of installation:

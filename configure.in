@@ -196,6 +196,8 @@ if test "$enable_jit" != no; then
 	i?86-*|x86_64-*) 
 	    ENABLE_JIT=1; VM=vm386.o; OBJFMT=i386
             AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive]);;
+        armv6l-*|armv7l-*)
+            ENABLE_JIT=1; VM=vmpi.o;;
     esac
     case $host in
         *-*-darwin*|*-*-linux*) 
@@ -204,6 +206,7 @@ if test "$enable_jit" != no; then
 fi
 if test "$ENABLE_JIT" = 1; then
   AC_DEFINE(ENABLE_JIT, 1, [Whether JIT is enabled])
+  AC_CONFIG_SUBDIRS(thunder)
 fi
 AC_SUBST(ENABLE_JIT)
 AC_SUBST(VM)

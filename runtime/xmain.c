@@ -33,6 +33,10 @@
 #include "keiko.h"
 #include "exec.h"
 
+#ifdef JIT
+#include "vm.h"
+#endif
+
 #ifdef PROFILE
 #define MYNAME "profiler"
 #else

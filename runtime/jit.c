@@ -44,33 +44,32 @@ static int cmpflag = 0;         /* Flag for FCMP or DCMP */
 
 #define konst(i) context[CP_CONST+i]
 
-static code_addr stack_oflo = NULL;
-static codepoint retlab;
+static vmlabel stack_oflo, retlab;
 
 /* prolog -- generate code for procedure prologue */
 static code_addr prolog(const char *name) {
      int i;
      code_addr entry;
-     codepoint lab = new_label();
+     vmlabel lab = vm_newlab();
 
      entry = vm_begin(name, 1);
-     g2ri(GETARG, rBP, 0);
+     vm_gen2ri(GETARG, rBP->r_reg, 0);
 
      /* Check for stack overflow */
-     g3rib(BGEQU, rBP, (unsigned) stack + SLIMIT + frame, lab);
-     stack_oflo = vm_label();
+     vm_gen3rij(BGEQU, rBP->r_reg, (unsigned) stack + SLIMIT + frame, lab);
+     vm_label(stack_oflo);
      gcall(stkoflo, 1, rBP);
-     label(lab);
+     vm_label(lab);
 
      if (frame > 24) {
-	  g3rri(SUB, rI0, rBP, frame);
-	  g2ri(MOV, rI1, 0);
-	  g2ri(MOV, rI2, frame);
+	  vm_gen3rri(SUB, rI0->r_reg, rBP->r_reg, frame);
+	  vm_gen2ri(MOV, rI1->r_reg, 0);
+	  vm_gen2ri(MOV, rI2->r_reg, frame);
 	  gcall(memset, 3, rI0, rI1, rI2);
      } else if (frame > 0) {
-	  g2ri(MOV, rI0, 0);
+	  vm_gen2ri(MOV, rI0->r_reg, 0);
 	  for (i = 4; i <= frame; i += 4)
-	       g3rri(STW, rI0, rBP, -i);
+	       vm_gen3rri(STW, rI0->r_reg, rBP->r_reg, -i);
      }
 
      return entry;
@@ -96,7 +95,7 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
 
      r1 = move_to_reg(1, rclass1); pop(1); 
      r2 = ralloc_suggest(rclass2, r1); unlock(1);	
-     g2rr(op, r2, r1);						
+     vm_gen2rr(op, r2->r_reg, r1->r_reg);
      push(I_REG, rclass2, r2, 0, s);
 }
 
@@ -119,9 +118,9 @@ static void ibinop(operation op) {
      r2 = ralloc_suggest(INT, r1); 
      unlock(2);				
      if (v->v_op == I_CON)						
-	  g3rri(op, r2, r1, v->v_val);				
+	  vm_gen3rri(op, r2->r_reg, r1->r_reg, v->v_val);
      else								
-	  g3rrr(op, r2, r1, v->v_reg);				
+	  vm_gen3rrr(op, r2->r_reg, r1->r_reg, v->v_reg->r_reg);
      push(I_REG, INT, r2, 0, 1);
 }
 
@@ -131,7 +130,7 @@ static void fdbinop(operation op, int s) {
 
      r1 = move_to_reg(2, FLO); r2 = move_to_reg(1, FLO); pop(2);
      r3 = ralloc_suggest(FLO, r1); unlock(2);				
-     g3rrr(op, r3, r1, r2);					
+     vm_gen3rrr(op, r3->r_reg, r1->r_reg, r2->r_reg);				
      push(I_REG, FLO, r3, 0, s);
 }
 
@@ -148,7 +147,7 @@ static void fcomp(operation op) {
      r1 = move_to_reg(3, FLO); 
      r2 = move_to_reg(2, FLO); pop(3);				
      r3 = ralloc(INT); unlock(3);				
-     g3rrr(op, r3, r1, r2);					
+     vm_gen3rrr(op, r3->r_reg, r1->r_reg, r2->r_reg);	
      push(I_REG, INT, r3, 0, 1);						
 }
 
@@ -178,7 +177,7 @@ static void fcondj(operation op, int lab) {
      flush(3); 
      r1 = move_to_reg(3, FLO); r2 = move_to_reg(2, FLO); 
      pop(3); unlock(3);		
-     g3rrb(op, r1, r2, to_label(lab));
+     vm_gen3rrj(op, r1->r_reg, r2->r_reg, target(lab));
 }
 
 /* icondj -- integer conditional jump */
@@ -198,24 +197,21 @@ static void icondj1(operation op, operation opf, operation opd, int lab) {
           r1 = move_to_reg(2, INT); 
           pop(2); unlock(2);	
           if (v->v_op == I_CON)					
-               g3rib(op, r1, v->v_val, to_label(lab));
+               vm_gen3rij(op, r1->r_reg, v->v_val, target(lab));
           else						
-               g3rrb(op, r1, v->v_reg, to_label(lab));
+               vm_gen3rrj(op, r1->r_reg, v->v_reg->r_reg, target(lab));
      }
 
      cmpflag = 0;
 }
 
-/* callout -- call out-of-line operation */
-#define callout(op, nargs) callout1(#op, op, nargs)
-
-static void callout1(const char *name, void (*op)(value *sp), int nargs) {
+static void callout(void (*op)(value *sp), int nargs) {
      reg r;
      flush_stack(0, nargs);
      killregs();
      r = ralloc(INT);
      get_sp(r);
-     gcall1(name, (int) op, 1, r);
+     gcall(op, 1, r);
 }
 
 /* proc_call -- procedure call */
@@ -234,7 +230,7 @@ static void proc_call(uchar *pc, int arg) {
      flush_stack(0, nargs+3);
      killregs();
      r2 = ralloc(INT); rthaw(r1);
-     g3rri(LDW, r1, r1, 0);
+     vm_gen3rri(LDW, r1->r_reg, r1->r_reg, 0);
      get_sp(r2);
      gcallr(r1, 1, r2);
      pop(nargs+3);
@@ -245,7 +241,8 @@ static void proc_call(uchar *pc, int arg) {
 static void instr(uchar *pc, int i, int arg1, int arg2) {
      reg r1, r2, r3;
      ctvalue v, v2;
-     codepoint lab;
+     vmlabel lab;
+     code_addr a;
      int j;
 
      switch (i) {
@@ -363,21 +360,21 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  
      case I_JUMP:	
 	  flush(0); 
-	  g1b(JUMP, to_label(arg1)); 
+	  vm_gen1j(JUMP, target(arg1)); 
 	  break;
 
      case I_JCASE:
-	  lab = new_label();
-	  caseptr = vm_jumptable(arg1);
+	  lab = vm_newlab();
+	  a = vm_jumptable(arg1);
 
 	  flush(1);
 	  r1 = move_to_reg(1, INT); pop(1); 
 	  r2 = ralloc_suggest(INT, r1); unlock(1);
-	  g3rib(BGEQU, r1, arg1, lab);
-          g3rri(LSH, r2, r1, 2);
-	  g3rri(LDW, r2, r2, (unsigned) caseptr);
-	  g1r(JUMP, r2);
-	  label(lab);
+	  vm_gen3rij(BGEQU, r1->r_reg, arg1, lab);
+          vm_gen3rri(LSH, r2->r_reg, r1->r_reg, 2);
+	  vm_gen3rri(LDW, r2->r_reg, r2->r_reg, (unsigned) a);
+	  vm_gen1r(JUMP, r2->r_reg);
+	  vm_label(lab);
 
 	  pc += 2;
 	  for (j = 0; j < arg1; j++) {
@@ -387,14 +384,14 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_JRANGE:
-	  lab = new_label();
+	  lab = vm_newlab();
 	  r1 = move_to_reg(3, INT); 
 	  v = fix_const(2, FALSE); 
 	  v2 = fix_const(1, FALSE); 
 	  pop(3); unlock(3); killregs();
-	  g3rib(BLT, r1, v->v_val, lab);
-	  g3rib(BLEQ, r1, v2->v_val, to_label(arg1));
-	  label(lab);
+	  vm_gen3rij(BLT, r1->r_reg, v->v_val, lab);
+	  vm_gen3rij(BLEQ, r1->r_reg, v2->v_val, target(arg1));
+	  vm_label(lab);
 	  break;
 
      case I_TESTGEQ:
@@ -403,7 +400,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = fix_const(1, FALSE);
 	  pop(2); unlock(2); killregs();
 	  push(I_STACKW, INT, rZERO, 0, 1);
-	  g3rib(BGEQ, r1, v->v_val, to_label(arg1));
+	  vm_gen3rij(BGEQ, r1->r_reg, v->v_val, target(arg1));
 	  break;
 
      case I_FPLUS:	fbinop(ADDF); break;
@@ -430,45 +427,46 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = move_to_rc(1); 
 	  pop(2); unlock(2);
 	  if (v->v_op == I_CON)
-	       g3rib(BGEQU, r1, v->v_val, to_error(E_BOUND, arg1));
+	       vm_gen3rij(BGEQU, r1->r_reg, v->v_val, handler(E_BOUND, arg1));
 	  else
-	       g3rrb(BGEQU, r1, v->v_reg, to_error(E_BOUND, arg1));
+	       vm_gen3rrj(BGEQU, r1->r_reg, v->v_reg->r_reg, 
+                          handler(E_BOUND, arg1));
 	  push(I_REG, INT, r1, 0, 1);
 	  break;
      
      case I_NCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
-	  g3rib(BEQ, r1, 0, to_error(E_NULL, arg1));
+	  vm_gen3rij(BEQ, r1->r_reg, 0, handler(E_NULL, arg1));
 	  push(I_REG, INT, r1, 0, 1);
 	  break;
 
      case I_ZCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
-	  g3rib(BEQ, r1, 0, to_error(E_DIV, arg1));
+	  vm_gen3rij(BEQ, r1->r_reg, 0, handler(E_DIV, arg1));
 	  push(I_REG, INT, r1, 0, 1);
 	  break;
 
      case I_FZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
-	  g1r(ZEROF, r2);
-	  g3rrb(BEQF, r1, r2, to_error(E_FDIV, arg1));
+	  vm_gen1r(ZEROF, r2->r_reg);
+	  vm_gen3rrj(BEQF, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(I_REG, FLO, r1, 0, 1);
 	  break;
 
      case I_DZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
-	  g1r(ZEROD, r2);
-	  g3rrb(BEQD, r1, r2, to_error(E_FDIV, arg1));
+	  vm_gen1r(ZEROD, r2->r_reg);
+	  vm_gen3rrj(BEQD, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(I_REG, FLO, r1, 0, 2);
 	  break;
 
      case I_GCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
-	  g3rib(BNEQ, r1, 0, to_error(E_GLOB, arg1));
+	  vm_gen3rij(BNEQ, r1->r_reg, 0, handler(E_GLOB, arg1));
 	  break;
 
      case I_ERROR:
-	  g1b(JUMP, to_error(arg1, arg2));
+	  vm_gen1j(JUMP, handler(arg1, arg2));
 	  break;
 
      case I_ALIGNC:
@@ -491,10 +489,9 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r3 = ralloc(INT); 
 	  pop(2); unlock(2); killregs();
 	  flex_space(r2);
-	  g3rib(BLTU, rSP, (unsigned) stack + SLIMIT, 
-		to_addr(stack_oflo)); /* Check for stack overflow */
-          g3rri(LDW, r3, r1, 0);
-          g3rri(STW, rSP, r1, 0);
+	  vm_gen3rij(BLTU, rSP->r_reg, (unsigned) stack + SLIMIT, stack_oflo);
+          vm_gen3rri(LDW, r3->r_reg, r1->r_reg, 0);
+          vm_gen3rri(STW, rSP->r_reg, r1->r_reg, 0);
 	  gcall(memcpy, 3, rSP, r3, r2);
 	  break;
 
@@ -559,7 +556,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_RETURN:
           if (pc+1 < pclimit)
-               g1b(JUMP, retlab);
+               vm_gen1j(JUMP, retlab);
 	  break;
 
      case I_LNUM:
@@ -603,14 +600,14 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_QZCHECK:
-	  lab = new_label();
+	  lab = vm_newlab();
 	  v = peek(1);
 	  r1 = ralloc(INT);
 	  get_halflong(v, 1, r1);
-	  g3rib(BNEQ, r1, 0, lab);
+	  vm_gen3rij(BNEQ, r1->r_reg, 0, lab);
 	  get_halflong(v, 0, r1);
-	  g3rib(BEQ, r1, 0, to_error(E_DIV, arg1));
-	  label(lab);
+	  vm_gen3rij(BEQ, r1->r_reg, 0, handler(E_DIV, arg1));
+	  vm_label(lab);
 	  break;
 #endif
 
@@ -668,7 +665,7 @@ static void tran_instr(uchar *pc, int inst, int arg1, int arg2, int lev) {
 	       if (dflag > 0) {
 		    printf("%.*s %s", lev, "++++++++++", 
                            instrs[e&IMASK].i_name);
-                    if (e&(IARG|ICON)) printf(" %s", fmt_val(arg));
+                    if (e&(IARG|ICON)) printf(" %d", arg);
                     printf("\n"); 
 	       }
 #endif
@@ -742,8 +739,6 @@ static void translate(void) {
      const char *s;
      codepoint lab;
 
-     retlab = new_label();
-
      for (pc = pcbase; pc < pclimit; ) {
 	  int op = *pc;
 	  uchar *pc1 = pc+1;
@@ -775,12 +770,12 @@ static void translate(void) {
 	  if (dflag > 0) {
 	       int i;
 	       printf("%d: %s", pc-pcbase, instrs[d->d_inst].i_name);
-	       for (i = 0; i < nargs; i++) printf(" %s", fmt_val(args[i]));
+	       for (i = 0; i < nargs; i++) printf(" %d", args[i]);
 	       printf("\n");
 	  }
 #endif
 
-	  lab = to_label(pc-pcbase);
+	  lab = find_label(pc-pcbase);
 
 	  if (lab != NULL) {
 	       killregs();
@@ -810,14 +805,14 @@ static void translate(void) {
 	  }
      }
 
-     label(retlab);
-     g0(RET);
+     vm_label(retlab);
+     vm_gen0(RET);
 }
 
-static void make_error(codepoint lab, int code, int line) {
-     label(lab);
-     g2ri(MOV, rI0, code);
-     g2ri(MOV, rI1, line);
+static void make_error(vmlabel lab, int code, int line) {
+     vm_label(lab);
+     vm_gen2ri(MOV, rI0->r_reg, code);
+     vm_gen2ri(MOV, rI1->r_reg, line);
      gcall(rterror, 3, rI0, rI1, rBP);
 }
 
@@ -848,9 +843,11 @@ void jit_compile(value *cp) {
      pclimit = pcbase + context[CP_SIZE].i;
 
      init_regs();
-     init_patch();
+     init_labels();
      init_stack(frame);
      cmpflag = 0;
+     stack_oflo = vm_newlab();
+     retlab = vm_newlab();
 
      map_labels();
      entry = prolog(pname);
@@ -875,4 +872,14 @@ void jit_trap(value *bp) {
 void jit_proc(value *bp) {
      value *p = bp[HEAD].p;
      jit_compile(p);
+}
+
+/* jit_debug -- enable vm debugging */
+void jit_debug(value *bp) {
+     vm_debug = dflag = bp[HEAD].i;
+}
+
+/* vm_alloc -- upcall from vm to allocate code buffer */
+void *vm_alloc(int size) {
+     return scratch_alloc(size, TRUE);
 }

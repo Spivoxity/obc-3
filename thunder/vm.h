@@ -30,6 +30,7 @@
 
 typedef unsigned char *code_addr;
 
+/* Expand a macro once for each VM opcode */
 #define __OP__(p) \
      p(ADD) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)	    \
      p(BGEQU) p(BGT) p(BGTF) p(BLEQ) p(BLEQF) p(BLT) p(BLTF)	    \
@@ -37,7 +38,7 @@ typedef unsigned char *code_addr;
      p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF) p(JUMP)	    \
      p(LDW) p(LDCU) p(LDD) p(LDSU) p(LDC) p(LDS) p(LEQ)		    \
      p(LEQF) p(LSH) p(LT) p(LTF) p(MOV)	p(MUL) p(MULF)		    \
-     p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET) p(RETVAL)    \
+     p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
      p(RSH) p(RSHU) p(STW) p(STC) p(STD) p(STS) p(SUB)		    \
      p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
      p(BGTU) p(BLEQU) p(LDKW)                                       \
@@ -123,8 +124,6 @@ ARG ra
   -- send subroutine argument from register
 CALL ra/imm
   -- perform subroutine call
-RETVAL ra
-  -- fetch result into register following return
 
 Specifically: a procedure call is compiled by first computing the
 arguments (and, for an indirect call, the procedure address) into
@@ -138,11 +137,6 @@ registers.  The call itself becomes the sequence
 
 where n <= 3 is the number of arguments.  The ARG instructions
 (exactly n of them) specify the arguments in right-to-left order.
-Immediately following the call, the instruction
-
-	RETVAL r
-
-fetches the result returned by the procedure into register r.
 
 A subroutine is compiled by first calling vm_begin(name, n), where n
 is the number of arguments.  The procedure code begins with exactly n
@@ -203,42 +197,38 @@ are preserved across calls, though other applications might do so.
 Keiko assumes nvreg+nireg >= 5.
 */
 
-typedef int vmreg;
+typedef struct _vmreg *vmreg;
 
-extern int nvreg, nireg, nfreg;
-extern vmreg vreg[], ireg[], freg[], ret, zero;
+extern const int nvreg, nireg, nfreg;
+extern const vmreg vreg[], ireg[], freg[], ret, zero;
 
-extern int vm_debug;
+const char *vm_regname(vmreg r);
 
-#ifdef MNEMONIC
-#define __op2__(op) #op,
+typedef struct _vmlabel *vmlabel;
 
-/* Mnemonics for the RISC-ish interface instructions */
-const char *mnemonic[] = {
-     __OP__(__op2__)
-};
-#endif
+vmlabel vm_newlab(void);
+void vm_label(vmlabel lab);
 
 void vm_gen0(operation op);
 void vm_gen1r(operation op, vmreg a);
 void vm_gen1i(operation op, int a);
-code_addr vm_gen1b(operation op, code_addr lab);
+void vm_gen1j(operation op, vmlabel lab);
 void vm_gen2rr(operation op, vmreg a, vmreg b);
 void vm_gen2ri(operation op, vmreg a, int b);
 void vm_gen3rrr(operation op, vmreg a, vmreg b, vmreg c);
 void vm_gen3rri(operation op, vmreg a, vmreg b, int c);
-code_addr vm_gen3rrb(operation op, vmreg a, vmreg b, code_addr lab);
-code_addr vm_gen3rib(operation op, vmreg a, int b, code_addr lab);
+void vm_gen3rrj(operation op, vmreg a, vmreg b, vmlabel lab);
+void vm_gen3rij(operation op, vmreg a, int b, vmlabel lab);
 
-void vm_patch(code_addr loc, code_addr lab);
-code_addr vm_label(void);
 code_addr vm_begin(const char *name, int n);
 void vm_end(void);
-code_addr *vm_jumptable(int n);
+
+code_addr vm_jumptable(int n);
+void vm_caselab(vmlabel lab);
+
+void *vm_scratch(int size);
 
 /* Callback to allocate pages of memory */
 void *vm_alloc(int size);
 
-char *fmt_val(int v);
-
-void unknown(const char *where, operation op);
+extern int vm_debug;

@@ -55,10 +55,10 @@ being compiled.  */
 static void show(ctvalue v) {
      switch (v->v_op & 0xff) {
      case I_REG: 
-	  printf("reg %s", v->v_reg->r_name); break;
+	  printf("reg %s", vm_regname(v->v_reg->r_reg)); break;
 
      case I_CON:
-	  printf("const %s", fmt_val(v->v_val)); break;
+	  printf("const %d", v->v_val); break;
 
      case I_STACKW: 
 	  printf("stackw %d", v->v_val); break;
@@ -67,8 +67,8 @@ static void show(ctvalue v) {
 	  printf("stackd %d", v->v_val); break;
 
      default:
-	  printf("[%s %s", instrs[v->v_op & 0xff].i_name, fmt_val(v->v_val));
-	  if (v->v_reg != rZERO) printf("(%s)", v->v_reg->r_name);
+	  printf("[%s %d", instrs[v->v_op & 0xff].i_name, v->v_val);
+	  if (v->v_reg != rZERO) printf("(%s)", vm_regname(v->v_reg->r_reg));
 	  printf("]");
      }
 }
@@ -84,7 +84,7 @@ void dumpregs(void) {
                printf("Regs:");
                blank = FALSE;
           }
-	  printf("  %s(%d)", r->r_name, r->r_refct);
+	  printf("  %s(%d)", vm_regname(r->r_reg), r->r_refct);
 	  if (cached(r)) {
 	       printf(" = "); show(&r->r_value);
 	  }
@@ -101,7 +101,7 @@ static mybool same(ctvalue v, ctvalue w) {
 void set_cache(reg r, ctvalue v) {
 #ifdef DEBUG
      if (dflag > 2) {
-	  printf("\tCache %s = ", r->r_name);
+	  printf("\tCache %s = ", vm_regname(r->r_reg));
 	  show(v);
 	  printf("\n");
      }
@@ -195,18 +195,18 @@ void flex_space(reg nreg) {
 	  if (base == 0) 
 	       r0 = rBP;
 	  else
-	       g3rri(SUB, rSP, rBP, -base);
+	       vm_gen3rri(SUB, rSP->r_reg, rBP->r_reg, -base);
 
 	  breg = rSP; base = 0;
      }
 
-     g3rrr(SUB, rSP, r0, nreg);
-     g3rri(AND, rSP, rSP, ~0x3);
+     vm_gen3rrr(SUB, rSP->r_reg, r0->r_reg, nreg->r_reg);
+     vm_gen3rri(AND, rSP->r_reg, rSP->r_reg, ~0x3);
 }
 
 /* get_sp -- compute value of Oberon stack pointer */
 void get_sp(reg r) {
-     g3rri(SUB, r, breg, pdepth-base);
+     vm_gen3rri(SUB, r->r_reg, breg->r_reg, pdepth-base);
 }
 
 /* set -- assign to a stack slot */
@@ -274,7 +274,6 @@ void save_stack(codepoint lab) {
 	       map |= (1 << i);
      }
 
-
      lab->l_depth = sp;
      lab->l_stack = map;
 }
@@ -294,6 +293,13 @@ void restore_stack(codepoint lab) {
 	  else
 	       push(I_STACKW, INT, rZERO, 0, 1);	       
      }
+}
+
+vmlabel target(int addr) {
+     codepoint lab = find_label(addr);
+     if (lab->l_depth < 0)
+          save_stack(lab);
+     return lab->l_vmlab;
 }
 
 
@@ -331,12 +337,13 @@ void move_to_frame(int i) {
 #endif
 
 	       r = move_to_reg(i, INT); runlock(r); rfree(r);
-	       g3rri(STW, r, breg, base+offset[sp-i]);
+	       vm_gen3rri(STW, r->r_reg, breg->r_reg, base+offset[sp-i]);
 	       break;
 
 	  case FLO:
 	       r = move_to_reg(i, FLO); runlock(r); rfree(r);
-               g3rri(choose(v->v_size, STW, STD), r, breg, base+offset[sp-i]);
+               vm_gen3rri(choose(v->v_size, STW, STD), 
+                          r->r_reg, breg->r_reg, base+offset[sp-i]);
 	       break;
 
 	  default:
@@ -404,13 +411,15 @@ void spill(reg r) {
                     int c = *rc;
 
                     if (!saved) {
-                         g3rri(choose(v->v_size, STW, STD), r, rZERO, tmp);
+                         vm_gen3rri(choose(v->v_size, STW, STD), 
+                                    r->r_reg, rZERO->r_reg, tmp);
                          saved = TRUE;
                     }
 
                     *rc = 1;
                     move_to_frame(i);
-                    g3rri(choose(v->v_size, LDW, LDD), r, rZERO, tmp);
+                    vm_gen3rri(choose(v->v_size, LDW, LDD), 
+                               r->r_reg, rZERO->r_reg, tmp);
                     *rc = c-1;
                }
           }
@@ -423,7 +432,7 @@ static reg load(operation op, int cl, reg r, int val) {
      rfree(r); rlock(r);
      r1 = ralloc(cl);
      runlock(r);
-     g3rri(op, r1, r, val);
+     vm_gen3rri(op, r1->r_reg, r->r_reg, val);
      return r1;
 }
 
@@ -444,7 +453,7 @@ reg move_to_reg(int i, int ty) {
 	  for_regs (r) {
 	       if (cached(r) && same(&r->r_value, v) && member(r, ty)) {
 #ifdef DEBUG
-		    if (dflag > 2) printf("Hit %s\n", r->r_name);
+		    if (dflag > 2) printf("Hit %s\n", vm_regname(r->r_reg));
 #endif
 		    rfree(v->v_reg);
 		    set(sp-i, I_REG, ty, 0, r, v->v_size);
@@ -460,7 +469,7 @@ reg move_to_reg(int i, int ty) {
 
      case I_CON:
 	  r = ralloc(INT);
-	  g2ri(MOV, r, v->v_val);
+	  vm_gen2ri(MOV, r->r_reg, v->v_val);
 	  break;
 
      case I_LDKW:
@@ -469,11 +478,11 @@ reg move_to_reg(int i, int ty) {
 
 	  switch (ty) {
 	  case INT:
-	       g2ri(MOV, r, * (int *) v->v_val);
+	       vm_gen2ri(MOV, r->r_reg, * (int *) v->v_val);
 	       break;
 
 	  case FLO:
-	       g2ri(LDKW, r, v->v_val);
+	       vm_gen2ri(LDKW, r->r_reg, v->v_val);
 	       break;
 
 	  default:
@@ -484,14 +493,14 @@ reg move_to_reg(int i, int ty) {
      case I_LDKD:
 	  assert(ty == FLO);
 	  r = ralloc(FLO);
-	  g3rri(LDD, r, rZERO, v->v_val);
+	  vm_gen3rri(LDD, r->r_reg, rZERO->r_reg, v->v_val);
 	  break;
 
      case I_ADDR:
 	  rfree(v->v_reg); rlock(v->v_reg);
           r = ralloc_suggest(INT, v->v_reg);
           runlock(v->v_reg);
-	  g3rri(ADD, r, v->v_reg, v->v_val);
+	  vm_gen3rri(ADD, r->r_reg, v->v_reg->r_reg, v->v_val);
 	  break;
 
      case I_LOADW:	
@@ -531,7 +540,7 @@ reg move_to_reg(int i, int ty) {
         See test tValReal.m */
      if (rkind(r) != ty) {
 	  r2 = ralloc(ty);
-	  g2rr(MOV, r2, r);
+	  vm_gen2rr(MOV, r2->r_reg, r->r_reg);
 	  r = r2;
      }
 
@@ -632,11 +641,11 @@ void store(int ldop, int ty, int s) {
      pop(2); unlock(2);						
 
      switch (ldop) {
-     case I_LOADW:	g3rri(STW, r1, v->v_reg, v->v_val); break;
-     case I_LOADF:	g3rri(STW, r1, v->v_reg, v->v_val); break;
-     case I_LOADC:	g3rri(STC, r1, v->v_reg, v->v_val); break;
-     case I_LOADS:	g3rri(STS, r1, v->v_reg, v->v_val); break;
-     case I_LOADD:	g3rri(STD, r1, v->v_reg, v->v_val); break;
+     case I_LOADW: vm_gen3rri(STW, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
+     case I_LOADF: vm_gen3rri(STW, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
+     case I_LOADC: vm_gen3rri(STC, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
+     case I_LOADS: vm_gen3rri(STS, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
+     case I_LOADD: vm_gen3rri(STD, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
 
      default:
 	  panic("put %s", instrs[ldop].i_name);
@@ -677,7 +686,7 @@ void plusa() {
 	       rlock(v1->v_reg); 
 	       r1 = ralloc_suggest(INT, v1->v_reg); 
 	       unlock(2);
-	       g3rrr(ADD, r1, v1->v_reg, v2->v_reg);
+	       vm_gen3rrr(ADD, r1->r_reg, v1->v_reg->r_reg, v2->v_reg->r_reg);
 	       push(I_ADDR, INT, r1, v1->v_val, 1);
 	  }
 	  break;
@@ -692,10 +701,45 @@ void plusa() {
 	  } else {
 	       r2 = ralloc_suggest(INT, r1); 
 	       unlock(2);			
-	       g3rrr(ADD, r2, r1, v2->v_reg);		
+	       vm_gen3rrr(ADD, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);		
 	       push(I_REG, INT, r1, 0, 1);
 	  }
      }
+}
+
+
+/* Procedure calls */
+
+/* gargs -- generate function arguments */
+static void gargs(int n, va_list va) {
+     int i;
+     reg arg[6];
+
+     for (i = 0; i < n; i++)
+	  arg[i] = (reg) va_arg(va, reg);
+
+     vm_gen1i(PREP, n);
+     for (i = n-1; i >= 0; i--)
+	  vm_gen1r(ARG, arg[i]->r_reg);
+}
+
+void gcall(void *f, int n, ...) {
+     va_list va;
+
+     va_start(va, n);
+     gargs(n, va);
+     va_end(va);
+     vm_gen1i(CALL, (int) f);
+}
+
+/* gcallr -- indirect function call */
+void gcallr(reg f, int n, ...) {
+     va_list va;
+
+     va_start(va, n);
+     gargs(n, va);
+     va_end(va);
+     vm_gen1r(CALL, f->r_reg);
 }
 
 
@@ -712,10 +756,10 @@ static void move_long(reg rs, int offs, reg rd, int offd) {
      rlock(rs); rlock(rd);
      r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
      runlock(rs); runlock(rd);
-     g3rri(LDW, r1, rs, offs);
-     g3rri(LDW, r2, rs, offs+4);
-     g3rri(STW, r1, rd, offd);
-     g3rri(STW, r2, rd, offd+4);
+     vm_gen3rri(LDW, r1->r_reg, rs->r_reg, offs);
+     vm_gen3rri(LDW, r2->r_reg, rs->r_reg, offs+4);
+     vm_gen3rri(STW, r1->r_reg, rd->r_reg, offd);
+     vm_gen3rri(STW, r2->r_reg, rd->r_reg, offd+4);
 }
      
 /* half-const -- fetch one or other half of a 64-bit constant */
@@ -751,10 +795,10 @@ void move_longval(ctvalue src, reg rd, int offd) {
      case I_LDKQ:
      case I_CON:
 	  r = ralloc(INT);
-	  g2ri(MOV, r, half_const(src, 0));
-	  g3rri(STW, r, rd, offd);
-	  g2ri(MOV, r, half_const(src, 1));
-	  g3rri(STW, r, rd, offd+4);
+	  vm_gen2ri(MOV, r->r_reg, half_const(src, 0));
+	  vm_gen3rri(STW, r->r_reg, rd->r_reg, offd);
+	  vm_gen2ri(MOV, r->r_reg, half_const(src, 1));
+	  vm_gen3rri(STW, r->r_reg, rd->r_reg, offd+4);
 	  break;
      default:
 	  panic("move_longval %s", instrs[src->v_op].i_name);
@@ -765,14 +809,14 @@ void move_longval(ctvalue src, reg rd, int offd) {
 void get_halflong(ctvalue src, int off, reg dst) {
      switch (src->v_op) {
      case I_LOADQ:
-	  g3rri(LDW, dst, src->v_reg, src->v_val + 4*off);
+	  vm_gen3rri(LDW, dst->r_reg, src->v_reg->r_reg, src->v_val + 4*off);
 	  break;
      case I_STACKD:
-	  g3rri(LDW, dst, breg, base + src->v_val + 4*off);
+	  vm_gen3rri(LDW, dst->r_reg, breg->r_reg, base + src->v_val + 4*off);
 	  break;
      case I_LDKQ:
      case I_CON:
-	  g2ri(MOV, dst, half_const(src, off));
+	  vm_gen2ri(MOV, dst->r_reg, half_const(src, off));
 	  break;
      default:
 	  panic("get_halflong %s", instrs[src->v_op].i_name);

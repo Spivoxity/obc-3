@@ -31,17 +31,14 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
+
 #include "config.h"
-
 #include "vm.h"
-
-// #undef DEBUG
+#include "vminternal.h"
 
 /* Register assignment */
 
-/* These are the i386 registers */
+/* These are the i386 registers, numbered according to the binary encoding */
 #define EAX		0
 #define ECX		1
 #define EDX		2
@@ -53,28 +50,43 @@
 #define NOREG		-1
 
 /* And these are the floating point registers */
-#define FPR0		0x10
-#define FPR1		0x11
-#define FPR2		0x12
-#define FPR3		0x13
-#define FPR4		0x14
-#define FPR5		0x15
+#define FPR0		010
+#define FPR1		011
+#define FPR2		012
+#define FPR3		013
+#define FPR4		014
+#define FPR5		015
 
 #define register(r) ((r)&0x7)
 
-/* Register layout for use by JIT */
-int nvreg = 4, nireg = 3, nfreg = 6;
-vmreg vreg[] = { EBX, ESI, EDI, EBP }; /* Callee-save */
-vmreg ireg[] = { EAX, EDX, ECX };      /* Caller-save */
-vmreg freg[] = { FPR0, FPR1, FPR2, FPR3, FPR4, FPR5 };
-                                       /* Floating point */
-vmreg ret = EAX, zero = NOREG;
+struct _vmreg
+     reg_i0 = { "I0", EAX },
+     reg_i1 = { "I2", EDX },
+     reg_i2 = { "I1", ECX },
+     reg_v0 = { "V0", EBX },
+     reg_v1 = { "V1", ESI },
+     reg_v2 = { "V2", EDI },
+     reg_v3 = { "V3", EBP },
+     reg_f0 = { "F0", FPR0 },
+     reg_f1 = { "F1", FPR1 },
+     reg_f2 = { "F2", FPR2 },
+     reg_f3 = { "F3", FPR3 },
+     reg_f4 = { "F4", FPR4 },
+     reg_f5 = { "F5", FPR5 },
+     reg_zz = { "ZERO", NOREG };
+
+/* Register layout for use by JIT client */
+const int nvreg = 4, nireg = 3, nfreg = 6;
+const vmreg vreg[] = { &reg_v0, &reg_v1, &reg_v2, &reg_v3 }; /* Callee-save */
+const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2 };      /* Caller-save */
+const vmreg freg[] = { &reg_f0, &reg_f1, &reg_f2,        /* Floating point */
+                       &reg_f3, &reg_f4, &reg_f5 };
+const vmreg ret = &reg_i0, zero = &reg_zz;
 
 /* The first four registers have 8-bit fields like AL */
 #define is8bit(r) ((r) <= EBX)
 
-#define isfloat(r) (((r)&0x10) != 0)
-
+#define isfloat(r) (((r)&010) != 0)
 
 /* DEBUGGING OUTPUT: for consistency with the VM we are implementing,
    instructions are displayed with the destination at the left: thus
@@ -85,26 +97,13 @@ vmreg ret = EAX, zero = NOREG;
    unlike the monstrous notation used by Intel. */
 
 #ifdef DEBUG
-char *_regname[] = {
+static char *_regname[] = {
      "none",
      "EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI",
-     "", "", "", "", "", "", "", "",
-     "F0", "F1", "F2", "F3", "F4", "F5"
+     "FPR0", "FPR1", "FPR2", "FPR3", "FPR4", "FPR5"
 };
 
-char **regname = &_regname[1];
-
-#define dbg(fmt, ...) (vm_debug > 0 ? _dbg(fmt, __VA_ARGS__) : 0)
-
-static void _dbg(const char *fmt, ...) {
-     va_list va;
-
-     va_start(va, fmt);
-     printf("---   ");
-     vprintf(fmt, va);
-     printf("\n");
-     va_end(va);
-}
+static char **regname = &_regname[1];
 
 static char *fmt_addr(int rs, int imm) {
      static char buf[32];
@@ -117,29 +116,37 @@ static char *fmt_addr(int rs, int imm) {
      return buf;
 }
 
+/* When Thunder is compiled for debugging, numeric opcodes are accompanied
+   by textual mnemonics as they are passed around, and the act of generating
+   an instrruction is optionally augmented with printing the instruction in
+   assembly-language form.  Depending on whether DEBUG is defined, the macro
+   MNEM(mnem, op) expands to either the pair of arguments "mnem, op" or just
+   "op" on its own.  Other macros provide declarations for corresponding
+   formal parameters of code-generating routines, etc. */
+
 #define OPDECL const char *mnem, int op
+#define OPDECL2 const char *mnem, int op, int op2
 #define OPDECL_p const char *mnem_p, int op_p
 #define OPDECL_r const char *mnem_r, int op_r
 #define OP mnem, op
 #define OP_p mnem_p, op_p
 #define ifdebug(text) text,
 
-#define z(mnem, op) mnem, op
-#define zz(mnem, op, op2) mnem, op, op2
+#define MNEM(mnem, op) mnem, op
+#define MNEM2(mnem, op, op2) mnem, op, op2
 
 #else
 
-#define dbg(fmt, ...) (void) 0
-
 #define OPDECL int op
+#define OPDECL2 int op, int op2
 #define OPDECL_p int op_p
 #define OPDECL_r int op_r
 #define OP op
 #define OP_p op_p
 #define ifdebug(text)
 
-#define z(mnem, op) op
-#define zz(mnem, op, op2) op, op2
+#define MNEM(mnem, op) op
+#define MNEM2(mnem, op, op2) op, op2
 
 #endif
 
@@ -147,76 +154,78 @@ static char *fmt_addr(int rs, int imm) {
 /* Instructions */
 
 /* ALU operation codes for the 386 */
-#define aluADD 0		/* Binary */
-#define aluSUB 5
-#define aluCMP 7
+#define aluADD 		0		/* Binary */
+#define aluSUB 		5
+#define aluCMP 		7
 
-#define opADD z("add", aluADD)
-#define opOR z("or", 1)
-#define opAND z("and", 4)
-#define opSUB z("sub", aluSUB)
-#define opXOR z("xor", 6)
-#define opCMP z("cmp", aluCMP)
+#define opADD 		MNEM("add", aluADD)
+#define opOR 		MNEM("or", 1)
+#define opAND		MNEM("and", 4)
+#define opSUB 		MNEM("sub", aluSUB)
+#define opXOR 		MNEM("xor", 6)
+#define opCMP 		MNEM("cmp", aluCMP)
 
-#define opNOT z("not", 2)       /* Unary */
-#define opNEG z("neg", 3)
+#define opNOT 		MNEM("not", 2)  /* Unary */
+#define opNEG 		MNEM("neg", 3)
 
 /* Condition codes for branches */
-#define testB 2			/* unsigned < */
-#define testAE 3		/* unsigned >= */
-#define testE 4			/* = */
-#define testNE 5		/* != */
-#define testBE 6		/* unsigned <= */
-#define testA 7			/* unsigned > */
-#define testS 8			/* negative */
-#define testNS 9		/* non-negative */
-#define testL 12		/* signed < */
-#define testGE 13		/* signed >= */
-#define testLE 14		/* signed <= */
-#define testG 15		/* signed > */
-
+#define testB 		2               /* unsigned < */
+#define testAE 		3		/* unsigned >= */
+#define testE 		4               /* = */
+#define testNE 		5		/* != */
+#define testBE 		6		/* unsigned <= */
+#define testA 		7               /* unsigned > */
+#define testS 		8               /* negative */
+#define testNS 		9		/* non-negative */
+#define testL 		12		/* signed < */
+#define testGE 		13		/* signed >= */
+#define testLE 		14		/* signed <= */
+#define testG 		15		/* signed > */
+	
 /* Operation codes for shifts */
-#define opRotateR z("ror", 1)
-#define opShiftL z("shl", 4)
-#define opShiftRU z("shr", 5)
-#define opShiftR z("sar", 7)
+#define opRotateR 	MNEM("ror", 1)
+#define opShiftL 	MNEM("shl", 4)
+#define opShiftRU 	MNEM("shr", 5)
+#define opShiftR 	MNEM("sar", 7)
 
 /* Floating point operation codes */
-#define opFadd z("fadd", 0)
-#define opFmul z("fmul", 1)
-#define opFsub z("fsub", 4)
-#define opFsubR z("fsubr", 5)
-#define opFdiv z("fdiv", 6)
-#define opFdivR z("fdivr", 7)
+#define opFadd 		MNEM("fadd", 0)
+#define opFmul 		MNEM("fmul", 1)
+#define opFsub 		MNEM("fsub", 4)
+#define opFsubR 	MNEM("fsubr", 5)
+#define opFdiv 		MNEM("fdiv", 6)
+#define opFdivR 	MNEM("fdivr", 7)
 
 /* Instruction opcodes */
-#define xFLOP_0 0xd8		// Flop with result in ST(0)
-#define xFLOP_r 0xdc		// Flop with result in ST(r)
-#define xFLOPP_r 0xde		// Flop with result popped to ST(r)
+#define xFLOP_0 	0xd8		// Flop with result in ST(0)
+#define xFLOP_r 	0xdc		// Flop with result in ST(r)
+#define xFLOPP_r 	0xde		// Flop with result popped to ST(r)
 
-#define opFCHS z("fchs", 0xd9e0)
-#define opFILDL_m z("fildl", 0xdb00)
-#define opFLD_r z("fld", 0xd9c0)
-#define opFLDS_m z("flds", 0xd900)
-#define opFLDL_m z("fldl", 0xdd00)
-#define opFST_r z("fst", 0xddd0)
-#define opFSTP_r z("fstp", 0xddd8)
-#define opFSTS_m z("fsts", 0xd902)
-#define opFSTL_m z("fstl", 0xdd02)
-#define opFSTPS_m z("fstps", 0xd903)
-#define opFSTPL_m z("fstpl", 0xdd03)
-#define opFUCOMI_r z("fucomi", 0xdbe8)
-#define opFUCOMIP_r z("fucomip", 0xdfe8)
+/* Floating point instructions */
+#define opFCHS 		MNEM("fchs", 0xd9e0)
+#define opFILDL_m 	MNEM("fildl", 0xdb00)
+#define opFLD_r 	MNEM("fld", 0xd9c0)
+#define opFLDS_m	MNEM("flds", 0xd900)
+#define opFLDL_m	MNEM("fldl", 0xdd00)
+#define opFST_r 	MNEM("fst", 0xddd0)
+#define opFSTP_r 	MNEM("fstp", 0xddd8)
+#define opFSTS_m 	MNEM("fsts", 0xd902)
+#define opFSTL_m 	MNEM("fstl", 0xdd02)
+#define opFSTPS_m	MNEM("fstps", 0xd903)
+#define opFSTPL_m	MNEM("fstpl", 0xdd03)
+#define opFUCOMI_r 	MNEM("fucomi", 0xdbe8)
+#define opFUCOMIP_r 	MNEM("fucomip", 0xdfe8)
 
-#define opMOVL_r z("movl", 0x8b) // Move to register
-#define opMOVZWL_r z("movzwl", 0x0fb7)
-#define opMOVSWL_r z("movswl", 0x0fbf)
-#define opMOVZBL_r z("movzbl", 0x0fb6)
-#define opMOVSBL_r z("movsbl", 0x0fbe)
-#define opMOVL_m z("movl", 0x89) // Move to memory
-#define opMOVW_m z("movw", 0x6689)
-#define opMOVB_m z("movb", 0x88)
-#define opMOVL_i z("movl", 0xb8) // Load immediate into register
+/* Integer moves */
+#define opMOVL_r 	MNEM("movl", 0x8b) // Move to register
+#define opMOVZWL_r 	MNEM("movzwl", 0x0fb7)
+#define opMOVSWL_r 	MNEM("movswl", 0x0fbf)
+#define opMOVZBL_r 	MNEM("movzbl", 0x0fb6)
+#define opMOVSBL_r 	MNEM("movsbl", 0x0fbe)
+#define opMOVL_m 	MNEM("movl", 0x89) // Move to memory
+#define opMOVW_m 	MNEM("movw", 0x6689)
+#define opMOVB_m 	MNEM("movb", 0x88)
+#define opMOVL_i 	MNEM("movl", 0xb8) // Load immediate into register
 
 #define xMONOP 0xf7 		// Unary ALU op
 #define x_byte 0x2
@@ -226,70 +235,45 @@ static char *fmt_addr(int rs, int imm) {
 #define xSHIFT_1 0xd1
 #define xSHIFT_i 0xc1
 
-#define opIMUL_i z("imul", 0x69) // Integer multiply
-#define opIMUL_r z("imul", 0x0faf)
-#define opINC z("inc", 0x40)
-#define opDEC z("dec", 0x48)
-#define opPUSH z("push", 0x50)
-#define opPOP z("pop", 0x58)
-#define opRET z("ret", 0xc3)
-#define opJMPL_i z("jmp", 0xe9)
-#define opJMPL_r zz("jmp", 0xff, 4)
-#define opCALL_r zz("call", 0xff, 2)
-#define opCALL_i z("call", 0xe8)
-#define opFLDZ z("fldz", 0xd9ee)
-#define opTEST z("test", 0x85)
+#define opIMUL_i MNEM("imul", 0x69) // Integer multiply
+#define opIMUL_r MNEM("imul", 0x0faf)
+#define opINC MNEM("inc", 0x40)
+#define opDEC MNEM("dec", 0x48)
+#define opPUSH MNEM("push", 0x50)
+#define opPOP MNEM("pop", 0x58)
+#define opRET MNEM("ret", 0xc3)
+#define opJMPL_i MNEM("jmp", 0xe9)
+#define opJMPL_r MNEM2("jmp", 0xff, 4)
+#define opCALL_r MNEM2("call", 0xff, 2)
+#define opCALL_i MNEM("call", 0xe8)
+#define opFLDZ MNEM("fldz", 0xd9ee)
+#define opTEST MNEM("test", 0x85)
 
+/* Conditional branches */
 #define xJMPCC 0x0f80
-#define opJE z("sete", xJMPCC|testE)
-#define opJB z("setb", xJMPCC|testB)
-#define opJAE z("setae", xJMPCC|testAE)
-#define opJNE z("setne", xJMPCC|testNE)
-#define opJBE z("setbe", xJMPCC|testBE)
-#define opJA z("seta", xJMPCC|testA)
-#define opJL z("setl", xJMPCC|testL)
-#define opJGE z("setge", xJMPCC|testGE)
-#define opJLE z("setle", xJMPCC|testLE)
-#define opJG z("setg", xJMPCC|testG)
+#define opJE MNEM("je", xJMPCC|testE)
+#define opJB MNEM("jb", xJMPCC|testB)
+#define opJAE MNEM("jae", xJMPCC|testAE)
+#define opJNE MNEM("jne", xJMPCC|testNE)
+#define opJBE MNEM("jbe", xJMPCC|testBE)
+#define opJA MNEM("ja", xJMPCC|testA)
+#define opJL MNEM("jl", xJMPCC|testL)
+#define opJGE MNEM("jge", xJMPCC|testGE)
+#define opJLE MNEM("jle", xJMPCC|testLE)
+#define opJG MNEM("jg", xJMPCC|testG)
 
+/* Comparisons with boolean result */
 #define xSETCC 0x0f90
-#define opSETE z("sete", xSETCC|testE)
-#define opSETB z("setb", xSETCC|testB)
-#define opSETAE z("setae", xSETCC|testAE)
-#define opSETNE z("setne", xSETCC|testNE)
-#define opSETBE z("setbe", xSETCC|testBE)
-#define opSETA z("seta", xSETCC|testA)
-#define opSETL z("setl", xSETCC|testL)
-#define opSETGE z("setge", xSETCC|testGE)
-#define opSETLE z("setle", xSETCC|testLE)
-#define opSETG z("setg", xSETCC|testG)
-
-
-/* Code generation routines */
-
-#ifndef CODEPAGE
-#define CODEPAGE 4096	      /* Size of each code buffer */
-#endif
-#define MARGIN 32	      /* Safety margin for swiching buffers */
-
-static int nargs;
-
-static code_addr codebuf, limit;
-
-static code_addr pc;
-
-static void check_space(int space);
-
-/* byte -- contribute a byte to the object code */
-static void byte(int x) {
-     *pc++ = x & 0xff;
-}
-
-/* word -- contribute a whole word */
-static void word(int x) {
-     * (int *) pc = x;
-     pc += 4;
-}
+#define opSETE MNEM("sete", xSETCC|testE)
+#define opSETB MNEM("setb", xSETCC|testB)
+#define opSETAE MNEM("setae", xSETCC|testAE)
+#define opSETNE MNEM("setne", xSETCC|testNE)
+#define opSETBE MNEM("setbe", xSETCC|testBE)
+#define opSETA MNEM("seta", xSETCC|testA)
+#define opSETL MNEM("setl", xSETCC|testL)
+#define opSETGE MNEM("setge", xSETCC|testGE)
+#define opSETLE MNEM("setle", xSETCC|testLE)
+#define opSETG MNEM("setg", xSETCC|testG)
 
 
 /* Instruction formats */
@@ -299,7 +283,7 @@ static void opcode(int op) {
      if (op < 256)
 	  byte(op);
      else {
-	  // The byte order is swapped so the MSB comes first
+	  // The byte order as written is swapped
 	  byte(op>>8); byte(op&0xff);
      }
 }
@@ -384,35 +368,35 @@ static void memory(int ra, int rb, int d) {
 
 /* instr -- fixed instruction, opcode only */
 static void instr(OPDECL) {
-     dbg("%s", mnem);
+     vm_debug2("%s", mnem);
      opcode(op);
 }
 
 /* instr_reg -- opcode packed with register */
 static void instr_reg(OPDECL, int reg) {
-     dbg("%s %s", mnem, regname[reg]);
+     vm_debug2("%s %s", mnem, regname[reg]);
      opcode(op|register(reg));
 }
 
 /* instr_regi32 -- opcode packed with register plus a 32-bit immediate */
 static void instr_regi32(OPDECL, int r, int imm) {
-     dbg("%s %s, #%s", mnem, regname[r], fmt_val(imm));
+     vm_debug2("%s %s, #%s", mnem, regname[r], fmt_val(imm));
      opcode(op|register(r)); word(imm);
 }
 
 /* instr_rr -- opcode plus two registers */
 static void instr_rr(OPDECL, int r1, int r2) {
-     dbg("%s %s, %s", mnem, regname[r1], regname[r2]);
+     vm_debug2("%s %s, %s", mnem, regname[r1], regname[r2]);
      opcode(op); addr(3, r1, r2);
 }
 
 static void aluop_rr(OPDECL, int r1, int r2) {
-     instr_rr(z(mnem, xALU_r(op)), r1, r2);
+     instr_rr(MNEM(mnem, xALU_r(op)), r1, r2);
 }
 
 /* General form of instr2_r for shifts and floating point ops */
-static void instr2_fmt(ifdebug(char *fmt) OPDECL, int op2, int r) {
-     dbg(fmt, mnem, regname[r]);
+static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
+     vm_debug2(fmt, mnem, regname[r]);
      opcode(op); addr(3, op2, r);
 }
 
@@ -420,14 +404,14 @@ static void instr2_fmt(ifdebug(char *fmt) OPDECL, int op2, int r) {
 #define instr2_r(ispec, r) instr2_fmt(ifdebug("%s %s") ispec, r)
 
 /* instr2_ri8 -- twin opcode plus register and 8-bit immediate */
-static void instr2_ri8(OPDECL, int op2, int rm, int imm) {
-     dbg("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
+static void instr2_ri8(OPDECL2, int rm, int imm) {
+     vm_debug2("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
      opcode(op); addr(3, op2, rm); byte(imm);
 }
 
 /* instruction with 2 opcodes and 8/32 bit immediate */
-static void instr2_ri(OPDECL, int op2, int rm, int imm) {
-     dbg("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
+static void instr2_ri(OPDECL2, int rm, int imm) {
+     vm_debug2("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
      if (signed8(imm)) {
 	  opcode(op|x_byte); addr(3, op2, rm); byte(imm);
      } else {
@@ -437,7 +421,7 @@ static void instr2_ri(OPDECL, int op2, int rm, int imm) {
 
 /* instruction with 2 registers and 8/32 bit immediate */
 static void instr_rri(OPDECL, int reg, int rm, int imm) {
-     dbg("%s %s, %s, #%s", mnem, regname[reg], regname[rm], fmt_val(imm));
+     vm_debug2("%s %s, %s, #%s", mnem, regname[reg], regname[rm], fmt_val(imm));
      if (signed8(imm)) {
 	  opcode(op|x_byte); addr(3, reg, rm); byte(imm);
      } else {
@@ -447,20 +431,20 @@ static void instr_rri(OPDECL, int reg, int rm, int imm) {
 
 /* instr_rm -- register and memory operand */
 static void instr_rm(OPDECL, int rt, int rs, int imm) {
-     dbg("%s %s, %s", mnem, regname[rt], fmt_addr(rs, imm));
+     vm_debug2("%s %s, %s", mnem, regname[rt], fmt_addr(rs, imm));
      opcode(op); memory(rt, rs, imm);
 }
 
 /* instr_st -- alternate form of instr_rm for store instruction */
 static void instr_st(OPDECL, int rt, int rs, int imm) {
-     dbg("%s %s, %s", mnem, fmt_addr(rs, imm), regname[rt]);
+     vm_debug2("%s %s, %s", mnem, fmt_addr(rs, imm), regname[rt]);
      opcode(op); memory(rt, rs, imm);
 }
 
 /* instr_lab -- opcode plus branch target */
 static code_addr instr_lab(OPDECL, code_addr lab) {
      code_addr r;
-     dbg("%s ...", mnem);
+     vm_debug2("%s ...", mnem);
      opcode(op); r = pc; word(0);
      if (lab != NULL) vm_patch(r, lab);
      return r;
@@ -468,15 +452,15 @@ static code_addr instr_lab(OPDECL, code_addr lab) {
 
 /* instr_m -- floating point load or store */
 static void instr_m(OPDECL, int rs, int imm) {
-     dbg("%s %s", mnem, fmt_addr(rs, imm));
+     vm_debug2("%s %s", mnem, fmt_addr(rs, imm));
      opcode(op>>8); memory(op, rs, imm);
 }
 
 
 /* SPECIFIC INSTRUCTIONS */
 
-#define add_i(rd, imm)	instr2_ri(zz("add", xALU_i, aluADD), rd, imm)
-#define sub_i(rd, imm)	instr2_ri(zz("sub", xALU_i, aluSUB), rd, imm)
+#define add_i(rd, imm)	instr2_ri(MNEM2("add", xALU_i, aluADD), rd, imm)
+#define sub_i(rd, imm)	instr2_ri(MNEM2("sub", xALU_i, aluSUB), rd, imm)
 
 #define push(r)		instr_reg(opPUSH, r)
 #define pop(r)		instr_reg(opPOP, r)
@@ -486,14 +470,14 @@ static void instr_m(OPDECL, int rs, int imm) {
 
 /* shift instruction with one operand in CL */
 #define shift2cl_r(ispec, r) \
-     instr2_fmt(ifdebug("%s %s, cl") zz(mnem, xSHIFT_r, op), r)
+     instr2_fmt(ifdebug("%s %s, cl") MNEM2(mnem, xSHIFT_r, op), r)
 
 /* shift by constant */
 static void shift2_i(OPDECL, int rd, int imm) {
      if (imm == 1)
-	  instr2_r(zz(mnem, xSHIFT_1, op), rd);
+	  instr2_r(MNEM2(mnem, xSHIFT_1, op), rd);
      else
-	  instr2_ri8(zz(mnem, xSHIFT_i, op), rd, imm);
+	  instr2_ri8(MNEM2(mnem, xSHIFT_i, op), rd, imm);
 }
 
 /* SYNTHETIC INSTRUCTIONS */
@@ -542,7 +526,7 @@ static void storec(int rt, int rs, int imm) {
 /* unary ALU operation (2 registers) */
 static void monop(OPDECL, int rd, int rs) {
      move(rd, rs);
-     instr2_r(zz(mnem, xMONOP, op), rd);
+     instr2_r(MNEM2(mnem, xMONOP, op), rd);
 }
 
 /* commutative ALU operation (3 register operands) */
@@ -579,7 +563,7 @@ static void multiply_r(int rd, int rs1, int rs2) {
 /* binary ALU operation, 2 registers + immediate */
 static void binop3_i(OPDECL, int rd, int rs, int imm) {
      move(rd, rs);
-     instr2_ri(zz(mnem, xALU_i, op), rd, imm);
+     instr2_ri(MNEM2(mnem, xALU_i, op), rd, imm);
 }
 
 /* routines for branch instructions return the location for patching */
@@ -595,7 +579,7 @@ static void comp_i(int rs, int imm) {
      if (imm == 0)
 	  instr_rr(opTEST, rs, rs);
      else
-	  instr2_ri(zz("cmp", xALU_i, aluCMP), rs, imm);
+	  instr2_ri(MNEM2("cmp", xALU_i, aluCMP), rs, imm);
 }
 
 /* Conditional branch, register + immediate */
@@ -606,11 +590,11 @@ static code_addr branch_i(OPDECL, int rs, int imm, code_addr lab) {
 
 static void setcc_r(OPDECL, int rd) {
      if (is8bit(rd)) {
-	  instr2_r(zz(mnem, op, 0), rd); /* Compute boolean result */
+	  instr2_r(MNEM2(mnem, op, 0), rd); /* Compute boolean result */
           instr_rr(opMOVZBL_r, rd, rd); /* Zero-extend */
      } else {
 	  push(EAX);
-	  instr2_r(zz(mnem, op, 0), EAX); /* Compute boolean result */
+	  instr2_r(MNEM2(mnem, op, 0), EAX); /* Compute boolean result */
 	  instr_rr(opMOVZBL_r, rd, EAX); /* Move and zero-extend */
 	  pop(EAX);
      }
@@ -682,27 +666,27 @@ static void fmonop(OPDECL, int rd, int rs) {
 static void flop2(OPDECL, int op_r, int rd, int rs) {
      if (rd == FPR0)
 	  /* 1: st0 := st0 op stX */
-	  instr2_fmt(ifdebug("%s F0, %s") zz(mnem, xFLOP_0, op), rs);
+	  instr2_fmt(ifdebug("%s F0, %s") MNEM2(mnem, xFLOP_0, op), rs);
      else if (rs == FPR0)
 	  /* 4: stX := stX op st0 */
-	  instr2_fmt(ifdebug("%s %s, F0") zz(mnem, xFLOP_r, op_r), rd);
+	  instr2_fmt(ifdebug("%s %s, F0") MNEM2(mnem, xFLOP_r, op_r), rd);
      else {
 	  /* stX := stX op stY becomes push stY; 6: stX := stX op st0; pop*/
 	  fld_r(rs);
-          instr2_fmt(ifdebug("%sp %s, F0") zz(mnem, xFLOPP_r, op_r), rd+1);
+          instr2_fmt(ifdebug("%sp %s, F0") MNEM2(mnem, xFLOPP_r, op_r), rd+1);
      }
 }
 
 /* Binary floating point, 3 registers */
 static void flop3(OPDECL, OPDECL_r, int rd, int rs1, int rs2) {
      if (rd == rs1)
-	  flop2(zz(mnem, op, op_r), rd, rs2);
+	  flop2(MNEM2(mnem, op, op_r), rd, rs2);
      else if (rd == rs2)
-	  flop2(zz(mnem_r, op_r, op), rd, rs1);
+	  flop2(MNEM2(mnem_r, op_r, op), rd, rs1);
      else {
 	  /* stX = stY op stZ */
 	  fld_r(rs1);
-	  flop2(zz(mnem, op, op_r), FPR0, rs2+1);
+	  flop2(MNEM2(mnem, op, op_r), FPR0, rs2+1);
 	  fstp_r(rd+1);
      }
 }
@@ -757,7 +741,7 @@ static void fcompare(OPDECL, int rd, int rs1, int rs2) {
 
 /* Translation routines */
 
-#define badop() unknown(__FUNCTION__, op)
+#define badop() vm_unknown(__FUNCTION__, op)
 
 /*
 We don't use space on the C stack for locals, and don't bother 
@@ -777,6 +761,8 @@ On the Mac, sp must be 16-byte aligned at this point, so
 nargs + blank + 5 must be a multiple of 4 in words.
 */
 
+static int nargs;
+
 static void prep_call(int n) {
 #ifdef MACOS
      int blank = 3 - n % 4;
@@ -788,7 +774,8 @@ static void prep_call(int n) {
 }
 
 void vm_gen0(operation op) {
-     check_space(0);
+     vm_debug1(op, 0);
+     vm_space(0);
 
      switch (op) {
      case RET: 
@@ -801,8 +788,11 @@ void vm_gen0(operation op) {
      }
 }
 
-void vm_gen1r(operation op, vmreg ra) {
-     check_space(0);
+void vm_gen1r(operation op, vmreg rega) {
+     int ra = rega->vr_reg;
+
+     vm_debug1(op, 1, rega->vr_name);     
+     vm_space(0);
 
      switch (op) {
      case JUMP: 
@@ -819,9 +809,6 @@ void vm_gen1r(operation op, vmreg ra) {
 	  nargs = 0;
 	  break;
 
-     case RETVAL: 
-	  move(ra, EAX); break;
-
      case ZEROF:
      case ZEROD:
 	  fzero(ra); break;
@@ -832,7 +819,8 @@ void vm_gen1r(operation op, vmreg ra) {
 }
 
 void vm_gen1i(operation op, int a) {
-     check_space(0);
+     vm_debug1(op, 1, fmt_val(a));
+     vm_space(0);
 
      switch (op) {
      case PREP:
@@ -851,22 +839,28 @@ void vm_gen1i(operation op, int a) {
      }
 }
 
-code_addr vm_gen1b(operation op, code_addr lab) {
-     check_space(0);
+void vm_gen1j(operation op, vmlabel lab) {
+     code_addr loc;
+
+     vm_debug1(op, 1, fmt_lab(lab));     
+     vm_space(0);
 
      switch (op) {
      case JUMP: 
-	  return instr_lab(opJMPL_i, lab);
+	  loc = instr_lab(opJMPL_i, NULL);
+          vm_branch(BRANCH, loc, lab);
           break;
 
      default:
 	  badop();
-          return NULL;
      }
 }
 
-void vm_gen2rr(operation op, vmreg ra, vmreg rb) {
-     check_space(0);
+void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
+     int ra = rega->vr_reg, rb = regb->vr_reg;
+
+     vm_debug1(op, 2, rega->vr_name, regb->vr_name);
+     vm_space(0);
 
      switch (op) {
      case MOV:
@@ -905,8 +899,11 @@ void vm_gen2rr(operation op, vmreg ra, vmreg rb) {
      }
 }
 
-void vm_gen2ri(operation op, vmreg ra, int b) {
-     check_space(0);
+void vm_gen2ri(operation op, vmreg rega, int b) {
+     int ra = rega->vr_reg;
+
+     vm_debug1(op, 2, rega->vr_name, fmt_val(b));
+     vm_space(0);
 
      switch (op) {
      case MOV: 
@@ -931,8 +928,11 @@ void vm_gen2ri(operation op, vmreg ra, int b) {
      }
 }
 
-void vm_gen3rrr(operation op, vmreg ra, vmreg rb, vmreg rc) {
-     check_space(0);
+void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
+     int ra = rega->vr_reg, rb = regb->vr_reg, rc = regc->vr_reg;
+
+     vm_debug1(op, 3, rega->vr_name, regb->vr_name, regc->vr_name);
+     vm_space(0);
 
      switch (op) {
      case ADD: 
@@ -1007,8 +1007,11 @@ void vm_gen3rrr(operation op, vmreg ra, vmreg rb, vmreg rc) {
      }
 }
 
-void vm_gen3rri(operation op, vmreg ra, vmreg rb, int c) {
-     check_space(0);
+void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
+     int ra = rega->vr_reg, rb = regb->vr_reg;
+
+     vm_debug1(op, 3, rega->vr_name, regb->vr_name, fmt_val(c));
+     vm_space(0);
 
      switch (op) {
      case ADD: 
@@ -1059,7 +1062,7 @@ void vm_gen3rri(operation op, vmreg ra, vmreg rb, int c) {
 	  if (isfloat(ra)) 
                fstores(ra, rb, c); 
           else 
-               instr_rm(opMOVL_m, ra, rb, c);
+               instr_st(opMOVL_m, ra, rb, c);
 	  break;
      case STS: 
           instr_st(opMOVW_m, ra, rb, c); break;
@@ -1088,151 +1091,113 @@ void vm_gen3rri(operation op, vmreg ra, vmreg rb, int c) {
      }
 }
 
-code_addr vm_gen3rrb(operation op, vmreg ra, vmreg rb, code_addr lab) {
-     check_space(0);
+void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
+     int ra = rega->vr_reg, rb = regb->vr_reg;
+     code_addr loc;
+
+     vm_debug1(op, 3, rega->vr_name, regb->vr_name, fmt_lab(lab));
+     vm_space(0);
 
      switch (op) {
      case BEQ: 
-	  return branch_r(opJE, ra, rb, lab); break;
+	  loc = branch_r(opJE, ra, rb, NULL); break;
      case BGEQ: 
-	  return branch_r(opJGE, ra, rb, lab); break;
+	  loc = branch_r(opJGE, ra, rb, NULL); break;
      case BGT: 
-	  return branch_r(opJG, ra, rb, lab); break;
+	  loc = branch_r(opJG, ra, rb, NULL); break;
      case BLEQ: 
-	  return branch_r(opJLE, ra, rb, lab); break;
+	  loc = branch_r(opJLE, ra, rb, NULL); break;
      case BLT: 
-	  return branch_r(opJL, ra, rb, lab); break;
+	  loc = branch_r(opJL, ra, rb, NULL); break;
      case BNEQ: 
-	  return branch_r(opJNE, ra, rb, lab); break;
+	  loc = branch_r(opJNE, ra, rb, NULL); break;
      case BLTU: 
-	  return branch_r(opJB, ra, rb, lab); break;
+	  loc = branch_r(opJB, ra, rb, NULL); break;
      case BGEQU:
-	  return branch_r(opJAE, ra, rb, lab); break;
+	  loc = branch_r(opJAE, ra, rb, NULL); break;
      case BGTU:
-	  return branch_r(opJA, ra, rb, lab); break;
+	  loc = branch_r(opJA, ra, rb, NULL); break;
      case BLEQU:
-	  return branch_r(opJBE, ra, rb, lab); break;
+	  loc = branch_r(opJBE, ra, rb, NULL); break;
 
      case BEQF:
      case BEQD:
-	  return fbranch(opJE, ra, rb, lab); break;
+	  loc = fbranch(opJE, ra, rb, NULL); break;
      case BGEQF:
      case BGEQD:
-	  return fbranch(opJAE, ra, rb, lab); break;
+	  loc = fbranch(opJAE, ra, rb, NULL); break;
      case BGTF:
      case BGTD:
-	  return fbranch(opJA, ra, rb, lab); break;
+	  loc = fbranch(opJA, ra, rb, NULL); break;
      case BLEQF:
      case BLEQD:
-	  return fbranch(opJBE, ra, rb, lab); break;
+	  loc = fbranch(opJBE, ra, rb, NULL); break;
      case BLTF:
      case BLTD:
-	  return fbranch(opJB, ra, rb, lab); break;
+	  loc = fbranch(opJB, ra, rb, NULL); break;
      case BNEQF:
      case BNEQD:
-	  return fbranch(opJNE, ra, rb, lab); break;
+	  loc = fbranch(opJNE, ra, rb, NULL); break;
 
      default:
 	  badop();
-          return NULL;
+          return;
      }
+
+     vm_branch(BRANCH, loc, lab);
 }
 
-code_addr vm_gen3rib(operation op, vmreg ra, int b, code_addr lab) {
-     check_space(0);
+void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
+     int ra = rega->vr_reg;
+     code_addr loc;
+
+     vm_debug1(op, 3, rega->vr_name, fmt_val(b), fmt_lab(lab));
+     vm_space(0);
 
      switch (op) {
      case BEQ: 
-	  return branch_i(opJE, ra, b, lab); break;
+	  loc = branch_i(opJE, ra, b, NULL); break;
      case BGEQU: 
-	  return branch_i(opJAE, ra, b, lab); break;
+	  loc = branch_i(opJAE, ra, b, NULL); break;
      case BGEQ: 
-	  return branch_i(opJGE, ra, b, lab); break;
+	  loc = branch_i(opJGE, ra, b, NULL); break;
      case BGT: 
-	  return branch_i(opJG, ra, b, lab); break;
+	  loc = branch_i(opJG, ra, b, NULL); break;
      case BLEQ: 
-	  return branch_i(opJLE, ra, b, lab); break;
+	  loc = branch_i(opJLE, ra, b, NULL); break;
      case BLTU: 
-	  return branch_i(opJB, ra, b, lab); break;
+	  loc = branch_i(opJB, ra, b, NULL); break;
      case BLT: 
-	  return branch_i(opJL, ra, b, lab); break;
+	  loc = branch_i(opJL, ra, b, NULL); break;
      case BNEQ: 
-	  return branch_i(opJNE, ra, b, lab); break;
+	  loc = branch_i(opJNE, ra, b, NULL); break;
      case BGTU:
-	  return branch_i(opJA, ra, b, lab); break;
+	  loc = branch_i(opJA, ra, b, NULL); break;
      case BLEQU:
-	  return branch_i(opJBE, ra, b, lab); break;
+	  loc = branch_i(opJBE, ra, b, NULL); break;
 
      default:
 	  badop();
-          return NULL;
+          return;
      }
+
+     vm_branch(BRANCH, loc, lab);
 }
-
-
-/* Miscellaneous interface routines */
 
 void vm_patch(code_addr loc, code_addr lab) {
      int *p = ((int *) loc);
      *p = lab - loc - 4;
 }
 
-code_addr vm_label(void) {
-     check_space(0);
-     return pc;
-}
-
-code_addr *vm_jumptable(int n) {
-     check_space(n * sizeof(code_addr));
-     limit -= n * sizeof(code_addr);
-     return (code_addr *) limit;
-}
-
-#define MIN 128
-
-static const char *proc_name;
-static code_addr proc_beg;
-
-#ifdef USE_MPROTECT
-#include <sys/mman.h>
-#endif
-
-code_addr vm_begin(const char *name, int n) {
-     proc_name = name;
-     check_space(MIN);
-     proc_beg = pc;
+code_addr vm_prelude(int n) {
+     code_addr entry = pc;
      push(EBP); push(EBX); push(ESI); push(EDI); 
-     return proc_beg;
+     return entry;
 }
 
-static void check_space(int space) {
-     if (codebuf == NULL || pc + space > limit - MARGIN) {
-	  code_addr p = (code_addr) vm_alloc(CODEPAGE);
-#ifdef USE_MPROTECT
-	  if (mprotect(p, CODEPAGE, PROT_READ|PROT_WRITE|PROT_EXEC) < 0) {
-	       perror("mprotect failed");
-	       exit(2);
-	  }
-#endif
-	  if (codebuf != NULL) 
-               instr_lab(opJMPL_i, p);
-
-	  codebuf = p; limit = p + CODEPAGE;
-	  pc = codebuf;
-     }
+void vm_postlude(void) {
 }
 
-void vm_end(void) { 
-     // No need to flush: there is only one cache.
-
-     if (vm_debug > 3) {
-          char buf[128];
-          strcpy(buf, proc_name);
-          strcat(buf, ".vmdump");
-          FILE *fp = fopen(buf, "wb");
-          printf("Dumping\n");
-          if (fp == NULL) return;
-          fwrite(proc_beg, 1, pc-proc_beg, fp);
-          fclose(fp);
-     }
+void vm_chain(code_addr p) {
+     instr_lab(opJMPL_i, p);
 }

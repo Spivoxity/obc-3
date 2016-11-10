@@ -35,32 +35,23 @@
 /* jitlab.c */
 
 typedef struct _codepoint *codepoint;
-typedef struct _branch *branch;
 
 /* A branch target */
 struct _codepoint {
      int l_lab;			/* Bytecode address */
-     code_addr l_loc;		/* Native code address */
+     vmlabel l_vmlab;           /* VM label */
      int l_depth;		/* Stack depth */
      int l_stack;		/* Bitmap for sizes of stack items */
-     branch l_branches;		/* List of branches */
      codepoint l_hlink;		/* Next label in hash chain */
 };
 
-codepoint new_label(void);
 void mark_label(int addr);
 void label(codepoint lab);
-void patch_label(code_addr loc, codepoint lab);
 void case_label(int addr);
-
-codepoint to_label(int addr);
-codepoint to_addr(code_addr loc);
-codepoint to_error(int code, int line);
-
-void do_errors(void (*f)(codepoint, int, int));
-void init_patch(void);
-
-extern code_addr *caseptr;
+codepoint find_label(int addr);
+void do_errors(void (*f)(vmlabel, int, int));
+void init_labels(void);
+vmlabel handler(int code, int line);
 
 
 /* jitregs.c */
@@ -86,7 +77,6 @@ typedef struct _ctvalue {
 } *ctvalue;;
 
 extern struct _reg {
-     char r_name[8];            /* Our name for the register */
      vmreg r_reg;               /* Physical register */
      int r_class;               /* INT or FLO, or 0 if special */
      int r_refct;               /* No of references on the stack */
@@ -123,6 +113,8 @@ int n_reserved(void);
 
 void init_regs(void);
 
+const char *regname(reg r);
+
 
 /* jitvalue.c */
 
@@ -155,6 +147,7 @@ void plusa();
 
 void save_stack(codepoint lab);
 void restore_stack(codepoint lab);
+vmlabel target(int lab);
 
 #ifdef INT64
 void move_longval(ctvalue src, reg rd, int offd);
@@ -164,56 +157,7 @@ void get_halflong(ctvalue src, int off, reg dst);
 
 /* jitop.c */
 
-extern const char *mnemonic[];
 
-#ifdef DEBUG
-#define vm_dbg(fmt, ...) \
-     (vm_debug > 0 ? _vm_dbg(fmt, __VA_ARGS__) : (void) 0)
-
-void _vm_dbg(const char *fmt, ...);
-
-char *fmt_val(int v);
-
-char *fmt_dest(codepoint lab);
-#else
-#define vm_dbg(fmt, ...) (void) 0
-#endif
-
-#define vm_dbg1(fmt, op, ...) vm_dbg(fmt, mnemonic[op], ##__VA_ARGS__)
-
-#define g0(op) \
-     vm_dbg1("%s", op), vm_gen0(op)
-#define g1r(op, a) \
-     vm_dbg1("%s %s", op, a->r_name), vm_gen1r(op, a->r_reg)
-#define g1i(op, a) \
-     vm_dbg1("%s %s", op, fmt_val(a)), vm_gen1i(op, a)
-#define g1b(op, lab) \
-     vm_dbg1("%s %s", op, fmt_dest(lab)), \
-     use_label(vm_gen1b(op, NULL), lab)
-#define g2rr(op, a, b) \
-     vm_dbg1("%s %s, %s", op, a->r_name, b->r_name), \
-     vm_gen2rr(op, a->r_reg, b->r_reg)
-#define g2ri(op, a, b) \
-     vm_dbg1("%s %s, %s", op, a->r_name, fmt_val(b)),   \
-     vm_gen2ri(op, a->r_reg, b)
-#define g3rrr(op, a, b, c) \
-     vm_dbg1("%s %s, %s, %s", op, a->r_name, b->r_name, c->r_name), \
-     vm_gen3rrr(op, a->r_reg, b->r_reg, c->r_reg)
-#define g3rri(op, a, b, c) \
-     vm_dbg1("%s %s, %s, %s", op, a->r_name, b->r_name, fmt_val(c)),    \
-     vm_gen3rri(op, a->r_reg, b->r_reg, c)
-#define g3rrb(op, a, b, lab) \
-     vm_dbg1("%s %s, %s, %s", op, a->r_name, b->r_name, fmt_dest(lab)), \
-          use_label(vm_gen3rrb(op, a->r_reg, b->r_reg, NULL), lab)
-#define g3rib(op, a, b, lab) \
-     vm_dbg1("%s %s, %s, %s", op, a->r_name, fmt_val(b), fmt_dest(lab)),    \
-          use_label(vm_gen3rib(op, a->r_reg, b, NULL), lab)
-
-void use_label(code_addr loc, codepoint lab);
-
-void gcall1(const char *fname, int f, int n, ...);
+void gcall(void *f, int n, ...);
 void gcallr(reg f, int n, ...);
-
-/* gcall -- call fixed function */
-#define gcall(f, n, ...) gcall1(#f, (int) f, n, __VA_ARGS__)
 

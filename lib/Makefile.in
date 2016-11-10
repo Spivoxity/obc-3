@@ -156,7 +156,7 @@ lscript-b : ../config.status
 
 # clean: remove all object files
 clean:
-	rm -f *.o *.k *.k0 *.a *.so *.dylib
+	rm -f *.o *.k *.k0 *.so *.dylib
 
 quiteclean: clean
 	rm -f lscript* Builtin.m

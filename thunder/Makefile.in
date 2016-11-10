@@ -1,0 +1,115 @@
+#
+# @configure_input@
+#
+# thunder/Makefile.in
+# 
+# This file is part of the Oxford Oberon-2 compiler
+# Copyright (c) 2006 J. M. Spivey
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 3. The name of the author may not be used to endorse or promote products
+#    derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+# OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+# IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+# Config stuff
+CC = @CC@
+AR = ar
+RANLIB = @RANLIB@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+RTFLAGS = @RTFLAGS@
+HAVE_X = @HAVE_X@
+XYPRIMS = @XYPRIMS@
+TCLSH = @TCLSH@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+libdir = @libdir@/obc
+subdir = thunder
+SHELL = /bin/sh
+DEBUG = @DEBUG@
+VPATH = @srcdir@:../lib
+ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
+ENABLE_JIT = @ENABLE_JIT@
+PAGESIZE = @PAGESIZE@
+VM = @VM@
+AUTOCONF = @AUTOCONF@
+AUTOHEADER = @AUTOHEADER@
+# End
+
+all: libthunder.a
+
+ALL_CFLAGS = $(RTFLAGS) -Wall -I . -I $(srcdir)
+
+libthunder.a: $(VM) labels.o vmdebug.o codebuf.o
+	$(AR) cr $@ $^; $(RANLIB) $@
+
+%.o : %.c
+	$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+fact: fact.o libthunder.a
+	$(CC) $^ -o $@
+
+## Cleanup
+
+# clean: remove all object files
+clean:
+	rm -f *.[ao]
+
+quiteclean: clean
+
+# distclean: also remove all non-distributed files
+distclean: quiteclean
+	rm -f Makefile config.h stamp-h
+
+realclean: distclean
+	rm -f config.h.in stamp-h.in configure
+
+.DELETE_ON_ERROR:
+
+## Configuration and dependencies
+
+# Automatic reconfiguration
+
+$(srcdir)/configure: configure.in aclocal.m4
+	cd $(srcdir) && $(AUTOCONF)
+
+config.status: configure
+	./config.status --recheck
+
+$(srcdir)/config.h.in: stamp-h.in
+$(srcdir)/stamp-h.in: configure.in aclocal.m4
+	cd $(srcdir) && $(AUTOHEADER)
+	echo timestamp >$(srcdir)/stamp-h.in
+
+config.h: stamp-h
+stamp-h: config.h.in config.status
+	CONFIG_FILES= CONFIG_HEADERS=config.h ./config.status
+	echo timestamp >stamp-h
+
+Makefile: $(srcdir)/Makefile.in config.status
+	./config.status $@
+
+###
+
+$(VM) codebuf.o labels.o vmdebug.o fact.o: vm.h config.h vminternal.h

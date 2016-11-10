@@ -116,6 +116,11 @@ EXTERN int nmods, nprocs, nsyms;
 EXTERN module *modtab;
 EXTERN proc *proctab;
 
+extern struct primdef {
+     char *p_name;
+     primitive *p_prim;
+} primtab[];
+
 EXTERN value _result[2];	/* Procedure result */
 #define ob_res _result[0]
 #define ob_dres _result[0]

@@ -36,9 +36,8 @@ struct _reg *regs = NULL;
 int nregs;
 reg rBP, rSP, rI0, rI1, rI2, rZERO;
 
-static reg def_reg(char *fmt, int i, vmreg r, int c) {
+static reg def_reg(vmreg r, int c) {
      reg p = &regs[nregs++];
-     sprintf(p->r_name, fmt, i);
      p->r_reg = r;
      p->r_class = c;
      p->r_refct = 0;
@@ -57,12 +56,12 @@ void setup_regs(void) {
 
      nregs = 0;
      for (i = 0; i < nireg; i++)
-          def_reg("I%d", i, ireg[i], INT);
+          def_reg(ireg[i], INT);
      for (i = 0; i < nvreg; i++)
-          def_reg("V%d", i, vreg[i], INT);
+          def_reg(vreg[i], INT);
      for (i = 0; i < nfreg; i++)
-          def_reg("F%d", i, freg[i], FLO);
-     rZERO = def_reg("ZERO", 0, zero, 0);
+          def_reg(freg[i], FLO);
+     rZERO = def_reg(zero, 0);
 
      rI0 = &regs[0]; rI1 = &regs[1]; rI2 = &regs[2];
      rSP = &regs[nwregs-2]; rBP = &regs[nwregs-1]; 
@@ -150,7 +149,7 @@ reg ralloc_avoid(int s, reg r2) {
 #ifdef DEBUG
 	       if (dflag > 1) 
 		    printf("Spilling %s (refct=%d)\n", 
-			   best->r_name, best->r_refct);
+			   vm_regname(best->r_reg), best->r_refct);
 #endif
 	       spill(best);
 #ifdef DEBUG
@@ -193,7 +192,7 @@ reg kill(reg r) {
      reg r1;
 
 #ifdef DEBUG
-     if (dflag > 2) printf("\tKill %s\n", r->r_name);
+     if (dflag > 2) printf("\tKill %s\n", vm_regname(r->r_reg));
 #endif
 
      uncache(r);
