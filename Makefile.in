@@ -80,7 +80,7 @@ all : config.h predirs subdirs build sanity
 
 PREDIRS = yacc
 SUBDIRS = compiler runtime lib
-BUILD = obx obprof obc obb obdump
+BUILD = obx obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
 
 ifdef ENABLE_JIT
@@ -139,21 +139,24 @@ obtrace : lib/stdprims.o runtime/obx-t.a lib/oblib.a;		$(LINK)
 obprof : lib/stdprims.o runtime/obx-p.a lib/oblib.a;		$(LINK)
 obxdeb : lib/stdprims.o runtime/obx-d.a lib/oblib.a;		$(LINK)
 
+oblist : ObList.k runtime/oblink lib/Files.k
+
 ifndef WINDOWS
-  obdump : ObDump.m compiler/obc1 runtime/oblink lib/Out.k
-	compiler/obc1 -x -I lib $< >ObDump.k
+  oblist : 
 	runtime/oblink -i $(libdir)/obc/$(INTERP) -L lib -R $(libdir)/obc \
-		ObDump.k -o $@
+		ObList.k -o $@
 	chmod +x $@
 else
   # Cygwin needs the chmod -- otherwise the execute permission is not
   # set in the access control lists shown by 'cacls'
-  obdump : ObDump.m compiler/obc1 runtime/oblink lib/Out.k $(INTERP)
-	compiler/obc1 -x -I lib $< >ObDump.k
-	runtime/oblink -L lib ObDump.k -o obdump.x
-	cat $(INTERP).exe obdump.x >$@.exe
+  oblist : $(INTERP)
+	runtime/oblink -L lib ObList.k -o oblist.x
+	cat $(INTERP).exe oblist.x >$@.exe
 	chmod +x $@.exe
 endif
+
+ObList.k : ObList.m compiler/obc1 lib/Files.k
+	compiler/obc1 -I lib $< >$@
 
 macdebug : force
 	$(MAKE) -C macport debugger
@@ -180,7 +183,7 @@ test: force
 # (2) a binary distribution that comes with its own 'configure' script
 
 # Installed in {prefix}/bin:
-BIN = obc obb obdump obprof 
+BIN = obc obb oblist obprof 
 
 # Executables installed in {prefix}/lib
 LIBX = compiler/obc1 compiler/obb1 runtime/oblink obx
@@ -200,7 +203,7 @@ DIRS = $(bindir) $(libdir)/obc
 
 # Inputs for bindist config process
 ETC = $(srcdir)/scripts/obc.in $(srcdir)/scripts/obb.in \
-	ObDump.k lib/stdprims.o
+	ObList.k lib/stdprims.o
 
 # Misc bindist files
 INST = $(srcdir)/README $(srcdir)/THANKS $(srcdir)/Fac.m
@@ -280,7 +283,7 @@ EXTRADIRS = test winport
 
 cleanhere:
 	rm -f a.out fac tartan *.[kio] Fac.[cx] FacPrims.c config.log \
-		$(patsubst %,%$(EXEEXT),obx obxdeb obprof obtrace obdump obxj)
+		$(patsubst %,%$(EXEEXT),obx obxdeb obprof obtrace oblist obxj)
 	rm -rf $(BINDIST) $(BINDIST).tgz build-stamp
 
 quitecleanhere: cleanhere

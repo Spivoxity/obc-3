@@ -111,7 +111,7 @@ oblib.a: $(PRIM:%=%.o) $(SHLMODS:%=%.o)
 $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c): %.c: %.m makeprims.tcl
 	$(TCLSH) $(srcdir)/makeprims.tcl $< >$@
 
-_Builtin.c: Builtin.m makeprims.tcl
+Builtin.c: Builtin.m makeprims.tcl
 	$(TCLSH) $(srcdir)/makeprims.tcl $< >$@
 
 stdprims.c: ../runtime/oblink lscript $(PRIMMODS:%=%.k)

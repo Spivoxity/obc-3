@@ -119,16 +119,13 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 config.ml: $(srcdir)/config.ml.in ../config.status
 	cd .. && ./config.status --file=$(subdir)/$@
 
-lexer.mli symlex.mli: %: %.in
-	cp $< $@
-
 ML = growvect.ml growvect.mli print.ml print.mli \
 	util.mli util.ml check.mli dict.mli eval.mli icode.mli \
-	igen.mli lexer.mli mach.mli tree.mli check.ml dict.ml eval.ml \
+	igen.mli mach.mli tree.mli check.ml dict.ml eval.ml \
 	icode.ml igen.ml mach.ml main.ml tree.ml \
 	expr.mli expr.ml symtab.mli error.mli error.ml switch.mli \
 	switch.ml symtab.ml peepopt.mli peepopt.ml \
-	symfile.mli symfile.ml symlex.mli browser.ml \
+	symfile.mli symfile.ml browser.ml \
 	lexer.ml parser.mli parser.ml symlex.ml symparse.mli \
 	symparse.ml config.ml inicheck.mli inicheck.ml \
 	stack.mli stack.ml

@@ -52,7 +52,7 @@ all: files
 LIBSRC = Builtin.m $(MODULES:%=%.m)
 LIBOBJ = $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k) _Builtin.k 
 LIBTXT = lscript-b lscript _Builtin.k
-INSTALL1 = ../obx.exe ../obxj.exe ../obprof.exe ../obdump.exe ../obxdeb.exe \
+INSTALL1 = ../obx.exe ../obxj.exe ../obprof.exe ../oblist.exe ../obxdeb.exe \
 	../compiler/obc1.exe ../compiler/obb1.exe ../runtime/oblink.exe \
 	../debugger/obdb1.exe
 INSTALL2 = obc.exe obb.exe obdb.exe \

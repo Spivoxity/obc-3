@@ -125,6 +125,8 @@ AC_SUBST(OBDB1_DEBUG)
 
 
 # Checks for programs.
+case $host in x86_64-*) CC='gcc -m32';; esac
+
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET

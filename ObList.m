@@ -1,5 +1,5 @@
 (*
- * ObDump.m
+ * ObList.m
  * 
  * This file is part of the Oxford Oberon-2 compiler
  * Copyright (c) 2006 J. M. Spivey
@@ -28,7 +28,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-MODULE ObDump;
+MODULE ObList;
 
 (* This program reads the file of line counts output by "obprof -l"
    and prints an annotated listing of the source file. *)
@@ -83,12 +83,20 @@ BEGIN
   RETURN p
 END Find;
   
-VAR
-  field: ARRAY 10 OF ARRAY 20 OF CHAR;
+TYPE DString = POINTER TO ARRAY OF CHAR;
+
+(* MakeString -- copy array of characters as a DString *)
+PROCEDURE MakeString(VAR s: ARRAY OF CHAR; n: INTEGER): DString;
+  VAR p: DString;
+BEGIN
+  NEW(p, n+1); COPY(s, p^); RETURN p
+END MakeString;
+
+VAR field: ARRAY 16 OF DString;
 
 (* ReadRec -- read a record from "obprof.out" into the field array *)
 PROCEDURE ReadRec(f: Files.File): INTEGER;
-  VAR c: CHAR; n, i: INTEGER;
+  VAR c: CHAR; n, i: INTEGER; buf: ARRAY 1024 OF CHAR;
 BEGIN
   IF Files.Eof(f) THEN RETURN -1 END;
 
@@ -96,11 +104,11 @@ BEGIN
   LOOP
     Files.ReadChar(f, c);
     IF (c = 0AX) OR (c = ' ') THEN
-      field[n][i] := 0X;
+      field[n] := MakeString(buf, i);
       n := n+1; i := 0;
       IF c = 0AX THEN EXIT END
     END;
-    field[n][i] := c;
+    buf[i] := c;
     i := i+1
   END;
 
@@ -121,9 +129,9 @@ BEGIN
   END;
 
   WHILE ReadRec(f) >= 0 DO
-    count := Conv.IntVal(field[2]);
+    count := Conv.IntVal(field[2]^);
     IF count > 0 THEN
-      p := Find(field[0], Conv.IntVal(field[1]), TRUE);
+      p := Find(field[0]^, Conv.IntVal(field[1]^), TRUE);
       p.count := count
     END
   END;
@@ -165,8 +173,8 @@ BEGIN
   END
 END Truncate;
 
-(* Dump -- format a source file with line counts *)
-PROCEDURE Dump(fname: ARRAY OF CHAR);
+(* List -- format a source file with line counts *)
+PROCEDURE List(fname: ARRAY OF CHAR);
   VAR 
     n: INTEGER;
     p: blob;
@@ -193,17 +201,20 @@ BEGIN
     Out.String(lbuf);
     Out.Ln
   END
-END Dump;
+END List;
+
+PROCEDURE Main;
+VAR 
+  i: INTEGER;
+  abuf: ARRAY 80 OF CHAR;
+BEGIN
+  LoadProf;
+  FOR i := 1 TO Args.argc-1 DO
+    Args.GetArg(i, abuf);
+    List(abuf)
+  END
+END Main;
 
 BEGIN
-  VAR 
-    i: INTEGER;
-    abuf: ARRAY 80 OF CHAR;
-  BEGIN
-    LoadProf;
-    FOR i := 1 TO Args.argc-1 DO
-      Args.GetArg(i, abuf);
-      Dump(abuf)
-    END
-  END
-END ObDump.    
+  Main
+END ObList.    
