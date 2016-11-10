@@ -48,6 +48,6 @@ ln -s libgtksourceview-2.0.0.dylib $GTKLIB/libgtksourceview-2.0.dylib
 ln -s libpango-1.0.0.dylib $GTKLIB/libpango-1.0.dylib
 ln -s libpangocairo-1.0.0.dylib $GTKLIB/libpangocairo-1.0.dylib
 ln -s libpangoft2-1.0.0.dylib $GTKLIB/libpangoft2-1.0.dylib
-ln -s libigemacintegration.0.dylib $GTKLIB/libigemacintegration.dylib
+ln -s libgtkmacintegration-gtk2.2.dylib $GTKLIB/libgtkmacintegration-gtk2.dylib
 ln -s libcairo.2.dylib $GTKLIB/libcairo.dylib
 ln -s libintl.8.dylib $GTKLIB/libintl.dylib

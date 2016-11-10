@@ -120,8 +120,13 @@ gtk.iss: Makefile geniss.tcl
 obc.exe obb.exe obdb.exe: %.exe: %.o wrap.o
 	$(CC) $(CFLAGS) -o $@ $^
 
+REVID := $(shell cat ../revid)
+
+obc.o obb.o obdb.o: ../revid
+obc.o obb.o obdb.o: CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
+
 obc.o obb.o obdb.o wrap.o: %.o: %.c wrap.h
-	$(CC) $(CFLAGS) -c -Wall -I .. $< -o $@
+	$(CC) $(CFLAGS) -c -Wall -I .. -I ../runtime $< -o $@
 
 obdb.o: ../config.h
 

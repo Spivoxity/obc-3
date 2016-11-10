@@ -36,8 +36,6 @@ VAR n: SHORTINT;
   buf: ARRAY 10 OF CHAR;
   out: Files.File;
 
-PROCEDURE ^ Fac(n: INTEGER): LONGINT;
-
 PROCEDURE byte(c: CHAR);
   VAR x: CHAR;
 BEGIN

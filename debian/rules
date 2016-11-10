@@ -20,10 +20,11 @@ endif
 configure: configure.in
 	dh_testdir
 	autoconf && autoheader
+	cd yacc && autoconf
+	cd thunder && autoconf && autoheader
 
 config.status: configure
 	dh_testdir
-	# Add here commands to configure the package.
 	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) \
 		--prefix=/usr --mandir=\$${prefix}/share/man \
 		--infodir=\$${prefix}/share/info
@@ -59,7 +60,7 @@ binary-arch: build install
 	dh_testroot
 	dh_installchangelogs 
 	dh_installdocs
-	dh_strip -Xobc1 -Xobb1 -Xobdb1 -Xobgdb1
+	dh_strip -Xobc1 -Xobb1 -Xobdb1
 	dh_compress
 	dh_fixperms
 	dh_installdeb

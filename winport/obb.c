@@ -54,7 +54,8 @@ void versions(void)
 {
      char argbuf[MAX];
 
-     printf("Oxford Oberon-2 browser driver version %s\n", PACKAGE_VERSION);
+     printf("Oxford Oberon-2 browser driver version %s [build %s]\n", 
+	    PACKAGE_VERSION, REVID);
 
      sprintf(argbuf, "%s\\%s", obclib, BROWSER);
      arg(argbuf); arg("-v");

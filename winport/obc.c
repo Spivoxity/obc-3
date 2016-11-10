@@ -173,7 +173,8 @@ void versions(void)
      char **s, cmdbuf[MAX];
      static char *progs[] = { COMPILER, LINKER, RUNTIME, NULL };
      
-     printf("Oxford Oberon-2 compiler driver version %s\n", PACKAGE_VERSION);
+     printf("Oxford Oberon-2 compiler driver version %s [build %s]\n", 
+	    PACKAGE_VERSION, REVID);
      for (s = progs; *s != NULL; s++) {
 	  sprintf(cmdbuf, "%s\\%s", obclib, *s);
 	  arg(cmdbuf); arg("-v");
@@ -187,13 +188,10 @@ void usage(void)
      p("Usage: obc [flag ...] file ...");
      p("");
      p("  -O0     Turn off peephole optimiser");
-     p("  -O      Turn on peephole optimiser (default)");
      p("  -b      Disable runtime checks");
-     p("  -g      Output debugging symbols");
      p("  -v      Print compiling and linking commands");
      p("  -w      Turn off warnings");
      p("  -x      Enable language extensions");
-     p("  -pl     Output line numbers for profiling or debugging");
      p("  -I dir  Add dir as search directory for imported modules");
      p("  -rsb    Keywords and built-ins are in lower case" );
      p("  -c      Compile only; omit linking step");
@@ -204,8 +202,6 @@ void usage(void)
      p("");
      p("  *.m     Oberon source file to be compiled");
      p("  *.k     Bytecode file for linking");
-     p("  *.c     File of primitives coded in C");
-     p("  *.o     File of object code for primitives");
      exit(2);
 }
 

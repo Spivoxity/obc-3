@@ -1,12 +1,12 @@
-.\" Copyright (C) 1999 J. M. Spivey
-.TH OBDUMP 1
+.\" Copyright (C) 1999\-2016 J. M. Spivey
+.TH OBLIST 1
 .SH NAME
-obdump \- Oberon\-2 line-count profiler
+oblist \- Oberon\-2 line-count profiler
 .SH SYNOPSIS
-.B obdump
-.I file
+.B oblist
+.I file.m
 .SH DESCRIPTION
-.B Obdump
+.B Oblist
 reads the file
 .I obprof.out
 of line-count data written by
@@ -15,6 +15,6 @@ and correlates it with the source file specified on the command line.
 The output is a listing of the source file with the line-counts shown
 in the left margin.
 .SH FILES
-obdump.out \- line-count data
+obprof.out \- line-count data
 .SH AUTHOR
 Mike Spivey

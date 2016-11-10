@@ -1,0 +1,1773 @@
+% jmsmac.tex 
+% $Id: jmsmac.tex 3 2006-12-31 20:35:33Z mike $
+
+% Macros for Mike's book format
+
+%\input jmsdef
+% jmsdef.tex 
+% $Id: jmsdef.tex 2 2006-06-12 09:26:54Z mike $
+
+% Basic definitions for JMS format (also used in MetaPost)
+
+\catcode`@=11
+
+\let\protect=\relax
+
+%
+% Font loading
+%
+
+% Six font schemes:
+%
+%   Scheme	Body font	\iflucida	CM fonts
+%   0 (default)	lbr		true
+%   1		lsr		true
+%   2		cmr		false		sauter
+%   3		cmss		false		sauter
+%   4		cmr		false		basic
+%   5		cmss		false		basic
+%
+% Schemes 4 and 5 are like 2 and 3, but use just the basic set of CM fonts.
+
+\newif\iflucida
+\newif\ifbasiccm
+\newcount\fontscheme
+
+% Say `\def\fonts{2}\input book' to get CMR
+\ifx\fonts\undefined\else\fontscheme=\fonts\fi
+
+\ifnum\fontscheme<2 \lucidatrue\else\lucidafalse\fi
+\ifnum\fontscheme>3 \basiccmtrue \advance\fontscheme by-2 \else\basiccmfalse\fi
+
+% To deal with the Sans font scheme (\fontscheme=1), we distinguish
+% between the body font \tenrm (lbr or lsr as appropriate) and the
+% math font \tenmrm (always lbr).  Same (and more important) for \tenit
+% vs \tenmti and \tenbf vs \tenmbf.
+%
+% So there are three potentially different italic fonts: the italic
+% used for running text (\tenit), the text italic font that is used for
+% maths (\tenmti), and the math italic font (\teni).  There are two
+% font-changing commands: 
+%
+%     Command	Horiz mode	Math mode
+%
+%     \it	\tenit		\tenmti
+%     \mti	\tenmti		(no effect)
+% 
+% In math mode, you get \teni by default with no font-changing command.
+
+% Font substitution for basic CM
+
+\def\fontsubst#1#2{\expandafter\def\csname subst@#1\endcsname{#2}}
+
+\ifbasiccm
+  \fontsubst{cmcsc8}{cmcsc10 at8pt}
+  \fontsubst{cmcsci8}{cmcsc10 at8pt}
+  \fontsubst{cmssbx8}{cmssbx10 at8pt}
+  \fontsubst{cmitt8}{cmitt10 at8pt}
+
+  \fontsubst{cmcsc9}{cmcsc10 at9pt}
+  \fontsubst{cmcsci9}{cmcsc10 at9pt}
+  \fontsubst{cmssbx9}{cmssbx10 at9pt}
+  \fontsubst{cmitt9}{cmitt10 at9pt}
+
+  \fontsubst{cmcsci10}{cmcsc10}
+
+  \fontsubst{cmcsci12}{cmcsc10 scaled\magstep1}
+  \fontsubst{cmitt12}{cmitt10 scaled\magstep1}
+  \fontsubst{cmsy12}{cmsy10 scaled\magstep1}
+  \fontsubst{cmcsc12}{cmcsc10 scaled\magstep1}
+  \fontsubst{cmex12}{cmex10 scaled\magstep1}
+  \fontsubst{cmssbx12}{cmssbx10 scaled\magstep1}
+
+  \fontsubst{cmr14}{cmr10 scaled\magstep2}
+  \fontsubst{cmss14}{cmss10 scaled\magstep2}
+
+  \fontsubst{cmr20}{cmr10 scaled\magstep4}
+  \fontsubst{cmss20}{cmss10 scaled\magstep4}
+  \fontsubst{cmssi20}{cmssi10 scaled\magstep4}
+  \fontsubst{cmssbx20}{cmssbx10 scaled\magstep4}
+
+  \fontsubst{cmss24}{cmss10 scaled\magstep5}
+  \fontsubst{cmssbx24}{cmssbx10 scaled\magstep5}
+\fi
+
+% Use e.g. \@font\twelverm{cmcsci10 scaled\magstep1} to load a font,
+% but with a possible substitution cmcsci10 --> cmcsc10, giving the
+% effect of \font\twelverm=cmcsc10 scaled\magstep1
+\def\@font#1#2{
+  \expandafter\let\expandafter\next
+    \csname subst@\expandafter\killscale#2 scaled\killscale\endcsname
+  \ifx\next\relax \font#1=#2 
+  \else \expandafter\getscale#2scaledscaled\getscale 
+    \font#1=\next\scale \fi}
+
+\def\killscale#1 scaled#2\killscale{#1}
+\def\getscale#1scaled#2scaled#3\getscale{\def\scale{#2}%
+  \ifx\scale\empty\else \def\scale{ scaled #2}\fi}
+
+
+%
+% Size selection
+%
+
+\newdimen\fontquad 
+\newdimen\fontbody
+\newdimen\blockindent
+
+\newfam\sffam
+\newfam\arfam % used for arrow font in Lucida
+
+\newif\ifleaded
+\iflucida\leadedtrue\fi
+
+\newtoks\sizetoks
+
+% Can set running text in 8, 9, 10, 11 or 12 point
+
+\def\setsize#1#2#3#4#5#6{%
+% #1 = text size
+% #2 = script size
+% #3 = scriptscript size
+% #4 = quad and body size (CM)
+% #5 = body size (Lucida)
+% #6 = jot
+  \ifleaded \fontbody=#5 \else \fontbody=#4 \fi
+  \fontquad=#4 \jot=#6
+  \parindent=\fontquad
+  \blockindent=2\fontquad
+  \def\@textsize{#1}\def\@scriptsize{#2}\def\@scriptscriptsize{#3}%
+  	% NB: these sizes are used by the math quotes "..."
+  \setfamily0{mrm} \setmface0{rm} \setface{mrm}
+  \setfamily1{i}
+  \setfamily2{sy}
+  \setexfamily
+  % The remaining families are not to be used in subscripts
+  \smallfamily\itfam{mti} \setmface\itfam{it} \setface{mti} 
+  \smallfamily\bffam{mbf} \setmface\bffam{bf} \setface{mbf} 
+  \smallfamily\sffam{sf}  \setmface\sffam{sf} 
+  \iflucida\smallfamily\arfam{ar}\fi
+  \the\sizetoks
+  \normalbaselines\rm}
+
+\def\setface#1{\expandafter\edef\csname p#1\endcsname{%
+  \expandafter\noexpand\csname\@textsize#1\endcsname}\ignorespaces}
+\def\setmface#1#2{\expandafter\edef\csname p#2\endcsname{%
+  \fam#1\expandafter\noexpand\csname\@textsize#2\endcsname}\ignorespaces}
+\def\setfamily#1#2{%
+  \textfont#1=\csname\@textsize#2\endcsname
+  \scriptfont#1=\csname\@scriptsize#2\endcsname
+  \scriptscriptfont#1=\csname\@scriptscriptsize#2\endcsname\ignorespaces}
+\def\smallfamily#1#2{%
+  \textfont#1=\csname\@textsize#2\endcsname\ignorespaces}
+\def\setexfamily{%
+  \textfont3=\csname\@textsize ex\endcsname
+  \scriptfont3=\csname\@textsize ex\endcsname
+  \scriptscriptfont3=\csname\@textsize ex\endcsname}
+
+\def\eightpoint{\setsize{eight}{six}{five}{10pt}{11pt}{2pt}}
+\def\ninepoint{\setsize{nine}{six}{five}{11pt}{12pt}{2.5pt}}
+\def\tenpoint{\setsize{ten}{seven}{five}{12pt}{13pt}{3pt}}
+\def\elevenpoint{\setsize{eleven}{eight}{six}{13pt}{14pt}{3.5pt}}
+\def\twelvepoint{\setsize{twelve}{eight}{six}{14pt}{15pt}{3.5pt}}
+
+\def\deffont#1{%
+  % Add definition of face to \sizetoks
+  \expandafter\sizetoks\expandafter{\the\sizetoks\setface{#1}}
+  % Define the font-changing command
+  \expandafter\edef\csname #1\endcsname{\protect\expandafter
+    \noexpand\csname p#1\endcsname}}
+
+\def\rm{\protect\prm} \def\mrm{\protect\pmrm} \def\it{\protect\pit}
+\def\mti{\protect\pmti} \def\bf{\protect\pbf} \def\mbf{\protect\pmbf}
+\def\sf{\protect\psf}
+
+\deffont{sl} \deffont{sc} \deffont{sci} \deffont{sfb} \deffont{vsf}
+\deffont{vsfi} \deffont{tt} \deffont{tti} \deffont{kr} \deffont{ki}
+
+\def\normalbaselines{%
+  \lineskip=\normallineskip
+  \baselineskip=\fontbody
+  \lineskiplimit=\normallineskiplimit
+  \bigskipamount=\fontbody plus5pt minus3pt
+  \medskipamount=0.5\fontbody plus4pt minus2pt
+  \abovedisplayskip=\medskipamount
+  \belowdisplayskip=\medskipamount
+  \abovedisplayshortskip=\abovedisplayskip
+  \belowdisplayshortskip=\belowdisplayskip
+  \setbox\strutbox=\hbox{\vrule height0.7\fontbody depth0.3\fontbody width0pt}}
+
+% We do not have oldstyle digits.
+\let\oldstyle=\undefined
+
+% \sl is not used for math setting
+\textfont\slfam=\nullfont \scriptfont\slfam=\nullfont
+  \scriptscriptfont\slfam=\nullfont
+
+
+%
+% Loading of fonts
+%
+
+\def\smallsizes{
+  \do{five}{5.2}{5}{5}
+  \do{six}{6.1}{6}{6}
+  \do{seven}{6.9}{7}{7}}
+
+\def\bigsizes{
+  \do{eight}{7.8}{8}{8}
+  \do{nine}{8.6}{9}{9}
+  \do{ten}{9.5}{10}{10}
+  \do{eleven}{10.4}{11}{10 scaled\magstephalf}
+  \do{twelve}{11.2}{12}{12}}
+
+\def\allsizes{\smallsizes\bigsizes}
+
+\def\loadfont#1#2#3#4#5{
+  \def\do##1##2##3##4{% name lusize cmsize basiccmsize
+    \edef\f@nt{\ifcase\fontscheme #2 at##2pt\or #3 at##2pt\or
+      \ifbasiccm #4##4\else #4##3\fi\or \ifbasiccm #5##4\else #5##3\fi\fi}
+    \expandafter\@font\csname ##1#1\endcsname\f@nt}}
+
+\def\specialfont#1#2#3{%
+  \ifcase\fontscheme \@font#1{#2} \or\@font#1{#2} 
+    \or\@font#1{#3} \or\@font#1{#3}\fi}
+
+% Extra sizes for Lucida
+\def\lfourteen{13pt}
+\def\ltwenty{18pt}
+\def\ltwentyfour{22pt}
+
+\loadfont{mrm}  {lbr}    {lbr}    {cmr}    {cmr}    \allsizes
+\loadfont{i}    {lbmi}   {lbmi}   {cmmi}   {cmmi}   \allsizes
+\loadfont{sy}   {lbms}   {lbms}   {cmsy}   {cmsy}   \allsizes
+\iflucida
+  \loadfont{ar} {lbma}   {lbma}   {***}    {***}    \allsizes
+\fi
+
+\loadfont{rm}   {lbr}    {lsr}    {cmr}    {cmss}   \bigsizes
+\loadfont{it}   {lbi}	 {lsi}    {cmti}   {cmssi}  \bigsizes
+\loadfont{ex}   {lbme}   {lbme}   {cmex}   {cmex}   \bigsizes
+\loadfont{bf}   {lbd}    {lsd}    {cmbx}   {cmssbx} \bigsizes
+\loadfont{sf}   {lsr}    {lsr}    {cmss}   {cmss}   \bigsizes
+\loadfont{sfi}	{lsi}	 {lsi}	  {cmssi}  {cmssi}  \bigsizes
+\loadfont{mti}	{lbi}    {lbi}    {cmti}   {cmti}   \bigsizes
+\loadfont{mbf}	{lbd}    {lbd}    {cmbx}   {cmbx}   \bigsizes
+\loadfont{sl}	{lbsl}   {lso}    {cmsl}   {cmssi}  \bigsizes
+\loadfont{sc}	{lbrsc}  {lbrsc}  {cmcsc}  {cmcsc}  \bigsizes
+\loadfont{sci}	{lbosc}  {lbosc}  {cmcsci} {cmcsci} \bigsizes
+\loadfont{sfb}	{lsd}    {lsd}    {cmssbx} {cmssbx} \bigsizes
+\loadfont{vsf}	{vlsr}   {lbtn}   {cmtt}   {cmtt}   \bigsizes
+\loadfont{vsfi}	{vlsi}   {lbtno}  {cmitt}  {cmitt}  \bigsizes
+\loadfont{tt}	{lbtn}   {lbtn}   {cmtt}   {cmtt}   \bigsizes
+\loadfont{tti}	{lbtno}  {lbtno}  {cmitt}  {cmitt}  \bigsizes
+\loadfont{kr}   {lbkr}   {lbkr}   {cmss}   {cmss}   \bigsizes
+\loadfont{ki}   {lbki}   {lbki}   {cmssi}  {cmssi}  \bigsizes
+
+% Set the skewchars
+\def\do#1#2#3#4{
+  \expandafter\skewchar\csname #1i\endcsname='177
+  \expandafter\skewchar\csname #1sy\endcsname='60
+}
+\allsizes
+
+% Special fonts
+
+% Fourteen point
+\specialfont\fourteenrm{lbr at\lfourteen}{cmr14}
+\specialfont\fourteensf{lsr at\lfourteen}{cmss14}
+
+% Twenty point
+\specialfont\twentyrm{lbr at\ltwenty}{cmr20}
+\specialfont\twentysf{lsr at\ltwenty}{cmss20}
+\specialfont\twentysfb{lsb at\ltwenty}{cmssbx20}
+\specialfont\twentysfi{lsi at\ltwenty}{cmssi20}
+
+% Twenty-four point
+\specialfont\twentyfoursf{lsr at\ltwentyfour}{cmss24}
+\specialfont\twentyfoursfb{lsd at\ltwentyfour}{cmssbx24}
+\specialfont\twentyfourfunky{lbki at\ltwentyfour}{cmssbx24}
+
+% Typeface loads a single face in multiple sizes.  The Lucida-adjusted
+% size is used in each case, even if the font scheme is CM.
+% Best used to load funky variants of Lucida
+\def\typeface#1#2{%
+  \def\do##1##2##3##4{% name lusize cmsize basiccmsize
+    \expandafter\@font\csname ##1#1\endcsname{#2 at##2pt}}%
+  \bigsizes
+  \deffont{#1}}
+
+
+%
+% Adjustments for Lucida
+%
+
+\iflucida
+
+\def\neq{\mathrel{\fam\arfam\mathchar"7094}}
+
+% Adjusted for LucidaNewMath-Extension at 9.5pt and math axis at 3.13pt
+% Note: delimiter increments are 5.5pt (as opposed to 6pt in CM)
+% These work in \tenpoint size only.
+
+\def\big#1{{\hbox{$\left#1\vbox to8.20\p@{}\right.\n@space$}}}
+\def\Big#1{{\hbox{$\left#1\vbox to10.80\p@{}\right.\n@space$}}}
+\def\bigg#1{{\hbox{$\left#1\vbox to13.42\p@{}\right.\n@space$}}}
+\def\Bigg#1{{\hbox{$\left#1\vbox to16.03\p@{}\right.\n@space$}}}
+\def\biggg#1{{\hbox{$\left#1\vbox to17.72\p@{}\right.\n@space$}}}
+\def\Biggg#1{{\hbox{$\left#1\vbox to21.25\p@{}\right.\n@space$}}}
+\def\n@space{\nulldelimiterspace\z@ \m@th}
+
+% define some extra large sizes - always done using extensible parts
+
+\def\bigggl{\mathopen\biggg}
+\def\bigggr{\mathclose\biggg}
+\def\Bigggl{\mathopen\Biggg}
+\def\Bigggr{\mathclose\Biggg}
+
+%% %  Following is needed if the roman text font is NOT just LucidaBright
+%% 
+%% %  Draw the small sizes of `[' and `]' from LBMO instead of LBR
+%% 
+%% \mathcode`\[="4186 \delcode`\[="186302
+%% \mathcode`\]="5187 \delcode`\]="187303
+%% 
+%% %  Draw the small sizes of `(' and `)' from LBMO instead of LBR
+%% 
+%% \mathcode`\(="4184 \delcode`\(="184300
+%% \mathcode`\)="5185 \delcode`\)="185301
+%% 
+%% %  The small sizes of `{' and `}' are already drawn from LBMS instead of LBR
+%% 
+%% %  Draw small `/' from LBMO instead of LBR
+%% 
+%% \mathcode`\/="013D \delcode`\/="13D30E
+%% 
+%% %  Draw  `=' and `+' from LBMS instead of LBR
+%% 
+%% \mathcode`\=="3283 \mathcode`\+="2282
+%% 
+%% % May want to comment out this last one if text font IS known to be LBR
+
+% plain.tex draws upper case upright Greek from roman text font ---
+% --- need to draw instead from LucidaNewMath-Extension
+
+\mathchardef\Gamma="03D0
+\mathchardef\Delta="03D1
+\mathchardef\Theta="03D2
+\mathchardef\Lambda="03D3
+\mathchardef\Xi="03D4
+\mathchardef\Pi="03D5
+\mathchardef\Sigma="03D6
+\mathchardef\Upsilon="03D7
+\mathchardef\Phi="03D8
+\mathchardef\Psi="03D9
+\mathchardef\Omega="03DA
+
+% The dot accent has moved
+\def\dot{\mathaccent"7005 }
+
+\def\TeX{T\kern-.18em\lower.4ex\hbox{E}\kern-.1emX}
+
+\def\copyright{{\rm\char"A9}}
+
+\def\matrix#1{\null\,\vcenter{\normalbaselines\m@th
+    \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
+      \mathstrut\crcr\noalign{\kern-0.9\baselineskip}
+      #1\crcr\mathstrut\crcr\noalign{\kern-0.9\baselineskip}}}\,}
+
+% \p@renwd is used in \bordermatrix as the width of big extensible left paren
+% i.e. where rows and columns are labelled outside parenthesized matrix
+% \newdimen\p@renwd
+\setbox\z@=\hbox{\tenex B} \p@renwd=\wd\z@ % width of the big left (
+
+% following changed because `(' is not large enough for strut in LBMO
+\def\mathstrut{\vphantom{f}}
+
+% In n-th root, don't want the `n' to come too close to the radical
+\def\r@@t#1#2{\setbox\z@\hbox{$\m@th#1\sqrt{#2}$}
+  \dimen@\ht\z@ \advance\dimen@-\dp\z@
+  \mkern5mu\raise.6\dimen@\copy\rootbox \mkern-7.5mu \box\z@}
+
+\fi
+
+
+%
+% Math stuff
+%
+
+\def~{\relax\ifmmode\,\else\penalty10000\ \fi}
+\def\{{\relax\ifmmode\lbrace\else\iflucida\char`\{\else$\lbrace$\fi\fi}
+\def\}{\relax\ifmmode\rbrace\else\iflucida\char`\}\else$\rbrace$\fi\fi}
+
+% ! is an Ord, not a Close as in plain TeX
+\mathcode`\!="0021
+
+% Math spacing is a bit more chunky that in plain TeX
+\thinmuskip=4mu plus2mu minus1mu
+\medmuskip=5mu plus2mu minus2mu
+\thickmuskip=6mu plus3mu
+
+% In cmr10 and plain TeX, an ordinary space is 12/36 plus 6/36 minus 4/36 em,
+% 1 mu is 2/36 em, and the three mu skips are
+%	thin  3 mu 			= 6/36 em
+%	med   4 plus 2 minus 4 mu	= 8/36 plus 4/36 minus 8/36 em
+%	thick 5 plus 5 mu		= 10/36 plus 10/36 em
+
+% @ is a binary operator
+\mathcode`\@="2040
+
+% "stuff" sets stuff with math text italic.  We use an \hbox to deal
+% with \_ nicely, and use \mathselect to get the appropriate size:
+\def\kwote#1"{\mathselect\kw@te{#1}}
+\def\kw@te#1#2{\hbox{\csname #1mti\endcsname #2\/}}
+\mathcode`\"="8000
+{\catcode`\"=\active \global\let"=\kwote}
+
+% Like mathpalette, but the argument is a font size
+\def\mathselect#1#2{\mathchoice{#1\@textsize{#2}}{#1\@textsize{#2}}%
+  {#1\@scriptsize{#2}}{#1\@scriptscriptsize{#2}}}
+
+\def\isc#1{\hbox{\sci \@cap#1\@cap\/}} % constant in caps and small caps
+\def\@cap#1#2\@cap{#1\lowercase{#2}}
+
+%\def\star{\mathord{*}}
+
+\catcode`@=12
+
+\tenpoint
+
+
+\catcode`@=11
+
+\newif\ifpdf \pdffalse
+\ifx\pdfoutput\undefined \else
+  \ifnum\pdfoutput>0 \pdftrue \fi
+\fi
+
+%
+% Page layout
+%
+
+\newdimen\grid 			
+\newdimen\normaltopskip 	
+\newdimen\pagewidth 		
+\newdimen\textwidth
+\newdimen\pageheight 		
+\newdimen\colsep 		
+
+\ifleaded \grid=13pt \else \grid=12pt \fi
+\normaltopskip=\grid
+\pagewidth=350pt                
+\textwidth=\pagewidth
+\colsep=24pt                    
+
+\def\setpage#1#2{
+  \pageheight=\normaltopskip 
+  \advance\pageheight by\ifleaded #1\else #2\fi\grid
+  \@setpage}
+
+\def\@setpage{
+  \hsize=\textwidth
+  \vsize=\pageheight
+  \topskip=\normaltopskip
+  \figlimit=\pageheight
+  \dimen\topins=\figlimit
+  \dimen\botins=\figlimit}
+
+\def\normalpage{\setpage{39}{43}}
+\def\stretchpage{\setpage{50}{55}}
+
+\def\setheight#1{
+  \pageheight=#1
+  \divide\pageheight by\grid
+  \multiply\pageheight by\grid
+  \advance\pageheight by-4\grid % allow for head- and footlines
+  \@setpage}
+
+
+%
+% Spacing commands
+%
+
+\def\medspace{\vspace\medskipamount}
+\def\bigspace{\vspace\bigskipamount}
+
+\def\bigskipneg{\vskip-\bigskipamount} % to eliminate the `shoulder pad effect'
+
+\def\enspace{\kern0.5\fontquad\relax}
+\def\quad{\hskip\fontquad\relax}
+\def\qquad{\hskip2\fontquad\relax}
+
+\def\vspace{\par\begingroup\afterassignment\@vspace\skip0=}
+\def\@vspace{\ifdim\lastskip<\skip0 \removelastskip\vskip\skip0\fi\endgroup}
+
+\newif\ifinfloat \infloatfalse
+\newif\ifnomargin \nomarginfalse
+
+\def\nomargin{\nomargintrue}
+
+
+%
+% Headlines and footlines
+%
+
+\newif\iftitle \titlefalse
+\newif\ifblank \blankfalse
+
+\newtoks\foottoks
+\newif\ifonefoot \onefootfalse
+
+\def\onefoot#1{\onefoottrue\foottoks={#1}}
+
+\def\rcsid$#1${\onefoot{{\tensf\$#1\$}}}
+
+\headline={\ifblank\hfil\else\iftitle\hfil\else
+  \ifodd\pageno\rightheadline\else\leftheadline\fi\fi\fi}
+
+% Note: no page number appears in the footer of a single-page document
+% that begins with a chapter heading.
+\footline={%
+  \ifblank \hfil 
+  \else\iftitle \ifodd\pageno\rightnumfoot\else\leftnumfoot\fi 
+  \else \theonefoot \fi\fi}
+
+\def\theonefoot{\ifonefoot \the\foottoks\hfil \global\onefootfalse \fi}
+
+% Use \hfill here so \hfil\break can be used to split headings
+\def\leftheadline{\tenit\thepageno\quad\lhead\hfill}
+\def\rightheadline{\hfill\tenit\rhead\quad\thepageno}
+
+\def\leftnumfoot{\tenit\thepageno\hfil\theonefoot}
+\def\rightnumfoot{\theonefoot\hfil\tenit\thepageno}
+
+\def\lhead{} % Will be chapter title
+\def\rhead{\firstmark} % Will be 'A' head at page top
+
+\def\thepageno{\folio}
+
+
+%
+% Footnotes (borrowed parts from plain and manmac)
+%
+
+\skip\footins=\grid plus0.5\grid
+\dimen\footins=20\grid
+\count\footins=1000
+
+\def\footnote{\fnmark\fntext}
+
+\def\footnum{$^{\number\footcnt}$}
+
+\def\fnmark{\edef\@sf{\spacefactor\the\spacefactor}%
+  \global\advance\footcnt by1
+  \hyperanchor@\fntag{fn}%
+  \hyperlink{\fntag a}{\footnum}\@sf}
+
+\def\fntext{\insert\footins\bgroup\eightpoint
+  \interlinepenalty=\interfootnotelinepenalty
+  \let\par=\endgraf
+  \leftskip=0pt \rightskip=0pt
+  \splittopskip=\ht\strutbox % top baseline for broken footnotes
+  \splitmaxdepth=\dp\strutbox \floatingpenalty=20000
+  \noindent 
+  \hyperanchor{\fntag a}\hyperlink\fntag{\footnum}\enspace
+  \bgroup\strut
+  \aftergroup\@foot\let\next}
+\def\@foot{\strut\egroup}
+
+
+%
+% Output routine (borrows parts of plain and manmac)
+% 
+
+\newinsert\margin
+\dimen\margin=\maxdimen \count\margin=0 \skip\margin=0pt
+
+% Preamble stuff to include PostScript at start of DVI file.
+% This is superior to using a simple \special, because it does not
+% add to the main vertical list, so that an initial \clearpage remains
+% a no-op.
+\newbox\preambox \setbox\preambox=\vbox{}
+\def\preamble#1{\global\setbox\preambox=\vbox{\unvbox\preambox#1}}
+\def\dopreamble{\unvbox\preambox \global\let\dopreamble=\relax}
+
+\output={\outputpage\pagebody \resetpage}
+
+% JMS 8/10/01: moved insertion stuff to \pagebody so footnotes appear
+% below \botins.  This affects
+% insertions with double columns -- but I don't think they worked anyway.
+
+\def\outputpage#1{\offinterlineskip
+  \shipout\vbox{
+    \dopreamble
+    \makeheadline
+    \vbox to\pageheight{\boxmaxdepth=\maxdepth #1}
+    \makefootline}
+  \advancepageno
+  \ifvoid255
+    \ifnum\outputpenalty>-20000 \else\dosupereject\fi
+  \else
+    \unvbox255 \penalty\outputpenalty
+  \fi}
+
+\def\makeheadline{%
+  \vbox to2\grid{\vss
+    \hbox to\pagewidth{\the\headline}
+    \kern-\prevdepth \vskip\grid}}
+
+\def\makefootline{%
+  \normalbaselines\baselineskip=2\grid 
+  \hbox to\pagewidth{\the\footline}}
+
+\def\pagebody{%
+  \ifvoid\margin\else \marginalnotes \fi
+  \ifvoid\topins\else \unboxinsertions\topins \fi
+  \dimen@=\dp255 % with ragged bottom, depth may fall into page foot
+  \unvbox255
+  \ifvoid\botins\else \unboxinsertions\botins \fi
+  \ifvoid\footins\else
+    \vskip\skip\footins
+    \footnoterule
+    \unvbox\footins\fi
+  \ifr@ggedbottom \kern-\dimen@ \vfil \fi}
+
+\def\footnoterule{\kern-3pt
+  \hrule width 2in \kern 2.6pt} % the \hrule is .4pt high
+
+\def\marginalnotes{\hbox{\hskip\pagewidth\hskip 12pt
+    \vbox to0pt{\kern6pt \box\margin \vss}}}
+
+\def\resetpage{\global\titlefalse \global\blankfalse
+  \global\dimen\topins=\figlimit}
+
+\def\frontmatter{\par\vfil\break\pageno=-1 }
+\def\body{\par\vfil\break\pageno=1 }
+
+\def\raggedbottom{\topskip=\normaltopskip
+  \advance\topskip by0pt plus2\grid
+  \r@ggedbottomtrue}
+\def\flushbottom{\topskip=\normaltopskip \r@ggedbottomfalse}
+
+\def\clearpage{\par
+  \ifdim\prevdepth>-1000pt \dimen0=\prevdepth    % Allow depth of last
+    \ifdim\dimen0>\maxdepth \dimen0=\maxdepth\fi % box to fall into page foot
+    \kern-\dimen0 \fi
+  \vfil\supereject}
+
+
+%
+% Double columns
+%
+
+% Borrowed from the TeXbook (Appendix E, page 417) ...
+
+\newbox\partialpage
+
+\def\begindoublecolumns{\begingroup
+  \output={\global\setbox\partialpage=\vbox{\unvbox255\bigskip}}\eject
+  \output={\doublecolumnout}
+  \hsize=\pagewidth \advance\hsize by-\colsep \divide\hsize by2
+  \vsize=\pageheight \multiply\vsize by2 \advance\vsize by\baselineskip}
+\def\enddoublecolumns{\output={\balancecolumns}\eject
+  \endgroup \pagegoal=\vsize}
+
+\def\doublecolumnout{\splittopskip=\topskip \splitmaxdepth=\maxdepth
+  \dimen@=\pageheight \advance\dimen@ by-\ht\partialpage
+  \setbox0=\vsplit255 to\dimen@ \setbox2=\vsplit255 to\dimen@
+  \outputpage\pagesofar \resetpage
+  \unvbox255 \penalty\outputpenalty}
+
+\def\pagesofar{\unvbox\partialpage \nointerlineskip
+  \wd0=\hsize \wd2=\hsize 
+  \hbox to\pagewidth{\box0\hfil\box2}}
+
+\def\balancecolumns{\setbox0=\vbox{\unvbox255} \dimen@=\ht0
+  \advance\dimen@ by\topskip \advance\dimen@ by-\baselineskip
+  \divide\dimen@ by2 \splittopskip=\topskip
+  {\vbadness=10000 \loop \global\setbox3=\copy0
+    \global\setbox1=\vsplit3 to\dimen@
+    \ifdim\ht3>\dimen@ \global\advance\dimen@ by1pt \repeat}
+  \setbox0=\vbox to\dimen@{\unvbox1}
+  \setbox2=\vbox to\dimen@{\unvbox3}
+  \pagesofar}
+
+% ... end of borrowing
+
+% For smaller pieces of two-column work, here's code that makes a
+% two-column box:
+
+\def\twocolbox{\setbox0=\vbox\bgroup
+  \advance\hsize by-\colsep \divide\hsize by2
+  \prevdepth=\dp\strutbox % Simulate \topskip=\ht\strutbox
+  \aftergroup\twosplit\let\next}
+
+\def\twosplit{{\splittopskip=\ht\strutbox \vbadness=10000
+  \dimen0=\ht0 
+  \advance\dimen0 by3\baselineskip % Right column should be a little short
+  \divide\dimen0 by2
+  \setbox1=\vsplit0 to\dimen0
+  \hbox{\valign{##\vfil\cr\unvbox1\cr\noalign{\colrule}\unvbox0\cr}}}}
+
+\def\colrule{\hskip\colsep}
+
+
+%
+% Floating insertions
+%
+
+\newif\ifpagefig
+\newif\ifbotfig
+
+\newdimen\figlimit
+\newinsert\botins
+\count\topins=1000 \skip\topins=0pt
+\count\botins=1000 \skip\botins=0pt
+
+\def\insertion{\begingroup\setbox0=\vbox\bgroup
+  \infloattrue\prevdepth=0pt\lineskip=0pt
+  \hyperanchor@\instag{ins}}
+\def\endins{\egroup
+  \ifdim\ht0>0.7\pageheight \pagefigtrue\fi
+  \insert\ifbotfig\botins\else\topins\fi{%
+    \penalty100
+    \splittopskip=0pt \splitmaxdepth=\maxdimen \floatingpenalty=0
+    \ifpagefig 
+      \dimen@=\dp0 
+      \vbox to\pageheight{\vfil \unvbox0 \kern-\dimen@ \vfil}
+    \else
+      % Increase height by 1.5\grid, then round up to next mult of \grid:
+      \dimen@=\ht0 \advance\dimen@ by2.5\grid
+      \divide\dimen@ by\grid \multiply\dimen@ by\grid
+      \ifbotfig
+        \vbox to\dimen@{\vfil \unvbox0}
+      \else
+        \vbox to\dimen@{\unvbox0 \vfil}
+      \fi
+    \fi}%
+  \endgroup
+  \pagefigfalse \botfigfalse}
+
+% Unbox the insertions to equalize the spaces between them, but box
+% the result to the desired height.
+\def\unboxinsertions#1{\vbox to\ht#1{\unvbox#1 \unboxthem}}
+\def\unboxthem{\setbox0=\lastbox \ifvbox0{\unboxthem}\unvbox0\fi}
+
+\def\figure{\insertion \def\docaption##1{##1\figcnt{Figure}}}
+\def\botfig{\botfigtrue \insertion \def\docaption##1{##1\figcnt{Figure}}}
+\def\pagefig{\pagefigtrue \insertion \def\docaption##1{##1\figcnt{Figure}}}
+\def\table{\insertion \def\docaption##1{##1\tabcnt{Table}}}
+\let\endfig=\endins
+\let\endtab=\endins
+
+\def\caption{\docaption\makecaption}
+\def\contcaption{\docaption\makecontcap}
+
+\def\makecaption#1#2#3{\bigskip
+  \global\advance#1 by1 \xdef\lastlabel{{\thechapdot\number#1}{\instag}}
+  \hbox to\pagewidth{\hfil\ninepoint 
+    \bf #2 \thechapdot\number#1: \it #3\hfil}}
+
+\def\makecontcap#1#2#3{\bigskip
+  \xdef\lastlabel{{\thechapdot\number#1}{\instag}}
+  \hbox to\pagewidth{\hfil\ninepoint 
+    \bf #2 \thechapdot\number#1 \rm (cont.): \it #3\hfil}}
+
+\input epsf
+
+%\def\epsfsize#1#2{0.5#1}
+
+\def\graphic#1{\placepic{\hss\image{#1}\hss}}
+\def\twingraphics#1#2{\placepic{\hfil\image{#1}\hfil\image{#2}\hfil}}
+
+\def\placepic#1{\medskip\hbox to\pagewidth{#1}\medskip}
+
+\def\image#1{%
+  \openin\testin=#1
+  \ifeof\testin \closein\testin \placeholder{#1}%
+  \else \closein\testin \epsfbox{#1}\fi}
+
+\def\placeholder#1{\immediate\write16{Missing figure #1}%
+    \vbox to2in{\hrule\vfill
+      \hbox to3in{\hfill[Insert graphic {\vsf #1} here]\hfill}
+      \vfill\hrule}}
+
+
+%
+% Chapters and sections
+%
+
+\newcount\chap
+\newcount\sec		
+\newcount\subsec
+\newcount\figcnt
+\newcount\tabcnt
+\newcount\footcnt
+\newcount\exno
+
+\newif\ifnobreak % This is a hack (stolen from LaTeX) to prevent
+		 % \label from allowing bad page breaks.
+
+\newtoks\chapreset
+\newtoks\secreset
+
+\chapreset={\global\sec=0 \global\figcnt=0 
+  \global\tabcnt=0 \global\footcnt=0 \global\exno=0 }
+\secreset={\global\subsec=0 }
+
+\def\addtoks#1#2{\expandafter\global\expandafter#1\expandafter{\the#1#2}}
+
+%%%% Chapters
+
+\def\chapheading#1#2#3{% number title author
+  \global\titletrue \dimen\topins=0pt % No headlines or floats this page
+  \vbox to15\grid{
+    \tenpoint
+    \hbox{\vbox to2\grid{}\twelvepoint\sf #1}
+    \hbox to\pagewidth{\strut\leaders\hrule height6pt depth-4.5pt\hfil}
+    \baselineskip=2\grid
+    \pretolerance=10000 \rightskip=0pt plus1fil
+    \def\\{\hfil\break}
+    {\twentysf\def\pit{\twentysfi}\noindent #2\par}
+    \baselineskip=1.5\grid
+    \vskip2\grid
+    {\twelvepoint\sf \noindent \ignorespaces #3\par}
+    \vfill}
+  \global\nobreaktrue \global\everypar={\afterheadpar}}
+
+\newif\ifapp \appfalse
+\def\appendix{\apptrue\chap=0\addtoc\tocinsert{}{Appendix}{}{}}
+\def\appendices{\apptrue\chap=0\addtoc\tocinsert{}{Appendices}{}{}}
+
+\def\chapstart#1#2#3{% numcode title author
+  \clearpage\resetpar
+  #1
+  \the\chapreset 
+  \xdef\lastlabel{{\thechap}{chap.\thechap}}
+  \bookmark1{chap.\thechap}{\thechap\space #2}
+  \chapheading{\ifapp Appendix\else Chapter\fi\ \thechap}{#2}{#3}\nobreak
+  \xdef\lhead{#2} \addmark{\thechap\ \ #2}
+  \ifapp \addtoc\toclineii\thechap{#2}\thepageno\bmark
+  \else \addtoc\toclinei\thechap{#2}\thepageno\bmark \fi}
+
+\def\chapbegin{\chapstart{\advance\chap by1}}
+
+\def\nonumchap#1#2{%
+  \clearpage\resetpar
+  \the\chapreset 
+  \bookmark@1{nonumchap}{#1}
+  \chapheading{}{#1}{#2}\nobreak
+  \xdef\lhead{#1} \addmark{#1}}
+
+\outer\def\preface{\nonumchap{Preface}{}
+  \addtoc\toclinei{}{Preface}\thepageno\bmark}
+
+\def\thechap{\ifapp \Alph\chap \else \number\chap \fi}
+\def\thesec{\thechapdot\number\sec}
+\def\thesubsec{\thesec.\number\subsec}
+
+% The space after 0 is needed, or TeX inserts \relax for some reason
+\def\thechapdot{\ifnum\chap=0 \else\thechap.\fi}
+
+\def\Alph#1{\ifcase#1 \or A\or B\or C\or D\or E\or F\or G\or H\or I
+  \or J\or K\or L\or M\or N\or O\or P\or Q\or R\or S\or T\or U\or V
+  \or W\or X\or Y\or Z\fi}
+
+
+%%%% Sections
+
+\def\beforesechead#1{%
+  % An expanded version of \vspace 2\fontbody
+  {\skip0=\lastskip
+    \vskip 0pt plus6\fontbody \penalty50 \vskip 0pt plus-6\fontbody
+    \ifdim\skip0<#1
+      \ifdim\skip0=0pt \else\vskip-\skip0\fi
+      \vskip #1 \fi}}
+
+\def\aftersechead#1{\nobreak\vskip#1\nobreaktrue
+  \global\everypar={\afterheadpar}}
+
+\def\sechead#1{\hbox{\twelvepoint\sfb #1}}
+\def\subsechead#1{\hbox{\tenpoint\sfb #1}}
+
+\def\secbegin#1{%
+  \par \resetpar \advance\sec by1 \the\secreset
+  \xdef\lastlabel{{\thesec}{sec.\thesec}}
+  \beforesechead{2\fontbody}
+  \sechead{\thesec \quad #1}
+  \bookmark2{sec.\thesec}{\thesec\space \killparens{#1}}
+  \addmark{\thesec\ \ #1}
+  \ifapp\else \addtoc\toclineii{\thesec}{#1}\thepageno\bmark \fi
+  \aftersechead\fontbody}
+
+\def\nonumsec#1{%
+  \par \resetpar 
+  \beforesechead{2\fontbody}
+  \sechead{#1}
+  \bookmark@2{nonumsec}{#1}
+  \aftersechead\fontbody}
+
+\def\subsecbegin#1{%
+  \par \resetpar \advance\subsec by1
+  \xdef\lastlabel{{\thesubsec}{subsec.\thesubsec}}
+  \beforesechead\fontbody
+  \subsechead{\thesubsec \quad #1}
+  \bookmark3{subsec.\thesubsec}{\thesubsec\space \killparens{#1}}
+  \aftersechead{0pt}}
+
+\def\nonumsubsec#1{%
+  \par \resetpar 
+  \beforesechead\fontbody
+  \subsechead{#1}
+  \bookmark@3{nonumsubsec}{#1}
+  \aftersechead{0pt}}
+
+\def\afterheadpar{\resetpar\hskip-\parindent}
+\def\addmark#1{{\enableprotect \mark{\killparens{#1}}}}
+
+% Fix up the mark when a section head is
+%   \section Lists (page~\pageref{s:lists}).
+% It's used for (optional) parts of labs too.
+\def\killparens#1{\killp@rens#1 ()\killp@rens}
+\def\killp@rens#1 (#2)#3\killp@rens{#1}
+
+% Chapter headings can have an ``author'' specified after a slash
+% Mostly used for single-chapter papers
+\def\sl@sh#1/#2/#3\sl@sh{{#1}{#2}}
+
+\outer\def\chapter{\ifstar{\chapstar@.}\chap@@@}
+\outer\def\chapstar#1.{\chapstar@@{#1}}
+\def\chap@@@#1.{\expandafter\chapbegin\sl@sh#1//\sl@sh}
+\def\chapstar@. #1.{\chapstar@@{#1}}
+\def\chapstar@@#1{\expandafter\nonumchap\sl@sh#1//\sl@sh
+  \addtoc\toclinei{}{#1}\thepageno\bmark}
+
+\outer\def\chapnum{\afterassignment\chapnum@\count255=}
+\def\chapnum@#1.{\expandafter\chapnum@@\sl@sh#1//\sl@sh}
+\def\chapnum@@{\chapstart{\chap=\count255}}
+
+\outer\def\section{\ifstar{\secstar@.}\sec@@@}
+\def\sec@@@#1.{\secbegin{#1}}
+\def\secstar@. #1.{\nonumsec{#1}}
+\outer\def\secstar#1.{\nonumsec{#1}}
+
+\outer\def\subsection{\ifstar{\subsecstar@.}\subsec@@@}
+\def\subsec@@@#1.{\subsecbegin{#1}}
+\def\subsecstar@. #1.{\nonumsubsec{#1}}
+\outer\def\subsecstar#1.{\nonumsubsec{#1}}
+
+\outer\def\summary{\nonumsec{Summary}}
+\outer\def\exercises{\nonumsec{Exercises}}
+\outer\def\endexercises{}
+
+\newcount\labno \labno=0
+\outer\def\labchap#1.{\advance\labno by1
+  \chapbegin{Lab \spellout\labno: #1}{}
+  \xdef\lastlabel{{\the\labno}{\cdr\lastlabel}}}
+
+\def\spellout#1{\ifcase #1\of zero\or one\or two\or three\or 
+	four\or five\or six\or seven\or eight\or nine\or 
+	ten\else \error{can't count beyond ten}\fi}
+
+
+%
+% Verbatim listing
+%
+
+{\obeyspaces\global\let =\ }
+
+\def\uncatcodespecials{\def\do##1{\catcode`##1=12 }\dospecials}
+
+\newif\ifblanks \blanksfalse
+\newdimen\verbindent
+
+% This can be changed to use e.g. typewriter type for verbatim
+\def\verbfont{\vsf}
+\def\verbifont{\vsfi}
+\def\progfont{\vsf}
+
+\def\setupverb{\uncatcodespecials \verbfont
+% \catcode`\|=\active \verbvbar % not needed if using vfont
+% \catcode`\`=\active % not needed if using vfont
+  }
+
+\def\setupverbatim{\resetpar \parskip=0pt \setupverb
+  % If setting in normal measure, use full page width instead
+  \ifdim\hsize=\textwidth \hsize=\pagewidth\fi
+  \parindent=0pt
+  \ifnomargin\global\nomarginfalse\else\advance\parindent by\blockindent\fi
+  \let\par=\verbpar
+  \verbindent=0pt \verbspaces 
+  \everypar{\hskip\verbindent \global\verbindent=0pt}% 
+  \obeylines \obeyspaces}
+
+\def\verbpar{\ifblanks\leavevmode\endgraf
+  \else\ifvmode\medskip\else\endgraf\fi\fi}
+
+{\obeyspaces\gdef\verbspaces{\def {\verbsp}}}
+\def\verbsp{\ifvmode\advance\verbindent by0.5em \else\nobreak\ \fi}
+
+{\catcode`\`=\active \gdef`{\relax\lq}}
+
+{\catcode`\|=\active \gdef\verbvbar{\def|{\hbox to0.5em{\hfil\vertbar\hfil}}}}
+\chardef\vertbar=`\|
+
+\def\verbatim{\beforedisplay\begingroup\setupverbatim\doverbatim}
+\def\ttverbatim{\beforedisplay\begingroup\setupverbatim\tt
+  \let\verbsp=\ \doverbatim}
+\def\endverb{\endgroup\afterdisplay\ignorespaces}
+
+\def\program{\beforedisplay\begingroup\setupverbatim\progfont\doprogram}
+\def\suprogram{\beforedisplay\begingroup\setupverbatim\progfont%
+	\superprog\doprogram}
+\def\escprogram{\beforedisplay\begingroup\setupverbatim\progfont%
+	\escprog\doescprog}
+\let\endprog=\endverb
+
+\def\superprog{\catcode`\^=\active \catcode`\%=\active \@super}
+{\catcode`\^=\active \catcode`\%=\active
+  \global\def\@super{\def^##1^{\@@super{##1}}\def%##1%{\hgrey{##1}}}}
+\def\@@super#1{$^{#1}$}
+
+\def\escprog{\catcode`\\=0 }
+{\obeylines \gdef\doescprog^^M#1\endprog{#1\endprog}}
+
+% Listing with line numbers
+\def\listing{\beforedisplay\begingroup
+  \setupverbatim\progfont\numlines\dolisting}
+\def\endlisting{\endgroup\afterdisplay\ignorespaces}
+
+\newcount\lineno
+\def\lnum{\global\advance\lineno by1 
+  \llap{{\eightrm\number\lineno}\enspace}}
+
+\def\numlines{\lineno=0 \blankstrue
+  \everypar={\lnum \hskip\verbindent \verbindent=0pt }}
+
+% Include a file and list it verbatim
+\def\verbfile#1{\beforedisplay\begingroup
+  \setupverbatim\input#1 \endgroup\afterdisplay}
+
+% Ditto, but with line numbers
+\def\listfile#1{\beforedisplay\begingroup
+  \setupverbatim\numlines\input#1 \endgroup\afterdisplay}
+
+% Interaction -- enclose input in _underscores_
+\def\interact{\beforedisplay\begingroup
+  \setupverbatim\catcode`\_=\active\italverb\dointeract}
+\let\endinter=\endverb
+
+{\catcode`\_=\active 
+  \gdef\italverb{\def_##1_{\def\next{##1}%
+      \ifx\next\empty \underscore\else{\verbifont ##1}\fi}}}
+\chardef\underscore=`\_
+
+{\catcode`\|=0 \catcode`\\=12 |obeylines%
+  |gdef|doverbatim^^M#1\endverb{#1|endverb}%
+  |gdef|doprogram^^M#1\endprog{#1|endprog}%
+  |gdef|dolisting^^M#1\endlist{#1|endlisting}%
+  |gdef|dointeract^^M#1\endinter{#1|endinter}}
+
+\def\verb{\begingroup\setupverb\obeyspaces\doverb}
+\def\doverb#1{\def\next##1#1{##1\endgroup}\next}
+
+\def\menu{\beforedisplay\begingroup\displ@y
+  \halign\bgroup\hskip\leftskip\hskip\blockindent##\hfil&&\quad##\hfil\cr}
+\def\endmenu{\crcr\egroup\endgroup\afterdisplay}
+
+
+%
+% Exercises
+%
+
+\newif\ifansflag \ansflagfalse
+\newtoks\exlabs \exlabs={}
+
+\def\exlabel#1{\par\resetpar\bigspace\noindent
+  \hyperanchor{\cdr\lastlabel}%
+  \ifhyperex\hyperlink\anslink{\bf \car\lastlabel#1}%
+  \else{\bf \car\lastlabel#1}\fi\the\exlabs}
+
+\def\theexnum{\thechapdot\number\exno}
+
+\def\exercise{\ansflagfalse \advance\exno by1 \exlabs={}
+  \xdef\lastlabel{{\theexnum}{ex.\theexnum}}%
+  \xdef\anslink{ans.\theexnum}\meltenum}
+
+\def\savedanswer#1{\def\lastlabel{{#1}{ans.#1}}%
+  \def\anslink{ex.#1}\meltenum}
+
+% Melt a following \enumerate into the exercise label
+% Or a following \alphenum or \romenum
+% Also a following \footnote ... but not both!
+\def\meltenum{\futurenonspacelet\next\melti} 
+\def\melti{\ifx\next\enumerate \def\next{\meltii\enumitem}%
+  \else\ifx\next\alphenum \def\next{\meltii\alphitem}%
+  \else\ifx\next\romenum \def\next{\meltii\romitem}%
+  \else\ifx\next\footnote \let\next=\meltiii
+  \else\ifx\next\label \let\next=\meltiv
+  \else \let\next=\meltdefault \fi\fi\fi\fi\fi \next}
+\def\meltii#1#2{\exlabel\relax\enspace
+  \begingroup\listsetup\let\item=#1\let\listitem=\meltitem}
+\def\meltiii\footnote{\exlabel\fnmark\quad\fntext}
+\def\meltiv\label#1{\exlabs={\label{#1}}\meltenum}
+\def\meltdefault{\exlabel{}\quad}
+
+\def\endex{\par \ifansflag\else\immediate\write16
+    {Exercise \theexnum \space has no answer}\fi}
+
+\newwrite\ansout
+\newif\ifansopen \ansopenfalse
+\def\checkans{\ifansopen\else
+  \immediate\openout\ansout=\jobname.ans\global\ansopentrue\fi}
+
+% see p.422 of the TeXbook
+\long\def\answer{\ansflagtrue\endex\checkans
+  \immediate\write\ansout{\string\savedanswer{\theexnum}}
+  \begingroup\uncatcodespecials\obeylines\copyanswer}
+\long\def\anstext{\checkans
+  \begingroup\uncatcodespecials\obeylines\copyanstext}
+
+{\obeylines%
+  \gdef\copyanswer#1^^M{\let\qend=\qendex\copyloop}%
+  \gdef\copyanstext#1^^M{\let\qend=\qendans\copyloop}%
+  \gdef\copyloop#1^^M{\def\next{#1}%
+    \ifx\next\qend \let\next=\endgroup 
+    \else \immediate\write\ansout{\next} \let\next=\copyloop\fi
+    \next}}
+
+{\catcode`\|=0 \catcode`\\=12 
+  |gdef|qendex{\endex}%
+  |gdef|qendans{\endans}}
+
+% If the answers are to appear in a different size of type, that is
+% the responsibility of the MS file.
+
+\def\theanswers{\let\exercise=\undefined
+  \immediate\closeout\ansout 
+  \input\jobname.ans\relax}
+
+
+%
+% Displays
+%
+
+% Displayed equations are ranged left on 2em
+% Stolen from Appendix D, p. 375--6
+\everydisplay={\displaysetup}
+\def\displaysetup#1$${\displaytest#1\eqno\eqno\displaytest}
+\def\displaytest#1\eqno#2\eqno#3\displaytest{\leftdisplay{#1}{#2}}
+
+\def\leftdisplay#1#2{\hbox to\displaywidth{%
+    \hskip\leftskip\hskip\displayindent\hskip\blockindent
+    $\displaystyle#1$\hfil \if!#2!\else$#2$\fi}$$}
+
+\def\beforedisplay{\par\ifnobreak\global\nobreakfalse
+  \else\ifinfloat\else\penalty\predisplaypenalty
+    \vskip\abovedisplayskip\fi\fi}
+\def\afterdisplay{\ifinfloat\else\penalty\postdisplaypenalty
+  {\parskip=\belowdisplayskip\noindent}\fi}
+
+% \beginlistings ... \endlistings for whole sections that consist of
+% one unindented display.
+\def\beginlistings{\begingroup\infloattrue\blockindent=0pt}
+\def\endlistings{\endgroup}
+
+% \display is used for misc. alignments
+\def\display{\beforedisplay\begingroup\displ@y}
+\def\enddisplay{\endgroup\afterdisplay}
+
+% This is the same as the \displ@y in plain.tex
+\def\displ@y{\global\dt@ptrue\openup\jot\m@th
+  \everycr{\noalign{\ifdt@p \global\dt@pfalse 
+        \ifdim\prevdepth>-1000pt
+          \vskip-\lineskiplimit \vskip\normallineskiplimit \fi
+      \else \penalty\interdisplaylinepenalty \fi}}}
+\def\@lign{\tabskip\z@skip\everycr{}} % restore inside \displ@y
+
+% \reopen is used to fix the opening up if a \noalign happens
+\def\reopen{\global\dt@ptrue}
+
+% \displaylines for multi-line displayed equations
+\def\displaylines{\display
+  \halign to\hsize\bgroup
+    \hskip\leftskip\hskip\blockindent$\@lign##$\hfil\tabskip=0pt plus1fil
+      &$\@lign##$\tabskip=0pt\cr}
+\def\enddisplines{\crcr\egroup\enddisplay}
+    
+% Here's \aligneqns to replace \eqalign(no)
+\def\aligneqns{\beforedisplay\begingroup\displ@y
+  \halign to\hsize\bgroup
+    \hskip\leftskip\hskip\blockindent\hfil$##$
+     &${}##$\hfil\tabskip=0pt plus1fil\cr}
+\def\endalign{\crcr\egroup\endgroup\afterdisplay}
+
+% \syntax for display of grammars and derivations
+% Text is set in \tt, but with the spacing of \it (changed for Lucida)
+%	\u{expr} gives expr underlined
+%	_foo_ gives foo set in \it
+\def\syntax{\display\syn
+  \def\also{\noalign{\medskip}} 
+  \halign to\hsize\bgroup
+    \hskip\leftskip\hskip\blockindent##\hfil&\hfil\quad##\quad\hfil
+	&##\hfil \tabskip=0pt plus1fil\cr}
+\def\endsyntax{\crcr\egroup\enddisplay}
+
+\def\syn{%  
+  \def\arrow{$\rightarrow$}\def\orr{$\mid$}\def\Arrow{$\Rightarrow$}%
+  \def\u##1{$\underline{\smash{\hbox{##1}}}$}%
+  \def\{{$\lbrace$}\def\}{$\rbrace$}\def\[{$[$}\def\]{$]$}%
+  \def\({$($}\def\){$)$}%
+  \catcode`\_=\active \setupsynbar \verbfont}
+
+\def\itspacing{{\it\global\skip1=\fontdimen2\font plus\fontdimen3\font
+    minus\fontdimen4\font \global\skip2=\fontdimen7\font}%
+  \spaceskip=\skip1 \xspaceskip=\skip1 \advance\xspaceskip by\skip2}
+
+{\catcode`\_=\active 
+  \global\def\setupsynbar{\let_=\synbar}
+  \global\def\synbar#1_{{\it #1\/}}}
+
+\def\envtable{\beforedisplay\nointerlineskip
+  \hbox\bgroup\hskip\blockindent
+    \vbox\bgroup\offinterlineskip
+      \def\lead{height2pt&\omit&&\omit&\cr}
+      \def\hline{\lead\noalign{\hrule}\lead}
+      \hrule
+      \halign\bgroup\vrule##&\strut\quad##\hfil\quad&\vrule##&
+        \quad##\hfil\quad&\vrule##\cr
+    \lead}
+\def\endenvtable{\crcr
+    \lead\egroup
+  \hrule\egroup\egroup\nointerlineskip\afterdisplay}
+
+
+%
+% PS tricks
+%
+
+\def\grey{0.9}
+
+\ifpdf
+  \def\pdf@colour{0 g 0 G} % Should be global variable
+
+  \def\@grey#1{%
+    \pdfliteral{\grey\space g \grey\space G}#1\pdfliteral{\pdf@colour}}
+\else
+  \def\@grey#1{%
+    \special{ps:gsave \grey\space setgray}#1\special{ps:grestore}}
+\fi
+
+% \hgrey -- \hbox with grey background
+\def\hgrey{\setbox0=\hbox\bgroup\aftergroup\hgreyi\let\next=}
+\def\hgreyi{%
+  \setbox0=\hbox{\thinspace\unhbox0\thinspace}%
+  \setbox1=\hbox{\hbox to\wd0{\strut\@grey{\leaders\vrule\hfill}}}%
+  \ht1=0pt \dp1=0pt \wd1=0pt 
+  \leavevmode \hbox{\box1\box0}}
+
+% \vgrey -- \vbox with grey background
+\def\vgrey{\setbox0=\vbox\bgroup\aftergroup\vgreyi\let\next=}
+\def\vgreyi{%
+  \setbox1=\vbox to0pt{\hbox to\hsize{\negthinspace
+    \@grey{\leaders\hrule height\ht0 depth\dp0\hfill}\negthinspace}
+   \vss}
+  \vbox{\box1\nointerlineskip\box0}}
+
+
+%
+% ML (and Oberon!) code
+%
+
+\def\mlprog{\beforedisplay\begingroup
+  \codemargin=\leftskip \lineno=0
+  \ifnomargin\global\nomarginfalse\else\advance\codemargin by\blockindent\fi}
+\def\endml{\endgroup\afterdisplay}
+
+\let\obprog=\mlprog
+\let\endob=\endml
+
+\newdimen\yycolumn \yycolumn=180pt
+
+\def\yyprog{\mlprog
+  \def\LI{\penalty100\tabalign&}%
+  \def\NL{\cr}%
+  \s@tt@b\hskip\codemargin&\hskip\yycolumn&\cr}
+\let\endyy=\endml
+
+\def\lcomment{\hbox to1.5em{$(*$\hfil}}
+\def\lcommentstar{\hbox to2.5em{$(*{*}$\hfil}}
+\def\rcomment{\hbox to1.5em{\hfil$*)$}}
+
+\newdimen\codemargin
+\newif\ifnumlines \numlinesfalse
+\newskip\rcommentskip \rcommentskip=0pt plus1fil
+\def\rcfrac{0.5}
+\def\slab{1.0em}
+
+\def\LI{\setbox0=\hbox\bgroup\strut\hskip\codemargin
+  \ifnumlines\lnum\fi}
+\def\NL{\egroup\penalty100
+  \hbox to\pagewidth{\unhbox0\unskip\hfil}}
+\def\RC{\quad\egroup
+  \ifdim\wd0<\rcfrac\hsize \wd0=\rcfrac\hsize \fi
+  \setbox0=\hbox\bgroup\box0\lcomment\ignorespaces}
+\def\BC{\lcomment} % begin comment
+\def\EC{\unskip\rcomment} % end comment
+% \def\EC{\unskip\rcomment\hskip\rcommentskip\null}
+\def\YC#1{$/*$ \ignorespaces #1\unskip\ $*/$} % yacc comment
+\def\IN#1{{\dimen0=\slab \multiply\dimen0 by#1 \hskip\dimen0 }} % indent
+\def\BL{\penalty0\medskip}
+\def\NP{\vskip-\lastskip\vskip0pt plus0.3\pageheight\penalty-200
+  \vskip0pt plus-0.3\pageheight\bigskip}
+\def\BP{\ifstar\@BP\@@BP}
+\def\@BP{\@@@BP\lcommentstar\ignorespaces}
+\def\@@BP{\@@@BP\lcomment}
+\def\@@@BP{\begingroup \parskip=0.5\baselineskip % begin para comment
+  \parindent=0pt \leftskip=\codemargin \advance\leftskip by1.5em
+  {\parskip=0pt \parindent=-1.5em \indent}}
+\def\EP\NL{\unskip\rcomment\par\endgroup\nobreak}
+\def\CQ{\hskip1.5em}
+\def\VB{\hbox to1em{$\mid$\hfil}}
+
+\def\K#1{\hbox{\mbf \lowercase{#1}}} % keyword in bold face
+\def\I#1{\hbox{\mti #1\/}} % identifier in text italic
+\def\S#1{\hbox{\chardef\\=`\\ \chardef\~=`\~ \vsf #1}} % string in sans
+\def\R#1{\hbox{\mrm #1}} % odds and ends in roman
+\def\C#1{\hbox{\sci \@cap#1\@cap\/}} % contant in caps and small caps
+
+% More stuff for Oberon
+\def\D#1{\hbox{\sci \lowercase{#1}\/}} % word in small caps only
+\def\O#1{\mathbin{\bf \lowercase{#1}}} % keyword as binary operator
+\def\P#1{\unskip\mathrel{\bf \lowercase{#1}}} % keyword as binary relation
+	% The \unskip is needed for e.g. ARRAY OF CHAR
+\def\HX#1#2{{\mrm #1}_{#2}} % Hex constant
+
+% Hacks for emphasis
+\def\U#1\U{\underline{\smash{#1}}}
+\def\G#1\G{\hgrey{$#1$}}
+
+% \def\@cap#1#2\@cap{#1\lowercase{#2}} % it's in jmsdef
+
+\def\ANY{\vbox{\hrule width.5em}}
+\def\CONS{\mathbin{::}}
+\def\AND{\mathrel{\&\&}}
+\def\OR{\parallel}
+\def\CAT{\mathbin{\raise0.5ex\hbox{$\frown$}}}
+
+% These ones are for Oberon
+\def\obAND{\mathrel{\rm \&}}
+\def\obOR{\mathrel{\bf or}}
+\def\obPTR{\mathord{\uparrow}}
+\def\obNOT{\mathord{\sim}}
+\def\cat{\mathbin{+\!+}}
+\def\dotdot{\mathinner{\ldotp\ldotp}}
+
+\def\LA{\langle}
+\def\RA{\rangle}
+
+\def\<{\LA\hbox\bgroup\mrm}
+\def\>{\egroup\RA}
+
+\mathchardef\lt=\mathcode`\<
+\mathchardef\gt=\mathcode`\>
+
+% A hack to display lines of ML as an alignment
+\def\displayml\mlprog#1\endml{\display
+  \def\LI##1\NL{\hskip\blockindent##1\cr}%
+  \halign to\hsize{##\hfil\tabskip=0pt plus1fil\cr#1}%
+  \enddisplay}
+
+
+%
+% Bullets and numbered lists
+%
+
+% Nested lists as floats are broken
+
+\newif\ifnewlist
+\newskip\normalparskip \normalparskip=0pt
+
+\def\startlist{\ifinfloat\else\par\medspace\fi 
+  \begingroup \listsetup}
+\def\listsetup{\advance\leftskip by\blockindent \newlisttrue}
+\def\listskip{\par \resetpar \ifnewlist\else\medskip\fi \newlistfalse}
+\def\listitem#1{\listskip {\parskip=0pt \noindent}%
+  \hyperanchor@\itemtag{item}\llap{#1}\ignorespaces}
+\def\endlist{\par\endgroup\ifinfloat\else\followpar\fi}
+\def\followpar{\global\parskip=\medskipamount
+  \global\everypar={\resetpar\hskip-\parindent}}
+\def\resetpar{\global\parskip=\normalparskip
+  \global\everypar={}\global\nobreakfalse}
+
+\def\enumerate{\startlist\let\item=\enumitem}
+\def\enumitem#1{\listitem{\enumlabel{#1}}}
+\def\enumlabel#1{\hbox to\blockindent{(#1)\hfil}}
+\let\endenum=\endlist
+
+\newcount\alphcount
+\def\alphenum{\alphcount=0 \startlist\let\item=\alphitem}
+\def\alphitem{\advance\alphcount by1
+  \listitem{\enumlabel{\alph\alphcount}}%
+  \xdef\lastlabel{{(\alph\alphcount)}{\itemtag}}\ignorespaces}
+\def\alph#1{\ifcase#1\or a\or b\or c\or d\or e\or f\or g\or h\or i\or
+  j\or k\or l\or m\or n\or o\or p\or q\or r\or s\or t\or u\or v\or
+  w\or x\or y\or z\else ?\fi}
+
+\newcount\romcount
+\def\romenum{\romcount=0 \startlist\let\item=\romitem}
+\def\romitem{\advance\romcount by1
+  \listitem{\enumlabel{\romannumeral\romcount}}
+  \xdef\lastlabel{{(\romannumeral\romcount)}{\itemtag}}\ignorespaces}
+
+\newcount\arabcount
+\def\arabenum{\arabcount=0 \startlist\let\item=\arabitem}
+\def\arabitem{\advance\arabcount by1
+  \listitem{\enumlabel{\number\arabcount}}
+  \xdef\lastlabel{{(\number\arabcount)}{\itemtag}}\ignorespaces}
+
+\def\itemize{\startlist\let\item=\bullitem}
+\def\bullitem{\listitem{$\bullet$\enspace}}
+\let\enditems=\endlist
+
+\def\description{\par\medspace
+  \begingroup\advance\leftskip by2\blockindent
+  \let\item=\descitem}
+\def\descitem#1{\listskip\noindent
+  \hbox to0pt{\kern-\leftskip\bf #1 \ \hfil}\ignorespaces}
+\let\enddescription=\endlist
+
+\def\spec{\startlist\let\item=\specitem}
+\def\specitem#1{\listskip
+  \noindent\hskip-\blockindent
+  {\def\\{\unskip\hfil\break}\sf\frenchspacing #1}\par
+  \nobreak
+  \listitem{$\bullet$\enspace}}
+\let\endspec=\endlist
+
+\def\quotation{\startlist\parindent=0pt\listskip{\parskip=0pt \noindent}}
+\let\endquote=\endlist
+
+\let\normallistitem=\listitem
+
+\def\meltitem#1{\newlistfalse \let\listitem=\normallistitem
+  \hangindent=\leftskip \leftskip=0pt
+  \def\par{\endgraf \leftskip=\blockindent \global\let\par=\endgraf}%
+  \hyperanchor@\itemtag{item}%
+  #1\ignorespaces}
+
+% Stolen from the TeXbook, page 376
+\def\futurenonspacelet#1{\def\cs{#1}%
+  \afterassignment\stepone\let\nexttoken= }
+\def\\{\let\stoken= } \\ % now \stoken is a space token
+\def\stepone{\expandafter\futurelet\cs\steptwo}
+\def\steptwo{\expandafter\ifx\cs\stoken \let\dummy=\stepthree
+  \else \let\dummy=\nexttoken\fi \dummy}
+\def\stepthree{\afterassignment\stepone\let\dummy= }
+
+\def\ifstar#1#2{\def\thenpt*{#1}\def\elsept{#2}%
+  \futurenonspacelet\next\ifstar@}
+\def\ifstar@{\if\next*\let\next=\thenpt\else\let\next=\elsept\fi\next}
+
+\def\ifopt#1#2{\def\thenpt{#1}\def\elsept{#2}%
+  \futurelet\next\ifopt@}
+\def\ifopt@{\if\next[\let\next=\thenpt\else\let\next=\elsept\fi\next}
+
+\def\paragraphs{\par}
+\def\para#1.{\par\resetpar\bigspace\noindent{\it #1: \ }\ignorespaces}
+\def\endparas{\par\followpar}
+
+\let\item=\undefined % Don't use plain TeX's \item by mistake
+
+
+%
+% Cross-references
+%
+
+% Flag to allow multiple definitions
+\newif\ifmultidef \multideffalse
+
+\newread\testin
+\def\ifreadable#1{\openin\testin=#1
+  \ifeof\testin \closein\testin \immediate\write16{No file #1}%
+  \else \closein\testin}
+\def\maybeinput#1{\ifreadable{#1} \expandafter\input#1\relax\fi}
+
+% In case of multiple definitions, we keep the first one.
+% That gives the aux file priority over other xrefs.
+\def\labeldef#1#2#3#4{% label secnum anchor page
+  \expandafter\ifx\csname x@#1\endcsname\relax
+    \expandafter\def\csname x@#1\endcsname{{#2}{#3}{#4}}
+  \else\ifmultidef\else \errmessage{Multiply defined label `#1'}\fi\fi}
+
+\newwrite\auxout
+\newif\ifauxopen \auxopenfalse
+\def\checkaux{\ifauxopen\else
+  \immediate\openout\auxout=\jobname.aux\global\auxopentrue\fi}
+
+\def\label#1{\checkaux
+  {\let\thepageno=\relax 
+    \edef\next{\write\auxout{\string\labeldef{#1}\lastlabel{\thepageno}}}%
+    \next \ifnobreak\ifvmode\nobreak\fi\fi}}
+
+\def\car{\expandafter\@car}
+\def\cdr{\expandafter\@cdr}
+\def\@car#1#2{#1}
+\def\@cdr#1#2{#2}
+
+% These formats for xrefs get args: number anchor page prefix
+\def\@@ref#1#2#3#4{\def\next{#2}%
+  \ifx\next\empty #4#1\else\hyperlink{#2}{#4#1}\fi}
+\def\@@refstar#1#2#3#4{#4#1}
+\def\@@page#1#2#3#4{#4#3}
+
+\def\@ref#1#2#3{% macro prefix label
+  \leavevmode
+  \expandafter\let\expandafter\next\csname x@#3\endcsname
+  \ifx\next\relax 
+    \immediate\write16{Undefined label `#3'}%
+    #2[#3]%
+  \else 
+    \expandafter#1\next{#2}%
+  \fi}
+
+% Use \ref*{label} to suppress the hyperlink
+\def\ref{\ifstar{\@ref\@@refstar{}}{\@ref\@@ref{}}}
+\def\longref#1{\@ref\@@ref{\hbox{#1}~}}
+\def\pageref{\@ref\@@page{}}
+\def\refpage{\@ref\@@page{page~}}
+
+\def\lastlabel{{}{}}
+
+
+%
+% Bibliography
+%
+
+\newcount\bibcount
+\def\biblio{\bibcount=0 \startlist\let\item=\bibitem}
+\def\bibitem#1{\advance\bibcount by1
+  \listitem{\hbox to\blockindent{\hyperanchor{cite.\number\bibcount}%
+    [\number\bibcount]\hfil}}%
+  \checkaux
+  {\edef\next{\write\auxout{\string\bibdef{#1}{\number\bibcount}%
+      {cite.\number\bibcount}}}%
+    \next}\ignorespaces}
+\let\endbib=\endlist
+
+\def\bibdef#1#2#3{% label number anchor
+  \expandafter\ifx\csname b@#1\endcsname\relax
+    \expandafter\def\csname b@#1\endcsname{{#2}{#3}}
+  \else \errmessage{Multiply defined citation `#1'}\fi}
+
+\def\cite#1{\leavevmode [\@citei#1,,\@end]}
+\def\@citei#1,#2\@end{\@citeone{#1}\@citeii#2\@end}
+\def\@citeii#1,#2\@end{\def\next{#1}%
+  \ifx\next\empty\else ,\penalty1000\ \@citeone{#1}\@citeii#2\@end\fi}
+
+\def\@citeone#1{%
+  \expandafter\let\expandafter\next\csname b@#1\endcsname
+  \ifx\next\relax
+    \immediate\write16{Undefined citation `#1'}%
+    #1%
+  \else
+    \expandafter\@cite\next
+  \fi}
+
+\def\@cite#1#2{% number anchor
+  \@@ref{#1}{#2}{}{}}
+
+
+
+%
+% Index entries
+%
+
+\newwrite\idxout
+\newif\ifidxopen \idxopenfalse
+\def\checkidx{\ifidxopen\else
+  \immediate\openout\idxout=\jobname.idx\global\idxopentrue\fi}
+
+\def\margnote#1{\insert\margin{\hsize=75pt \baselineskip=8pt
+  \parskip=0pt \parindent=0pt \hangindent=8pt \leftskip=0pt
+  \eighttt \rightskip=0pt plus1fil \indent\margstrut#1\margstrut\par}}
+\def\margstrut{\vrule height5.6pt depth2.4pt width0pt\relax}
+
+\def\specialhat{\ifmmode\def\next{^}\else\let\next=\indexi\fi\next}
+\def\indexi{\futurelet\next\indexii}
+\def\indexii{\ifx\next\specialhat\let\next=\specialindex
+  \else\let\next=\normalindex\fi \next}
+\catcode`\^=\active \let^=\specialhat
+
+\def\specialindex^{\begingroup\uncatcodespecials\catcode`\ =10 \specind}
+{\catcode`\^=12 \global\def\specind#1^{\endgroup\index{#1}}}
+
+\def\normalindex#1^{\index{#1}#1}
+
+\def\grungearrow{\discretionary{}{>}{>}}
+
+\def\grunge#1>#2>#3\grunge{#1\if!#2!\else\grungearrow#2\fi}
+
+\newif\ifindexnotes \indexnotestrue
+
+\def\index#1{\ifindexnotes\margnote{\grunge#1>>\grunge}\fi
+  \checkidx
+  {\let\thepageno=\relax \write\idxout{#1&\thepageno}}}
+
+
+%
+% Table of contents
+%
+
+% The output file \tocname is opened only when the table of contents
+% is printed.  This has the bad effect that headings before the table
+% of contents will not appear -- and the good effect that the table of
+% contents does not include itself, something wise printers have
+% always felt to be silly.
+
+\edef\tocname{\jobname.toc}
+
+\newwrite\tocout
+\newif\iffirsttoc
+
+\def\thecontents{\firsttoctrue \maybeinput{\jobname.toc}
+  \immediate\openout\tocout=\tocname
+  \immediate\write\tocout{\relax}
+  \let\addtoc=\doaddtoc}
+
+\def\doaddtoc#1#2#3#4#5{% macro number title page bmark
+  {\let\thepageno=\relax \enableprotectii
+    \edef\next{\write\tocout{\string#1{#2}{#3}{#4}{#5}}}
+    \next}}
+
+% Protect for two expansions:
+\def\enableprotectii{\def\protect{\noexpand\noexpand\noexpand}}
+% Protect for multiple expansions:
+\def\enableprotect{\def\protect{\noexpand\protect\noexpand}}
+
+\def\addtoc#1#2#3#4#5{}
+
+\newdimen\tocfudge
+\setbox0=\hbox{\elevensfb 0}\tocfudge=\wd0
+\setbox0=\hbox{\tenrm 0}\advance\tocfudge by-\wd0
+
+\def\tocinsert#1#2#3#4{\iffirsttoc\firsttocfalse\else\bigskip\fi
+  \line{\elevensfb\def\pit{\elevensfi}\hbox to2\fontquad{#1\hfil}#2\hfil #3}}
+\def\toclinei#1#2#3#4{\tocinsert{#1}{#2}{\hyperlink{#4}{#3}}{}}
+\def\toclineii#1#2#3#4{\line{\tenrm\hskip\blockindent
+    \hbox to3\fontquad{#1\hfil}#2\hfil
+    \hyperlink{#4}{#3}\kern0.5\tocfudge}}
+
+
+%
+% Index and cross reference listing
+%
+
+\def\beginindex{\begindoublecolumns \eightpoint
+  \parskip=0pt plus1pt \rightskip=0pt plus5em
+  \exhyphenpenalty=10000} % don't break 136--7
+\def\indexitem{\par\hang\noindent}
+\def\indexspace{\par\bigspace}
+\def\endindex{\par\enddoublecolumns}
+
+\def\UU#1{$\underline{\hbox{#1}}$}
+
+
+%
+% Changed pages
+%
+
+\newwrite\chgout
+\newif\ifchgopen \chgopenfalse
+\def\checkchg{\ifchgopen\else
+  \immediate\openout\chgout=\jobname.chg\global\chgopentrue\fi}
+
+\def\changepage{\afterassignment\@chgpg\count@=}
+\def\@chgpg{\checkchg\immediate\write\chgout{\the\count@}}
+
+\def\change{\checkchg\write\chgout{\the\pageno}}
+
+
+%
+% Hooks for hypertext
+%
+
+\def\hyperlinks{\input jmshyp }
+
+\def\hyperlink#1#2{#2}
+\def\hyperanchor#1{}
+\def\hyperanchor@#1#2{\def#1{}}
+\def\bookmark#1#2#3{}
+\def\bookmark@#1#2#3{}
+
+\def\bmark{}
+
+% Switch to make hyperlinks for exercise numbers (appropriate only if
+% answers are included in the same document)
+\newif\ifhyperex \hyperexfalse
+\def\hyperex{\hyperextrue}
+
+%
+% Bits and pieces
+%
+
+% Read in the aux file if it exists
+\maybeinput{\jobname.aux}
+
+\let\protect=\relax
+
+\def\ocaml{Objective {\sc Caml}}
+
+% Stolen from LaTeX's lfonts.tex
+\def\em{\protect\pem}
+\def\pem{\ifdim \fontdimen1\font>0pt \rm \else \it \fi}
+
+\def\today{\number\day/\number\month/\number\year}
+
+\def\hbreak{\hfil\break}
+
+\def\fn#1{\hbox{\def\\{\char`\\}\vsf #1}}
+\def\pn#1{\hbox{\it #1\/}}
+
+{\catcode`\^=7 \global\catcode`\^^I=15} % TAB characters are illegal
+
+\let\normalbaselineskip=\undefined
+
+\showboxbreadth=1000
+\showboxdepth=20
+
+\normalpage
+
+\catcode`@=12
+
+%%%%% Special stuff
+
+\def\unix{{\sc unix}}
+\def\Unix{{\sc Unix}}
+
+% \point marks an important point with a marginal arrow
+\def\point{\strut
+  \vadjust{\vbox to0pt{\vss\line{\strut\hfil\rlap{\enspace$\triangleleft$}}%
+     \vskip0pt}}}
+
+\def\Question{\point {\it Question:\/} }
+
+% We use fixed-width typewriter for verbatim text
+\def\verbfont{\tt} \def\verbifont{\tti}
+\def\verbatim{\beforedisplay\begingroup
+  \setupverbatim\let\verbsp=\ \doverbatim}
+
+% Let's be pragmatic: some verbatim displays are just too wide
+\def\wideverb{\beforedisplay\begingroup\advance\hsize by70pt
+  \setupverbatim\let\verbsp=\ \doverbatim}
+\def\wideinter{\beforedisplay\begingroup\advance\hsize by70pt
+  \setupverbatim\catcode`\_=\active\italverb\dointeract}
+
+\def\program{\beforedisplay\begingroup
+  \setupverbatim\setupcomment\progfont\doprogram}
+\def\setupcomment{\catcode`\%=\active \comment}
+{\catcode`\%=\active \global\def\comment{\let%=\halfcomm}}
+{\catcode`\^=7 \catcode`\^^M=\active%
+  \global\def\halfcomm#1^^M{\hfill\hbox to0.5\hsize{#1\hfil}\par}}
+
+%%%%% End of specials

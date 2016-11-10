@@ -63,7 +63,8 @@ void versions(void)
 {
      char argbuf[MAX];
 
-     printf("Oxford Oberon-2 debugger driver version %s\n", PACKAGE_VERSION);
+     printf("Oxford Oberon-2 debugger driver version %s [build %s]\n", 
+	    PACKAGE_VERSION, REVID);
      sprintf(argbuf, "%s\\%s", obclib, DEBUGGER);
      arg(argbuf); arg("-v"); command(argbuf, 0);
      sprintf(argbuf, "%s\\%s", obclib, MONITOR);

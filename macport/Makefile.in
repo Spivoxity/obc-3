@@ -29,8 +29,6 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# $Id$
-#
 
 # Config stuff
 prefix = @prefix@
@@ -57,15 +55,17 @@ all:
 DEBUGAPP = Obdb.app
 
 GTKTRG = $(DEBUGAPP)/Contents/Resources
-GTKLIB = libatk-1.0.0 libcairo.2 libexpat.1.5.2 libfontconfig.1		\
+GTKLIB = libatk-1.0.0 libcairo.2 libexpat.1 libfontconfig.1		\
 	libfreetype.6 libgailutil.18 libgdk-quartz-2.0.0		\
-	libgdk_pixbuf-2.0.0 libgettextlib-0.17 libgettextpo.0.4.0	\
-	libgettextsrc-0.17 libgio-2.0.0 libglib-2.0.0 libgmodule-2.0.0	\
+	libgdk_pixbuf-2.0.0 libgettextlib-0.19.4 libgettextpo.0		\
+	libgettextsrc-0.19.4 libgio-2.0.0 libglib-2.0.0 		\
+	libgmodule-2.0.0						\
 	libgobject-2.0.0 libgthread-2.0.0 libgtk-quartz-2.0.0		\
-	libgtksourceview-2.0.0 libintl.8 libjpeg.7 libltdl.7		\
+	libgtksourceview-2.0.0 libintl.8 libjpeg.9 libltdl.7		\
 	libpango-1.0.0 libpangocairo-1.0.0 libpangoft2-1.0.0		\
-	libpixman-1.0 libpng.3 libpng12.0 libtiff.3 libtiffxx.3		\
-	libigemacintegration.0
+	libpixman-1.0 libpng16.16 libtiff.5 libtiffxx.5			\
+	libgtkmacintegration-gtk2.2
+GTKLDR = $(GTKDIR)/lib/gdk-pixbuf-2.0/2.10.0/loaders
 GTKSO = libpixbufloader-png
 
 GTKINST = $(INSTALL) -d $(GTKTRG)/$(2) && \
@@ -74,7 +74,7 @@ GTKINST = $(INSTALL) -d $(GTKTRG)/$(2) && \
 gtklib:
 	mkdir -p $@
 	cp $(GTKLIB:%=$(GTKDIR)/lib/%.dylib) $@
-	cp $(GTKSO:%=$(GTKDIR)/lib/gtk-2.0/2.10.0/loaders/%.so) $@
+	cp $(GTKSO:%=$(GTKLDR)/%.so) $@
 	sh ./rename-libs $@ $(GTKDIR)/lib
 
 debugger: Obdb.app
@@ -99,27 +99,27 @@ Obdb.app: obdb.script ../debugger/obdb1 gdk-pixbuf.loaders \
 PACKAGE = obc-mac-$(VERSION).pkg
 VNUM := $(shell echo $(SIG) | sed 's/0x0*//')
 
-package: tree force
-	sudo chown -R root:wheel tree
-	/Developer/usr/bin/packagemaker -v -b -m -w \
-	    --root tree -o $(PACKAGE) \
-	    --title 'Oxford Oberon-2 compiler' \
-	    --id uk.ac.ox.oriel.spivey.obc \
-	    --version $(VNUM) \
-	    --target 10.5
+package: tree debugger force
+	pkgbuild --identifier uk.ac.ox.oriel.spivey.obc \
+	    --version $(VNUM) --component-plist component.plist \
+	    --root tree contents.pkg
+	productbuild --distribution dist.xml $(PACKAGE)
 
 tree: force
-	if [ -r tree ]; then sudo rm -rf tree; fi
+	if [ -r tree ]; then rm -rf tree; fi
 	$(MAKE) -C .. prefix=$(abs_builddir)/tree/usr/local install
 
 
 # Clean-up
 
 clean: force
-	rm -rf $(PACKAGE) tree Obdb.app
+	rm -rf $(PACKAGE) contents.pkg tree Obdb.app
 
-quiteclean distclean realclean: clean
+quiteclean distclean: clean
 	rm -rf gtklib
+
+realclean: distclean
+	rm -f Makefile
 
 # Configuration
 

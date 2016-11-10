@@ -12,6 +12,6 @@
 # _exec_prefix = os.path.join(os.path.expanduser("~"), "Source", "bootstrap")
 # tarballdir = os.path.join(os.path.expanduser("~"), "Source", "Download")
 
-setup_sdk(target="10.5", sdk_version="10.5", architectures=["i386"])
+setup_sdk(target="10.9", sdk_version="10.9", architectures=["i386"])
 modules = [ "meta-gtk-osx-bootstrap", "meta-gtk-osx-core", "gtksourceview" ]
-# prefix = "/usr/local/lib/obc/gtk"
+

@@ -72,7 +72,7 @@ int command(char *prog, int verbose) {
      fflush(stderr);
 
      args[nargs] = NULL;
-     status = spawnvp(P_WAIT, prog, (const char * const *) args);
+     status = spawnvp(P_WAIT, prog, (char * const *) args);
      if (verbose && status != 0) 
           fprintf(stderr, "*** Command returned status %d\n", status);
 

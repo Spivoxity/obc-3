@@ -1,0 +1,2 @@
+#!/bin/sh
+dpkg-buildpackage -rfakeroot -b -us -uc -tc -d

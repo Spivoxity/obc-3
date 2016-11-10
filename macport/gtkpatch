@@ -1,0 +1,25 @@
+--- gtksourceview-2.10.5/gtksourceview/gtksourceview-i18n.c.unpatched	2014-11-24 14:44:12.000000000 +0000
++++ gtksourceview-2.10.5/gtksourceview/gtksourceview-i18n.c	2014-11-24 14:44:14.000000000 +0000
+@@ -45,9 +45,9 @@
+ 
+ 	g_free (win32_dir);
+ #elif defined (OS_OSX)
+-	if (quartz_application_get_bundle_id () != NULL)
++	if (gtkosx_application_get_bundle_id () != NULL)
+ 	{
+-		locale_dir = g_build_filename (quartz_application_get_resource_path (), "share", "locale", NULL);
++		locale_dir = g_build_filename (gtkosx_application_get_resource_path (), "share", "locale", NULL);
+ 	}
+ 	else
+ 	{
+--- gtksourceview-2.10.5/tests/Makefile.unpatched	2014-11-24 14:44:40.000000000 +0000
++++ gtksourceview-2.10.5/tests/Makefile	2014-11-24 14:44:55.000000000 +0000
+@@ -236,7 +236,7 @@
+ STRIP = strip
+ USE_NLS = yes
+ VERSION = 2.10.5
+-WARN_CFLAGS =  -Wall -Wstrict-prototypes -Wnested-externs -Werror=missing-prototypes -Werror=implicit-function-declaration -Werror=pointer-arith -Werror=init-self -Werror=format-security -Werror=format=2 -Werror=missing-include-dirs 
++WARN_CFLAGS =  -Wall -Wstrict-prototypes -Wnested-externs -Werror=missing-prototypes -Werror=implicit-function-declaration -Werror=pointer-arith -Werror=init-self -Werror=missing-include-dirs 
+ XGETTEXT = /Users/mike/gtk/inst/bin/xgettext
+ abs_builddir = /Users/mike/gtk/source/gtksourceview-2.10.5/tests
+ abs_srcdir = /Users/mike/gtk/source/gtksourceview-2.10.5/tests

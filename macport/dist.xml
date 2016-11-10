@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <title>Oxford Oberon-2 Compiler</title>
+    <pkg-ref id="uk.ac.ox.oriel.spivey.obc"/>
+    <options customize="never" require-scripts="false"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="uk.ac.ox.oriel.spivey.obc"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="uk.ac.ox.oriel.spivey.obc" visible="false">
+        <pkg-ref id="uk.ac.ox.oriel.spivey.obc"/>
+    </choice>
+    <pkg-ref id="uk.ac.ox.oriel.spivey.obc" version="30099" onConclusion="none">contents.pkg</pkg-ref>
+</installer-gui-script>

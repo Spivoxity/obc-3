@@ -38,15 +38,20 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 LIBDIR=@libdir@/obc
 VERSION=@PACKAGE_VERSION@
+REVID=unspecified
 EXEEXT=@EXEEXT@
 ENABLE_JIT=@ENABLE_JIT@
+CC="@CC@"
 obc1=$LIBDIR/obc1
 oblink=$LIBDIR/oblink
 obx=$LIBDIR/obx
 obxj=$LIBDIR/obxj
-stdinc="-I $ROOT/$LIBDIR"
+stdinc="-I $ROOT$LIBDIR"
 rundir=$LIBDIR
+thundir=$LIBDIR
 libdir=$LIBDIR
+DLFLAGS="@DLFLAGS@"
+LIBS="@LIBS@"
 # End of config
 
 program=`basename $0`
@@ -64,7 +69,8 @@ usage () {
     $p "  -I dir  Add dir as search directory for imported modules" >&2
     $p "  -d n    Set compiler debugging level to n" >&2
     $p "  -rsb    Keywords and built-ins are in lower case"  >&2
-    $p "  -c      Compile only; omit linking step" >&2
+    $p "  -07     Use Oberon07 language rules" >&2
+    $p "  -c      Compile only, omitting the linking step" >&2
     $p "  -o file Set output file for linking" >&2
     $p "  -s      Strip symbol table in linker output" >&2
     if [ "$ENABLE_JIT" = 1 ]; then
@@ -90,10 +96,6 @@ command () {
     eval $*
 }
 
-remove () {
-    if $rmflag; then /bin/rm -rf $*; fi
-}
-
 compile () {
     command $obc1 -g -pl $sw $incl -I $ROOT$libdir $1 \>$2 \
 	|| { /bin/rm -f $2; status=1; }
@@ -101,15 +103,13 @@ compile () {
 
 linkit () {
     if $custom; then
-	{ command $oblink -custom -script $lscript $lsw -L $ROOT$libdir \
-	        $obj -o $tmp.out \>$primc \
-	    && command gcc $incl $stdinc $primc $ofiles $rundir/$obx_a \
-	        $libdir/dlstub.o $libdir/oblib.a $libs \
-	        -o $outfile \
-	    && command strip $outfile \
+	{ command $oblink -script $lscript $lsw -L $ROOT$libdir \
+	        $obj -o $tmp.out \
+	    && command $CC $incl $stdinc $ofiles $obx_a \
+	        $libdir/oblib.o $libs $LIBS $DLFLAGS -o $outfile \
 	    && command cat $tmp.out \>\>$outfile; } \
 	|| { /bin/rm -f $outfile; status=1; }
-	remove $tmp.out $primc
+        /bin/rm -f $tmp.out
     else
 	{ command $oblink -g -pl -i $interp $lsw -script $lscript \
 	        -L $ROOT$libdir $obj -o $outfile \
@@ -119,7 +119,7 @@ linkit () {
 }
 
 ccomp () {
-    command gcc -c $incl $stdinc -O $1 -o $2 || status=1
+    command $CC -c $incl $stdinc -O $1 -o $2 || status=1
 }
 
 nsrc=0
@@ -140,14 +140,13 @@ libf=oblib.k
 incl=
 libs=
 obx_a=
-obx_a_default=obx.a
+obx_a_default=$rundir/obx.a
 custom=false
 rmflag=true
-tmpdir=/tmp
 interp=$obx
 
 if [ "$ENABLE_JIT" = 1 ]; then
-    obx_a_default=obx-j.a
+    obx_a_default="$rundir/obx-j.a $thundir/libthunder.a"
     interp=$obxj
 fi
 
@@ -155,24 +154,20 @@ if [ $# -eq 0 ]; then usage; fi
 
 while [ $# -gt 0 ]; do
     case $1 in
-	-O0|-O|-O2|-w|-x|-rsb) 
+	-O0|-O|-O2|-w|-x|-rsb|-07) 
                 sw="$sw $1";;
         -s)	lsw="$lsw $1";;
         -v)	vflag=true;;
 	-c)	link=false;;
 	-o)	shift; outfile=$1;;
 	-d)	shift; sw="$sw -d $1";;
-        -j0)    obx_a_default=obx.a; interp=$obx;;
+        -j0)    obx_a_default=$rundir/obx.a; interp=$obx;;
 	-k)	shift; lsw="$lsw -k $1";;
         -b)	sw="$sw -b"; lscript=lscript-b;;
 	-I)	shift; incl="$incl -I $1";;
 	-C)	custom=true;;
 	-[lL]*)	libs="$libs $1";;
-	-p)	obx_a=obx-p.a;;
-	-r)	rmflag=false;;
-	-t)	shift; tmpdir=$1;;
-	-g)	;;
-	-pl)	;;
+	-p)	obx_a=$rundir/obx-p.a;;
 	*.m)    src="$src $1"
 		base=`basename $1 .m`
 		obj="$obj $base.k"
@@ -217,11 +212,11 @@ elif $custom; then
     outfile=`echo $outfile | sed -e "s/$exe\$//" -e "s/\$/$exe/"`
 fi
 
-tmp=$tmpdir/obc$$
-primc=$tmpdir/obc$$p.c
+tmp=/tmp/obc$$
 
 if $vflag; then
-    /bin/echo "Oxford Oberon-2 compiler driver version $VERSION"
+    /bin/echo "Oxford Oberon-2 compiler driver" \
+	"version $VERSION [build $REVID]"
     $obc1 -v
     $oblink -v
     $interp -v
@@ -240,7 +235,10 @@ if [ $nothers -gt 0 ] && $notcustom && $link; then
 fi
 
 for f in $src; do 
-    base=`basename $f .m`
+    case $f in
+	*.m) base=`basename $f .m`;;
+	*.mod) base=`basename $f .mod`;;
+    esac
     compile $f $base.k $base.c
     if [ $status -ne 0 ]; then exit $status; fi
 done

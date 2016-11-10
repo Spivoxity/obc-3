@@ -1,21 +1,24 @@
-.\" Copyright (C) 1999 J. M. Spivey
+.\" Copyright (C) 1999-2016 J. M. Spivey
 .TH OBC 1
 .SH NAME
 obc \- Oberon\-2 compiler
 .SH SYNOPSIS
 .B obc
-[options] file ...
+.RI [ OPTION ]... FILE ...
 .SH DESCRIPTION
+.LP
 .B Obc 
 is the Oxford Oberon compiler.
 It translates source files written in a language that is almost (but
 not quite) Oberon\-2, translates them into a portable bytecode
 form, and links the bytecode with library code to produce an
 executable program.
-
+.LP
 Files with extension
 .B .m
-are assumed to contain the source code of Oberon\-2 modules.  They are
+or
+.B .mod
+are assumed to contain the source code of Oberon modules.  They are
 translated into bytecodes before linking.
 Files with extension
 .B .k
@@ -38,52 +41,96 @@ run-time system has been installed appropriately on all of them.
 
 .SH OPTIONS
 .TP
-.I \-b
-Suppress the usual run-time checks, sacrificing safety for the sake of
-screaming speed.
+.B -c
+Stop the compiling process after producing a
+.B .k
+file; do not attempt to produce an executable program.
 .TP
-.I \-c
-Omit the linking step, and simply compile all arguments ending in
-.B .m
-into bytecode.
+.B \-o \fI\,FILE
+Set the output file for linking.
 .TP
-.I \-C
-Link in the bytecode interpreter directly during the linking phase,
-rather than finding it at runtime.
-This makes the executable larger, but makes it independent, and
-enables undocumented features for calling C code from Oberon. (Not
-available under Windows.)
+.B \-I \fI\,DIR
+Add DIR to the list of directories to search for imported modules.
 .TP
-.I "\-o file"
-Place the output of the linking step on
-.IR file ,
-instead of the default
-.IR a.out .
-(Under Windows, the default is
-.IR aout.exe .)
-.TP 
-.I \-O
-Use an optimizer to pack the bytecode, resulting in faster and more
-compact code.  (This is the default.)
+.B \-07
+Accept the Oberon-07 dialect of the language.
 .TP
-.I \-O\-
-Turn off the optimizer.
+.B \-x
+Enable language extensions.
 .TP
-.I \-pl
-Generate instructions for line-count profiling.
+.B \-rsb
+Accept a dialect of the language where both language
+keywords (like 'begin' and predefined identifiers (like 'integer') are
+written in lower case.
 .TP
-.I \-v
-Show version information for all parts of the Oberon system, and print
-the compiling commands as they are executed.
+.B \-O0
+Turn off the peephole optimiser \- mostly used for compiler debugging.
+.TP
+.B \-w
+Turn off compiler warnings about dubious constructions in the source
+code.
+.TP
+.B \-b
+Disable runtime checks for null pointers, array bounds, etc.,
+sacrificing safety for the sake of screaming speed.
+.TP
+.B \-v
+Print the versions of OBC components, and print the commands that are
+used for compiling and linking.
+.TP
+.B -d \fI\,N
+Set the compiler debugging level to N; this adds tracing information
+to the normal output of the compiler, but may result in output that
+cannot be assembled and linked.
+.TP
+.B \-s
+Strip the symbol table from the output of the linker.  This makes it
+impossible to use the profiler or debugger on the resulting
+executable.
+.TP
+.B \-j0
+Produce an executable that will run using the bytecode interpreter in
+place of the JIT translator.
+.TP
+.B \-k \fI\,N
+Set the runtime stack size to N bytes (default 1MB).
+.PP
+The remaining flags are supported on Linux and on Macs with XCode
+installed; they are not supported by the normal Windows installation
+of OBC.
+.TP
+.B \-C
+Build a specialised version of the runtime system into the executable,
+containing only the primitives that are needed, and allowing
+additional primitives to be added.
+This makes the executable larger, but makes it stand-alone.
+.TP
+.B *.c
+Files of C code containing primitives.
+.TP
+.B *.o
+Files of object code for primitives.
+.TP
+.B \-l \fI\,LIB
+(with \-C) Add the C library LIB to the runtime system.
+.TP
+.B \-L \fI\,DIR
+(with \-C) Add DIR to the list of directories searched for C
+libraries.
+.TP
+.B \-p
+(with \-C) Link in the profiler in place of the standard runtime
+system.
+
 .SH FILES
 .TP
-.I file.m
-Oberon\-2 source text
+.I file.m, file.mod
+Oberon source text
 .TP
 .I file.k
 Bytecode and interface definition
 .TP 
-.I /usr/local/lib/obc/obx
+.I /usr/local/lib/obc/obx[j]
 Runtime system
 .TP
 .I /usr/local/lib/obc/*.m
