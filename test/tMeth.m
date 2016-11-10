@@ -21,10 +21,16 @@ BEGIN
   f.baz
 END doit;
 
+PROCEDURE Main;
+VAR it: foo;
+BEGIN
+  it.doit
+END Main;
+
 VAR p: POINTER TO foo;
 
 BEGIN
-  VAR it: foo; BEGIN it.doit END;
+  Main;
   NEW(p); p.doit
 END tMeth.
 
@@ -59,12 +65,20 @@ CALL 2
 RETURN
 END
 
-PROC tMeth.%main 0 4 0
-!   VAR it: foo; BEGIN it.doit END;
+PROC tMeth.Main 0 4 0
+! PROCEDURE Main;
+!   it.doit
 GLOBAL tMeth.foo
 LOCAL 0
 GLOBAL tMeth.foo.doit
 CALL 2
+RETURN
+END
+
+PROC tMeth.%main 0 4 0
+!   Main;
+GLOBAL tMeth.Main
+CALL 0
 !   NEW(p); p.doit
 CONST 0
 GLOBAL tMeth.foo
@@ -72,7 +86,7 @@ GLOBAL tMeth.p
 GLOBAL NEW
 CALL 3
 LDGW tMeth.p
-NCHECK 28
+NCHECK 34
 DUP 0
 LDNW -4
 SWAP

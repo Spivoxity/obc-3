@@ -288,7 +288,6 @@ let rec safe e =
     | Monop (w, e1) -> safe e1
     | Binop ((Div|Mod|Over), e1, e2) -> false
     | Binop (w, e1, e2) -> safe e1 && safe e2
-    | IfExpr (e1, e2, e3) -> safe e1 && safe e2 && safe e3
     | Set els -> 
 	let safe_el = 
 	  function 
@@ -551,15 +550,6 @@ and gen_expr e =
 	      Not_found -> gen_it w e1 e2
 	  else
 	    gen_it w e1 e2
-
-      | IfExpr (e1, e2, e3) ->
-	  let lab1 = label () and lab2 = label () in
-	  gen_cond false lab1 e1;
-	  gen_expr e2;
-	  gen (JUMP lab2);
-	  gen (LABEL lab1);
-	  gen_expr e3;
-	  gen (LABEL lab2)
 
       | Nil ->
 	  gen (CONST (integer 0))
@@ -1180,11 +1170,6 @@ let rec gen_stmt exit_lab s =
 	  gen FIXCOPY 
 	end
 
-    | SimAssign pairs ->
-	List.iter (fun (e1, e2) -> gen_expr e2; gen_addr e1) pairs;
-	List.iter (fun (e1, e2) -> 
-	  let t = e1.e_type in gen (STORE (mem_kind t))) pairs
-
     | ProcCall e ->
         gen_expr e;
 	if size_of e > 0 then
@@ -1328,8 +1313,6 @@ let rec gen_stmt exit_lab s =
 		gen (ERROR ("E_WITH", !code_line))
 	end;
 	gen_lab labn
-
-    | LocalStmt (decls, body) -> gen_stmt exit_lab body
 
     | Seq ss -> 
 	let rec walk = 

@@ -127,9 +127,6 @@ let rec check_expr i0 e =
 	ignore (check_expr i1 e2); i1
     | Binop (w, e1, e2) ->
 	check_all i0 [e1; e2]
-    | IfExpr (e1, e2, e3) ->
-	let i1 = check_expr i0 e1 in
-	ignore (check_all i0 [e2; e3]); i1
     | Set elts ->
 	let get_exprs = 
 	  function Single e1 -> [e1] | Range (e1, e2) -> [e1; e2] in
@@ -171,12 +168,6 @@ let rec check_stmt i0 s =
 	let i1 = check_assign i0 e1 in
 	let i2 = check_expr i0 e2 in
 	inijoin i1 i2
-    | SimAssign pairs ->
-	List.fold_left (fun i (e1, e2) ->
-	    let i1 = check_assign i0 e1 in
-	    let i2 = check_expr i0 e2 in
-	    inijoin i (inijoin i1 i2))
-	  i0 pairs
     | ProcCall e1 ->
 	check_expr i0 e1
     | IfStmt (arms, elsept) ->
@@ -238,7 +229,6 @@ let rec check_stmt i0 s =
     | ExitStmt -> 
 	exitset := inimeet i0 !exitset;
 	Universe
-    | LocalStmt (_, s1) -> check_stmt i0 s1
     | ErrStmt -> Universe
 
 and check_else i0 =

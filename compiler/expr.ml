@@ -522,44 +522,6 @@ and check_subexp env e =
 	    | _ -> ()
 	end;
 	t
-    | IfExpr (e1, e2, e3) ->
-	if not !Config.extensions then
-	  sem_extend "conditional expressions are not allowed" [] e.e_loc;
-
-	let t1 = check_expr env e1
-	and t2 = check_expr env e2
-	and t3 = check_expr env e3 in
-	if not (same_types t1 boolean) then begin
-	  sem_error "the test in an IF expression must have type BOOLEAN"
-	    [] e1.e_loc;
-	  sem_type t1
-	end;
-
-	(* Like Eq comparison *)
-	if not (scalar t2) then begin
-	  sem_error "the value of an IF expression must be a scalar"
-	    [] e2.e_loc;
-	  sem_type t2
-	end
-	else if numeric t2 && numeric t3 then begin
-	  let t = join_type t2 t3 in
-	  coerce t e2; coerce t e3
-	end
-	else if is_address t2 && is_niltype t3 then
-	  e3.e_type <- t2
-	else if is_niltype t2 && is_address t3 then
-	  e2.e_type <- t3
-	else if subtype t2 t3 then
-	  e2.e_type <- t3
-	else if subtype t3 t2 then
-	  e3.e_type <- t2
-	else begin
-	  sem_error "the arms of an IF expression must have the same type"
-	    [] e.e_loc;
-	  sem_type2 t2 t3
-	end;
-
-	e2.e_type
 
     | TypeTest (e1, tn) ->
 	begin try

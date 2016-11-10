@@ -80,7 +80,6 @@ and stmt =
 
 and stmt_guts =
     Assign of expr * expr
-  | SimAssign of (expr * expr ) list
   | ProcCall of expr
   | Return of expr option
   | IfStmt of (expr * stmt) list * stmt
@@ -91,7 +90,6 @@ and stmt_guts =
   | ExitStmt
   | ForStmt of expr * expr * expr * expr * stmt * def ref
   | WithStmt of (expr * name * stmt) list * stmt option
-  | LocalStmt of decl list * stmt
   | Seq of stmt list
   | Skip
   | ErrStmt
@@ -116,7 +114,6 @@ and expr_guts =
   | Convert of expr
   | Monop of op * expr 
   | Binop of op * expr * expr
-  | IfExpr of expr * expr * expr
   | Set of element list
   | Cast of expr * name
   | TypeTest of expr * name

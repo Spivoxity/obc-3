@@ -13,22 +13,18 @@ TYPE board = ARRAY N OF SHORTINT;
 VAR done: BOOLEAN;
 
 PROCEDURE queens(k: INTEGER; VAR choice: board);
-  VAR y: INTEGER; ok: BOOLEAN;
+  VAR y, j, q: INTEGER; ok: BOOLEAN;
 BEGIN
   IF k = N THEN
     print(choice); done := TRUE
   ELSE
     y := 0;
     WHILE (y < N) & ~done DO
-      VAR j: INTEGER; BEGIN
-	j := 0; ok := TRUE;
-	WHILE ok & (j < k) DO
-	  VAR q: INTEGER; BEGIN
-	    q := choice[j];
-	    ok := (q # y) & (q+j # y+k) & (q-j # y-k);
-	    j := j+1
-	  END
-	END
+      j := 0; ok := TRUE;
+      WHILE ok & (j < k) DO
+        q := choice[j];
+        ok := (q # y) & (q+j # y+k) & (q-j # y-k);
+        j := j+1
       END;
       IF ok THEN 
 	choice[k] := SHORT(y);
@@ -51,10 +47,10 @@ BEGIN
   Out.Ln()
 END print;
 
+VAR choice: board;
+
 BEGIN
-  VAR choice: board; BEGIN
-    queens(0, choice)
-  END
+  queens(0, choice)
 END tQueens.
 
 (*[[
@@ -84,53 +80,53 @@ CONST 0
 STLW -4
 JUMP 4
 LABEL 3
-! 	j := 0; ok := TRUE;
+!       j := 0; ok := TRUE;
 CONST 0
-STLW -12
+STLW -8
 CONST 1
-STLC -5
+STLC -13
 JUMP 6
 LABEL 5
-! 	    q := choice[j];
+!         q := choice[j];
 LDLW 16
-LDLW -12
+LDLW -8
 CONST 8
-BOUND 27
+BOUND 25
 LDIS
-STLW -16
-! 	    ok := (q # y) & (q+j # y+k) & (q-j # y-k);
-LDLW -16
+STLW -12
+!         ok := (q # y) & (q+j # y+k) & (q-j # y-k);
+LDLW -12
 LDLW -4
 NEQ
-LDLW -16
 LDLW -12
+LDLW -8
 PLUS
 LDLW -4
 LDLW 12
 PLUS
 NEQ
 AND
-LDLW -16
 LDLW -12
+LDLW -8
 MINUS
 LDLW -4
 LDLW 12
 MINUS
 NEQ
 AND
-STLC -5
-! 	    j := j+1
-INCL -12
+STLC -13
+!         j := j+1
+INCL -8
 LABEL 6
-! 	WHILE ok & (j < k) DO
-LDLC -5
+!       WHILE ok & (j < k) DO
+LDLC -13
 JUMPF 7
-LDLW -12
+LDLW -8
 LDLW 12
 JLT 5
 LABEL 7
 !       IF ok THEN 
-LDLC -5
+LDLC -13
 JUMPF 9
 ! 	choice[k] := SHORT(y);
 LDLW -4
@@ -138,7 +134,7 @@ CONVNS
 LDLW 16
 LDLW 12
 CONST 8
-BOUND 34
+BOUND 30
 STIS
 ! 	queens(k+1, choice)
 LDLW 16
@@ -180,7 +176,7 @@ CONST 0
 LDLW 12
 LDLW -4
 CONST 8
-BOUND 48
+BOUND 44
 LDIS
 INC
 GLOBAL Out.Int
@@ -198,9 +194,9 @@ CALL 0
 RETURN
 END
 
-PROC tQueens.%main 4 4 0
-!     queens(0, choice)
-LOCAL -16
+PROC tQueens.%main 0 4 0
+!   queens(0, choice)
+GLOBAL tQueens.choice
 CONST 0
 GLOBAL tQueens.queens
 CALL 2
@@ -209,6 +205,7 @@ END
 
 ! Global variables
 GLOVAR tQueens.done 1
+GLOVAR tQueens.choice 16
 
 ! End of file
 ]]*)

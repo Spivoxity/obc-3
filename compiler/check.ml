@@ -42,7 +42,6 @@ let level = ref 0		(* Proc nesting level *)
 let return_type = ref voidtype	(* Return type of current proc *)
 let allocate = ref (function d -> failwith "allocate function")
 				(* Storage allocator *)
-let proc_locals = ref []	(* Locals of current proc *)
 let loop_level = ref 0		(* Nesting level of loop stmts *)
 let is_module = ref false	(* Whether checking module body *)
 
@@ -278,7 +277,6 @@ let rec check_return s =
     | WithStmt (arms, default) ->
 	List.exists (fun (_, _, body) -> check_return body) arms 
 	  || (match default with Some s1 -> check_return s1 | None -> false)
-    | LocalStmt (decls, body) -> check_return body
     | Seq ss -> List.exists check_return ss
     | _ -> false
 
@@ -379,22 +377,7 @@ let rec check_stmt env s =
 	if not (is_var lhs) then
 	  sem_error "the LHS of an assignment must be a variable" [] lhs.e_loc;
 	check_assign "on the RHS of this assignment" [] env lt rhs rhs.e_loc
-    | SimAssign pairs ->
-	if not !Config.extensions then
-	  sem_extend "simultaneous assignment is not allowed" [] s.s_loc;
-	List.iter (fun (e1, e2) ->
-	    let lt = check_desig env e1 in
-	    if not (is_var e1) then
-	      sem_error "the LHS of an assignment must be a variable" 
-		[] e1.e_loc;
-	    if not (scalar lt) then begin
-	      sem_error 
-		"simultaneous assignment is implemented only for scalar types"
-		[] e1.e_loc;
-	      sem_type lt
-	    end;
-	    check_assign "on the RHS of this assignment" [] env lt e2 e2.e_loc)
-	  pairs
+
     | ProcCall e ->
 	begin match e.e_guts with
 	    FuncCall (p, args) ->
@@ -540,16 +523,6 @@ let rec check_stmt env s =
 	  with Not_found -> () in
 	List.iter check_branch branches;
 	check_else env else_part
-    | LocalStmt (decls, body) ->
-	if not !Config.extensions then
-	  sem_extend "declarations cannot be nested inside blocks" [] s.s_loc;
-	let env' = new_block env in
-	check_decls false !allocate env' decls;
-	List.iter (check_body env') decls;
-	check_stmt env' body;
-	let locals = top_block env' in
-	check_used locals;
-	proc_locals := locals @ !proc_locals
     | Seq ss -> List.iter (check_stmt env) ss
     | Skip -> ()
     | ErrStmt ->
@@ -773,7 +746,6 @@ and check_body env =
 	  let d = get_def x in
 	  let p = get_proc d.d_type in
 	  let env' = d.d_env in
-	  proc_locals := [];
 	  let cxt = !err_context in
 	  incr level; err_context := env';
 
@@ -796,8 +768,7 @@ and check_body env =
 	  decr level; err_context := cxt;
 	  List.iter (param_copy fsize) p.p_fparams;
 	  align max_align fsize;
-	  let locdefs = !proc_locals @ top_block env' in
-	  d.d_map <- local_map locdefs
+	  d.d_map <- local_map (top_block env')
 	end
 
     | PrimDecl (x, _, _, _) ->
@@ -841,7 +812,6 @@ let annotate (Module (m, imports, body, glodefs, doc)) =
 	  is_module := false;
 	  List.iter (check_body glo_env) globals;
 	  return_type := voidtype;
-	  proc_locals := [];
 	  allocate := downward_alloc fsize;
 	  is_module := true;
 	  level := 1;
@@ -857,7 +827,6 @@ let annotate (Module (m, imports, body, glodefs, doc)) =
 	     for the module body *)
 	  let d = make_def m ProcDef bodytype doc in
 	  d.d_lab <- sprintf "$.%main" [fId !current];
-	  d.d_map <- local_map !proc_locals;
 	  m.x_def <- d;
 
       | NoBlock -> failwith "annotate"

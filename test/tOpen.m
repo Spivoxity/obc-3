@@ -16,10 +16,14 @@ END Sum;
 
 VAR b: ARRAY 5 OF INTEGER;
 
+PROCEDURE Main;
+VAR j: INTEGER;
 BEGIN
-  VAR j: INTEGER; BEGIN
-    FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
-  END;
+  FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
+END Main;
+
+BEGIN
+  Main;
   Out.Int(Sum(b), 0); Out.Ln
 END tOpen.
 
@@ -67,8 +71,9 @@ LDLW -8
 RETURNW
 END
 
-PROC tOpen.%main 1 4 0
-!     FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
+PROC tOpen.Main 1 4 0
+! PROCEDURE Main;
+!   FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
 CONST 0
 STLW -4
 JUMP 4
@@ -78,13 +83,20 @@ INC
 GLOBAL tOpen.b
 LDLW -4
 CONST 5
-BOUND 21
+BOUND 22
 STIW
 INCL -4
 LABEL 4
 LDLW -4
 CONST 4
 JLEQ 3
+RETURN
+END
+
+PROC tOpen.%main 0 4 0
+!   Main;
+GLOBAL tOpen.Main
+CALL 0
 !   Out.Int(Sum(b), 0); Out.Ln
 CONST 0
 CONST 5

@@ -6,16 +6,19 @@ fib(10) = 55
 
 IMPORT Out, FibFun := xPrelude;
 
+PROCEDURE Main;
+VAR n, f: INTEGER;
 BEGIN
-  VAR n, f: INTEGER;
-  BEGIN
-    n := 10;
+  n := 10;
 
-    f := FibFun.Fib(n);
+  f := FibFun.Fib(n);
 
-    Out.String(FibFun.PROC); Out.String("("); Out.Int(n, 0); 
-    Out.String(") = "); Out.Int(f, 0); Out.Ln
-  END
+  Out.String(FibFun.PROC); Out.String("("); Out.Int(n, 0); 
+  Out.String(") = "); Out.Int(f, 0); Out.Ln
+END Main;
+
+BEGIN
+  Main
 END tFib.
 
 (*[[
@@ -27,16 +30,17 @@ IMPORT Out STAMP
 IMPORT xPrelude STAMP
 ENDHDR
 
-PROC tFib.%main 2 3 0
-!     n := 10;
+PROC tFib.Main 2 3 0
+! PROCEDURE Main;
+!   n := 10;
 CONST 10
 STLW -4
-!     f := FibFun.Fib(n);
+!   f := FibFun.Fib(n);
 LDLW -4
 GLOBAL xPrelude.Fib
 CALLW 1
 STLW -8
-!     Out.String(FibFun.PROC); Out.String("("); Out.Int(n, 0); 
+!   Out.String(FibFun.PROC); Out.String("("); Out.Int(n, 0); 
 CONST 4
 GLOBAL xPrelude.%1
 GLOBAL Out.String
@@ -49,7 +53,7 @@ CONST 0
 LDLW -4
 GLOBAL Out.Int
 CALL 2
-!     Out.String(") = "); Out.Int(f, 0); Out.Ln
+!   Out.String(") = "); Out.Int(f, 0); Out.Ln
 CONST 5
 GLOBAL tFib.%1
 GLOBAL Out.String
@@ -59,6 +63,13 @@ LDLW -8
 GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+PROC tFib.%main 0 3 0
+!   Main
+GLOBAL tFib.Main
 CALL 0
 RETURN
 END

@@ -67,7 +67,6 @@ and stmt =
 
 and stmt_guts =
     Assign of expr * expr
-  | SimAssign of (expr * expr) list
   | ProcCall of expr
   | Return of expr option
   | IfStmt of (expr * stmt) list * stmt
@@ -78,7 +77,6 @@ and stmt_guts =
   | ExitStmt
   | ForStmt of expr * expr * expr * expr * stmt * def ref
   | WithStmt of (expr * name * stmt) list * stmt option
-  | LocalStmt of decl list * stmt
   | Seq of stmt list
   | Skip
   | ErrStmt
@@ -103,7 +101,6 @@ and expr_guts =
   | Convert of expr
   | Monop of op * expr 
   | Binop of op * expr * expr
-  | IfExpr of expr * expr * expr
   | Set of element list
   | Cast of expr * name
   | TypeTest of expr * name
@@ -278,8 +275,6 @@ let rec ppExpr e =
 	  prf "(MONOP_\"$\" $)" [fOp w; ppExpr e1]
       | Binop (w, e1, e2) ->
 	  prf "(BINOP_\"$\" $ $)" [fOp w; ppExpr e1; ppExpr e2]
-      | IfExpr (e1, e2, e3) ->
-	  prf "(IFEXPR $ $ $)" [ppExpr e1; ppExpr e2; ppExpr e3]
       | Set els ->
 	  prf "(SET" [];
 	  List.iter (function e -> prf " $" [ppElement e]) els;
@@ -300,9 +295,6 @@ let rec ppStmt s =
     match s.s_guts with
         Assign (e1, e2) -> 
 	  prf "(ASSIGN $ $)" [ppExpr e1; ppExpr e2]
-      | SimAssign pairs ->
-	  let ppPair (e1, e2) = fMeta "($ $)" [ppExpr e1; ppExpr e2] in
-	  prf "(SIMASSIGN$)" [fSeq(ppPair) pairs]
       | ProcCall e -> prf "$" [ppExpr e]
       | Return eo ->
 	  (match eo with
@@ -335,8 +327,6 @@ let rec ppStmt s =
 	    prf " $_$ $" [ppExpr x; fQualId t; ppStmt body]) arms;
 	  (match elsept with Some s -> prf " ELSE $" [ppStmt s] | None -> ());
 	  prf ")" []
-      | LocalStmt (decls, body) ->
-	  prf "(LOCAL (DECLS$) $)" [fSeq(ppDecl) decls; ppStmt body]
       | Seq stmts ->
 	  prf "(SEQ$)" [fSeq(ppStmt) stmts]
       | Skip ->

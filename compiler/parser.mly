@@ -297,10 +297,6 @@ missing :
 
 stmt0 :
     desig ASSIGN expr		{ Assign ($desig, $expr) }
-  | desig COMMA desigs ASSIGN expr COMMA exprs
-      { if List.length $desigs <> List.length $exprs then
-	  syn_error "Wrong number of expressions on RHS" [] (here ());
-	SimAssign (List.combine ($desig::$desigs) ($expr::$exprs)) }
   | desig			{ ProcCall (make_call $desig) } ;
 
 stmt1 :
@@ -317,7 +313,6 @@ stmt1 :
   | FOR desig ASSIGN expr@e1 TO expr@e2 step DO stmts END
       { ForStmt ($desig, $e1, $e2, $step, $stmts, ref dummy_def) } 
   | WITH branches else END	{ WithStmt ($branches, $else) }
-  | VAR vdecls BEGIN stmts END	{ LocalStmt ($vdecls, $stmts) }
   | error			{ ErrStmt } ;
 
 /* We make 'ifs' left recursive for better error recovery. */
@@ -370,8 +365,7 @@ expr :
     simple %prec error		{ $simple }
   | simple@e1 RELOP simple@e2	{ exp (Binop ($RELOP, $e1, $e2)) }
   | simple@e1 EQUAL simple@e2	{ exp (Binop (Eq, $e1, $e2)) } 
-  | simple IS qualid		{ exp (TypeTest ($simple, $qualid)) } 
-  | IF expr@e1 THEN expr@e2 ELSE expr@e3  { exp (IfExpr ($e1, $e2, $e3)) } ;
+  | simple IS qualid		{ exp (TypeTest ($simple, $qualid)) } ;
 
 simple :
     term %prec error		{ $term }
@@ -422,10 +416,6 @@ actuals :
   | LPAR exprs %prec error	{ parse_error2 
 				    "unmatched left parenthesis" (rloc 1);
 				  raise Parse_error } ;
-
-desigs :
-    desig			{ [$desig] }
-  | desig COMMA desigs		{ $desig :: $desigs } ;
 
 exprs :	
     expr %prec error		{ [$expr] }
