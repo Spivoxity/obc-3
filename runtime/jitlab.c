@@ -68,7 +68,7 @@ static void *zalloc(int size) {
      while (pool < 0 || zfree + size > zlimit) {
 	  pool++;
 	  if (pool >= NPOOLS) panic("patch memory overflow");
-	  poolsize = (1 << pool) * GC_PAGESIZE;
+	  poolsize = (1 << pool) * PAGESIZE;
 	  if (zpool[pool] == NULL)
 	       zpool[pool] = (uchar *) scratch_alloc(poolsize, TRUE);
 	  zfree = zpool[pool]; zlimit = zfree + poolsize;

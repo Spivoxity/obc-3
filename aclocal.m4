@@ -55,7 +55,8 @@ dnl See if the C compiler understands __attribute__ ((noreturn))
 AC_DEFUN(AC_C_NORETURN,
   [AC_CACHE_CHECK(for 'noreturn' attribute, ac_cv_noreturn_attr,
       [AC_COMPILE_IFELSE(
-        [void __attribute__ ((noreturn)) f(void) { while (1) ; }],
+        [AC_LANG_SOURCE(
+          [[void __attribute__ ((noreturn)) f(void) { while (1) ; }]])],
 	ac_cv_noreturn_attr=yes, ac_cv_noreturn_attr=no)])
     if test $ac_cv_noreturn_attr = yes; then 
       NORETURN="__attribute__ ((noreturn))"
@@ -94,12 +95,12 @@ AC_DEFUN(AC_FIND_PAGESIZE,
 	  fprintf(f, "%d", getpagesize());
 	  exit(0);
 	}], ac_cv_pagesize=`cat conftestval`, ac_cv_pagesize=4096)])
-    AC_DEFINE_UNQUOTED(GC_PAGESIZE, $ac_cv_pagesize, [Page size])
-    AC_SUBST(GC_PAGESIZE, $ac_cv_pagesize)
+    AC_DEFINE_UNQUOTED(PAGESIZE, $ac_cv_pagesize, [Page size])
+    AC_SUBST(PAGESIZE, $ac_cv_pagesize)
 
     # Compute log2(page size)
     tmpa=1; tmpb=0
     while test $tmpa -lt $ac_cv_pagesize; do
       tmpa=`expr 2 \* $tmpa`; tmpb=`expr $tmpb + 1`
     done
-    AC_DEFINE_UNQUOTED(LOG_GC_PAGESIZE, $tmpb, [Log2 of page size])])
+    AC_DEFINE_UNQUOTED(LOG_PAGESIZE, $tmpb, [Log2 of page size])])

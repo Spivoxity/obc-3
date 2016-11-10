@@ -50,7 +50,7 @@ DEBUG = @DEBUG@
 VPATH = @srcdir@:../lib
 ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
 ENABLE_JIT = @ENABLE_JIT@
-GC_PAGESIZE = @GC_PAGESIZE@
+PAGESIZE = @PAGESIZE@
 # End
 
 all :: oblink obx.a obx-p.a
@@ -94,7 +94,7 @@ obx-j.a : $(JIT) vm386.o xmain-j.o decode.o $(COMMON) gc.o;	$(PACK)
 %.o: %.c
 
 vm386.o : %.o : %.c
-	$(CC) $(ALL_RTFLAGS) -DCODEPAGE=$(GC_PAGESIZE) $(DEBUGDEF) -c $< -o $@
+	$(CC) $(ALL_RTFLAGS) -DCODEPAGE=$(PAGESIZE) $(DEBUGDEF) -c $< -o $@
 
 $(OBX) $(JIT) decode.o gc.o trace.o profile.o debug.o: %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@

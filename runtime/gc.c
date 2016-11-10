@@ -72,10 +72,10 @@ static char *assert_fmt = "*assertion %s failed on line %d of file %s";
    BLOCK is a contiguous area of one or more pages.  An OBJECT is a
    memory area allocated for a client.  For the allocator to function
    correctly, the function get_memory must be able to allocate memory
-   in chunks of size CHUNK_SIZE aligned on a GC_PAGESIZE boundary: this
+   in chunks of size CHUNK_SIZE aligned on a PAGESIZE boundary: this
    more-or-less implies that CHUNK_SIZE is a multiple of the VM page
-   size, and the VM page size is a multiple of GC_PAGESIZE.  Configure
-   satisfies this by making GC_PAGESIZE equal to the size of a VM page.
+   size, and the VM page size is a multiple of PAGESIZE.  Configure
+   satisfies this by making PAGESIZE equal to the size of a VM page.
 
    For each small size of object, there is a POOL of blocks that are
    split up by the upper-level allocator into objects of that size.
@@ -84,7 +84,7 @@ static char *assert_fmt = "*assertion %s failed on line %d of file %s";
    not compacted, and never move. */
 
 #define BYTES_PER_WORD 4
-#define PAGE_WORDS (GC_PAGESIZE / BYTES_PER_WORD)
+#define PAGE_WORDS (PAGESIZE / BYTES_PER_WORD)
 
 #define MB 1024*1024
 #define INIT_SIZE (2*MB) /* Initial heap size */
@@ -139,7 +139,7 @@ static void *grab_chunk(unsigned size) {
 
 /* get_memory -- grab one or more pages from the operating system */
 static void *get_memory(unsigned size) {
-     unsigned alloc_size = round_up(size, GC_PAGESIZE);
+     unsigned alloc_size = round_up(size, PAGESIZE);
      void *p;
 
      /* This happens e.g. if custom translation makes the code size zero */
@@ -147,7 +147,7 @@ static void *get_memory(unsigned size) {
 
      p = grab_chunk(alloc_size);
      if (p == NULL) panic("out of memory");
-     ASSERT((unsigned) p % GC_PAGESIZE == 0);
+     ASSERT((unsigned) p % PAGESIZE == 0);
      DEBUG_PRINT('b', ("Allocated chunk at %p\n", p));
      return p;
 }
@@ -170,7 +170,7 @@ static void *get_memory(unsigned size) {
    need space for the program's symbol table.  Grabbing scratch space
    16 pages at a time seems a fair compromise. */
 
-#define SCRATCH_CHUNK (16 * GC_PAGESIZE)
+#define SCRATCH_CHUNK (16 * PAGESIZE)
 
 /* The scratch allocator keeps hold of just one piece of free memory,
    and wastefully discards it if it is too small to satisfy the next
@@ -189,7 +189,7 @@ void *scratch_alloc(unsigned size, bool atomic) {
 
      if (scratch_free + alloc_size > scratch_limit) {
 	  if (alloc_size > SCRATCH_CHUNK
-	      || scratch_free + 4*GC_PAGESIZE <= scratch_limit)
+	      || scratch_free + 4*PAGESIZE <= scratch_limit)
 	       /* Avoid discarding a largish piece */
 	       return get_memory(alloc_size);
 
@@ -197,7 +197,7 @@ void *scratch_alloc(unsigned size, bool atomic) {
 	  scratch_limit = scratch_free + SCRATCH_CHUNK;
      }
 
-     if (alloc_size % GC_PAGESIZE == 0) {
+     if (alloc_size % PAGESIZE == 0) {
 	  scratch_limit -= alloc_size;
 	  p = scratch_limit;
      } else {
@@ -294,21 +294,21 @@ static header *new_list(void) {
    block. */
 
 /* To use the two-level table, we need to split an address into three
-   parts: the top part (10 bits for GC_PAGESIZE = 4096), which selects
+   parts: the top part (10 bits for PAGESIZE = 4096), which selects
    an index; the bottom part (10 bits), which selects a page under
    that index, and the offset (12 bits) within the page.  In general,
    we arrange that a page index occupies one page itself, and
    calculate the size of the root table to cover the address space. */
 
-#define BOT_BITS (LOG_GC_PAGESIZE - 2)
+#define BOT_BITS (LOG_PAGESIZE - 2)
 #define BOT_SIZE (1 << BOT_BITS)
-#define TOP_BITS (8*BYTES_PER_WORD - BOT_BITS - LOG_GC_PAGESIZE)
+#define TOP_BITS (8*BYTES_PER_WORD - BOT_BITS - LOG_PAGESIZE)
 #define TOP_SIZE (1 << TOP_BITS)
 
 #define mask(x, n) ((x) & ((1 << (n)) - 1))
 
-#define top_part(p)  (((unsigned) (p)) >> (BOT_BITS + LOG_GC_PAGESIZE))
-#define bot_part(p)  mask(((unsigned) (p)) >> LOG_GC_PAGESIZE, BOT_BITS)
+#define top_part(p)  (((unsigned) (p)) >> (BOT_BITS + LOG_PAGESIZE))
+#define bot_part(p)  mask(((unsigned) (p)) >> LOG_PAGESIZE, BOT_BITS)
 
 /* Here's the layout of the page table; unused elements of the
    top-level table are all initialized to empty_index, a page full
@@ -338,9 +338,9 @@ static inline uchar *find_start(uchar *p) {
 static void page_setup(uchar *base, unsigned size, header *h) {
      uchar *p;
 
-     ASSERT(size % GC_PAGESIZE == 0);
+     ASSERT(size % PAGESIZE == 0);
 
-     for (p = base; p < base + size; p += GC_PAGESIZE) {
+     for (p = base; p < base + size; p += PAGESIZE) {
 	  /* Make sure lower index exists */
 	  if (page_table[top_part(p)] == empty_index)
 	       page_table[top_part(p)] = 
@@ -376,7 +376,7 @@ static unsigned gencount = 1;	    /* Timestamp */
 
 /* make_free -- add a block to the appropriate free list */
 static void make_free(header *h) {
-     int index = h->h_size/GC_PAGESIZE;
+     int index = h->h_size/PAGESIZE;
 
      if (index > BIG_BLOCK) index = BIG_BLOCK;
 
@@ -442,9 +442,9 @@ static header *free_block(header *h, bool mapped) {
 /* find_block -- find a free block of specified size */
 static header *find_block(unsigned size, unsigned objsize) {
      header *h = NULL, *h2;
-     int i = min(size/GC_PAGESIZE, BIG_BLOCK);
+     int i = min(size/PAGESIZE, BIG_BLOCK);
 
-     ASSERT(size % GC_PAGESIZE == 0);
+     ASSERT(size % PAGESIZE == 0);
 
      do {
 	  for (headers(h2, free_list[i])) {
@@ -461,7 +461,7 @@ static header *find_block(unsigned size, unsigned objsize) {
 	  /* No suitable block was found.  Get a big chunk. */
 	  unsigned chunk = max(size, CHUNK_SIZE);
 	  GC_TRACE("[ex]");
-	  ASSERT(chunk % GC_PAGESIZE == 0);
+	  ASSERT(chunk % PAGESIZE == 0);
 	  h = alloc_header();
 	  h->h_memory = (uchar *) get_memory(chunk);
 	  h->h_size = chunk;
@@ -508,7 +508,7 @@ static header *find_block(unsigned size, unsigned objsize) {
    Small objects of size size_bytes[i] are allocated by splitting up a
    block of size size_block[i]. */
 
-#define N_SIZES (2*LOG_GC_PAGESIZE)
+#define N_SIZES (2*LOG_PAGESIZE)
 
 #ifdef MULTIBLOCKS
 #define MAX_SMALL_WORDS (4*(PAGE_WORDS/3))
@@ -526,7 +526,7 @@ static unsigned size_bytes[N_SIZES];
 static unsigned size_block[N_SIZES];
 #define pool_block(i) size_block[i]
 #else
-#define pool_block(i) GC_PAGESIZE
+#define pool_block(i) PAGESIZE
 #endif
 
 #define pool_count(i) (pool_block(i) / pool_size(i))
@@ -565,12 +565,12 @@ static void init_sizes(void) {
      int k, i;
 
      n_sizes = 0; 
-     new_size(8, GC_PAGESIZE);
-     new_size(16, GC_PAGESIZE);
+     new_size(8, PAGESIZE);
+     new_size(16, PAGESIZE);
      k = 16;
-     while (k < GC_PAGESIZE/8) {
-	  new_size(2*k, GC_PAGESIZE);
-	  new_size(3*k, GC_PAGESIZE);
+     while (k < PAGESIZE/8) {
+	  new_size(2*k, PAGESIZE);
+	  new_size(3*k, PAGESIZE);
 	  k *= 2;
      }
 
@@ -578,13 +578,13 @@ static void init_sizes(void) {
         are enabled only if MULTIBLOCKS is defined; the extra cost in
         compaction overhead may not be worth the reduction in internal
         fragmentation that is achieved. */
-     new_size(GC_PAGESIZE/4, GC_PAGESIZE);
-     new_size(GC_PAGESIZE/3, GC_PAGESIZE);
-     new_size(GC_PAGESIZE/2, GC_PAGESIZE);
+     new_size(PAGESIZE/4, PAGESIZE);
+     new_size(PAGESIZE/3, PAGESIZE);
+     new_size(PAGESIZE/2, PAGESIZE);
 #ifdef MULTIBLOCKS
-     new_size(2*GC_PAGESIZE/3, 2*GC_PAGESIZE);
-     new_size(GC_PAGESIZE, GC_PAGESIZE);
-     new_size(4*GC_PAGESIZE/3, 4*GC_PAGESIZE);
+     new_size(2*PAGESIZE/3, 2*PAGESIZE);
+     new_size(PAGESIZE, PAGESIZE);
+     new_size(4*PAGESIZE/3, 4*PAGESIZE);
 #endif
 
      ASSERT(size_bytes[n_sizes-1] == MAX_SMALL_BYTES);
@@ -635,7 +635,7 @@ void scavenge(value *sp, unsigned size) {
 	 && alloc_since_gc > THRESHOLD * heap_size)
 	  gc_collect(sp);
      else
-	  heap_size += round_up(size, GC_PAGESIZE);
+	  heap_size += round_up(size, PAGESIZE);
 }
 
 static void add_block(int index) {
@@ -675,7 +675,7 @@ void *gc_alloc(value *desc, unsigned size, value *sp) {
 	  free_count[index]--;
      } else {
 	  /* Allocate whole pages */
-	  alloc_size = round_up(size, GC_PAGESIZE);
+	  alloc_size = round_up(size, PAGESIZE);
 
 	  while (pool_total + alloc_size > heap_size)
 	       scavenge(sp, alloc_size);
@@ -1085,7 +1085,7 @@ void gc_collect(value *sp) {
 void gc_init(void) {
      int i;
 
-     ASSERT(sizeof(page_index) == GC_PAGESIZE);
+     ASSERT(sizeof(page_index) == PAGESIZE);
 
      empty_index = scratch_alloc(sizeof(page_index), FALSE);
      for (i = 0; i < TOP_SIZE; i++) page_table[i] = empty_index;
