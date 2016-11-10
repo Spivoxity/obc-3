@@ -57,10 +57,10 @@ let find_break m n =
 let file_contents fname =
   let chan = open_in_bin fname in
   let n = in_channel_length chan in
-  let buf = String.create n in
+  let buf = Bytes.create n in
   really_input chan buf 0 n;
   close_in chan;
-  buf
+  Bytes.to_string buf
 
 class debug_view m enabled 
     (buf : GSourceView2.source_buffer) 

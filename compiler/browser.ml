@@ -41,12 +41,12 @@ let show_doc = ref false
 
 let normalize s =
   let rec loop i j =
-    if j >= String.length s then
-      String.sub s 0 i
-    else if s.[j] = '\r' then
+    if j >= Bytes.length s then
+      Bytes.sub_string s 0 i
+    else if Bytes.get s j = '\r' then
       loop i (j+1)
     else begin
-      s.[i] <- s.[j];
+      Bytes.set s i (Bytes.get s j);
       loop (i+1) (j+1)
     end in
   loop 0 0
@@ -54,7 +54,7 @@ let normalize s =
 let get_text a b =
   let pos0 = pos_in !source in
   try 
-    let buf = String.create (b-a) in
+    let buf = Bytes.create (b-a) in
     seek_in !source a;
     really_input !source buf 0 (b-a);
     seek_in !source pos0;

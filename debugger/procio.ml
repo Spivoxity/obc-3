@@ -93,19 +93,19 @@ let peek_int64 addr =
 let peek_string addr =
   let max = 60 in
   let null = char_of_int 0 in
-  let s = String.create (max+3) in
+  let s = Bytes.create (max+3) in
   let n = ref 0 in
   let ch = ref (peek_char addr) in
   while !n < max && !ch != null do
-    s.[!n] <- !ch;
+    Bytes.set s !n !ch;
     incr n;
     ch := peek_char (Int32.add addr (Int32.of_int !n))
   done;
   if !ch <> null then begin
-     String.fill s max 3 '.';
+     Bytes.fill s max 3 '.';
      n := !n+3
   end;
-  String.sub s 0 !n
+  Bytes.sub_string s 0 !n
 
 
 (* Initialization *)

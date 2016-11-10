@@ -220,9 +220,10 @@ let sem_error fmt args loc =
   err_message fmt args loc
 
 let capitalize s0 =
-  let s = String.copy s0 in
-  if String.length s > 0 then s.[0] <- Char.uppercase s.[0];
-  s
+  let s = Bytes.of_string s0 in
+  if Bytes.length s > 0 then 
+    Bytes.set s 0 (Char.uppercase (Bytes.get s 0));
+  Bytes.to_string s
 
 let sem_context fmt args =
   break "> " (sprintf (capitalize fmt) args);

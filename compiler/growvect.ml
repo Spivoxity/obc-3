@@ -33,7 +33,7 @@ type 'a t =
     mutable elements: 'a array }
 
 let create n = 
-  { size = 0; elements = Array.create n (Obj.magic ()) }
+  { size = 0; elements = Array.make n (Obj.magic ()) }
 
 let clear v =
   v.size <- 0
@@ -51,7 +51,7 @@ let set v i x =
 let append v x =
   let n = Array.length v.elements in
   if v.size >= n then begin
-    let newv = Array.create (2*n) (Obj.magic ()) in
+    let newv = Array.make (2*n) (Obj.magic ()) in
     Array.blit v.elements 0 newv 0 n;
     v.elements <- newv
   end;
