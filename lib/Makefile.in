@@ -4,7 +4,7 @@
 # lib/Makefile.in
 # 
 # This file is part of the Oxford Oberon-2 compiler
-# Copyright (c) 2006 J. M. Spivey
+# Copyright (c) 2006--2016 J. M. Spivey
 # All rights reserved
 #
 # Redistribution and use in source and binary forms, with or without
@@ -160,7 +160,7 @@ clean:
 
 quiteclean: clean
 	rm -f lscript* Builtin.m
-	rm -f _Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c)
+	rm -f Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c)
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean

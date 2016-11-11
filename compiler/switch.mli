@@ -2,7 +2,7 @@
  * switch.mli
  * 
  * This file is part of the Oxford Oberon-2 compiler
- * Copyright (c) 2006 J. M. Spivey
+ * Copyright (c) 2006--2016 J. M. Spivey
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without

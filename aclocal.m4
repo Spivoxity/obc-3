@@ -2,7 +2,7 @@ dnl
 dnl aclocal.m4
 dnl 
 dnl This file is part of the Oxford Oberon-2 compiler
-dnl Copyright (c) 2006 J. M. Spivey
+dnl Copyright (c) 2006--2016 J. M. Spivey
 dnl All rights reserved
 dnl
 dnl Redistribution and use in source and binary forms, with or without
