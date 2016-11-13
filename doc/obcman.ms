@@ -795,7 +795,7 @@ sacrificing safety for the sake of screaming speed.
 Print the versions of OBC components, and print the commands that are
 used for compiling and linking.
 \item{--d \it n}
-Set the compiler debugging level to $n$; this adds tracing information
+Set the compiler debugging level to |n|; this adds tracing information
 to the normal output of the compiler, but may result in output that
 cannot be assembled and linked.
 \item{--s}
@@ -806,7 +806,7 @@ executable.
 Produce an executable that will run using the bytecode interpreter in
 place of the JIT translator.
 \item{--k \it n}
-Set the runtime stack size to $n$ bytes (default 1MB).
+Set the runtime stack size to |n| bytes (default 1MB).
 \enddescription
 The remaining flags are supported on Linux and on Macs with XCode
 installed; they are not supported by the normal Windows installation
@@ -881,8 +881,8 @@ The procedure |SIZE| becomes |SYSTEM.SIZE|.
 The rules for implicit conversion between numeric types are subtly
 different.
 \item6
-Exported variables and fields are impicitly read-only, and `\verb/-/'
-is not allowed as an export mark.
+Exported variables are impicitly read-only, and `\verb/-/' is not
+allowed as an export mark.
 \item7
 {\sf TRUE} and {\sf FALSE} are keywords, not predefined constants.
 \item8
@@ -1002,6 +1002,64 @@ standard output channel is redirected elsewhere.
 The interface is identical with that of the module |Out|: thus you can
 write |Out.Int(n, w)| to output an integer on the standard output,
 and |Err.Int(n, w)| to output it on the standard error channel.
+
+\section Module {\it Files\/}: File input/output.
+
+This module provides I/O operations on named files.
+\spec
+\item{TYPE File = POINTER TO FileDesc;}
+This type represents a file open for reading or writing.
+\item{VAR stdin-, stdout-, stderr-: File}
+These three read-only variables of type |File| are set to the
+standard input, output and error channels.
+\item{PROCEDURE Open(name: ARRAY OF CHAR;\\
+                mode: ARRAY OF CHAR): File;}
+This procedure opens a named file for input, output or both, or
+returns |NULL| if the file cannot be opened.  The |mode|
+argument takes the same form as the corresponding argument of the C
+function |fopen|.  Under MS--DOS, appending \verb/b/ to the mode
+causes the file to be opened in binary mode, with no translation of
+CR/LF sequences.
+\item{PROCEDURE Close(fp: File);}
+Close the file |fp|.
+\item{PROCEDURE Eof(fp: File): BOOLEAN;}
+Test whether the file |fp| is positioned at the end of the file.
+\item{PROCEDURE Flush(fp: File);}
+Complete any pending I/O operations on file |fp|.
+\item{PROCEDURE ReadChar(f: File; VAR c: CHAR);}
+Read a single character from file |f|, returning it in the variable |c|.
+\item{PROCEDURE WriteInt(f: File; n: INTEGER; w: INTEGER);}
+Write the integer |n| to file |f| in decimal using a field of width at
+least~|w|.
+\item{PROCEDURE WriteReal(f: File; x: REAL);}
+Write a real number |x| to file |f|.
+\item{PROCEDURE WriteLongReal(f: File; x: LONGREAL);}
+Write a double-precsion real |x| to file |f|.
+\item{PROCEDURE WriteFixed(f: File; x: LONGREAL;\\
+                wid: INTEGER; dec: INTEGER);}
+Write real number |x| to file |f| in a field of width |wid|, with
+  |dec| digits after the decimal point.
+\item{PROCEDURE WriteChar(f: File; c: CHAR);}
+Write the character |c| to file |f|.
+\item{PROCEDURE WriteString(f: File; s: ARRAY OF CHAR);}
+Write the string |s| for file |f|.
+\item{PROCEDURE WriteLn(f: File);}
+Write a newline character to file |f|.
+\item{PROCEDURE Read(f: File; VAR buf: ARRAY OF SYSTEM.BYTE);}
+Read characters from file |f| into |buf|.  Note that the Oberon type
+rules allow |buf| to be a variable of any desired type.
+\item{PROCEDURE Write(f: File; VAR buf: ARRAY OF SYSTEM.BYTE);}
+Write characters from |buf| to file |f|.
+\item{CONST SeekSet = 0; SeekCur = 1; SeekEnd = 2;}
+Constants for use with |Seek|.
+\item{PROCEDURE Seek(f: File; offset: INTEGER; whence: INTEGER);}
+Position the file |f| at a given offset from the beginning of the file
+(if |whence = SeekSet|), from the current position
+(if |whence = SeekCur|) or from the end of the
+file (if |whence = SeekEnd|).
+\item{PROCEDURE Tell(f: File): INTEGER;}
+Return the current position of file |f|.
+\endspec
 
 \section Module {\it Math\/}: Mathematical functions.
 
