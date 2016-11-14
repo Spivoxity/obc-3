@@ -11,6 +11,5 @@ if [ ! -r $srcdir/configure.in ]; then
     exit 1
 fi
 
-(cd $srcdir && sh scripts/myauto)
-
+(cd $srcdir && autoreconf)
 $srcdir/configure --enable-debug "$@"
