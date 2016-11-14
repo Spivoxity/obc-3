@@ -45,11 +45,13 @@ AC_SUBST(EXEEXT)
 
 case $host in
     i?86-*)   CC=gcc;;
-    x86_64-*) CC='"gcc -m32"';;
+    x86_64-*) CC='gcc -m32';;
     *)        CC=unknown;;
 esac
-AC_SUBST(CC)
 
-AC_SUBST(OBDB1, '"$LIBDIR/obdb1 -R $LIBDIR"')
+AC_SUBST(CC)
+AC_SUBST(OBDB1, '"$LIBDIR/obdb1 -R $LIBDIR/resources"')
+AC_SUBST(DLFLAGS, '-rdynamic')
+AC_SUBST(LIBS, '-ldl')
 
 AC_OUTPUT(Makefile)

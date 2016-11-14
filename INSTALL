@@ -1,0 +1,30 @@
+Oxford Oberon-2 compiler for Linux/i386 and Linux/amd64
+Copyright (C) 1995-2016 J. M. Spivey
+
+INSTALLING THE BINARY DISTRIBUTION
+
+To install OBC on a linux system, first obtain and unpack the binary
+tarball, which will have a name like obc-linux-i386-3.0.0.tgz.  Then type
+the following shell commands:
+
+	$ cd obc-linux-i386-3.0.0
+	$ ./configure
+	$ make
+	$ sudo make install
+
+This will install the compiler and runtime system under /usr/local.
+You can use e.g. './configure --prefix=/usr' to install it elsewhere.
+
+The program Fac.m included in the distribution makes it easy to
+perform a simple sanity test: just type the commands
+
+	$ obc -o fac Fac.m
+	$ ./fac 10
+
+and check for the output
+
+	The factorial of 10 is 3628800
+
+The installation is now complete.
+
+-- Mike Spivey

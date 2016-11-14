@@ -6,7 +6,7 @@
 # bindist.make.in
 # 
 # This file is part of the Oxford Oberon-2 compiler
-# Copyright (c) 2006 J. M. Spivey
+# Copyright (c) 2006--2016 J. M. Spivey
 # All rights reserved
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,25 +37,30 @@ prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
 libdir = @libdir@
+mandir = @mandir@
 datarootdir = @datarootdir@
 INSTALL = @INSTALL@
 INSTALL_PROG = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 # End of config
 
-all: bin/obc bin/obb bin/obdump bin/obdb
+all: bin/obc bin/obb bin/oblist bin/obdb
 
 bin/%: etc/%.in config.status
 	CONFIG_FILES=$@:$< ./config.status 
 
-bin/obdump: etc/ObDump.k
-	libexec/oblink -i $(libdir)/obc/obx -L lib etc/ObDump.k -o bin/obdump
+bin/oblist: etc/ObList.k
+	libexec/oblink -i $(libdir)/obc/obx -L lib etc/ObList.k -o bin/oblist
 
 install: all force
-	for d in $(bindir) $(libdir)/obc; do $(INSTALL) -d $$d; done
+	for d in $(bindir) $(libdir)/obc $(libdir)/obc/resources \
+              $(mandir)/man1; do $(INSTALL) -d $$d; done
 	for f in bin/*; do $(INSTALL_PROG) $$f $(bindir); done
 	for f in libexec/*; do $(INSTALL_PROG) $$f $(libdir)/obc; done
 	for f in libsrc/*; do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in lib/*; do $(INSTALL_DATA) $$f $(libdir)/obc; done
+	for f in man/*; do $(INSTALL_DATA) $$f $(mandir)/man1; done
+	for f in resources/*; do $(INSTALL_DATA) $$f \
+		$(libdir)/obc/resources; done
 
 force:
