@@ -454,7 +454,7 @@ export :
   | STAR			{ Visible }
   | MINUS			
       { if !Config.ob07flag then
-          parse_error "Read-only export is the only kind in Oberon07";
+          parse_error "'-' is not allowed as an export mark in Oberon07";
         ReadOnly } ;
 
 semi :

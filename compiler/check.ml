@@ -58,7 +58,10 @@ let add_def env d =
 	sem_error "'$' has already been declared" [fId d.d_tag] d.d_loc
 
 let make_def x k t doc =
-  { d_tag = x.x_name; d_module = !current; d_export = x.x_export; d_kind = k; 
+  (* Variables are exported read-only in Oberon07 *)
+  let exp = if !Config.ob07flag && k = VarDef
+		&& x.x_export = Visible then ReadOnly else x.x_export in
+  { d_tag = x.x_name; d_module = !current; d_export = exp; d_kind = k; 
     d_used = (x.x_export <> Private); d_loc = x.x_loc; 
     d_line = Error.line_num x.x_loc;
     d_type = t; d_lab = nosym; d_level = !level; d_offset = 0; 
