@@ -4,7 +4,7 @@
 # root/Makefile.in
 # 
 # This file is part of the Oxford Oberon-2 compiler
-# Copyright (c) 2006 J. M. Spivey
+# Copyright (c) 2006--2016 J. M. Spivey
 # All rights reserved
 #
 # Redistribution and use in source and binary forms, with or without
@@ -261,7 +261,6 @@ ifdef ENABLE_DEBUGGER
   ifndef MACOS
     DIRS += $(libdir)/obc/resources
     RES += $(RESOURCES:%=$(RESDIR)/%)
-    LIB += $(RESOURCES:%=$(RESDIR)/%)
     LIBX += debugger/obdb1 
   endif
 endif
@@ -295,7 +294,7 @@ BINDIST = bindist
 
 bindist: force
 	@rm -rf $(BINDIST)
-	for d in bin libexec lib libsrc etc; do \
+	for d in bin libexec lib libsrc etc man resources; do \
 		$(INSTALL) -d $(BINDIST)/$$d; done
 	$(AUTOCONF) $(srcdir)/scripts/bindist.conf.in \
 		| sed -e 's/--VERSION--/$(VERSION)/' \
@@ -308,9 +307,11 @@ bindist: force
 		$(srcdir)/scripts/config.sub \
 		$(srcdir)/scripts/config.guess $(BINDIST)
 	$(INSTALL_PROG) obprof $(BINDIST)/bin
-	for f in $(LIBX); do $(INSTALL_PROG) $$f $(BINDIST)/libexec; done
 	for f in $(LIBSRC); do $(INSTALL_DATA) $$f $(BINDIST)/libsrc; done
 	for f in $(LIB); do $(INSTALL_DATA) $$f $(BINDIST)/lib; done
+	for f in $(LIBX); do $(INSTALL_PROG) $$f $(BINDIST)/libexec; done
+	for f in $(RES); do $(INSTALL_DATA) $$f $(BINDIST)/resources; done
+	for f in $(MAN); do $(INSTALL_DATA) man/$$f $(BINDIST)/man; done
 	for f in $(SCRIPTS); do \
 		$(SETREVID) $(srcdir)/scripts/$$f >$(BINDIST)/etc/$$f; \
 		chmod 644 $(BINDIST)/etc/$$f; done

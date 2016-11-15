@@ -2,7 +2,7 @@
  * parser.mly
  * 
  * This file is part of the Oxford Oberon-2 compiler
- * Copyright (c) 2006 J. M. Spivey
+ * Copyright (c) 2006--2016 J. M. Spivey
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -454,7 +454,7 @@ export :
   | STAR			{ Visible }
   | MINUS			
       { if !Config.ob07flag then
-          parse_error "Read-only export is the only kind in Oberon07";
+          parse_error "'-' is not allowed as an export mark in Oberon07";
         ReadOnly } ;
 
 semi :

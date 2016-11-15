@@ -1,5 +1,0 @@
-#!/bin/sh
-
-autoconf && autoheader
-(cd yacc && autoconf)
-(cd thunder && autoconf && autoheader)

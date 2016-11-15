@@ -1,40 +1,91 @@
-Oxford Oberon-2 compiler for LINUX/i386
-Copyright (C) 1995-2005 J. M. Spivey
+INSTALLING OBC FROM SOURCE ON A UNIX MACHINE
 
+Version 3
 
-INSTALLING THE BINARY DISTRIBUTION
+First, check if a binary distribution exists for your machine: this
+may save you a lot of effort, since it is necessary to install the
+Objective CAML system before recompiling obc, but not in order to run a
+binary distribution.
 
-To install OBC on a linux system, first obtain and unpack the binary
-tarball, which will have a name like obc-linux-2.4.0.tgz.  Then type
-the following shell commands:
+If you do want or need to rebuild obc, here are basic instructions.
 
-	$ cd obc-linux-2.4.0
+1.  Clone the repository.
+	
+	$ hg clone http://bitbucket.org/Spivey/obc-3 -u rel-3.0
+
+2.  Change to the directory obc-3, and type
+
+        $ autoreconf
 	$ ./configure
-	$ make
-	$ sudo make install
 
-This will install the compiler and runtime system under /usr/local.
+    If your machine is x86-based or ARM-based, then the runtime system
+    will be built to include a just-in-time translator from the OBC
+    bytecode into native machine code.  You can disable the JIT by
+    specifying --disable-jit.  The JIT is based on a virtual machine
+    model similar to the one provided by GNU Lightning, and would be
+    easy to port to other architectures.
+    
+    The default is also to build the GUI debugger.  Doing so requires 
+    some GTK stuff to be installed, but you can disable it by specifying 
+    --disable-debugger.  Alternatively, use "sudo apt-get install
+    libgtksourceview2.0-dev" to pull in all the libraries that are needed.
 
-The program Fac.m included in the distribution makes it easy to
-perform a simple sanity test: just type the commands
+    Various checks on your machine will be performed.  If the results
+    are good enough, the rest of the installation will go smoothly;
+    but if they are bad, then you probably won't notice until the next
+    part fails.
 
-	$ obc -o fac Fac.m
-	$ ./fac 10
+    If you want a version of obc that can be built without X windows
+    being present on the build machine, then add the flag --without-x.
+    The X libraries are loaded dynamically when the display is opened
+    in XYplane, so Oberon programs do not depend on the presence of X
+    to run, even if they have been built on a system configured for X
+    -- unless, that is, they actually use XYplane. Note: on amd64, the
+    module XYplane will not be built unless the 32-bit X libraries are
+    installed.  Use "sudo apt-get install libx11-dev:i386" to install
+    them.
 
-and check for the output
+    And if you want to install in some place other than
+    /usr/local, you can type e.g.
 
-	The factorial of 10 is 3628800
+	./configure --prefix=/usr/mike
 
-The installation is now complete.
+    There are other options too: specifically, it's possible to
+    disable dynamic linking on systems that don't support it.
 
-This software includes the Objective Caml run-time system, which is
-copyright 1991-2005, INRIA.  Objective Caml may be obtained from
-http://caml.inria.fr
+3.  Type "make".  This builds the various parts of the system.  It
+    takes only a minute or two on a modern workstation.
 
+    The makefiles use the VPATH feature of GNU make in order to
+    support build directories (see below).
 
-INSTALLING THE SOURCE DISTRIBUTION
+4.  Check the last two lines of output from the build process: they
+    should be identical:
 
-Intructions are in the file INSTALL
+        The factorial of 20 is 2432902008176640000
+        The factorial of 20 is 2432902008176640000
 
+    If you feel like running some more tests, some regression tests
+    can be found in the 'test' sub-directory.  Typing "make test" will
+    automatically run the whole test suite, showing differences in the
+    code generated and in the output of the test programs.  Some other
+    tests that exercise profiling, separate compilation, and linking
+    of C primitives are run with "./bigtest" in the test directory.
+
+5.  If you want to check out the X windows implementation of XYplane,
+    type
+
+	make tartan
+	./tartan
+
+    This compiles and runs a program that displays a dynamic random
+    meta-tartan pattern.  Type 'q' to exit.
+
+6.  Type
+
+	sudo make install
+
+    The obc compiler and tools will be installed in /usr/local/bin,
+    /usr/local/lib/obc, and /usr/local/man/man1.
 
 -- Mike Spivey

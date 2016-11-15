@@ -62,6 +62,7 @@ done
 status=0
 
 $compiler -x $srcdir/xTypes.m >xTypes.k
+$compiler -07 $srcdir/xTypes07.m >xTypes07.k
 $compiler -x $srcdir/xPrelude.m >xPrelude.k
 
 for f in ${*:-`cd $srcdir; echo t*.m`}; do
@@ -76,7 +77,8 @@ for f in ${*:-`cd $srcdir; echo t*.m`}; do
     rm -f a.out a.k out code
     ($compiler $flag -O $srcdir/$f >a.k \
 	&& sed -f $srcdir/stamp.sed a.k >code \
-	&& ../runtime/oblink -L $lib xTypes.k xPrelude.k a.k -o a.out \
+	&& ../runtime/oblink -L $lib \
+                             xTypes.k xTypes07.k xPrelude.k a.k -o a.out \
 	&& if $run; then \
 	    $interp ./a.out dummy arguments 2>&1 | $fixup >out; fi)
     if $promote; then

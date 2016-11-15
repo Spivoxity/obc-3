@@ -202,3 +202,11 @@ test/editor
 test/fib
 test/msgs
 test/planner
+doc/obcman.aux
+doc/obcman.log
+doc/obcman.pdf
+doc/obcman.toc
+doc/obgrind
+doc/obgrind.c
+tartan
+bindist

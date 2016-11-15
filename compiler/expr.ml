@@ -2,7 +2,7 @@
  * expr.ml
  * 
  * This file is part of the Oxford Oberon-2 compiler
- * Copyright (c) 2006 J. M. Spivey
+ * Copyright (c) 2006--2016 J. M. Spivey
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -170,6 +170,9 @@ let rec is_var e =
 	  let d = get_def x in
 	  match d.d_kind with 
 	      VarDef ->
+                (* In Oberon07, imported variables are read-only,
+                   even if they were exported read-write from another
+                   (non-Oberon07) module *)
 		d.d_module = !current 
                   || d.d_export = Visible && not !Config.ob07flag
 	    | ParamDef -> true
@@ -184,8 +187,7 @@ let rec is_var e =
 	  true
 	else begin
 	  let d = get_def x in 
-	  is_var r && (d.d_module = !current 
-            || d.d_export = Visible && not !Config.ob07flag)
+	  is_var r && (d.d_module = !current || d.d_export = Visible)
 	end
     | Cast (e, tn) ->
 	if undefined tn then

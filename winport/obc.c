@@ -2,7 +2,7 @@
  * obc.c
  * 
  * This file is part of the Oxford Oberon-2 compiler
- * Copyright (c) 2006 J. M. Spivey
+ * Copyright (c) 2006--2016 J. M. Spivey
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -199,6 +199,7 @@ void usage(void)
      p("  -s      Strip symbol table in linker output");
      p("  -j0     Disable JIT translator at runtime");
      p("  -k n    Set runtime stack size");
+     p("  -07     Compile Oberon07 source");
      p("");
      p("  *.m     Oberon source file to be compiled");
      p("  *.k     Bytecode file for linking");
@@ -240,7 +241,7 @@ int main(int argc, char *argv[])
 	  else if (m("-j0"))
 	       runtime = RUNTIME;
 	  else if (m("-O0") || m("-O") || m("-w") 
-		   || m("-x") || m("-rsb"))
+		   || m("-x") || m("-rsb") || m("-07"))
 	       sws[n_sws++] = s;
 	  else if (m("-I")) {
 	       if (++i >= argc) usage();
