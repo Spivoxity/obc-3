@@ -14,8 +14,8 @@ END tPrimVal.
 >>*)
 
 (*[[
-!! SYMFILE #tPrimVal STAMP #tPrimVal.%main 1
-!! END STAMP
+!! (SYMFILE #tPrimVal 0x00000301 #tPrimVal.%main 1)
+!! (CHKSUM 0x634a96a3)
 !! 
 MODULE tPrimVal STAMP 0
 IMPORT Out STAMP

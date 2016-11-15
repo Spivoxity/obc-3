@@ -42,8 +42,8 @@ BEGIN
 END tPascal.
 
 (*[[
-!! SYMFILE #tPascal STAMP #tPascal.%main 1
-!! END STAMP
+!! (SYMFILE #tPascal 0x00000301 #tPascal.%main 1)
+!! (CHKSUM 0x7cfafd95)
 !! 
 MODULE tPascal STAMP 0
 IMPORT Out STAMP

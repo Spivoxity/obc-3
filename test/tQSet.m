@@ -59,8 +59,8 @@ BEGIN
 END tQSet.
 
 (*[[
-!! SYMFILE #tQSet STAMP #tQSet.%main 1
-!! END STAMP
+!! (SYMFILE #tQSet 0x00000301 #tQSet.%main 1)
+!! (CHKSUM 0x41c1c487)
 !! 
 MODULE tQSet STAMP 0
 IMPORT Out STAMP

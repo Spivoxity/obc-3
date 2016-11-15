@@ -11,8 +11,8 @@ BEGIN
 END tPi07.
 
 (*[[
-!! SYMFILE #tPi07 STAMP #tPi07.%main 1
-!! END STAMP
+!! (SYMFILE #tPi07 0x00000301 #tPi07.%main 1)
+!! (CHKSUM 0x6f96600d)
 !! 
 MODULE tPi07 STAMP 0
 IMPORT MathL STAMP

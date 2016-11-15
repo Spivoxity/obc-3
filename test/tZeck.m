@@ -70,8 +70,8 @@ END tZeck.
 >>*)
 
 (*[[
-!! SYMFILE #tZeck STAMP #tZeck.%main 14
-!! END STAMP
+!! (SYMFILE #tZeck 0x00000301 #tZeck.%main 14)
+!! (CHKSUM 0x3373c39b)
 !! 
 MODULE tZeck STAMP 0
 IMPORT Out STAMP

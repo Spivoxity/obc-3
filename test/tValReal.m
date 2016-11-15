@@ -17,8 +17,8 @@ END tValReal.
 >>*)
 
 (*[[
-!! SYMFILE #tValReal STAMP #tValReal.%main 1
-!! END STAMP
+!! (SYMFILE #tValReal 0x00000301 #tValReal.%main 1)
+!! (CHKSUM 0x41b986bb)
 !! 
 MODULE tValReal STAMP 0
 IMPORT Out STAMP

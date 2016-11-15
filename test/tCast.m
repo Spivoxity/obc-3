@@ -37,8 +37,8 @@ END tCast.
 >>*)
 
 (*[[
-!! SYMFILE #tCast STAMP #tCast.%main 1
-!! END STAMP
+!! (SYMFILE #tCast 0x00000301 #tCast.%main 1)
+!! (CHKSUM 0x64daf623)
 !! 
 MODULE tCast STAMP 0
 IMPORT Out STAMP

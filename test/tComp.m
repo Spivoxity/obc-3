@@ -15,8 +15,8 @@ BEGIN
 END tComp.
 
 (*[[
-!! SYMFILE #tComp STAMP #tComp.%main 1
-!! END STAMP
+!! (SYMFILE #tComp 0x00000301 #tComp.%main 1)
+!! (CHKSUM 0x355821eb)
 !! 
 MODULE tComp STAMP 0
 IMPORT Out STAMP

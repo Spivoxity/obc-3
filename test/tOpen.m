@@ -28,8 +28,8 @@ BEGIN
 END tOpen.
 
 (*[[
-!! SYMFILE #tOpen STAMP #tOpen.%main 1
-!! END STAMP
+!! (SYMFILE #tOpen 0x00000301 #tOpen.%main 1)
+!! (CHKSUM 0x35b0c771)
 !! 
 MODULE tOpen STAMP 0
 IMPORT Out STAMP

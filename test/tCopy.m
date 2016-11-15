@@ -17,8 +17,8 @@ BEGIN
 END tCopy.
 
 (*[[
-!! SYMFILE #tCopy STAMP #tCopy.%main 1
-!! END STAMP
+!! (SYMFILE #tCopy 0x00000301 #tCopy.%main 1)
+!! (CHKSUM 0x02971d63)
 !! 
 MODULE tCopy STAMP 0
 IMPORT Out STAMP

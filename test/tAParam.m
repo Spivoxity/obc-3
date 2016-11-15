@@ -29,8 +29,8 @@ BEGIN
 END tAParam.
 
 (*[[
-!! SYMFILE #tAParam STAMP #tAParam.%main 1
-!! END STAMP
+!! (SYMFILE #tAParam 0x00000301 #tAParam.%main 1)
+!! (CHKSUM 0x41e993b1)
 !! 
 MODULE tAParam STAMP 0
 IMPORT Out STAMP

@@ -25,8 +25,8 @@ BEGIN
 END tEcho.
 
 (*[[
-!! SYMFILE #tEcho STAMP #tEcho.%main 1
-!! END STAMP
+!! (SYMFILE #tEcho 0x00000301 #tEcho.%main 1)
+!! (CHKSUM 0x4020f2eb)
 !! 
 MODULE tEcho STAMP 0
 IMPORT Args STAMP

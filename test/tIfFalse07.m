@@ -13,8 +13,8 @@ BEGIN
 END tIfFalse07.
 
 (*[[
-!! SYMFILE #tIfFalse07 STAMP #tIfFalse07.%main 1
-!! END STAMP
+!! (SYMFILE #tIfFalse07 0x00000301 #tIfFalse07.%main 1)
+!! (CHKSUM 0x5f8db3cf)
 !! 
 MODULE tIfFalse07 STAMP 0
 IMPORT Out STAMP

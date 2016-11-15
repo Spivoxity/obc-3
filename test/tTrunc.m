@@ -21,8 +21,8 @@ END tTrunc.
 >>*)
 
 (*[[
-!! SYMFILE #tTrunc STAMP #tTrunc.%main 1
-!! END STAMP
+!! (SYMFILE #tTrunc 0x00000301 #tTrunc.%main 1)
+!! (CHKSUM 0x14037e55)
 !! 
 MODULE tTrunc STAMP 0
 IMPORT Out STAMP

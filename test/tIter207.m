@@ -92,8 +92,8 @@ END tIter207.
 >>*)
 
 (*[[
-!! SYMFILE #tIter207 STAMP #tIter207.%main 1
-!! END STAMP
+!! (SYMFILE #tIter207 0x00000301 #tIter207.%main 1)
+!! (CHKSUM 0x431bcc27)
 !! 
 MODULE tIter207 STAMP 0
 IMPORT Out STAMP

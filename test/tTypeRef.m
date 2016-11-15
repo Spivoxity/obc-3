@@ -18,8 +18,8 @@ END tTypeRef.
 >>*)
 
 (*[[
-!! SYMFILE #tTypeRef STAMP #tTypeRef.%main 1
-!! END STAMP
+!! (SYMFILE #tTypeRef 0x00000301 #tTypeRef.%main 1)
+!! (CHKSUM 0x0ef330cb)
 !! 
 MODULE tTypeRef STAMP 0
 IMPORT xTypes STAMP

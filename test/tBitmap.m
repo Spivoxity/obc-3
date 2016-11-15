@@ -20,8 +20,8 @@ END tBitmap.
 >>*)
 
 (*[[
-!! SYMFILE #tBitmap STAMP #tBitmap.%main 1
-!! END STAMP
+!! (SYMFILE #tBitmap 0x00000301 #tBitmap.%main 1)
+!! (CHKSUM 0x6b1a0327)
 !! 
 MODULE tBitmap STAMP 0
 IMPORT Out STAMP

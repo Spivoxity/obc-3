@@ -219,8 +219,8 @@ END tBigCase.
 >>*)
 
 (*[[
-!! SYMFILE #tBigCase STAMP #tBigCase.%main 1
-!! END STAMP
+!! (SYMFILE #tBigCase 0x00000301 #tBigCase.%main 1)
+!! (CHKSUM 0x1fe712b9)
 !! 
 MODULE tBigCase STAMP 0
 IMPORT Out STAMP

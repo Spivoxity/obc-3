@@ -18,8 +18,8 @@ END tSysMove07.
 >>*)
 
 (*[[
-!! SYMFILE #tSysMove07 STAMP #tSysMove07.%main 1
-!! END STAMP
+!! (SYMFILE #tSysMove07 0x00000301 #tSysMove07.%main 1)
+!! (CHKSUM 0x4da3ee87)
 !! 
 MODULE tSysMove07 STAMP 0
 IMPORT Out STAMP

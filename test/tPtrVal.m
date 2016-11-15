@@ -22,8 +22,8 @@ BEGIN
 END tPtrVal.  
 
 (*[[
-!! SYMFILE #tPtrVal STAMP #tPtrVal.%main 1
-!! END STAMP
+!! (SYMFILE #tPtrVal 0x00000301 #tPtrVal.%main 1)
+!! (CHKSUM 0x7efb0f5f)
 !! 
 MODULE tPtrVal STAMP 0
 IMPORT Out STAMP

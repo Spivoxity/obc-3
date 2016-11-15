@@ -14,8 +14,8 @@ BEGIN
 END tDivZero.
 
 (*[[
-!! SYMFILE #tDivZero STAMP #tDivZero.%main 1
-!! END STAMP
+!! (SYMFILE #tDivZero 0x00000301 #tDivZero.%main 1)
+!! (CHKSUM 0x5cdfc7d3)
 !! 
 MODULE tDivZero STAMP 0
 ENDHDR

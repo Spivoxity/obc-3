@@ -107,8 +107,8 @@ END tSelect.
 >>*)
 
 (*[[
-!! SYMFILE #tSelect STAMP #tSelect.%main 1
-!! END STAMP
+!! (SYMFILE #tSelect 0x00000301 #tSelect.%main 1)
+!! (CHKSUM 0x4bd1fa2d)
 !! 
 MODULE tSelect STAMP 0
 IMPORT Random STAMP

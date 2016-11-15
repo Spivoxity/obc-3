@@ -375,8 +375,8 @@ Solution:
 >>*)
 
 (*[[
-!! SYMFILE #tSudoku STAMP #tSudoku.%main 1
-!! END STAMP
+!! (SYMFILE #tSudoku 0x00000301 #tSudoku.%main 1)
+!! (CHKSUM 0x3732bd03)
 !! 
 MODULE tSudoku STAMP 0
 IMPORT Out STAMP

@@ -38,11 +38,11 @@ open Eval
 open Gcmap
 %}
 
-%token 			ARRAY CONST PARAM DEF END ENUM FIELD TARGET
+%token 			ARRAY CHKSUM CONST PARAM DEF END ENUM FIELD TARGET
 %token 			FLEX METH METHOD POINTER PROC PROCEDURE RECORD USE
 %token 			STRING TYPE GLOBAL VOID VPARAM SYMFILE ANON CPARAM
 %token			LOCAL ABSREC ABSMETH
-%token			BRA KET SEMI QUERY PLING
+%token			LPAR RPAR BRA KET QUERY PLING EQUAL BADTOK
 %token<string> 		TAG NUM HEX FLO
 %token<Dict.otype>	BASICTYPE
 %token<Dict.export> 	MARK
@@ -71,7 +71,7 @@ let unpack t =
 
 let debug d = !Dict.debugger d
 
-let in_table = Growvect.create 100
+let in_table = Hashtbl.create 100
 
 let def_type k m n (g, r, map) =
   let t = { t_id = n; t_name = anon; t_module = m; t_level = 0; 
@@ -81,23 +81,18 @@ let def_type k m n (g, r, map) =
     let d = make_def anon Private TypeDef t 0 None in
     d.d_lab <- !desc; debug d
   end;
+  Hashtbl.add in_table k t; t
 
-  while Growvect.size in_table <= k do
-    Growvect.append in_table errtype
-  done;
-  Growvect.set in_table k t; t
-
-let use_type k =
-  Growvect.get in_table k
+let use_type k = Hashtbl.find in_table k
 %}
 
 %%
 
 file :
-    header doc defs END HEX	{ (!env, int_of_string $HEX, $doc) } ;
+    header defs chksum  	{ (!env, $chksum, $header) } ;
 
 header :
-    SYMFILE ident HEX symbol int
+    LPAR SYMFILE ident HEX symbol int doc RPAR
       { if int_of_string $HEX <> Config.signature then begin
 	  sem_error 
 	    "symbol table for '$' is from wrong version of compiler"
@@ -107,54 +102,55 @@ header :
 	modname := $ident; env := new_block empty_env; level := 0;
         let d = 
 	  make_def (intern "*body*") Private ProcDef bodytype $int None in
-	d.d_lab <- $symbol; debug d } ;
+	d.d_lab <- $symbol; debug d;
+        $doc } ;
+
+chksum :
+    LPAR CHKSUM HEX RPAR	{ int_of_string $HEX } ;
 
 defs :
     /* EMPTY */			{ () }
   | defs def			{ () } ;
 
 def :
-    TYPE ident mark doc otype	
+    LPAR TYPE ident exmark doc otype RPAR
       { if $otype.t_name = anon then $otype.t_name <- $ident;
-	install (make_def $ident $mark TypeDef $otype 0 $doc) }
-  | GLOBAL ident mark doc symbol otype	
-      { let d = make_def $ident $mark VarDef $otype 0 $doc in
+	install (make_def $ident $exmark TypeDef $otype 0 $doc) }
+  | LPAR GLOBAL ident exmark doc symbol otype RPAR
+      { let d = make_def $ident $exmark VarDef $otype 0 $doc in
 	d.d_lab <- $symbol; debug d; install d }
-  | CONST ident mark doc otype const 
-      { install (make_def $ident $mark (ConstDef $const) $otype 0 $doc) }
-  | ENUM ident mark doc otype NUM
-      { install (make_def $ident $mark (EnumDef (int_of_string $NUM))
-	  $otype 0 $doc) }
-  | STRING ident mark doc int symbol 
-      { let d = make_def $ident $mark StringDef
+  | LPAR CONST ident exmark doc otype const RPAR
+      { install (make_def $ident $exmark (ConstDef $const) $otype 0 $doc) }
+  | LPAR ENUM ident exmark doc otype int RPAR
+      { install (make_def $ident $exmark (EnumDef $int) $otype 0 $doc) }
+  | LPAR STRING ident exmark doc int symbol RPAR
+      { let d = make_def $ident $exmark StringDef
 		  (new_type 0 (row $int character)) 0 $doc in
 	d.d_lab <- $symbol; install d }
-  | kind ident mark doc int otype	
-      { let d = make_def $ident $mark $kind $otype 0 $doc in
+  | LPAR kind ident exmark doc int otype RPAR
+      { let d = make_def $ident $exmark $kind $otype 0 $doc in
 	d.d_offset <- $int; install d }
-  | procdecl defs SEMI		
+  | LPAR procdecl defs RPAR
       { let d = $procdecl in 
 	d.d_env <- !env; 
 	decr level; env := pop_block !env }
-  | TARGET int otype	        
-      { let t0 = use_type $int in
-	match t0.t_guts with
-	    PointerType d -> d.d_type <- $otype
+  | LPAR TARGET otype@t0 otype@t1 RPAR
+      { match $t0.t_guts with
+	    PointerType d -> d.d_type <- $t1
 	  | _ -> failwith "TARGET" }
-  | DEF typedef			{ () } ;
+  | LPAR DEF otype RPAR		{ () } ;
 
 procdecl :
-    PROCEDURE ident mark int doc symbol otype
-      { let d = make_def $ident $mark ProcDef $otype $int $doc in
+    PROCEDURE ident exmark int doc symbol otype
+      { let d = make_def $ident $exmark ProcDef $otype $int $doc in
 	d.d_lab <- $symbol;
 	debug d; install d; unpack $otype; d }
-  | METHOD int.1 ident mark int.3 doc int.2 symbol otype
-      { let t0 = use_type $int.1 in
-	let r = get_record t0 in
-	let d = make_def $ident $mark ProcDef $otype $int.3 $doc in
-	d.d_offset <- $int.2; d.d_lab <- $symbol;
+  | METHOD otype@t0 ident exmark int@i3 doc int@i2 symbol otype@t1
+      { let r = get_record $t0 in
+	let d = make_def $ident $exmark ProcDef $t1 $i3 $doc in
+	d.d_offset <- $i2; d.d_lab <- $symbol;
 	r.r_methods <- r.r_methods @ [d]; 
-	debug d; unpack $otype; d } ;
+	debug d; unpack $t1; d } ;
 
 kind :
     LOCAL			{ VarDef }
@@ -163,34 +159,31 @@ kind :
   | VPARAM			{ VParamDef } 
   | FIELD			{ FieldDef } ;
 
-mark :
+exmark :
     /* EMPTY */			{ Private }
   | MARK			{ $MARK } ;
 
 otype :
-    int				{ use_type $int }
-  | BASICTYPE			{ $BASICTYPE } 
-  | typedef			{ $typedef } ;
-
-typedef :
-    PLING int tguts		
+    BASICTYPE			{ $BASICTYPE } 
+  | EQUAL int			{ use_type $int }
+  | PLING int tguts		
       { def_type $int !modname $int $tguts }
-  | QUERY int.1 ident int.2 tname tguts	
-      { let t = def_type $int.1 $ident $int.2 $tguts in
+  | QUERY int@i1 ident int@i2 tname tguts	
+      { let t = def_type $i1 $ident $i2 $tguts in
 	t.t_name <- $tname; t } ;
 
 tguts :
-    POINTER			
+    LPAR POINTER RPAR
       { pointer (make_def anon Private TypeDef voidtype 0 None) }
-  | ENUM int			
+  | LPAR ENUM int RPAR
       { (EnumType $int, int_rep, null_map) }
-  | recflag symbol int otype push defs SEMI
+  | LPAR recflag symbol int otype push defs RPAR
       { desc := $symbol; 
 	let t = record $recflag $otype $int (top_block !env) in
 	decr level; env := pop_block !env; t }
-  | ARRAY int otype		{ row $int $otype }
-  | FLEX otype			{ flex $otype }
-  | prockind int otype push defs SEMI
+  | LPAR ARRAY int otype RPAR	{ row $int $otype }
+  | LPAR FLEX otype RPAR	{ flex $otype }
+  | LPAR prockind int otype push defs RPAR
       { let p = { p_kind = $prockind; p_pcount = $int; p_result = $otype; 
 	    p_fparams = top_block !env } in
         decr level; env := pop_block !env;
@@ -226,5 +219,5 @@ prockind :
   | ABSMETH			{ AbsMeth } ;
 
 doc :
-    BRA int.1 int.2 KET		{ Some ($int.1, $int.2) }
+     BRA int@i1 int@i2 KET	{ Some ($i1, $i2) }
   | /* EMPTY */			{ None } ;

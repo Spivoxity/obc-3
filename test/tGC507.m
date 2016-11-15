@@ -83,8 +83,8 @@ ordered
 >>*)
 
 (*[[
-!! SYMFILE #tGC507 STAMP #tGC507.%main 1
-!! END STAMP
+!! (SYMFILE #tGC507 0x00000301 #tGC507.%main 1)
+!! (CHKSUM 0x314dc3c9)
 !! 
 MODULE tGC507 STAMP 0
 IMPORT Out STAMP

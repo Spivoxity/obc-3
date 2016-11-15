@@ -19,8 +19,8 @@ BEGIN
 END tOdd07.
 
 (*[[
-!! SYMFILE #tOdd07 STAMP #tOdd07.%main 1
-!! END STAMP
+!! (SYMFILE #tOdd07 0x00000301 #tOdd07.%main 1)
+!! (CHKSUM 0x1f8ea519)
 !! 
 MODULE tOdd07 STAMP 0
 IMPORT Out STAMP

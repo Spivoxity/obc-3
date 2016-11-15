@@ -29,8 +29,8 @@ BEGIN
 END tGCBug.
 
 (*[[
-!! SYMFILE #tGCBug STAMP #tGCBug.%main 1
-!! END STAMP
+!! (SYMFILE #tGCBug 0x00000301 #tGCBug.%main 1)
+!! (CHKSUM 0x7c133e4d)
 !! 
 MODULE tGCBug STAMP 0
 IMPORT GC STAMP

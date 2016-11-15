@@ -21,8 +21,8 @@ END tConv07.
 >>*)
 
 (*[[
-!! SYMFILE #tConv07 STAMP #tConv07.%main 1
-!! END STAMP
+!! (SYMFILE #tConv07 0x00000301 #tConv07.%main 1)
+!! (CHKSUM 0x2fdf8de7)
 !! 
 MODULE tConv07 STAMP 0
 IMPORT Out STAMP

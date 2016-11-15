@@ -83,8 +83,8 @@ whilst perhaps making arg[m+1] = val[m+2]. *)
 >>*)
 
 (*[[
-!! SYMFILE #tAck07 STAMP #tAck07.%main 1
-!! END STAMP
+!! (SYMFILE #tAck07 0x00000301 #tAck07.%main 1)
+!! (CHKSUM 0x5aecfbe9)
 !! 
 MODULE tAck07 STAMP 0
 IMPORT Out STAMP

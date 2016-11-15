@@ -23,8 +23,8 @@ BEGIN
 END tLong.
 
 (*[[
-!! SYMFILE #tLong STAMP #tLong.%main 1
-!! END STAMP
+!! (SYMFILE #tLong 0x00000301 #tLong.%main 1)
+!! (CHKSUM 0x5e1a00ad)
 !! 
 MODULE tLong STAMP 0
 IMPORT Out STAMP

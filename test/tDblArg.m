@@ -21,8 +21,8 @@ END tDblArg.
 >>*)
 
 (*[[
-!! SYMFILE #tDblArg STAMP #tDblArg.%main 1
-!! END STAMP
+!! (SYMFILE #tDblArg 0x00000301 #tDblArg.%main 1)
+!! (CHKSUM 0x78c56c45)
 !! 
 MODULE tDblArg STAMP 0
 IMPORT Out STAMP

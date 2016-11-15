@@ -74,8 +74,8 @@ END tWild.
 >>*)
 
 (*[[
-!! SYMFILE #tWild STAMP #tWild.%main 1
-!! END STAMP
+!! (SYMFILE #tWild 0x00000301 #tWild.%main 1)
+!! (CHKSUM 0x3ed6950d)
 !! 
 MODULE tWild STAMP 0
 IMPORT Out STAMP

@@ -262,8 +262,8 @@ END tRand07.
 >>*)
 
 (*[[
-!! SYMFILE #tRand07 STAMP #tRand07.%main 1
-!! END STAMP
+!! (SYMFILE #tRand07 0x00000301 #tRand07.%main 1)
+!! (CHKSUM 0x72836345)
 !! 
 MODULE tRand07 STAMP 0
 IMPORT Random STAMP

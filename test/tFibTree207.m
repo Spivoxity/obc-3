@@ -94,8 +94,8 @@ Count = 21
 >>*)
 
 (*[[
-!! SYMFILE #tFibTree207 STAMP #tFibTree207.%main 1
-!! END STAMP
+!! (SYMFILE #tFibTree207 0x00000301 #tFibTree207.%main 1)
+!! (CHKSUM 0x36c8eb01)
 !! 
 MODULE tFibTree207 STAMP 0
 IMPORT Out STAMP

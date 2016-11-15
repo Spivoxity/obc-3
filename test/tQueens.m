@@ -54,8 +54,8 @@ BEGIN
 END tQueens.
 
 (*[[
-!! SYMFILE #tQueens STAMP #tQueens.%main 1
-!! END STAMP
+!! (SYMFILE #tQueens 0x00000301 #tQueens.%main 1)
+!! (CHKSUM 0x4c9dd82f)
 !! 
 MODULE tQueens STAMP 0
 IMPORT Out STAMP

@@ -8,8 +8,8 @@ BEGIN
 END tCaseEmpty.
 
 (*[[
-!! SYMFILE #tCaseEmpty STAMP #tCaseEmpty.%main 1
-!! END STAMP
+!! (SYMFILE #tCaseEmpty 0x00000301 #tCaseEmpty.%main 1)
+!! (CHKSUM 0x5b2ae2e3)
 !! 
 MODULE tCaseEmpty STAMP 0
 ENDHDR

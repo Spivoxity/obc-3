@@ -91,8 +91,8 @@ BEGIN
 END tLocalType.
 
 (*[[
-!! SYMFILE #tLocalType STAMP #tLocalType.%main 1
-!! END STAMP
+!! (SYMFILE #tLocalType 0x00000301 #tLocalType.%main 1)
+!! (CHKSUM 0x5b45e3a7)
 !! 
 MODULE tLocalType STAMP 0
 IMPORT Out STAMP

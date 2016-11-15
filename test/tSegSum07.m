@@ -35,8 +35,8 @@ END tSegSum07.
 >>*)
 
 (*[[
-!! SYMFILE #tSegSum07 STAMP #tSegSum07.%main 1
-!! END STAMP
+!! (SYMFILE #tSegSum07 0x00000301 #tSegSum07.%main 1)
+!! (CHKSUM 0x038373a3)
 !! 
 MODULE tSegSum07 STAMP 0
 IMPORT Out STAMP

@@ -278,8 +278,8 @@ BEGIN
 END tCDown1.
 
 (*[[
-!! SYMFILE #tCDown1 STAMP #tCDown1.%main 1
-!! END STAMP
+!! (SYMFILE #tCDown1 0x00000301 #tCDown1.%main 1)
+!! (CHKSUM 0x0dd01885)
 !! 
 MODULE tCDown1 STAMP 0
 IMPORT Out STAMP

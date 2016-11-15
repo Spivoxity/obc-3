@@ -27,8 +27,8 @@ END tBigLocal.
 >>*)
 
 (*[[
-!! SYMFILE #tBigLocal STAMP #tBigLocal.%main 1
-!! END STAMP
+!! (SYMFILE #tBigLocal 0x00000301 #tBigLocal.%main 1)
+!! (CHKSUM 0x36cb1727)
 !! 
 MODULE tBigLocal STAMP 0
 IMPORT Out STAMP

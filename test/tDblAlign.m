@@ -26,8 +26,8 @@ END tDblAlign.
 >>*)
 
 (*[[
-!! SYMFILE #tDblAlign STAMP #tDblAlign.%main 1
-!! END STAMP
+!! (SYMFILE #tDblAlign 0x00000301 #tDblAlign.%main 1)
+!! (CHKSUM 0x40ab3e67)
 !! 
 MODULE tDblAlign STAMP 0
 IMPORT MathL STAMP

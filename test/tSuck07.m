@@ -21,8 +21,8 @@ BEGIN
 END tSuck07.
 
 (*[[
-!! SYMFILE #tSuck07 STAMP #tSuck07.%main 1
-!! END STAMP
+!! (SYMFILE #tSuck07 0x00000301 #tSuck07.%main 1)
+!! (CHKSUM 0x3da44a07)
 !! 
 MODULE tSuck07 STAMP 0
 IMPORT Out STAMP

@@ -24,8 +24,8 @@ BEGIN
 END tShort.
 
 (*[[
-!! SYMFILE #tShort STAMP #tShort.%main 1
-!! END STAMP
+!! (SYMFILE #tShort 0x00000301 #tShort.%main 1)
+!! (CHKSUM 0x2ea9f45d)
 !! 
 MODULE tShort STAMP 0
 IMPORT Out STAMP

@@ -15,8 +15,8 @@ BEGIN
 END tLibErr.
   
 (*[[
-!! SYMFILE #tLibErr STAMP #tLibErr.%main 1
-!! END STAMP
+!! (SYMFILE #tLibErr 0x00000301 #tLibErr.%main 1)
+!! (CHKSUM 0x06513dad)
 !! 
 MODULE tLibErr STAMP 0
 ENDHDR

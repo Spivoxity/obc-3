@@ -18,8 +18,8 @@ foo
 >>*)
 
 (*[[
-!! SYMFILE #tSuper3 STAMP #tSuper3.%main 1
-!! END STAMP
+!! (SYMFILE #tSuper3 0x00000301 #tSuper3.%main 1)
+!! (CHKSUM 0x700e6c11)
 !! 
 MODULE tSuper3 STAMP 0
 IMPORT Out STAMP

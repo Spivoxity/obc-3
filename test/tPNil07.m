@@ -14,8 +14,8 @@ BEGIN
 END tPNil07.
 
 (*[[
-!! SYMFILE #tPNil07 STAMP #tPNil07.%main 1
-!! END STAMP
+!! (SYMFILE #tPNil07 0x00000301 #tPNil07.%main 1)
+!! (CHKSUM 0x52ab81c1)
 !! 
 MODULE tPNil07 STAMP 0
 ENDHDR

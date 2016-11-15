@@ -11,8 +11,8 @@ BEGIN
 END tBigReal.
 
 (*[[
-!! SYMFILE #tBigReal STAMP #tBigReal.%main 1
-!! END STAMP
+!! (SYMFILE #tBigReal 0x00000301 #tBigReal.%main 1)
+!! (CHKSUM 0x178b39a9)
 !! 
 MODULE tBigReal STAMP 0
 IMPORT Out STAMP

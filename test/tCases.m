@@ -43,8 +43,8 @@ BEGIN
 END tCases.
 
 (*[[
-!! SYMFILE #tCases STAMP #tCases.%main 1
-!! END STAMP
+!! (SYMFILE #tCases 0x00000301 #tCases.%main 1)
+!! (CHKSUM 0x3f136a8b)
 !! 
 MODULE tCases STAMP 0
 IMPORT Out STAMP

@@ -29,8 +29,8 @@ END tForLong07.
 >>*)
 
 (*[[
-!! SYMFILE #tForLong07 STAMP #tForLong07.%main 1
-!! END STAMP
+!! (SYMFILE #tForLong07 0x00000301 #tForLong07.%main 1)
+!! (CHKSUM 0x391f9a39)
 !! 
 MODULE tForLong07 STAMP 0
 IMPORT Out STAMP

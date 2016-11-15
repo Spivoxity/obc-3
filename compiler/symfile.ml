@@ -44,8 +44,11 @@ The symbol file (actually prepended to the file of object code) has a
 very simple syntax with next to no recursion -- so that it could be
 read by a very simple parser.
 
-    file = 
-	SYMFILE module version lnum doc { glodef } END checksum
+    file = heading { glodef } checksum
+
+    heading = ( SYMFILE module version lnum doc ) 
+
+    checksum = ( CHKSUM hex )
 
 As well as global definitions, the file can contain commands to fix up
 a pointer target or add a method to a record: both of these involve
@@ -54,18 +57,19 @@ that hidden methods may be inherited and appear in the vtables of
 subtypes.
 
     glodef =
-	TYPE ident exmark doc type
-      | GLOBAL ident exmark doc label type
-      | CONST ident exmark doc type value
-      | STRING ident exmark length label
-      | PROCEDURE ident exmark lnum doc label type { local } ;
+	( TYPE ident exmark doc type )
+      | ( GLOBAL ident exmark doc label type )
+      | ( CONST ident exmark doc type value )
+      | ( ENUM ident exmark doc type int )
+      | ( STRING ident exmark length label )
+      | ( PROCEDURE ident exmark lnum doc label type { local } )
       | fixup
 
     fixup =
-        TARGET index type		; Set target of pointer type
-      | METHOD index ident exmark lnum doc slot label type { local } ;
+        ( TARGET type type )		; Set target of pointer type
+      | ( METHOD type ident exmark lnum doc slot label type { local } )
 					; Add method to record type
-      | DEF typedef			; Define type for future use
+      | ( DEF typedef )			; Define type for future use
 
     value =
 	integer				; Integer constant
@@ -81,10 +85,7 @@ arbitrary nesting, however.
 
     type =
 	INTEGER | REAL | ...		; Built in types
-      | index				; Use previously defined type
-      | typedef
-
-    typedef =
+      | = index				; Use previously defined type
       | ! index tguts			; Define type
       | ? index module index tname tguts  ; Refer to type from another module
 
@@ -96,29 +97,29 @@ Cycles of recursion in types are broken at pointers, whose target is
 given later by a TARGET command.
 
     tguts =
-	POINTER				; Pointer type (fixed up later)
-      | RECORD name size parent-type { field } ;
-      | ARRAY bound type
-      | FLEX type
-      | (PROC | METH) pcount result-type { param } ;
+	( POINTER )			; Pointer type (fixed up later)
+      | ( (RECORD|ABSREC) name size parent-type { field } )
+      | ( ARRAY bound type )
+      | ( FLEX type )
+      | ( (PROC|METH|ABSMETH) pcount result-type { param } )
 
 Fields may be exported read-only or read-write, but even hidden fields may be
 included for use by debuggers.
 
     field =
-	FIELD ident exmark doc offset type
+	( FIELD ident exmark doc offset type )
 
     local =
 	param
       | fixup
-      | LOCAL ident exmark doc offset type
+      | ( LOCAL ident exmark doc offset type )
 
 Const parameters are converted to ordinary value parameters on output,
 because they are the same as far as the caller is concerned: it's the
 job of the procedure writer to avoid aliasing effects.
 
     param =
-	(PARAM | CPARAM | VPARAM) ident exmark doc offset type
+	( (PARAM|CPARAM|VPARAM) ident exmark doc offset type )
 
     exmark = 				; Export mark
 	empty 				; Hidden
@@ -155,7 +156,11 @@ let xprintf fmt args =
       nl := false 
     end;
     print_char ch;
-    if ch = '\n' then nl := true in
+    match ch with
+        '\n' -> nl := true
+      | '(' -> incr indent
+      | ')' -> decr indent
+      | _ -> ()in
   do_print out fmt args
 
 let fExm =
@@ -172,42 +177,35 @@ let fValu =
       IntVal x -> fInteger x
     | FloVal x -> fStr (Util.float_as_string x)
 
-let rec out_parts ds =
-  incr indent;
-  List.iter out_def ds;
-  decr indent
-
-and out_debug d =
+let rec out_debug d =
   let nonparam d = match d.d_kind with
 	ParamDef | VParamDef | CParamDef -> false | _ -> true in
-  incr indent;
-  out_parts (List.filter nonparam (top_block d.d_env));
-  decr indent
+  List.iter out_def (List.filter nonparam (top_block d.d_env))
 
 and out_def d =
   prep_parents d.d_type;
   let def kind =
-    xprintf "\n$ #$$$ $ $" [fStr kind; fId d.d_tag; fExm d.d_export; 
+    xprintf "\n($ #$$$ $ $)" [fStr kind; fId d.d_tag; fExm d.d_export; 
 	fDoc d.d_comment; fNum d.d_offset; fType d.d_type] in
   match d.d_kind with
       ConstDef x -> 
-	xprintf "\nCONST #$$$ $ $" 
+	xprintf "\n(CONST #$$$ $ $)" 
 	  [fId d.d_tag; fExm d.d_export; fDoc d.d_comment; 
 	    fType d.d_type; fValu x]
     | EnumDef n ->
-	xprintf "\nENUM #$$$ $ $"
+	xprintf "\n(ENUM #$$$ $ $)"
 	  [fId d.d_tag; fExm d.d_export; fDoc d.d_comment;
 	    fType d.d_type; fNum n]
     | StringDef -> 
-	xprintf "\nSTRING #$$$ $ #$" 
+	xprintf "\n(STRING #$$$ $ #$)" 
 	  [fId d.d_tag; fExm d.d_export; fDoc d.d_comment; 
 	    fNum (bound d.d_type); fSym d.d_lab]
     | TypeDef -> 
-	xprintf "\nTYPE #$$$ $" 
+	xprintf "\n(TYPE #$$$ $)" 
 	  [fId d.d_tag; fExm d.d_export; fDoc d.d_comment; fType d.d_type]
     | VarDef -> 
 	if d.d_level = 0 then
-	  xprintf "\nGLOBAL #$$$ #$ $" 
+	  xprintf "\n(GLOBAL #$$$ #$ $)" 
 	    [fId d.d_tag; fExm d.d_export; fDoc d.d_comment; 
 	      fSym d.d_lab; fType d.d_type]
 	else
@@ -221,14 +219,14 @@ and out_def d =
 	  let p = get_proc d.d_type in
 	  match p.p_kind with
 	      Procedure ->
-		xprintf "\nPROCEDURE #$$ $$ #$ $" 
+		xprintf "\n(PROCEDURE #$$ $$ #$ $" 
 		  [fId d.d_tag; fExm d.d_export; fNum d.d_line;
 		    fDoc d.d_comment; fSym d.d_lab; fType d.d_type];
 		if !Config.debug_info then out_debug d;
-		xprintf ";" []
+		xprintf ")" []
 	    | Body ->
 		if !Config.debug_info then
-		  xprintf "\nBODY #$ #$" [fId d.d_tag; fSym d.d_lab];
+		  xprintf "\n(BODY #$ #$)" [fId d.d_tag; fSym d.d_lab];
 	    | _ -> failwith "out_def"
 	end
     | _ -> ()
@@ -244,13 +242,13 @@ and out_type t =
       (* Allow SYSTEM.BYTE etc. *)
       xprintf "$" [fQual (t.t_module, t.t_name)]
     else
-      try xprintf "$" [fNum (find_type t)] with 
+      try xprintf "=$" [fNum (find_type t)] with 
 	Not_found -> def_type t
 
 and def_type t =
+  incr ntypes;
   let k = !ntypes in
   Hashtbl.add out_table (t.t_module, t.t_id) k;
-  incr ntypes;
   if t.t_module = !current then
     xprintf "!$ " [fNum k]
   else
@@ -259,30 +257,30 @@ and def_type t =
 	else fMeta "#$" [fId t.t_name])];
   match t.t_guts with
       PointerType d -> 
-	xprintf "POINTER" []; 
+	xprintf "(POINTER)" []; 
 	fixups := (k, d.d_type) :: !fixups
     | EnumType n -> 
-	xprintf "ENUM $" [fNum n]
+	xprintf "(ENUM $)" [fNum n]
     | ArrayType (n, t1) -> 
-	xprintf "ARRAY $ $" [fNum n; fType t1]
+	xprintf "(ARRAY $ $)" [fNum n; fType t1]
     | FlexType t1 -> 
-	xprintf "FLEX $" [fType t1]
+	xprintf "(FLEX $)" [fType t1]
     | RecordType r -> 
-	xprintf "RECORD #$ $ $" 
+	xprintf "(RECORD #$ $ $" 
 	  [fSym t.t_desc; fNum t.t_rep.m_size; fType r.r_parent]; 
 	(* We need to list all fields in case they contain pointers
 	   that must be included in the pointer maps of subtypes. *)
-	out_parts r.r_fields;
-	xprintf ";" [];
+	List.iter out_def r.r_fields;
+	xprintf ")" [];
 	(* All methods must be listed, to allow hidden methods to
 	   be inherited *)
 	methods := !methods @ List.map (function d -> (k, d)) r.r_methods
     | ProcType p -> 
 	let kw = match p.p_kind with Procedure -> "PROC" | Method -> "METH" 
 				| AbsMeth -> "ABSMETH" | Body -> "?BODY?" in
-	xprintf "$ $ $" [fStr kw; fNum p.p_pcount; fType p.p_result]; 
-	out_parts p.p_fparams;
-	xprintf ";" []
+	xprintf "($ $ $" [fStr kw; fNum p.p_pcount; fType p.p_result]; 
+	List.iter out_def p.p_fparams;
+	xprintf ")" []
     | _ -> failwith "<unknown type>"
 
 and prep_parents t =
@@ -303,7 +301,8 @@ and prep_parents t =
 and prep_type t = 
   if not (is_basic t) then begin
     try ignore (find_type t) with
-      Not_found -> xprintf "\nDEF " []; ignore (def_type t)
+      Not_found ->
+        xprintf "\n(DEF " []; ignore (def_type t); xprintf ")" []
   end
 
 let do_fixups () =
@@ -312,7 +311,7 @@ let do_fixups () =
       let (k, t) = List.hd !fixups in
       fixups := List.tl !fixups;
       prep_parents t;
-      xprintf "\nTARGET $ $" [fNum k; fType t]; 
+      xprintf "\n(TARGET =$ $)" [fNum k; fType t]; 
     end 
     else if !methods <> [] then begin
       let (k, d) = List.hd !methods in
@@ -320,12 +319,12 @@ let do_fixups () =
       match d.d_kind with
 	  ProcDef ->
 	    prep_parents d.d_type;
-	    xprintf "\nMETHOD $ #$$ $$ $ #$ $" 
+	    xprintf "\n(METHOD =$ #$$ $$ $ #$ $" 
 	      [fNum k; fId d.d_tag; fExm d.d_export; fNum d.d_line;
 		fDoc d.d_comment; fNum d.d_offset; fSym d.d_lab; 
 		fType d.d_type];
 	    if !Config.debug_info then out_debug d;
-	    xprintf ";" []
+	    xprintf ")" []
 	| _ -> failwith "out_method"
     end
   done
@@ -333,7 +332,7 @@ let do_fixups () =
 let export m doc glodefs = 
   ntypes := 0; 
   Hashtbl.clear out_table;
-  xprintf "SYMFILE #$ $ #$ $$" 
+  xprintf "(SYMFILE #$ $ #$ $$)" 
     [fId m.d_tag; fHex Config.signature; fSym m.d_lab; 
       fNum m.d_line; fDoc doc];
   List.iter 
@@ -342,7 +341,7 @@ let export m doc glodefs =
       do_fixups ()) 
     glodefs;
   let chksum = !check land 0x7fffffff in
-  xprintf "\nEND $\n\n" [fHex chksum];
+  xprintf "\n(CHKSUM $)\n\n" [fHex chksum];
   chksum
 
 

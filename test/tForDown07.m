@@ -24,8 +24,8 @@ BEGIN
 END tForDown07.
 
 (*[[
-!! SYMFILE #tForDown07 STAMP #tForDown07.%main 1
-!! END STAMP
+!! (SYMFILE #tForDown07 0x00000301 #tForDown07.%main 1)
+!! (CHKSUM 0x01699be9)
 !! 
 MODULE tForDown07 STAMP 0
 IMPORT Out STAMP

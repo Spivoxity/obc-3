@@ -23,8 +23,8 @@ Pass
 >>*)
 
 (*[[
-!! SYMFILE #tNewBug STAMP #tNewBug.%main 1
-!! END STAMP
+!! (SYMFILE #tNewBug 0x00000301 #tNewBug.%main 1)
+!! (CHKSUM 0x5ca67b7d)
 !! 
 MODULE tNewBug STAMP 0
 IMPORT GC STAMP

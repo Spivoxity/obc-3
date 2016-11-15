@@ -48,8 +48,8 @@ BEGIN
 END tMixIt.
 
 (*[[
-!! SYMFILE #tMixIt STAMP #tMixIt.%main 1
-!! END STAMP
+!! (SYMFILE #tMixIt 0x00000301 #tMixIt.%main 1)
+!! (CHKSUM 0x38945703)
 !! 
 MODULE tMixIt STAMP 0
 IMPORT Out STAMP

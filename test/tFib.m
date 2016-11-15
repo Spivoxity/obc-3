@@ -22,8 +22,8 @@ BEGIN
 END tFib.
 
 (*[[
-!! SYMFILE #tFib STAMP #tFib.%main 1
-!! END STAMP
+!! (SYMFILE #tFib 0x00000301 #tFib.%main 1)
+!! (CHKSUM 0x514ded4f)
 !! 
 MODULE tFib STAMP 0
 IMPORT Out STAMP

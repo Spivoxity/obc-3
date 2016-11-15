@@ -54,8 +54,8 @@ END tLaminae07.
 >>*)
 
 (*[[
-!! SYMFILE #tLaminae07 STAMP #tLaminae07.%main 1
-!! END STAMP
+!! (SYMFILE #tLaminae07 0x00000301 #tLaminae07.%main 1)
+!! (CHKSUM 0x43705279)
 !! 
 MODULE tLaminae07 STAMP 0
 IMPORT Out STAMP

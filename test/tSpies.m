@@ -52,8 +52,8 @@ END tSpies.
 >>*)
 
 (*[[
-!! SYMFILE #tSpies STAMP #tSpies.%main 1
-!! END STAMP
+!! (SYMFILE #tSpies 0x00000301 #tSpies.%main 1)
+!! (CHKSUM 0x6b372f65)
 !! 
 MODULE tSpies STAMP 0
 IMPORT MathL STAMP

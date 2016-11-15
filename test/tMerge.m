@@ -206,42 +206,42 @@ BEGIN
 END tMerge.
 
 (*[[
-!! SYMFILE #tMerge STAMP #tMerge.%main 1
-!! DEF !0 POINTER
-!! DEF !1 POINTER
-!! PROCEDURE #NewMergeStream* 118 #tMerge.NewMergeStream !2 PROC 2 1
-!!   PARAM #p 12 0
-!!   PARAM #q 16 0;;
-!! DEF !3 RECORD #tMerge.streamrec 0 VOID;
-!! TARGET 1 !4 RECORD #tMerge.mergestreamrec 16 3
-!!   FIELD #p 0 0
-!!   FIELD #q 4 0
-!!   FIELD #known 8 BOOLEAN
-!!   FIELD #done 9 BOOLEAN
-!!   FIELD #isleft 10 BOOLEAN
-!!   FIELD #current 12 INTEGER;
-!! TARGET 0 3
-!! METHOD 3 #Done 15 0 #tMerge.streamrec.Done !5 ABSMETH 1 BOOLEAN
-!!   PARAM #s 12 0;;
-!! METHOD 3 #Current 16 1 #tMerge.streamrec.Current !6 ABSMETH 1 INTEGER
-!!   PARAM #s 12 0;;
-!! METHOD 3 #Next 17 2 #tMerge.streamrec.Next !7 ABSMETH 2 VOID
-!!   PARAM #s 12 0
-!!   PARAM #k 16 INTEGER;;
-!! METHOD 3 #Copy 18 3 #tMerge.streamrec.Copy !8 ABSMETH 1 0
-!!   PARAM #s 12 0;;
-!! METHOD 4 #Done 146 0 #tMerge.mergestreamrec.Done !9 METH 1 BOOLEAN
-!!   PARAM #s 12 1;;
-!! METHOD 4 #Current 149 1 #tMerge.mergestreamrec.Current !10 METH 1 INTEGER
-!!   PARAM #s 12 1;;
-!! METHOD 4 #Next 155 2 #tMerge.mergestreamrec.Next !11 METH 2 VOID
-!!   PARAM #s 12 1
-!!   PARAM #k 16 INTEGER;;
-!! METHOD 4 #Copy 167 3 #tMerge.mergestreamrec.Copy !12 METH 1 0
-!!   PARAM #s 12 1;;
-!! METHOD 4 #Fix 128 4 #tMerge.mergestreamrec.Fix !13 METH 1 VOID
-!!   PARAM #s 12 1;;
-!! END STAMP
+!! (SYMFILE #tMerge 0x00000301 #tMerge.%main 1)
+!! (DEF !1 (POINTER))
+!! (DEF !2 (POINTER))
+!! (PROCEDURE #NewMergeStream* 118 #tMerge.NewMergeStream !3 (PROC 2 =2
+!!     (PARAM #p 12 =1)
+!!     (PARAM #q 16 =1)))
+!! (DEF !4 (RECORD #tMerge.streamrec 0 VOID))
+!! (TARGET =2 !5 (RECORD #tMerge.mergestreamrec 16 =4
+!!     (FIELD #p 0 =1)
+!!     (FIELD #q 4 =1)
+!!     (FIELD #known 8 BOOLEAN)
+!!     (FIELD #done 9 BOOLEAN)
+!!     (FIELD #isleft 10 BOOLEAN)
+!!     (FIELD #current 12 INTEGER)))
+!! (TARGET =1 =4)
+!! (METHOD =4 #Done 15 0 #tMerge.streamrec.Done !6 (ABSMETH 1 BOOLEAN
+!!     (PARAM #s 12 =1)))
+!! (METHOD =4 #Current 16 1 #tMerge.streamrec.Current !7 (ABSMETH 1 INTEGER
+!!     (PARAM #s 12 =1)))
+!! (METHOD =4 #Next 17 2 #tMerge.streamrec.Next !8 (ABSMETH 2 VOID
+!!     (PARAM #s 12 =1)
+!!     (PARAM #k 16 INTEGER)))
+!! (METHOD =4 #Copy 18 3 #tMerge.streamrec.Copy !9 (ABSMETH 1 =1
+!!     (PARAM #s 12 =1)))
+!! (METHOD =5 #Done 146 0 #tMerge.mergestreamrec.Done !10 (METH 1 BOOLEAN
+!!     (PARAM #s 12 =2)))
+!! (METHOD =5 #Current 149 1 #tMerge.mergestreamrec.Current !11 (METH 1 INTEGER
+!!     (PARAM #s 12 =2)))
+!! (METHOD =5 #Next 155 2 #tMerge.mergestreamrec.Next !12 (METH 2 VOID
+!!     (PARAM #s 12 =2)
+!!     (PARAM #k 16 INTEGER)))
+!! (METHOD =5 #Copy 167 3 #tMerge.mergestreamrec.Copy !13 (METH 1 =1
+!!     (PARAM #s 12 =2)))
+!! (METHOD =5 #Fix 128 4 #tMerge.mergestreamrec.Fix !14 (METH 1 VOID
+!!     (PARAM #s 12 =2)))
+!! (CHKSUM 0x1c0bf7e0)
 !! 
 MODULE tMerge STAMP 0
 IMPORT Out STAMP

@@ -36,7 +36,7 @@ open Print
 open Lexing
 
 let kwtab = Util.make_hash 64
-  ([("ARRAY", ARRAY); ("CONST", CONST); ("PARAM", PARAM);
+  ([("ARRAY", ARRAY); ("CHKSUM", CHKSUM); ("CONST", CONST); ("PARAM", PARAM);
     ("DEF", DEF); ("END", END); ("FIELD", FIELD); ("TARGET", TARGET); 
     ("FLEX", FLEX); ("INTCONST", BASICTYPE numtype); ("METH", METH); 
     ("METHOD", METHOD); ("POINTER", POINTER); ("PROC", PROC);
@@ -50,7 +50,7 @@ let kwtab = Util.make_hash 64
 
 let lookup s =
   try Hashtbl.find kwtab s with
-    Not_found -> failwith ("keyword " ^ s)
+    Not_found -> BADTOK
 
 let line = ref 1
 }
@@ -64,15 +64,16 @@ rule token = parse
 			{ FLO s }
   | "0x"['0'-'9''a'-'f']+ as s
     			{ HEX s }
+  | "("			{ LPAR }
+  | ")"			{ RPAR }
   | "["			{ BRA }
   | "]"			{ KET }
-  | ";"			{ SEMI }
   | "-"			{ MARK ReadOnly }
   | "*"			{ MARK Visible }
   | "!"			{ PLING }
   | "?"			{ QUERY }
+  | "="			{ EQUAL }
   | "!!"|" "		{ token lexbuf } 
   | "! "[^'\n']*"\n"	{ incr line; token lexbuf }
   | "\n"		{ incr line; token lexbuf }
-  | _			{ failwith (sprintf "symlex $" 
-			    [fNum (lexeme_start lexbuf)]) }
+  | _ 			{ BADTOK }

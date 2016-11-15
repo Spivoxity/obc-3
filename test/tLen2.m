@@ -52,8 +52,8 @@ END tLen2.
 >>*)
 
 (*[[
-!! SYMFILE #tLen2 STAMP #tLen2.%main 1
-!! END STAMP
+!! (SYMFILE #tLen2 0x00000301 #tLen2.%main 1)
+!! (CHKSUM 0x512f1eef)
 !! 
 MODULE tLen2 STAMP 0
 IMPORT Out STAMP

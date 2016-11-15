@@ -20,8 +20,8 @@ BEGIN
 END tReal.
 
 (*[[
-!! SYMFILE #tReal STAMP #tReal.%main 1
-!! END STAMP
+!! (SYMFILE #tReal 0x00000301 #tReal.%main 1)
+!! (CHKSUM 0x7e4de3b5)
 !! 
 MODULE tReal STAMP 0
 IMPORT Out STAMP

@@ -33,8 +33,8 @@ BEGIN
 END tEnum.
 
 (*[[
-!! SYMFILE #tEnum STAMP #tEnum.%main 1
-!! END STAMP
+!! (SYMFILE #tEnum 0x00000301 #tEnum.%main 1)
+!! (CHKSUM 0x56d41cf7)
 !! 
 MODULE tEnum STAMP 0
 IMPORT xPrelude STAMP

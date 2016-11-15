@@ -202,8 +202,8 @@ BEGIN
 END tBrack07.
 
 (*[[
-!! SYMFILE #tBrack07 STAMP #tBrack07.%main 1
-!! END STAMP
+!! (SYMFILE #tBrack07 0x00000301 #tBrack07.%main 1)
+!! (CHKSUM 0x05482331)
 !! 
 MODULE tBrack07 STAMP 0
 IMPORT Out STAMP

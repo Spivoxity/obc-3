@@ -25,8 +25,8 @@ END tANest07.
 >>*)
 
 (*[[
-!! SYMFILE #tANest07 STAMP #tANest07.%main 1
-!! END STAMP
+!! (SYMFILE #tANest07 0x00000301 #tANest07.%main 1)
+!! (CHKSUM 0x274d86a1)
 !! 
 MODULE tANest07 STAMP 0
 IMPORT Out STAMP

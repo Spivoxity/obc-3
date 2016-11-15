@@ -111,8 +111,8 @@ END tMedian.
 >>*)
 
 (*[[
-!! SYMFILE #tMedian STAMP #tMedian.%main 1
-!! END STAMP
+!! (SYMFILE #tMedian 0x00000301 #tMedian.%main 1)
+!! (CHKSUM 0x207b3549)
 !! 
 MODULE tMedian STAMP 0
 IMPORT Random STAMP

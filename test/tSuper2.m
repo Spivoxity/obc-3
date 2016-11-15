@@ -41,8 +41,8 @@ BEGIN
 END tSuper2.
 
 (*[[
-!! SYMFILE #tSuper2 STAMP #tSuper2.%main 1
-!! END STAMP
+!! (SYMFILE #tSuper2 0x00000301 #tSuper2.%main 1)
+!! (CHKSUM 0x2bce0faf)
 !! 
 MODULE tSuper2 STAMP 0
 IMPORT xPrelude STAMP

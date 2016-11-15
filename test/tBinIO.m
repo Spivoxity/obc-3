@@ -61,8 +61,8 @@ END tBinIO.
 >>*)
 
 (*[[
-!! SYMFILE #tBinIO STAMP #tBinIO.%main 1
-!! END STAMP
+!! (SYMFILE #tBinIO 0x00000301 #tBinIO.%main 1)
+!! (CHKSUM 0x1cf6e46f)
 !! 
 MODULE tBinIO STAMP 0
 IMPORT Files STAMP

@@ -35,8 +35,8 @@ BEGIN
 END tChrStr.
 
 (*[[
-!! SYMFILE #tChrStr STAMP #tChrStr.%main 1
-!! END STAMP
+!! (SYMFILE #tChrStr 0x00000301 #tChrStr.%main 1)
+!! (CHKSUM 0x3921dbb9)
 !! 
 MODULE tChrStr STAMP 0
 IMPORT Out STAMP

@@ -30,8 +30,8 @@ END tParamGC07.
 >>*)
 
 (*[[
-!! SYMFILE #tParamGC07 STAMP #tParamGC07.%main 1
-!! END STAMP
+!! (SYMFILE #tParamGC07 0x00000301 #tParamGC07.%main 1)
+!! (CHKSUM 0x732ff241)
 !! 
 MODULE tParamGC07 STAMP 0
 IMPORT Out STAMP

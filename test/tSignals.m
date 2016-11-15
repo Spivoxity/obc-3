@@ -280,8 +280,8 @@ s108 -> s255
 >>*)
 
 (*[[
-!! SYMFILE #tSignals STAMP #tSignals.%main 1
-!! END STAMP
+!! (SYMFILE #tSignals 0x00000301 #tSignals.%main 1)
+!! (CHKSUM 0x5483178f)
 !! 
 MODULE tSignals STAMP 0
 IMPORT Bit STAMP

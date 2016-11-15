@@ -83,8 +83,8 @@ BEGIN
 END tFibTree07.
 
 (*[[
-!! SYMFILE #tFibTree07 STAMP #tFibTree07.%main 1
-!! END STAMP
+!! (SYMFILE #tFibTree07 0x00000301 #tFibTree07.%main 1)
+!! (CHKSUM 0x4930dc0d)
 !! 
 MODULE tFibTree07 STAMP 0
 IMPORT Out STAMP

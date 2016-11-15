@@ -31,27 +31,27 @@ BEGIN
 END tHide.
 
 (*[[
-!! SYMFILE #tHide STAMP #tHide.%main 1
-!! DEF ?0 #xPrelude 1 #blob RECORD #xPrelude.blob 8 VOID
-!!   FIELD #x 0 INTEGER
-!!   FIELD #y* 4 INTEGER;
-!! TYPE #spot* !1 RECORD #tHide.spot 12 0
-!!   FIELD #x 0 INTEGER
-!!   FIELD #y* 4 INTEGER
-!!   FIELD #x* 8 INTEGER;
-!! METHOD 0 #one 31 0 #xPrelude.blob.one ?2 #xPrelude 2 ANON METH 2 VOID
-!!   VPARAM #b 12 0;;
-!! METHOD 0 #two* 37 1 #xPrelude.blob.two ?3 #xPrelude 3 ANON METH 2 VOID
-!!   VPARAM #b 12 0;;
-!! METHOD 0 #proc* 42 2 #xPrelude.blob.proc ?4 #xPrelude 4 ANON METH 2 VOID
-!!   VPARAM #b 12 0;;
-!! METHOD 1 #one 31 0 #xPrelude.blob.one 2;
-!! METHOD 1 #two* 21 1 #tHide.spot.two !5 METH 2 VOID
-!!   VPARAM #b 12 1;;
-!! METHOD 1 #proc* 42 2 #xPrelude.blob.proc 4;
-!! METHOD 1 #one 15 3 #tHide.spot.one !6 METH 2 VOID
-!!   VPARAM #b 12 1;;
-!! END STAMP
+!! (SYMFILE #tHide 0x00000301 #tHide.%main 1)
+!! (DEF ?1 #xPrelude 2 #blob (RECORD #xPrelude.blob 8 VOID
+!!     (FIELD #x 0 INTEGER)
+!!     (FIELD #y* 4 INTEGER)))
+!! (TYPE #spot* !2 (RECORD #tHide.spot 12 =1
+!!     (FIELD #x 0 INTEGER)
+!!     (FIELD #y* 4 INTEGER)
+!!     (FIELD #x* 8 INTEGER)))
+!! (METHOD =1 #one 31 0 #xPrelude.blob.one ?3 #xPrelude 3 ANON (METH 2 VOID
+!!     (VPARAM #b 12 =1)))
+!! (METHOD =1 #two* 37 1 #xPrelude.blob.two ?4 #xPrelude 4 ANON (METH 2 VOID
+!!     (VPARAM #b 12 =1)))
+!! (METHOD =1 #proc* 42 2 #xPrelude.blob.proc ?5 #xPrelude 5 ANON (METH 2 VOID
+!!     (VPARAM #b 12 =1)))
+!! (METHOD =2 #one 31 0 #xPrelude.blob.one =3)
+!! (METHOD =2 #two* 21 1 #tHide.spot.two !6 (METH 2 VOID
+!!     (VPARAM #b 12 =2)))
+!! (METHOD =2 #proc* 42 2 #xPrelude.blob.proc =5)
+!! (METHOD =2 #one 15 3 #tHide.spot.one !7 (METH 2 VOID
+!!     (VPARAM #b 12 =2)))
+!! (CHKSUM 0x1f3ff68a)
 !! 
 MODULE tHide STAMP 0
 IMPORT xPrelude STAMP

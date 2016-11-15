@@ -14,8 +14,8 @@ In procedure tAssert2.%main
 >>*)
 
 (*[[
-!! SYMFILE #tAssert2 STAMP #tAssert2.%main 1
-!! END STAMP
+!! (SYMFILE #tAssert2 0x00000301 #tAssert2.%main 1)
+!! (CHKSUM 0x369b1a25)
 !! 
 MODULE tAssert2 STAMP 0
 ENDHDR

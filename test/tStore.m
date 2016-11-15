@@ -89,8 +89,8 @@ BEGIN
 END tStore.
 
 (*[[
-!! SYMFILE #tStore STAMP #tStore.%main 1
-!! END STAMP
+!! (SYMFILE #tStore 0x00000301 #tStore.%main 1)
+!! (CHKSUM 0x02d5d3e7)
 !! 
 MODULE tStore STAMP 0
 IMPORT Out STAMP

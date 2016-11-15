@@ -9,8 +9,8 @@ BEGIN
 END tSetComp07.
 
 (*[[
-!! SYMFILE #tSetComp07 STAMP #tSetComp07.%main 1
-!! END STAMP
+!! (SYMFILE #tSetComp07 0x00000301 #tSetComp07.%main 1)
+!! (CHKSUM 0x72ce6e81)
 !! 
 MODULE tSetComp07 STAMP 0
 ENDHDR

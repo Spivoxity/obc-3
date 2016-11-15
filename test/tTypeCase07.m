@@ -38,10 +38,10 @@ END tTypeCase07.
 >>*)
 
 (*[[
-!! SYMFILE #tTypeCase07 STAMP #tTypeCase07.%main 1
-!! TYPE #Obj* !0 POINTER
-!! TARGET 0 !1 RECORD #tTypeCase07.Empty 0 VOID;
-!! END STAMP
+!! (SYMFILE #tTypeCase07 0x00000301 #tTypeCase07.%main 1)
+!! (TYPE #Obj* !1 (POINTER))
+!! (TARGET =1 !2 (RECORD #tTypeCase07.Empty 0 VOID))
+!! (CHKSUM 0x1870888e)
 !! 
 MODULE tTypeCase07 STAMP 0
 IMPORT Out STAMP

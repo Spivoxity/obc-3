@@ -49,8 +49,8 @@ BEGIN
 END tOver.
 
 (*[[
-!! SYMFILE #tOver STAMP #tOver.%main 1
-!! END STAMP
+!! (SYMFILE #tOver 0x00000301 #tOver.%main 1)
+!! (CHKSUM 0x73401985)
 !! 
 MODULE tOver STAMP 0
 IMPORT Out STAMP

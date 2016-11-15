@@ -66,8 +66,8 @@ END tInorder.
 >>*)
 
 (*[[
-!! SYMFILE #tInorder STAMP #tInorder.%main 1
-!! END STAMP
+!! (SYMFILE #tInorder 0x00000301 #tInorder.%main 1)
+!! (CHKSUM 0x5bdbc973)
 !! 
 MODULE tInorder STAMP 0
 IMPORT Random STAMP

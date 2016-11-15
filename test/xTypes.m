@@ -13,5 +13,10 @@ TYPE Entry    = POINTER TO EntryRec;
 TYPE Person*    = POINTER TO PersonRec;
      PersonRec* = RECORD (EntryRec) END;
 
+TYPE Thing* = POINTER TO Blob;
+  Blob* = ABSTRACT RECORD END;
+
+ABSTRACT PROCEDURE (p: Thing) Print*;
+
 END xTypes.
 

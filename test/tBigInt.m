@@ -11,8 +11,8 @@ BEGIN
 END tBigInt.
 
 (*[[
-!! SYMFILE #tBigInt STAMP #tBigInt.%main 1
-!! END STAMP
+!! (SYMFILE #tBigInt 0x00000301 #tBigInt.%main 1)
+!! (CHKSUM 0x32b848a7)
 !! 
 MODULE tBigInt STAMP 0
 IMPORT Out STAMP

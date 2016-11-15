@@ -85,8 +85,8 @@ END tDeal07.
 >>*)
 
 (*[[
-!! SYMFILE #tDeal07 STAMP #tDeal07.%main 1
-!! END STAMP
+!! (SYMFILE #tDeal07 0x00000301 #tDeal07.%main 1)
+!! (CHKSUM 0x49e9fbe7)
 !! 
 MODULE tDeal07 STAMP 0
 IMPORT Random STAMP

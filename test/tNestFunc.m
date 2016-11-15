@@ -53,8 +53,8 @@ END tNestFunc.
 >>*)
 
 (*[[
-!! SYMFILE #tNestFunc STAMP #tNestFunc.%main 1
-!! END STAMP
+!! (SYMFILE #tNestFunc 0x00000301 #tNestFunc.%main 1)
+!! (CHKSUM 0x76a172b9)
 !! 
 MODULE tNestFunc STAMP 0
 IMPORT Out STAMP

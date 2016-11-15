@@ -30,8 +30,8 @@ END tPack07.
 >>*)
 
 (*[[
-!! SYMFILE #tPack07 STAMP #tPack07.%main 1
-!! END STAMP
+!! (SYMFILE #tPack07 0x00000301 #tPack07.%main 1)
+!! (CHKSUM 0x38ae4b59)
 !! 
 MODULE tPack07 STAMP 0
 IMPORT Out STAMP

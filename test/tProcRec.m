@@ -28,8 +28,8 @@ Clear
 >>*)
 
 (*[[
-!! SYMFILE #tProcRec STAMP #tProcRec.%main 1
-!! END STAMP
+!! (SYMFILE #tProcRec 0x00000301 #tProcRec.%main 1)
+!! (CHKSUM 0x55374899)
 !! 
 MODULE tProcRec STAMP 0
 IMPORT Out STAMP

@@ -48,8 +48,8 @@ BEGIN
 END tFlex407.
 
 (*[[
-!! SYMFILE #tFlex407 STAMP #tFlex407.%main 1
-!! END STAMP
+!! (SYMFILE #tFlex407 0x00000301 #tFlex407.%main 1)
+!! (CHKSUM 0x39de7d51)
 !! 
 MODULE tFlex407 STAMP 0
 IMPORT Out STAMP

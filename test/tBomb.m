@@ -44,8 +44,8 @@ END tBomb.
   
 
 (*[[
-!! SYMFILE #tBomb STAMP #tBomb.%main 1
-!! END STAMP
+!! (SYMFILE #tBomb 0x00000301 #tBomb.%main 1)
+!! (CHKSUM 0x2e2880ad)
 !! 
 MODULE tBomb STAMP 0
 ENDHDR

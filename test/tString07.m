@@ -85,8 +85,8 @@ bc
 >>*)
 
 (*[[
-!! SYMFILE #tString07 STAMP #tString07.%main 1
-!! END STAMP
+!! (SYMFILE #tString07 0x00000301 #tString07.%main 1)
+!! (CHKSUM 0x6ca48369)
 !! 
 MODULE tString07 STAMP 0
 IMPORT Out STAMP

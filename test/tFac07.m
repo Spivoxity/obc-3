@@ -27,8 +27,8 @@ BEGIN
 END tFac07.
 
 (*[[
-!! SYMFILE #tFac07 STAMP #tFac07.%main 1
-!! END STAMP
+!! (SYMFILE #tFac07 0x00000301 #tFac07.%main 1)
+!! (CHKSUM 0x36f5300f)
 !! 
 MODULE tFac07 STAMP 0
 IMPORT Out STAMP

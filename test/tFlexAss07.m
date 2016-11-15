@@ -18,8 +18,8 @@ Hello world
 >>*)
 
 (*[[
-!! SYMFILE #tFlexAss07 STAMP #tFlexAss07.%main 1
-!! END STAMP
+!! (SYMFILE #tFlexAss07 0x00000301 #tFlexAss07.%main 1)
+!! (CHKSUM 0x00b132a7)
 !! 
 MODULE tFlexAss07 STAMP 0
 IMPORT Out STAMP
