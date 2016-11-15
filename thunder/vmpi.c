@@ -232,8 +232,11 @@ Rough instruction layout:
 #define opf2(x, y, cp)     opcode(condAL, x, y, 0, cp)
 #define opf3(x, y, z, cp)  opcode(condAL, x, y, z, cp)
 
+#define fmt_instr(op, rd, rn, imm) \
+     ((op) | (rn)<<16 | (rd)<<12 | (imm))
+
 #define instr(op, rd, rn, imm) \
-     word((op) | (rn)<<16 | (rd)<<12 | (imm))
+     word(fmt_instr(op, rd, rn, imm))
 
 #define instr4(op, rd, rn, rm, rs) \
      instr(op, rd, rn, (rm) | (rs)<<8)
@@ -423,11 +426,13 @@ static void ldstx_rr(OPDECL, int rd, int rn, int rm) {
      instr(op|UBIT, reg(rd), reg(rn), reg(rm));
 }
 
+#if 0
 // Save and restore
 static void ldstm(OPDECL, int rn, int bits) {
      vm_debug2("%s %s, #%#x", mnem, regname[rn], bits);
      instr(op, 0, reg(rn), (bits)&0xffff);
 }
+#endif
 
 #define bit(r) (1<<(r))
 #define range(a, b) (((-1)<<a)&~(-1<<(b+1)))
@@ -479,8 +484,6 @@ static void ldst_f(OPDECL, int rd, int rn, int off) {
 
 static int literals[MAXLITS];
 static int nlits;
-
-static code_addr cploc;
 
 static int make_literal(int val) {
      int i;
@@ -687,9 +690,20 @@ static void proc_call(int ra) {
      jump_r(opBLX, ra);
 }
 
-static void ret_frame(void) {
-     // ldmfd fp, {r4-r10, fp, sp, pc}
-     ldstm(opLDMFD, FP, range(4, 10)|bit(FP)|bit(SP)|bit(PC));
+// Register map and patch chain for RET locations
+
+static unsigned regmap = 0;
+
+static void write_reg(int r) {
+     if (! isfloat(r)) regmap |= bit(r);
+}
+
+static code_addr retchain = NULL;
+
+static void retlink() {
+     code_addr p = pc;
+     word((int) retchain);
+     retchain = p;
 }
 
 
@@ -703,7 +717,8 @@ void vm_gen0(operation op) {
 
      switch (op) {
      case RET: 
-          ret_frame();
+          vm_debug2("ldmfd fp, ...");
+          retlink();
 	  break;
 
      default:
@@ -786,6 +801,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 
      switch (op) {
      case MOV:
+          write_reg(ra);
 	  if (isfloat(ra) && isfloat(rb))
 	       op_rr(opFMOVD, ra, rb);
           else if (isfloat(ra))
@@ -797,11 +813,13 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  break;
 
      case NEG:    
+          write_reg(ra);
           // Unlike the assembler's neg pseudo-instruction, 
           // this doesn't set flags
 	  arith_immed(opRSB, ra, rb, 0); break;
 
      case NOT:    
+          write_reg(ra);
 	  op_rr(opMVN, ra, rb); break;
 
      case NEGF:
@@ -821,9 +839,11 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  break;
 
      case CONVIC: 
+          write_reg(ra);
 	  op_rr(opUXTB, ra, rb); break;
 
      case CONVIS: 
+          write_reg(ra);
 	  op_rr(opSXTH, ra, rb); break;
 
      case CONVFD:
@@ -840,17 +860,22 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 void vm_gen2ri(operation op, vmreg rega, int b) {
      int ra = rega->vr_reg;
 
-     vm_debug1(op, 1, rega->vr_name, fmt_val(b));
+     vm_debug1(op, 2, rega->vr_name, fmt_val(b));
      vm_space(0);
 
      switch (op) {
      case MOV: 
-          move_immed(ra, b); break;
+          write_reg(ra);
+          move_immed(ra, b);
+          break;
 
      case GETARG: 
-	  move_reg(ra, R(b)); break;
+          write_reg(ra);
+	  move_reg(ra, R(b));
+          break;
 
      case LDKW:
+          write_reg(ra);
 	  if (isfloat(ra))
 	       load_reg(ra, * (int *) b);
 	  else
@@ -870,25 +895,35 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      switch (op) {
      case ADD: 
+          write_reg(ra);
 	  op_rrr(opADD, ra, rb, rc); break;
      case AND: 
+          write_reg(ra);
 	  op_rrr(opAND, ra, rb, rc); break;
      case XOR: 
+          write_reg(ra);
 	  op_rrr(opEOR, ra, rb, rc); break;
      case OR: 
+          write_reg(ra);
 	  op_rrr(opORR, ra, rb, rc); break;
      case SUB: 
+          write_reg(ra);
 	  op_rrr(opSUB, ra, rb, rc); break;
      case MUL: 
+          write_reg(ra);
 	  op_mul(opMUL, ra, rb, rc); break;
 
      case LSH: 
+          write_reg(ra);
 	  shift_r(opLSL, ra, rb, rc); break;
      case RSH: 
+          write_reg(ra);
 	  shift_r(opASR, ra, rb, rc); break;
      case RSHU: 
+          write_reg(ra);
 	  shift_r(opLSR, ra, rb, rc); break;
      case ROR:
+          write_reg(ra);
           shift_r(opROR, ra, rb, rc); break;
 
      case ADDF:
@@ -910,42 +945,60 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 	  op_rrr(opFDIVD, ra, rb, rc); break;
 
      case EQ: 
+          write_reg(ra);
 	  bool_reg(opMOVEQ, ra, rb, rc); break;
      case GEQ:
+          write_reg(ra);
 	  bool_reg(opMOVGE, ra, rb, rc); break;
      case GT: 
+          write_reg(ra);
 	  bool_reg(opMOVGT, ra, rb, rc); break;
      case LEQ:
+          write_reg(ra);
 	  bool_reg(opMOVLE, ra, rb, rc); break;
      case LT: 
+          write_reg(ra);
 	  bool_reg(opMOVLT, ra, rb, rc); break;
      case NEQ:
+          write_reg(ra);
 	  bool_reg(opMOVNE, ra, rb, rc); break;
 
      case EQF:
+          write_reg(ra);
 	  bool_reg_f(opMOVEQ, ra, rb, rc); break;
      case GEQF:
+          write_reg(ra);
 	  bool_reg_f(opMOVHS, ra, rb, rc); break;
      case GTF:
+          write_reg(ra);
 	  bool_reg_f(opMOVHI, ra, rb, rc); break;
      case LEQF:
+          write_reg(ra);
 	  bool_reg_f(opMOVLS, ra, rb, rc); break;
      case LTF:
+          write_reg(ra);
 	  bool_reg_f(opMOVLO, ra, rb, rc); break;
      case NEQF:
+          write_reg(ra);
 	  bool_reg_f(opMOVNE, ra, rb, rc); break;
 
      case EQD:
+          write_reg(ra);
 	  bool_reg_d(opMOVEQ, ra, rb, rc); break;
      case GEQD:
+          write_reg(ra);
 	  bool_reg_d(opMOVHS, ra, rb, rc); break;
      case GTD:
+          write_reg(ra);
 	  bool_reg_d(opMOVHI, ra, rb, rc); break;
      case LEQD:
+          write_reg(ra);
 	  bool_reg_d(opMOVLS, ra, rb, rc); break;
      case LTD:
+          write_reg(ra);
 	  bool_reg_d(opMOVLO, ra, rb, rc); break;
      case NEQD:
+          write_reg(ra);
 	  bool_reg_d(opMOVNE, ra, rb, rc); break;
 
      default:
@@ -961,28 +1014,39 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 
      switch (op) {
      case ADD: 
+          write_reg(ra);
           add_immed(ra, rb, c); break;
      case SUB: 
+          write_reg(ra);
 	  arith_signed(opSUB, opADD, ra, rb, c); break;
      case AND: 
+          write_reg(ra);
 	  arith_immed(opAND, ra, rb, c); break;
      case OR: 
+          write_reg(ra);
 	  arith_immed(opORR, ra, rb, c); break;
      case XOR: 
+          write_reg(ra);
 	  arith_immed(opEOR, ra, rb, c); break;
      case MUL:
+          write_reg(ra);
 	  op_mul(opMUL, ra, rb, const_reg(c)); break;
 
      case LSH: 
+          write_reg(ra);
 	  shift_i(opLSL, ra, rb, c); break;
      case RSH: 
+          write_reg(ra);
 	  shift_i(opASR, ra, rb, c); break;
      case RSHU: 
+          write_reg(ra);
 	  shift_i(opLSR, ra, rb, c); break;
      case ROR:
+          write_reg(ra);
           shift_i(opROR, ra, rb, c); break;
 
      case LDW:
+          write_reg(ra);
 	  if (! isfloat(ra)) 
                load_store(opLDR, ra, rb, c); 
           else 
@@ -997,15 +1061,19 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 	  break;
 
      case LDS:
+          write_reg(ra);
 	  load_store_x(opLDSH, ra, rb, c); break;
      case LDSU: 
+          write_reg(ra);
           load_store_x(opLDRH, ra, rb, c); break;
      case STS: 
 	  load_store_x(opSTRH, ra, rb, c); break;
 
      case LDC:
+          write_reg(ra);
 	  load_store_x(opLDSB, ra, rb, c); break;
      case LDCU: 
+          write_reg(ra);
 	  load_store(opLDRB, ra, rb, c); break;
      case STC: 
 	  load_store(opSTRB, ra, rb, c); break;
@@ -1016,16 +1084,22 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
           load_store_d(opFSTS, ra, rb, c); break;
 
      case EQ:
+          write_reg(ra);
 	  bool_immed(opMOVEQ, ra, rb, c); break;
      case GEQ:
+          write_reg(ra);
 	  bool_immed(opMOVGE, ra, rb, c); break;
      case GT: 
+          write_reg(ra);
 	  bool_immed(opMOVGT, ra, rb, c); break;
      case LEQ:
+          write_reg(ra);
 	  bool_immed(opMOVLE, ra, rb, c); break;
      case LT: 
+          write_reg(ra);
 	  bool_immed(opMOVLT, ra, rb, c); break;
      case NEQ:
+          write_reg(ra);
 	  bool_immed(opMOVNE, ra, rb, c); break;
 
      default:
@@ -1133,20 +1207,24 @@ void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
      vm_branch(BRANCH, loc, lab);
 }
 
-code_addr vm_prelude(int n) {
-     code_addr entry;
+static code_addr cploc;
+static code_addr entry;
 
+code_addr vm_prelude(int n) {
      nlits = 0;
+     regmap = 0;
+     retchain = NULL;
      cploc = pc;
      word(0);
 
      entry = pc;
      move_reg(IP, SP);
-     // stmfd sp!, {r4-r10, fp, ip, lr}
-     ldstm(opSTMFDw, SP, range(4, 10)|bit(FP)|bit(IP)|bit(LR));
+     vm_debug2("stmfd sp!, ...");
+     word(0);
      move_reg(FP, SP);
      
      // Load address of literal table into LP
+     write_reg(LP);
      load_word(LP, PC, cploc - (pc+8));
 
      return entry;
@@ -1156,9 +1234,33 @@ void vm_chain(code_addr p) {
      branch(opB, p);
 }
 
+int parity(short x) {
+     x = (x ^ (x >> 8)) & 0xff;
+     x = (x ^ (x >> 4)) & 0xf;
+     x = (x ^ (x >> 2)) & 0x3;
+     x = (x ^ (x >> 1)) & 0x1;
+     return x;
+}
+
 /* vm_postlude -- output literals */
 void vm_postlude(void) {
-     int i;
+     code_addr p, q;
+     int i = 0;
+
+     regmap &= range(4, 10);
+     // Must save an even number of registers overall
+     if (parity(regmap) == 0) regmap |= (regmap+0x10) & ~regmap;
+     vm_debug2("regmap = %x", regmap);
+
+     // stmfd! sp, {r4-r10, fp, ip, lr}
+     * (int *) (entry + 4) =
+          fmt_instr(opSTMFDw, 0, reg(SP), regmap|bit(FP)|bit(IP)|bit(LR));
+
+     for (p = retchain; p != NULL; p = q) {
+          q = * (code_addr *) p;
+          * (int *) p =
+               fmt_instr(opLDMFD, 0, reg(FP), regmap|bit(FP)|bit(SP)|bit(PC));
+     }
 
      vm_space(nlits * sizeof(int));
      * (code_addr *) cploc = pc;

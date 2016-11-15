@@ -43,7 +43,7 @@ DLPRIMS = Math MathL
 TCLSH = tclsh
 
 vpath %.c ../runtime ../thunder ../lib
-vpath %.h ../runtime ../thunder
+vpath %.h ../runtime
 
 all: obxj-arm $(DLPRIMS:%=%.so) sanity
 
@@ -68,11 +68,11 @@ sanity: force
 	@echo The factorial of 19 is 121645100408832000
 
 clean: force
-	rm -f obxj-arm *.o *.so primtab.c *.k a.out data out.0 out config.h
+	rm -f obxj-arm *.o *.so primtab.c *.k a.out data out.0 out config.h code
 
 force:
 
 ### Crude approximation
 
 $(OBXJ) $(PRIMS:%=%.o): \
-	obx.h obcommon.h config.h exec.h keiko.h decode.h vm.h
+	obx.h obcommon.h config.h exec.h keiko.h decode.h ../thunder/vm.h

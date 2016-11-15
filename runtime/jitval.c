@@ -755,6 +755,8 @@ void gcallr(reg f, int n, ...) {
 static void move_long(reg rs, int offs, reg rd, int offd) {
      reg r1, r2;
      
+     if (rs == rd && offs == offd) return;
+
      rlock(rs); rlock(rd);
      r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
      runlock(rs); runlock(rd);
@@ -782,10 +784,22 @@ static int half_const(ctvalue v, int off) {
      }
 }     
 
+static void move_longconst(ctvalue src, reg rd, int offd) {
+     reg r1, r2;
+
+     rlock(rd);
+     r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
+     runlock(rd);
+
+     vm_gen2ri(MOV, r1->r_reg, half_const(src, 0));
+     vm_gen2ri(MOV, r2->r_reg, half_const(src, 1));
+     vm_gen3rri(STW, r1->r_reg, rd->r_reg, offd);
+     vm_gen3rri(STW, r2->r_reg, rd->r_reg, offd+4);
+}
+
 /* move_longval -- move a long value into memory */
 void move_longval(ctvalue src, reg rd, int offd) {
      /* Move from src to offd(rd) */
-     reg r;
 
      switch (src->v_op) {
      case I_LOADQ:
@@ -798,11 +812,7 @@ void move_longval(ctvalue src, reg rd, int offd) {
 	  break;
      case I_LDKQ:
      case I_CON:
-	  r = ralloc(INT);
-	  vm_gen2ri(MOV, r->r_reg, half_const(src, 0));
-	  vm_gen3rri(STW, r->r_reg, rd->r_reg, offd);
-	  vm_gen2ri(MOV, r->r_reg, half_const(src, 1));
-	  vm_gen3rri(STW, r->r_reg, rd->r_reg, offd+4);
+          move_longconst(src, rd, offd);
 	  break;
      case I_REG:
           /* Must be result of SYSTEM.VAL(LONGINT, x) */
