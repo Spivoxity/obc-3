@@ -427,7 +427,8 @@ and check_desig1 env e =
 		  let d = find_field t1 x.x_name in
 		  x.x_def <- Some d; d.d_type
 		with Not_found ->
-		  sem_error "this record does not have a field called '$'" 
+		  sem_error
+                    "this record does not have a visible field called '$'" 
 		    [fId x.x_name] e1.e_loc;
 		  sem_type t1r;
 		  errtype
