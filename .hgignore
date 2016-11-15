@@ -210,3 +210,5 @@ doc/obgrind
 doc/obgrind.c
 tartan
 bindist
+doc/think
+doc/think2
