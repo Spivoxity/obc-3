@@ -42,7 +42,6 @@ AC_CONFIG_FILES(Makefile)
 AC_SUBST(AUTOCONF)
 AC_SUBST(AUTOHEADER)
 
-: ${MLFLAGS=-g}
 AC_ARG_VAR(MLFLAGS, [Flags to pass to ocamlc])
 
 # The endgame
