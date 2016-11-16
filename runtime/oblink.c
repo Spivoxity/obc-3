@@ -159,7 +159,7 @@ static void scan_files(void) {
      char buf[128];
 
      if (stdlib) {
-	  sprintf(buf, "%s%s%s", libdir, PATHSEP, lscript);
+	  sprintf(buf, "%s%s%s", libdir, DIRSEP, lscript);
 	  fp = fopen(buf, "r");
 	  if (fp == NULL) {
 	       perror(buf);
@@ -168,7 +168,7 @@ static void scan_files(void) {
 
 	  while (fgets(line, MAXLINE, fp) != NULL) {
 	       line[strlen(line)-1] = '\0';
-	       sprintf(buf, "%s%s%s", libdir, PATHSEP, line);
+	       sprintf(buf, "%s%s%s", libdir, DIRSEP, line);
 	       scan(must_strdup(buf), TRUE);
 	  }
 

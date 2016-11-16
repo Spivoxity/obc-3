@@ -210,3 +210,5 @@ doc/obgrind
 doc/obgrind.c
 tartan
 bindist
+autom4te.cache
+.DS_Store

@@ -118,7 +118,7 @@
 #define PACKAGE_VERSION "@PACKAGE_VERSION@"
 
 /* Directory separator in file names */
-#define PATHSEP "/"
+#define DIRSEP "/"
 
 /* Version signature for symbol tables */
 #define SIG @SIG@

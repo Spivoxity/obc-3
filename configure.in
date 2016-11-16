@@ -72,7 +72,7 @@ AC_SUBST(ABS_BINDIR)
 
 # Find out if this is Windows or MacOS
 # Properly speaking, on Cygwin we are doing a cross-build.
-PATHSEP="/"
+DIRSEP="/"
 case $host in
 *-*-linux*)
   AC_DEFINE(LINUX, 1, [Define for Linux]);;
@@ -81,12 +81,12 @@ case $host in
   AC_DEFINE(WINDOWS, 1, [Define to enable hacks for Windows])
   AC_SUBST(ROOT, C:/cygwin)
   AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304])
-  PATHSEP="\\\\";;
+  DIRSEP="\\\\";;
 *-*-darwin*)
   AC_SUBST(MACOS, 1)
   AC_DEFINE(MACOS, 1, [Define to enable hacks for MacOS X]);;
 esac
-AC_DEFINE_UNQUOTED(PATHSEP, "$PATHSEP", [Directory separator in file names])
+AC_DEFINE_UNQUOTED(DIRSEP, "$DIRSEP", [Directory separator in file names])
 
 AC_ARG_VAR(MLFLAGS, [Flags to pass to ocamlc])
 
@@ -121,8 +121,11 @@ AC_SUBST(OBDB1_DEBUG)
 
 
 # Checks for programs.
-LD=ld
-case $host in x86_64-*) CC='gcc -m32'; LD='ld -melf_i386';; esac
+case $host in
+  x86_64-*-darwin*) CC='gcc -m32'; LD=ld;;
+  x86_64-*-*) CC='gcc -m32'; LD='ld -melf_i386';;
+  *) LD=ld;;
+esac
 
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -137,7 +140,7 @@ AC_CHECK_PROGS(DIFF, gdiff diff)
 test "$DIFF" != "" || AC_MSG_ERROR(diff not found)
 
 AC_PATH_PROG(PKG_CONFIG, pkg-config, /usr/bin/pkg-config, 
-  $PATH$PATH_SEPARATOR$GTKDIR/bin)
+  $GTKDIR/bin$PATH_SEPARATOR$PATH)
 test "$PKG_CONFIG" != "" || AC_MSG_ERROR(pkg-config not found)
 
 # Disable fancy alias analysis if compiling with gcc
@@ -222,11 +225,15 @@ AC_ARG_WITH(lablgtk2,
   LABLGTK2=$with_lablgtk2, LABLGTK2='${OCAMLDIR}/lablgtk2')
 AC_SUBST(LABLGTK2)
 
+GTKPKGS="gtk+-2.0 gtksourceview-2.0"
+if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration"; fi
+AC_SUBST(GTKPKGS)
+
 # Check ocaml version
-echo -n "checking ocaml version... "
+$as_echo_n "checking ocaml version... "
 if ! ocamlc; then echo not found; else
   OCAML_VERSION=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
-  echo $OCAML_VERSION
+  $as_echo $OCAML_VERSION
   TMP=`echo $OCAML_VERSION | sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
   if test $TMP -lt 40002; then
       AC_SUBST(COMPAT, bytes.cmo)
