@@ -5,6 +5,8 @@ contents=`dirname $tmp`
 resources=$contents/Resources
 
 export XDG_DATA_DIRS=$resources/share
+export PANGO_SYSCONFDIR=$resources/etc
+export PANGO_LIBDIR=$resources/etc
 export GDK_PIXBUF_MODULE_FILE=$resources/gdk-pixbuf.loaders
 
 exec $contents/MacOS/obdb1 -R $resources "$@"

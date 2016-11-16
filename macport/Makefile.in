@@ -48,6 +48,8 @@ INSTALL_DATA = @INSTALL_DATA@
 RESDIR = $(top_srcdir)/resources
 RESOURCES = @RESOURCES@
 GTKDIR = @GTKDIR@
+PKG_CONFIG = @PKG_CONFIG@
+GTKPKGS = @GTKPKGS@
 # End
 
 all:
@@ -55,27 +57,16 @@ all:
 DEBUGAPP = Obdb.app
 
 GTKTRG = $(DEBUGAPP)/Contents/Resources
-GTKLIB = libatk-1.0.0 libcairo.2 libexpat.1 libfontconfig.1		\
-	libfreetype.6 libgailutil.18 libgdk-quartz-2.0.0		\
-	libgdk_pixbuf-2.0.0 libgettextlib-0.19.4 libgettextpo.0		\
-	libgettextsrc-0.19.4 libgio-2.0.0 libglib-2.0.0 		\
-	libgmodule-2.0.0						\
-	libgobject-2.0.0 libgthread-2.0.0 libgtk-quartz-2.0.0		\
-	libgtksourceview-2.0.0 libintl.8 libjpeg.9 libltdl.7		\
-	libpango-1.0.0 libpangocairo-1.0.0 libpangoft2-1.0.0		\
-	libpixman-1.0 libpng16.16 libtiff.5 libtiffxx.5			\
-	libgtkmacintegration-gtk2.2
-GTKLDR = $(GTKDIR)/lib/gdk-pixbuf-2.0/2.10.0/loaders
-GTKSO = libpixbufloader-png
+GTKSO = libpixbufloader-png.so pango-basic-coretext.so pango-basic-fc.so
 
 GTKINST = $(INSTALL) -d $(GTKTRG)/$(2) && \
 	$(INSTALL_$(1)) $(3:%=$(GTKDIR)/$(2)/%) $(GTKTRG)/$(2)
 
+GTKLIBS := $(shell $(PKG_CONFIG) --libs-only-l $(GTKPKGS))
+
 gtklib:
-	mkdir -p $@
-	cp $(GTKLIB:%=$(GTKDIR)/lib/%.dylib) $@
-	cp $(GTKSO:%=$(GTKLDR)/%.so) $@
-	sh ./rename-libs $@ $(GTKDIR)/lib
+	@rm -rf $@
+	tclsh makelib.tcl $(GTKDIR)/lib $@ $(GTKLIBS) $(GTKSO)
 
 debugger: Obdb.app
 
@@ -88,9 +79,10 @@ Obdb.app: obdb.script ../debugger/obdb1 gdk-pixbuf.loaders \
 	$(INSTALL_PROG) obdb.script $(DEBUGAPP)/Contents/MacOS/obdb
 	$(INSTALL_PROG) ../debugger/obdb1 $(DEBUGAPP)/Contents/MacOS
 	$(INSTALL) -d $(GTKTRG)/lib
-	$(INSTALL_PROG) $(GTKLIB:%=gtklib/%.dylib) $(GTKSO:%=gtklib/%.so) \
-		$(GTKTRG)/lib
+	cp -a gtklib/* $(GTKTRG)/lib
 	$(INSTALL_DATA) gdk-pixbuf.loaders $(RESOURCES:%=$(RESDIR)/%) $(GTKTRG)
+	$(INSTALL) -d $(GTKTRG)/etc/pango
+	$(INSTALL_DATA) pango.modules $(GTKTRG)/etc/pango
 	$(call GTKINST,DATA,share/gtksourceview-2.0/language-specs,\
 		def.lang language.dtd language.rng language2.rng)
 	$(call GTKINST,DATA,share/gtksourceview-2.0/styles,\

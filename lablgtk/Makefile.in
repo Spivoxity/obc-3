@@ -43,6 +43,7 @@ VPATH = @srcdir@
 CAMLDEP = @top_srcdir@/camldep
 DEPEND = @DEPEND@
 PKG_CONFIG = @PKG_CONFIG@
+GTKPKGS = @GTKPKGS@
 # End of config
 
 ALL = lablgtk.cma liblablgtk.a gtkThread.cmo
@@ -90,17 +91,14 @@ ifdef WINDOWS
   PKG_FLAGS = --define-variable=prefix=C:/GTK
 endif
 
-PKGS := gtk+-2.0 gtksourceview-2.0
-
 ifdef MACOS
-  PKGS += gtk-mac-integration
-  GTKFLAGS := $(shell $(PKGCONF) --cflags $(PKGS)) -DHAS_GTKQUARTZ
+  GTKFLAGS := $(shell $(PKGCONF) --cflags $(GTKPKGS)) -DHAS_GTKQUARTZ
   GTKLIBS := -L$(abs_top_builddir)/macport/gtklib \
-	$(shell $(PKGCONF) --libs-only-l $(PKGS))
+	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
 else
-  GTKFLAGS := $(shell $(PKGCONF) --cflags $(PKGS))
-  GTKLIBS := $(shell $(PKGCONF) --libs-only-L $(PKGS)) \
-	$(shell $(PKGCONF) --libs-only-l $(PKGS))
+  GTKFLAGS := $(shell $(PKGCONF) --cflags $(GTKPKGS))
+  GTKLIBS := $(shell $(PKGCONF) --libs-only-L $(GTKPKGS)) \
+	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
 endif
 
 lablgtk.cma: $(MLOBJS)
