@@ -233,7 +233,7 @@ LIB = lib/lscript lib/lscript-b $(srcdir)/lib/Builtin.m lib/_Builtin.k \
 	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h
 
 # Manual pages
-MAN = obb.1 obc.1 oblist.1 obprof.1 obdb.1
+MAN = obb.1 obc.1 oblist.1 obprof.1
 
 # Installation directories
 DIRS = $(bindir) $(mandir)/man1 $(libdir)/obc
@@ -258,6 +258,7 @@ ifdef ENABLE_DEBUGGER
   BIN += obdb
   LIBX += obxdeb
   SCRIPTS += obdb.in
+  MAN +=  obdb.1
   ifndef MACOS
     DIRS += $(libdir)/obc/resources
     RES += $(RESOURCES:%=$(RESDIR)/%)

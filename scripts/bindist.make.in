@@ -42,9 +42,10 @@ datarootdir = @datarootdir@
 INSTALL = @INSTALL@
 INSTALL_PROG = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+HAVE_OBDB = @HAVE_OBDB@
 # End of config
 
-all: bin/obc bin/obb bin/oblist bin/obdb
+all: bin/obc bin/obb bin/oblist
 
 bin/%: etc/%.in config.status
 	CONFIG_FILES=$@:$< ./config.status 
@@ -52,15 +53,26 @@ bin/%: etc/%.in config.status
 bin/oblist: etc/ObList.k
 	libexec/oblink -i $(libdir)/obc/obx -L lib etc/ObList.k -o bin/oblist
 
-install: all force
-	for d in $(bindir) $(libdir)/obc $(libdir)/obc/resources \
+install: install-base
+
+install-base: all force
+	for d in $(bindir) $(libdir)/obc \
               $(mandir)/man1; do $(INSTALL) -d $$d; done
 	for f in bin/*; do $(INSTALL_PROG) $$f $(bindir); done
 	for f in libexec/*; do $(INSTALL_PROG) $$f $(libdir)/obc; done
 	for f in libsrc/*; do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in lib/*; do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in man/*; do $(INSTALL_DATA) $$f $(mandir)/man1; done
+
+ifdef HAVE_OBDB
+all: bin/obdb
+
+install: install-obdb
+
+install-obdb: force
+	$(INSTALL) -d $(libdir)/obc/resources
 	for f in resources/*; do $(INSTALL_DATA) $$f \
 		$(libdir)/obc/resources; done
+endif
 
 force:
