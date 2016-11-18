@@ -881,6 +881,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      case NOT:    
 	  monop(opNOT, ra, rb); break;
      case NEGF:
+     case NEGD:
 	  fmonop(opFCHS, ra, rb); break;
 
      case CONVIF:

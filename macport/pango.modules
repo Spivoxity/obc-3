@@ -1,0 +1,2 @@
+@executable_path/../Resources/lib/pango-basic-coretext.so BasicScriptEngineCoreText PangoEngineShape PangoRenderCoreText common:
+@executable_path/../Resources/lib/pango-basic-fc.so BasicScriptEngineFc PangoEngineShape PangoRenderFc common:

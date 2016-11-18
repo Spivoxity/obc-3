@@ -310,7 +310,9 @@ let main () =
         xthickness = 0
         ythickness = 0
       }
-      widget \"*.tab-close-button\" style \"tab-close-button-style\"";
+      widget \"*.tab-close-button\" style \"tab-close-button-style\"
+      gtk-show-input-method-menu = 0
+      gtk-show-unicode-menu = 0";
 
   Sys.set_signal Sys.sigint Sys.Signal_ignore;
 

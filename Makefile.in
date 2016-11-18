@@ -189,10 +189,10 @@ endif
 ObList.k : ObList.m compiler/obc1 lib/Files.k
 	compiler/obc1 -I lib $< >$@
 
-macdebug : force
+macdebug : debugger force
 	$(MAKE) -C macport debugger
 
-sanity : subdirs $(INTERP) force
+sanity : subdirs build force
 	compiler/obc1 -x -g -pl -I lib $(srcdir)/Fac.m >Fac.k
 	runtime/oblink -g -pl -L lib Fac.k -o Fac.x
 	./$(INTERP) ./Fac.x 20
@@ -286,7 +286,8 @@ ifdef ENABLE_DEBUGGER
 endif
 
 uninstall: force
-	rm -rf $(patsubst %,$(bindir)/%,$(notdir $(BIN))) $(libdir)/obc
+	rm -rf $(patsubst %,$(bindir)/%,$(notdir $(BIN))) $(libdir)/obc \
+		$(patsubst %,$(mandir)/man1/%,$(MAN))
 
 
 # Binary distribution
@@ -382,7 +383,7 @@ SETREVID = sed -e '/REVID=.*/s//REVID=$(REVID)/'
 
 Makefile: Makefile.in config.status
 	./config.status Makefile
-     
+
 obc obb obdb config0: %: scripts/%.in config.status revid
 	$(SETREVID) $< | ./config.status --file=$@:-
 	chmod +x $@
