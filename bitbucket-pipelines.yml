@@ -1,0 +1,12 @@
+# Bitbucket Pipelines build script
+
+image: spivoxity/obc-build
+
+pipelines:
+  default:
+    - step:
+        script:
+          - autoreconf
+          - ./configure
+          - make
+          - make test
