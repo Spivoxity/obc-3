@@ -43,7 +43,7 @@ DLPRIMS = Math MathL
 TCLSH = tclsh
 
 vpath %.c ../runtime ../thunder ../lib
-vpath %.h ../runtime ../thunder
+vpath %.h ../runtime
 
 all: obxj-arm $(DLPRIMS:%=%.so) sanity
 
@@ -75,4 +75,4 @@ force:
 ### Crude approximation
 
 $(OBXJ) $(PRIMS:%=%.o): \
-	obx.h obcommon.h config.h exec.h keiko.h decode.h vm.h
+	obx.h obcommon.h config.h exec.h keiko.h decode.h ../thunder/vm.h
