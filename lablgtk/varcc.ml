@@ -22,7 +22,7 @@ let camlize id =
        if (id.[i] >= 'A') && (id.[i] <= 'Z')
        then
          (if i > 0 then Buffer.add_char b '_' else ();
-          Buffer.add_char b (Char.lowercase id.[i]))
+          Buffer.add_char b (Char.chr (Char.code id.[i] + 32)))
        else Buffer.add_char b id.[i]
      done;
      Buffer.contents b)

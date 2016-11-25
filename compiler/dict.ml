@@ -573,7 +573,7 @@ let align alignment offset =
 (* Initial environment *)
 
 let make_def1 s x k lab t =
-  { d_tag = intern (if !Config.lcflag then String.lowercase s else s); 
+  { d_tag = intern (if !Config.lcflag then Util.strlower s else s); 
     d_module = anon; d_export = x; d_kind = k; d_used = true; 
     d_loc = no_loc; d_line = 0; d_type = t; d_lab = lab; d_level = 0; 
     d_offset = 0; d_param = 0; d_comment = None; d_env = empty_env; 

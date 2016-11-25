@@ -24,7 +24,7 @@ let camlize id =
                        (is_not_uppercase id.[i + 1])))
              then Buffer.add_char b '_'
              else ();
-             Buffer.add_char b (Char.lowercase c))
+             Buffer.add_char b (Char.chr (Char.code c + 32)))
         | '-' -> Buffer.add_char b '_'
         | c -> Buffer.add_char b c)
      done;
