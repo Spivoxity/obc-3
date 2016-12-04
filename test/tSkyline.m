@@ -1,0 +1,470 @@
+MODULE tSkyline;
+
+IMPORT Random, Out;
+
+PROCEDURE Max(x, y: INTEGER): INTEGER;
+BEGIN
+  IF x > y THEN
+    RETURN x
+  ELSE
+    RETURN y
+  END
+END Max;
+
+PROCEDURE MinPos(VAR a: ARRAY OF INTEGER; i, j: INTEGER): INTEGER;
+  VAR k, m: INTEGER;
+BEGIN
+  m := i; k := i+1;
+  WHILE k < j DO
+    IF a[k] < a[m] THEN m := k END;
+    k := k+1
+  END;
+  RETURN m
+END MinPos;
+
+PROCEDURE Best1(VAR h: ARRAY OF INTEGER; i, j: INTEGER): INTEGER;
+  VAR m: INTEGER;
+BEGIN
+  IF i = j THEN
+    RETURN 0
+  ELSE
+    m := MinPos(h, i, j);
+    RETURN Max(Best1(h, i, m), Max((j-i)*h[m], Best1(h, m+1, j)))
+  END
+END Best1;
+
+PROCEDURE Best2(VAR h: ARRAY OF INTEGER): INTEGER;
+  VAR j, p, m, n, v: INTEGER;
+    s: POINTER TO ARRAY OF INTEGER;
+BEGIN
+  n := LEN(h);
+  NEW(s, n+1);
+  j := 0; m := 0; p := 0; s[0] := -1;
+  LOOP
+    IF j < n THEN v := h[j] ELSE v := 0 END;
+    WHILE (p > 0) & (h[s[p]] >= v) DO
+      m := Max(m, (j-s[p-1]-1)*h[s[p]]);
+      p := p-1
+    END;
+    IF j = n THEN EXIT END;
+    p := p+1; s[p] := j; j := j+1
+  END;
+  RETURN m
+END Best2;
+
+PROCEDURE Test1;
+  VAR a: ARRAY 7 OF INTEGER;
+BEGIN
+  a[0] := 2; a[1] := 1; a[2] := 4; a[3] := 5;
+  a[4] := 1; a[5] := 3; a[6] := 3;
+  Out.Int(Best1(a, 0, LEN(a)), 0); Out.Ln;
+  Out.Int(Best2(a), 0); Out.Ln
+END Test1;
+
+PROCEDURE Test2(n: INTEGER);
+  VAR a: POINTER TO ARRAY OF INTEGER; i: INTEGER;
+BEGIN
+  NEW(a, n);
+  FOR i := 0 TO n-1 DO a[i] := Random.Roll(n) END;
+  Out.Int(Best1(a^, 0, n), 0); Out.Ln;
+  Out.Int(Best2(a^), 0); Out.Ln
+END Test2;
+
+VAR w: INTEGER;
+
+BEGIN
+  Test1;
+  FOR w := 1 TO 10 DO Test2(1000) END
+END tSkyline.
+
+(*<<
+8
+8
+6989
+6989
+7178
+7178
+7998
+7998
+6142
+6142
+6853
+6853
+12008
+12008
+8016
+8016
+9856
+9856
+7106
+7106
+5859
+5859
+>>*)
+
+(*[[
+!! (SYMFILE #tSkyline 0x00000301 #tSkyline.%main 1)
+!! (CHKSUM 0x38c39d8b)
+!! 
+MODULE tSkyline STAMP 0
+IMPORT Random STAMP
+IMPORT Out STAMP
+ENDHDR
+
+PROC tSkyline.Max 0 2 0
+! PROCEDURE Max(x, y: INTEGER): INTEGER;
+!   IF x > y THEN
+LDLW 12
+LDLW 16
+JLEQ L3
+!     RETURN x
+LDLW 12
+RETURNW
+LABEL L3
+!     RETURN y
+LDLW 16
+RETURNW
+END
+
+PROC tSkyline.MinPos 8 4 0x00100001
+! PROCEDURE MinPos(VAR a: ARRAY OF INTEGER; i, j: INTEGER): INTEGER;
+!   m := i; k := i+1;
+LDLW 20
+STLW -8
+LDLW 20
+INC
+STLW -4
+LABEL L4
+!   WHILE k < j DO
+LDLW -4
+LDLW 24
+JGEQ L6
+!     IF a[k] < a[m] THEN m := k END;
+LDLW 12
+LDLW -4
+LDLW 16
+BOUND 19
+LDIW
+LDLW 12
+LDLW -8
+LDLW 16
+BOUND 19
+LDIW
+JGEQ L9
+LDLW -4
+STLW -8
+LABEL L9
+!     k := k+1
+INCL -4
+JUMP L4
+LABEL L6
+!   RETURN m
+LDLW -8
+RETURNW
+END
+
+PROC tSkyline.Best1 4 6 0x00100001
+! PROCEDURE Best1(VAR h: ARRAY OF INTEGER; i, j: INTEGER): INTEGER;
+!   IF i = j THEN
+LDLW 20
+LDLW 24
+JNEQ L12
+!     RETURN 0
+CONST 0
+RETURNW
+LABEL L12
+!     m := MinPos(h, i, j);
+LDLW 24
+LDLW 20
+LDLW 16
+LDLW 12
+GLOBAL tSkyline.MinPos
+CALLW 4
+STLW -4
+!     RETURN Max(Best1(h, i, m), Max((j-i)*h[m], Best1(h, m+1, j)))
+LDLW 24
+LDLW -4
+INC
+LDLW 16
+LDLW 12
+GLOBAL tSkyline.Best1
+CALLW 4
+LDLW 24
+LDLW 20
+MINUS
+LDLW 12
+LDLW -4
+LDLW 16
+BOUND 32
+LDIW
+TIMES
+GLOBAL tSkyline.Max
+CALLW 2
+LDLW -4
+LDLW 20
+LDLW 16
+LDLW 12
+GLOBAL tSkyline.Best1
+CALLW 4
+GLOBAL tSkyline.Max
+CALLW 2
+RETURNW
+END
+
+PROC tSkyline.Best2 24 6 0x00100801
+! PROCEDURE Best2(VAR h: ARRAY OF INTEGER): INTEGER;
+!   n := LEN(h);
+LDLW 16
+STLW -16
+!   NEW(s, n+1);
+LDLW -16
+INC
+CONST 1
+CONST 4
+CONST 0
+GLOBAL NEWFLEX
+CALLW 4
+STLW -24
+!   j := 0; m := 0; p := 0; s[0] := -1;
+CONST 0
+STLW -4
+CONST 0
+STLW -12
+CONST 0
+STLW -8
+CONST -1
+LDLW -24
+NCHECK 42
+CONST 0
+DUP 1
+LDNW -4
+LDNW 4
+BOUND 42
+STIW
+LABEL L13
+!     IF j < n THEN v := h[j] ELSE v := 0 END;
+LDLW -4
+LDLW -16
+JGEQ L17
+LDLW 12
+LDLW -4
+LDLW 16
+BOUND 44
+LDIW
+STLW -20
+JUMP L15
+LABEL L17
+CONST 0
+STLW -20
+LABEL L15
+!     WHILE (p > 0) & (h[s[p]] >= v) DO
+LDLW -8
+JLEQZ L20
+LDLW 12
+LDLW -24
+NCHECK 45
+LDLW -8
+DUP 1
+LDNW -4
+LDNW 4
+BOUND 45
+LDIW
+LDLW 16
+BOUND 45
+LDIW
+LDLW -20
+JLT L20
+!       m := Max(m, (j-s[p-1]-1)*h[s[p]]);
+LDLW -4
+LDLW -24
+NCHECK 46
+LDLW -8
+DEC
+DUP 1
+LDNW -4
+LDNW 4
+BOUND 46
+LDIW
+MINUS
+DEC
+LDLW 12
+LDLW -24
+NCHECK 46
+LDLW -8
+DUP 1
+LDNW -4
+LDNW 4
+BOUND 46
+LDIW
+LDLW 16
+BOUND 46
+LDIW
+TIMES
+LDLW -12
+GLOBAL tSkyline.Max
+CALLW 2
+STLW -12
+!       p := p-1
+DECL -8
+JUMP L15
+LABEL L20
+!     IF j = n THEN EXIT END;
+LDLW -4
+LDLW -16
+JEQ L14
+!     p := p+1; s[p] := j; j := j+1
+INCL -8
+LDLW -4
+LDLW -24
+NCHECK 50
+LDLW -8
+DUP 1
+LDNW -4
+LDNW 4
+BOUND 50
+STIW
+INCL -4
+JUMP L13
+LABEL L14
+!   RETURN m
+LDLW -12
+RETURNW
+END
+
+PROC tSkyline.Test1 28 6 0
+! PROCEDURE Test1;
+!   a[0] := 2; a[1] := 1; a[2] := 4; a[3] := 5;
+CONST 2
+STLW -28
+CONST 1
+STLW -24
+CONST 4
+STLW -20
+CONST 5
+STLW -16
+!   a[4] := 1; a[5] := 3; a[6] := 3;
+CONST 1
+STLW -12
+CONST 3
+STLW -8
+CONST 3
+STLW -4
+!   Out.Int(Best1(a, 0, LEN(a)), 0); Out.Ln;
+CONST 0
+CONST 7
+CONST 0
+CONST 7
+LOCAL -28
+GLOBAL tSkyline.Best1
+CALLW 4
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+!   Out.Int(Best2(a), 0); Out.Ln
+CONST 0
+CONST 7
+LOCAL -28
+GLOBAL tSkyline.Best2
+CALLW 2
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+PROC tSkyline.Test2 12 6 0x00010001
+! PROCEDURE Test2(n: INTEGER);
+!   NEW(a, n);
+LDLW 12
+CONST 1
+CONST 4
+CONST 0
+GLOBAL NEWFLEX
+CALLW 4
+STLW -4
+!   FOR i := 0 TO n-1 DO a[i] := Random.Roll(n) END;
+LDLW 12
+DEC
+STLW -12
+CONST 0
+STLW -8
+LABEL L25
+LDLW -8
+LDLW -12
+JGT L26
+LDLW 12
+GLOBAL Random.Roll
+CALLW 1
+LDLW -4
+NCHECK 68
+LDLW -8
+DUP 1
+LDNW -4
+LDNW 4
+BOUND 68
+STIW
+INCL -8
+JUMP L25
+LABEL L26
+!   Out.Int(Best1(a^, 0, n), 0); Out.Ln;
+CONST 0
+LDLW 12
+CONST 0
+LDLW -4
+NCHECK 69
+DUP 0
+LDNW -4
+LDNW 4
+SWAP
+GLOBAL tSkyline.Best1
+CALLW 4
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+!   Out.Int(Best2(a^), 0); Out.Ln
+CONST 0
+LDLW -4
+NCHECK 70
+DUP 0
+LDNW -4
+LDNW 4
+SWAP
+GLOBAL tSkyline.Best2
+CALLW 2
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+PROC tSkyline.%main 0 6 0
+!   Test1;
+GLOBAL tSkyline.Test1
+CALL 0
+!   FOR w := 1 TO 10 DO Test2(1000) END
+CONST 1
+STGW tSkyline.w
+LABEL L27
+LDGW tSkyline.w
+CONST 10
+JGT L28
+CONST 1000
+GLOBAL tSkyline.Test2
+CALL 1
+LDGW tSkyline.w
+INC
+STGW tSkyline.w
+JUMP L27
+LABEL L28
+RETURN
+END
+
+! Global variables
+GLOVAR tSkyline.w 4
+
+! End of file
+]]*)

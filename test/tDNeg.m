@@ -15,8 +15,8 @@ END tDNeg.
 >>*)
 
 (*[[
-!! SYMFILE #tDNeg STAMP #tDNeg.%main 1
-!! END STAMP
+!! (SYMFILE #tDNeg 0x00000301 #tDNeg.%main 1)
+!! (CHKSUM 0x79929f69)
 !! 
 MODULE tDNeg STAMP 0
 IMPORT Math STAMP
