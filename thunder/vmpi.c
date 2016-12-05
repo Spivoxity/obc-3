@@ -771,6 +771,11 @@ void vm_gen1i(operation op, int a) {
 	  argp = a;
 	  break;
 
+     case ARG:
+          argp--;
+          load_reg(R(argp), a);
+          break;
+
      default:
 	  badop();
      }

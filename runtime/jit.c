@@ -46,6 +46,9 @@ static int cmpflag = 0;         /* Flag for FCMP or DCMP */
 
 static vmlabel stack_oflo, retlab;
 
+#define push_con(k) push(I_CON, INT, rZERO, k, 1)
+#define push_reg(r) push(I_REG, INT, r, 0, 1)
+
 /* prolog -- generate code for procedure prologue */
 static code_addr prolog(const char *name) {
      int i;
@@ -58,14 +61,16 @@ static code_addr prolog(const char *name) {
      /* Check for stack overflow */
      vm_gen3rij(BGEQU, rBP->r_reg, (unsigned) stack + SLIMIT + frame, lab);
      vm_label(stack_oflo);
-     gcall(stkoflo, 1, rBP);
+     push_reg(rBP);
+     gcall(stkoflo, 1);
      vm_label(lab);
 
      if (frame > 24) {
 	  vm_gen3rri(SUB, rI0->r_reg, rBP->r_reg, frame);
-	  vm_gen2ri(MOV, rI1->r_reg, 0);
-	  vm_gen2ri(MOV, rI2->r_reg, frame);
-	  gcall(memset, 3, rI0, rI1, rI2);
+          push_con(frame);
+          push_con(0);
+          push_reg(rI0);
+	  gcall(memset, 3);
      } else if (frame > 0) {
 	  vm_gen2ri(MOV, rI0->r_reg, 0);
 	  for (i = 4; i <= frame; i += 4)
@@ -211,7 +216,8 @@ static void callout(void (*op)(value *sp), int nargs) {
      killregs();
      r = ralloc(INT);
      get_sp(r);
-     gcall(op, 1, r);
+     push_reg(r);
+     gcall(op, 1);
 }
 
 /* proc_call -- procedure call */
@@ -232,7 +238,8 @@ static void proc_call(uchar *pc, int arg) {
      r2 = ralloc(INT); rthaw(r1);
      vm_gen3rri(LDW, r1->r_reg, r1->r_reg, 0);
      get_sp(r2);
-     gcallr(r1, 1, r2);
+     push_reg(r2);
+     gcallr(r1, 1);
      pop(nargs+3);
 }
 
@@ -477,9 +484,11 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  flush_stack(3, 3); 
 	  r1 = move_to_reg(3, INT); 
 	  r2 = move_to_reg(2, INT); 
-	  r3 = move_to_reg(1, INT); 
-	  pop(3); killregs();
-	  gcall(memcpy, 3, r1, r2, r3);
+	  move_to_rc(1); 
+          push_reg(r2);
+          push_reg(r1);
+          gcall(memcpy, 3);
+	  pop(2); killregs();
 	  break;
 	  
      case I_FLEXCOPY:
@@ -487,13 +496,17 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(2, INT); 
 	  r2 = move_to_reg(1, INT); 
 	  r3 = ralloc(INT); 
-	  pop(2); unlock(2); killregs();
+	  pop(2); unlock(2); 
 	  flex_space(r2);
 	  vm_gen3rij(BLTU, rSP->r_reg, (unsigned) stack + SLIMIT, stack_oflo);
           vm_gen3rri(LDW, r3->r_reg, r1->r_reg, 0);
           vm_gen3rri(STW, rSP->r_reg, r1->r_reg, 0);
-	  gcall(memcpy, 3, rSP, r3, r2);
-	  break;
+          push_reg(r2);
+          push_reg(r3);
+          push_reg(rSP);
+	  gcall(memcpy, 3);
+          killregs();
+          break;
 
      case I_LINK:
 	  push(I_CON, INT, rZERO, (unsigned) &statlink, 1);
@@ -811,9 +824,10 @@ static void translate(void) {
 
 static void make_error(vmlabel lab, int code, int line) {
      vm_label(lab);
-     vm_gen2ri(MOV, rI0->r_reg, code);
-     vm_gen2ri(MOV, rI1->r_reg, line);
-     gcall(rterror, 3, rI0, rI1, rBP);
+     push_reg(rBP);
+     push_con(line);
+     push_con(code);
+     gcall(rterror, 3);
 }
 
 static int serial;              /* Serial number for anonymous procedures */

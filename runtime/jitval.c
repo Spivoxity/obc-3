@@ -53,7 +53,7 @@ being compiled.  */
 #ifdef DEBUG
 /* show -- print a value for debugging */
 static void show(ctvalue v) {
-     switch (v->v_op & 0xff) {
+     switch (v->v_op) {
      case I_REG: 
 	  printf("reg %s", vm_regname(v->v_reg->r_reg)); break;
 
@@ -67,7 +67,7 @@ static void show(ctvalue v) {
 	  printf("stackd %d", v->v_val); break;
 
      default:
-	  printf("[%s %d", instrs[v->v_op & 0xff].i_name, v->v_val);
+	  printf("[%s %d", instrs[v->v_op].i_name, v->v_val);
 	  if (v->v_reg != rZERO) printf("(%s)", vm_regname(v->v_reg->r_reg));
 	  printf("]");
      }
@@ -462,7 +462,7 @@ reg move_to_reg(int i, int ty) {
 	  }
      }
 
-     switch (v->v_op & 0xff) {
+     switch (v->v_op) {
      case I_REG:
 	  r = rfree(v->v_reg);
 	  break;
@@ -712,35 +712,34 @@ void plusa() {
 
 /* Procedure calls */
 
-/* gargs -- generate function arguments */
-static void gargs(int n, va_list va) {
+static void gen_args(int n) {
      int i;
-     reg arg[6];
-
-     for (i = 0; i < n; i++)
-	  arg[i] = (reg) va_arg(va, reg);
 
      vm_gen1i(PREP, n);
-     for (i = n-1; i >= 0; i--)
-	  vm_gen1r(ARG, arg[i]->r_reg);
+     for (i = n; i > 0; i--) {
+          ctvalue arg = &vstack[sp-i];
+          switch (arg->v_op) {
+          case I_REG:
+               vm_gen1r(ARG, arg->v_reg->r_reg);
+               break;
+          case I_CON:
+               vm_gen1i(ARG, arg->v_val);
+               break;
+          default:
+               panic("Bad arg code %d", arg->v_op);
+          }
+     }
+     pop(n);
 }
 
-void gcall(void *f, int n, ...) {
-     va_list va;
-
-     va_start(va, n);
-     gargs(n, va);
-     va_end(va);
+/* gcall -- call with arguments on stack */
+void gcall(void *f, int n) {
+     gen_args(n);
      vm_gen1i(CALL, (int) f);
 }
 
-/* gcallr -- indirect function call */
-void gcallr(reg f, int n, ...) {
-     va_list va;
-
-     va_start(va, n);
-     gargs(n, va);
-     va_end(va);
+void gcallr(reg f, int n) {
+     gen_args(n);
      vm_gen1r(CALL, f->r_reg);
 }
 

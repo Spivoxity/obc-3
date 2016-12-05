@@ -239,7 +239,8 @@ static char *fmt_addr(int rs, int imm) {
 #define opIMUL_r MNEM("imul", 0x0faf)
 #define opINC MNEM("inc", 0x40)
 #define opDEC MNEM("dec", 0x48)
-#define opPUSH MNEM("push", 0x50)
+#define opPUSH_r MNEM("push", 0x50)
+#define opPUSH_i MNEM("push", 0x68)
 #define opPOP MNEM("pop", 0x58)
 #define opRET MNEM("ret", 0xc3)
 #define opJMPL_i MNEM("jmp", 0xe9)
@@ -378,6 +379,16 @@ static void instr_reg(OPDECL, int reg) {
      opcode(op|register(reg));
 }
 
+/* instr_imm -- opcode plus 8/32 bit immediate */
+static void instr_imm(OPDECL, int imm) {
+     vm_debug2("%s #%s", mnem, fmt_val(imm));
+     if (signed8(imm)) {
+          opcode(op|x_byte); byte(imm);
+     } else {
+          opcode(op); word(imm);
+     }
+}
+
 /* instr_regi32 -- opcode packed with register plus a 32-bit immediate */
 static void instr_regi32(OPDECL, int r, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[r], fmt_val(imm));
@@ -462,7 +473,8 @@ static void instr_m(OPDECL, int rs, int imm) {
 #define add_i(rd, imm)	instr2_ri(MNEM2("add", xALU_i, aluADD), rd, imm)
 #define sub_i(rd, imm)	instr2_ri(MNEM2("sub", xALU_i, aluSUB), rd, imm)
 
-#define push(r)		instr_reg(opPUSH, r)
+#define pushr(r)	instr_reg(opPUSH_r, r)
+#define pushi(imm)	instr_imm(opPUSH_i, imm)
 #define pop(r)		instr_reg(opPOP, r)
 #define fld_r(r) 	instr_reg(opFLD_r, r)
 #define fst_r(r) 	instr_reg(opFST_r, r)
@@ -492,14 +504,14 @@ static void move(int rd, int rs) {
 static void shift3_r(OPDECL, int rd, int rs1, int rs2) {
      if (rd == ECX || (rd != rs1 && rd == rs2)) {
 	  int rx = (rs2 == EAX ? EDX : EAX);
-	  push(rx); shift3_r(OP, rx, rs1, rs2); 
+	  pushr(rx); shift3_r(OP, rx, rs1, rs2); 
           move(rd, rx); pop(rx);
      } else {
 	  move(rd, rs1);
 	  if (rs2 == ECX)
 	       shift2cl_r(OP, rd);
 	  else {
-	       push(ECX); move(ECX, rs2); 
+	       pushr(ECX); move(ECX, rs2); 
                shift2cl_r(OP, rd); pop(ECX);
 	  }
      }
@@ -517,7 +529,7 @@ static void storec(int rt, int rs, int imm) {
           instr_st(opMOVB_m, rt, rs, imm);
      else {
 	  int rx = (rs == EAX ? EDX : EAX);
-	  push(rx); move(rx, rt);
+	  pushr(rx); move(rx, rt);
 	  instr_st(opMOVB_m, rx, rs, imm);
 	  pop(rx);
      }
@@ -593,7 +605,7 @@ static void setcc_r(OPDECL, int rd) {
 	  instr2_r(MNEM2(mnem, op, 0), rd); /* Compute boolean result */
           instr_rr(opMOVZBL_r, rd, rd); /* Zero-extend */
      } else {
-	  push(EAX);
+	  pushr(EAX);
 	  instr2_r(MNEM2(mnem, op, 0), EAX); /* Compute boolean result */
 	  instr_rr(opMOVZBL_r, rd, EAX); /* Move and zero-extend */
 	  pop(EAX);
@@ -799,7 +811,7 @@ void vm_gen1r(operation op, vmreg rega) {
 	  instr2_r(opJMPL_r, ra); break;
 
      case ARG:
-	  push(ra);
+	  pushr(ra);
 	  break;
 
      case CALL:
@@ -826,6 +838,10 @@ void vm_gen1i(operation op, int a) {
      case PREP:
 	  prep_call(a);
 	  break;
+
+     case ARG:
+          pushi(a);
+          break;
 
      case CALL:
 	  instr_lab(opCALL_i, (code_addr) a);
@@ -867,10 +883,10 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  if (isfloat(ra) && isfloat(rb)) {
 	       movef(ra, rb);
 	  } else if (isfloat(ra)) {
-	       push(rb); floads(ra, ESP, 0); pop(rb);
+	       pushr(rb); floads(ra, ESP, 0); pop(rb);
 	  } else if (isfloat(rb)) {
 	       /* Make a stack slot, then overwrite it. */
-	       push(ra); fstores(rb, ESP, 0); pop(ra);
+	       pushr(ra); fstores(rb, ESP, 0); pop(ra);
 	  } else {
 	       move(ra, rb); 
 	  }
@@ -886,7 +902,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 
      case CONVIF:
      case CONVID:
-	  push(rb); loadf(opFILDL_m, ra, ESP, 0); pop(rb); break;
+	  pushr(rb); loadf(opFILDL_m, ra, ESP, 0); pop(rb); break;
      case CONVIC: 
 	  binop3_i(opAND, ra, rb, 0xff); break;
      case CONVIS: 
@@ -1192,7 +1208,7 @@ void vm_patch(code_addr loc, code_addr lab) {
 
 code_addr vm_prelude(int n) {
      code_addr entry = pc;
-     push(EBP); push(EBX); push(ESI); push(EDI); 
+     pushr(EBP); pushr(EBX); pushr(ESI); pushr(EDI); 
      return entry;
 }
 

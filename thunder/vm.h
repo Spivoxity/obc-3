@@ -120,8 +120,8 @@ RET
   -- return from subroutine
 PREP imm
   -- prepare subroutine call with specified number of arguments
-ARG ra
-  -- send subroutine argument from register
+ARG ra/imm
+  -- send subroutine argument from register or constant
 CALL ra/imm
   -- perform subroutine call
 

@@ -154,10 +154,5 @@ void move_longval(ctvalue src, reg rd, int offd);
 void get_halflong(ctvalue src, int off, reg dst);
 #endif
 
-
-/* jitop.c */
-
-
-void gcall(void *f, int n, ...);
-void gcallr(reg f, int n, ...);
-
+void gcall(void *f, int n);
+void gcallr(reg f, int n);
