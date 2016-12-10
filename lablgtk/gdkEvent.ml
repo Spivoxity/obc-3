@@ -180,7 +180,6 @@ module Selection = struct
   external selection : t -> atom = "ml_GdkEventSelection_selection"
   external target : t -> atom = "ml_GdkEventSelection_target"
   external property : t -> atom = "ml_GdkEventSelection_property"
-  external requestor : t -> xid = "ml_GdkEventSelection_requestor"
   let time = get_time
 end
 

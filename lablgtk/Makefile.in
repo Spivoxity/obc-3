@@ -48,36 +48,30 @@ GTKPKGS = @GTKPKGS@
 
 ALL = lablgtk.cma liblablgtk.a gtkThread.cmo
 
-COBJS = ml_gdkpixbuf.o ml_gdk.o ml_glib.o ml_gobject.o ml_gpointer.o \
-	ml_gvaluecaml.o wrappers.o ml_gtk.o ml_pango.o ml_gtkaction.o \
-	ml_gtkbin.o ml_gtkbroken.o ml_gtkbutton.o ml_gtkedit.o \
-	ml_gtkfile.o ml_gtklist.o ml_gtkmenu.o ml_gtkmisc.o ml_gtkpack.o \
+COBJS = ml_gdkpixbuf.o ml_gdk.o ml_glib.o ml_gobject.o ml_gpointer.o	\
+	ml_gvaluecaml.o wrappers.o ml_gtk.o ml_pango.o ml_gtkbin.o	\
+	ml_gtkbutton.o ml_gtkmenu.o ml_gtkmisc.o ml_gtkpack.o		\
 	ml_gtkstock.o ml_gtktext.o ml_gtktree.o ml_gtksourceview2.o
 
-PROPS = gtkBase.props gtkBin.props gtkButton.props gtkEdit.props \
-	gtkList.props gtkMenu.props gtkMisc.props gtkPack.props \
-	gtkText.props gtkTree.props gtkFile.props \
-	gtkAction.props gtkBroken.props \
+PROPS = gtkBase.props gtkBin.props gtkButton.props \
+	gtkMenu.props gtkMisc.props gtkPack.props \
+	gtkText.props gtkTree.props \
 	gtkSourceView2.props
 
 TAGS = gdkpixbuf_tags.var gdk_tags.var glib_tags.var gobject_tags.var \
 	gtk_tags.var pango_tags.var sourceView2_tags.var
 
-MLOBJS =  gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo \
-	gdkEnums.cmo pangoEnums.cmo gtkEnums.cmo sourceView2Enums.cmo \
-	pango.cmo gdk.cmo gdkEvent.cmo gdkKeysyms.cmo gdkPixbuf.cmo \
-	gtk.cmo gtkSignal.cmo gtkStock.cmo gtkObject.cmo \
-	$(PROPS:.props=Props.cmo) \
-	gtkData.cmo gtkBase.cmo gtkPack.cmo gtkButton.cmo \
-	gtkMenu.cmo gtkMisc.cmo gtkWindow.cmo gtkList.cmo \
-	gtkBin.cmo gtkEdit.cmo gtkText.cmo gtkTree.cmo \
-	gtkFile.cmo gtkMain.cmo gtkBroken.cmo gtkSourceView2.cmo \
-	gDraw.cmo gPango.cmo gObj.cmo gData.cmo \
-	$(PROPS:%.props=o%Props.cmo) \
-	gContainer.cmo gPack.cmo gButton.cmo gText.cmo \
-	gMenu.cmo gMisc.cmo gTree.cmo gList.cmo gFile.cmo gWindow.cmo \
-	gBin.cmo gEdit.cmo gAction.cmo gBroken.cmo \
-	gUtil.cmo gMain.cmo gToolbox.cmo gSourceView2.cmo 
+MLOBJS = gaux.cmo gpointer.cmo glib.cmo gobject.cmo gdkEnums.cmo	\
+	pangoEnums.cmo gtkEnums.cmo sourceView2Enums.cmo pango.cmo	\
+	gdk.cmo gdkEvent.cmo gdkPixbuf.cmo gtk.cmo gtkSignal.cmo	\
+	gtkStock.cmo gtkObject.cmo $(PROPS:.props=Props.cmo)		\
+	gtkData.cmo gtkBase.cmo gtkPack.cmo gtkButton.cmo gtkMenu.cmo	\
+	gtkMisc.cmo gtkWindow.cmo gtkBin.cmo gtkText.cmo gtkTree.cmo	\
+	gtkMain.cmo gtkSourceView2.cmo gDraw.cmo gObj.cmo gData.cmo	\
+	$(PROPS:%.props=o%Props.cmo) gContainer.cmo gPack.cmo		\
+	gButton.cmo gText.cmo gMenu.cmo gMisc.cmo gTree.cmo		\
+	gWindow.cmo gBin.cmo gMain.cmo gToolbox.cmo		\
+	gSourceView2.cmo
 
 INCLUDE = -I ../compat
 
@@ -163,33 +157,26 @@ realclean: distclean
 Makefile: $(srcdir)/Makefile.in ../config.status
 	cd .. && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= ./config.status
 
-ML = gAction.mli gBin.mli gBroken.mli gButton.mli gContainer.mli	\
-	gData.mli gdk.mli gdkPixbuf.mli gDraw.mli gEdit.mli gFile.mli	\
-	glib.mli gList.mli gMain.mli gMenu.mli gMisc.mli gobject.mli	\
-	gObj.mli gPack.mli gSourceView2.mli gSourceView.mli		\
+ML = gBin.mli gButton.mli gContainer.mli gData.mli gdk.mli		\
+	gdkPixbuf.mli gDraw.mli glib.mli gMain.mli gMenu.mli		\
+	gMisc.mli gobject.mli gObj.mli gPack.mli gSourceView2.mli	\
 	gText.mli gtkSourceView2_types.mli gtkThread.mli gToolbox.mli	\
-	gTree.mli gUtil.mli gWindow.mli gAction.ml gaux.ml gBin.ml	\
-	gBroken.ml gButton.ml gContainer.ml gData.ml gdkEnums.ml	\
-	gdkEvent.ml gdkKeysyms.ml gdk.ml gdkPixbuf.ml gDraw.ml		\
-	gEdit.ml gFile.ml glib.ml gList.ml gMain.ml gMenu.ml gMisc.ml	\
-	gobject.ml gObj.ml gPack.ml gPango.ml gpointer.ml 		\
-	gSourceView2.ml gSourceView.ml gText.ml gtkActionProps.ml	\
-	gtkBase.ml gtkBaseProps.ml gtkBin.ml gtkBinProps.ml		\
-	gtkBroken.ml gtkBrokenProps.ml gtkButton.ml gtkButtonProps.ml	\
-	gtkData.ml gtkEdit.ml gtkEditProps.ml gtkEnums.ml gtkFile.ml	\
-	gtkFileProps.ml gtkList.ml gtkListProps.ml gtkMain.ml		\
-	gtkMenu.ml gtkMenuProps.ml gtkMisc.ml gtkMiscProps.ml gtk.ml	\
-	gtkObject.ml gtkPack.ml gtkPackProps.ml 			\
-	gtkSignal.ml gtkSourceView2.ml					\
+	gTree.mli gWindow.mli gaux.ml gBin.ml gButton.ml	\
+	gContainer.ml gData.ml gdkEnums.ml gdkEvent.ml gdk.ml		\
+	gdkPixbuf.ml gDraw.ml glib.ml gMain.ml gMenu.ml gMisc.ml	\
+	gobject.ml gObj.ml gPack.ml gpointer.ml gSourceView2.ml		\
+	gText.ml gtkBase.ml gtkBaseProps.ml gtkBin.ml gtkBinProps.ml	\
+	gtkButton.ml gtkButtonProps.ml gtkData.ml gtkEnums.ml		\
+	gtkMain.ml gtkMenu.ml gtkMenuProps.ml gtkMisc.ml		\
+	gtkMiscProps.ml gtk.ml gtkObject.ml gtkPack.ml			\
+	gtkPackProps.ml gtkSignal.ml gtkSourceView2.ml			\
 	gtkSourceView2Props.ml gtkStock.ml gtkText.ml gtkTextProps.ml	\
 	gtkThread.ml gtkTree.ml gtkTreeProps.ml gtkWindow.ml		\
-	gToolbox.ml gTree.ml gUtil.ml gWindow.ml ogtkActionProps.ml	\
-	ogtkBaseProps.ml ogtkBinProps.ml ogtkBrokenProps.ml		\
-	ogtkButtonProps.ml ogtkEditProps.ml ogtkFileProps.ml		\
-	ogtkListProps.ml ogtkMenuProps.ml ogtkMiscProps.ml		\
-	ogtkPackProps.ml ogtkSourceView2Props.ml			\
+	gToolbox.ml gTree.ml gWindow.ml ogtkBaseProps.ml	\
+	ogtkBinProps.ml ogtkButtonProps.ml ogtkMenuProps.ml		\
+	ogtkMiscProps.ml ogtkPackProps.ml ogtkSourceView2Props.ml	\
 	ogtkTextProps.ml ogtkTreeProps.ml pangoEnums.ml pango.ml	\
-	sourceView2Enums.ml gutf8.mli gutf8.ml
+	sourceView2Enums.ml
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
@@ -199,11 +186,9 @@ endif
 include $(srcdir)/Depend
 
 # Extra dependencies not found by script
-gtkActionProps.cmo gtkBaseProps.cmo gtkBinProps.cmo gtkBrokenProps.cmo \
-gtkButtonProps.cmo gtkEditProps.cmo gtkFileProps.cmo gtkListProps.cmo \
-gtkMenuProps.cmo gtkMiscProps.cmo gtkPackProps.cmo \
-gtkSourceView2Props.cmo gtkTextProps.cmo gtkTreeProps.cmo: \
-	gtkObject.cmo
+gtkBaseProps.cmo gtkBinProps.cmo gtkButtonProps.cmo gtkMenuProps.cmo	\
+gtkMiscProps.cmo gtkPackProps.cmo gtkSourceView2Props.cmo		\
+gtkTextProps.cmo gtkTreeProps.cmo: gtkObject.cmo
 
 force:
 

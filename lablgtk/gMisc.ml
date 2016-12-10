@@ -60,127 +60,14 @@ let statusbar =
     (GContainer.pack_container ~create:
        (fun p -> new statusbar (Statusbar.create p)))
 
-class status_icon_signals (obj : Gtk.status_icon Gobject.obj) = object
-(*    inherit [Gtk.status_icon] gobject_signals obj*)
-    inherit gtk_status_icon_sigs
-    method private connect sgn ~callback =
-      GtkSignal.connect ~sgn ~callback ~after: true obj
-end
-
-class status_icon obj = object
-  val obj : Gtk.status_icon Gobject.obj = obj
-  inherit gtk_status_icon_props
-  method connect = new status_icon_signals obj
-  method set_from_pixbuf = StatusIcon.set_from_pixbuf obj
-  method set_from_file = StatusIcon.set_from_file obj
-  method set_from_stock = StatusIcon.set_from_stock obj
-  method set_from_icon_name = StatusIcon.set_from_icon_name obj
-  method get_pixbuf = StatusIcon.get_pixbuf obj
-  method get_stock = StatusIcon.get_stock obj
-  method get_icon_name = StatusIcon.get_icon_name obj
-  method get_size = StatusIcon.get_size obj
-  method set_tooltip = StatusIcon.set_tooltip obj
-  method is_embedded= StatusIcon.is_embedded obj
-end
-
-let status_icon =
-  StatusIcon.make_params [] ~cont:
-    (fun p () -> new status_icon (StatusIcon.create p))
-
-let status_icon_from_pixbuf =
-  StatusIcon.make_params [] ~cont:
-    (fun p pb ->
-       let o = new status_icon (StatusIcon.create p) in
-       o#set_from_pixbuf pb;
-       o
-    )
-let status_icon_from_file =
-  StatusIcon.make_params [] ~cont:
-    (fun p file ->
-       let o = new status_icon (StatusIcon.create p) in
-       o#set_from_file file;
-       o
-    )
-let status_icon_from_stock =
-  StatusIcon.make_params [] ~cont:
-    (fun p s ->
-       let o = new status_icon (StatusIcon.create p) in
-       o#set_from_stock s;
-       o
-    )
-let status_icon_from_icon_name =
-  StatusIcon.make_params [] ~cont:
-    (fun p s ->
-       let o = new status_icon (StatusIcon.create p) in
-       o#set_from_icon_name s;
-       o
-    )
-
-
-class calendar_signals obj = object
-  inherit widget_signals_impl obj
-  inherit calendar_sigs
-end
-
-class calendar obj = object
-  inherit ['a] widget_impl (obj : Gtk.calendar obj)
-  inherit calendar_props
-  method event = new GObj.event_ops obj
-  method connect = new calendar_signals obj
-  method select_month = Calendar.select_month obj
-  method select_day = Calendar.select_day obj
-  method mark_day = Calendar.mark_day obj
-  method unmark_day = Calendar.unmark_day obj
-  method clear_marks = Calendar.clear_marks obj
-  method display_options = Calendar.display_options obj
-  method date = Calendar.get_date obj
-  method freeze () = Calendar.freeze obj
-  method thaw () = Calendar.thaw obj
-  method num_marked_dates = Calendar.get_num_marked_dates obj
-  method is_day_marked = Calendar.is_day_marked obj
-end
-
-let calendar ?options ?packing ?show () =
-  let w = Calendar.create [] in
-  may options ~f:(Calendar.display_options w);
-  pack_return (new calendar w) ~packing ~show
-
-class drawing_area obj = object
-  inherit widget_full (obj : [> Gtk.drawing_area] obj)
-  method event = new GObj.event_ops obj
-  method set_size = DrawingArea.size obj
-end
-
-let may_set_size ?(width=0) ?(height=0) w =
-  if width <> 0 || height <> 0 then DrawingArea.size w ~width ~height
-
-let drawing_area ?width ?height ?packing ?show () =
-  let w = DrawingArea.create [] in
-  may_set_size w ?width ?height;
-  pack_return (new drawing_area w) ~packing ~show
-
 class misc obj = object
   inherit ['a] widget_impl obj
   inherit misc_props
 end
 
-class arrow obj = object
-  inherit misc obj
-  inherit arrow_props
-end
-
-let arrow =
-  Arrow.make_params [] ~cont:(
-  Misc.all_params ~cont:(fun p ?packing ?show () ->
-    pack_return (new arrow (Arrow.create p)) ~packing ~show))
-
 class image obj = object (self)
   inherit misc obj
   inherit image_props
-  method pixmap = new GDraw.pixmap (get Image.P.pixmap obj) ?mask:self#mask
-  method set_pixmap (p : GDraw.pixmap) =
-    set Image.P.pixmap obj p#pixmap;
-    self#set_mask p#mask
   method clear () = Image.clear obj
 end
 
@@ -240,28 +127,3 @@ let tips_query ?caller =
   TipsQuery.make_params [] ?caller ~cont:(
   Misc.all_params ~cont:(fun p ?packing ?show () ->
     pack_return (new tips_query (TipsQuery.create p)) ~packing ~show))
-
-class color_selection obj = object
-  inherit [Gtk.color_selection] GObj.widget_impl obj
-  method connect = new GObj.widget_signals_impl obj
-  method set_border_width = set Container.P.border_width obj
-  inherit color_selection_props
-end
-
-let color_selection =
-  ColorSelection.make_params [] ~cont:(
-  GContainer.pack_container ~create:
-    (fun p -> new color_selection (ColorSelection.create p)))
-
-class font_selection obj = object
-  inherit [Gtk.font_selection] widget_impl obj
-  inherit font_selection_props
-  method event = new event_ops obj
-  method connect = new GObj.widget_signals_impl obj
-  method set_border_width = set Container.P.border_width obj
-end
-
-let font_selection =
-  FontSelection.make_params [] ~cont:(
-  GContainer.pack_container ~create:
-    (fun p -> new font_selection (FontSelection.create p)))

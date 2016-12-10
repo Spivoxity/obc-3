@@ -130,7 +130,6 @@ class style st = object
   method as_style = style
   method copy = {< style = Style.copy style >}
   method colormap = Style.get_colormap style
-  method font = Style.get_font style
   method bg = Style.get_bg style
   method set_bg = iter_setcol Style.set_bg style
   method fg = Style.get_fg style
@@ -145,7 +144,6 @@ class style st = object
   method set_base = iter_setcol Style.set_base style
   method text = Style.get_text style
   method set_text = iter_setcol Style.set_text style
-  method set_font = Style.set_font style
 end
 
 class selection_input (sel : Gtk.selection_data) = object
@@ -169,63 +167,7 @@ class selection_context sel = object
     Selection.set sel ~typ ~format ~data:(Some data)
 end
 
-class drag_signals obj = object (self)
-  inherit ['a] gobject_signals obj
-  method private connect_drag : 'b. ('a, Gdk.drag_context -> 'b) GtkSignal.t ->
-    callback:(drag_context -> 'b) -> _ =
-      fun sgn ~callback ->
-        self#connect sgn (fun context -> callback (new drag_context context))
-  method beginning = self#connect_drag Signals.drag_begin
-  method ending = self#connect_drag Signals.drag_end
-  method data_delete = self#connect_drag Signals.drag_data_delete
-  method leave = self#connect_drag Signals.drag_leave
-  method motion = self#connect_drag Signals.drag_motion
-  method drop = self#connect_drag Signals.drag_drop
-  method data_get ~callback =
-    self#connect Signals.drag_data_get ~callback:
-      begin fun context seldata ~info ~time ->
-        callback (new drag_context context) (new selection_context seldata)
-          ~info ~time
-      end
-  method data_received ~callback =
-    self#connect Signals.drag_data_received
-      ~callback:(fun context ~x ~y data -> callback (new drag_context context)
-	       ~x ~y (new selection_data data))
-
-end
-
-and drag_ops obj = object
-  val obj = obj
-  method connect = new drag_signals obj
-  method dest_set ?(flags=[`ALL]) ?(actions=[]) targets =
-    DnD.dest_set obj ~flags ~actions ~targets:(Array.of_list targets)
-  method dest_unset () = DnD.dest_unset obj
-  method get_data ~target ?(time=Int32.zero) (context : drag_context) =
-    DnD.get_data obj context#context ~target:(Gdk.Atom.intern target) ~time
-  method highlight () = DnD.highlight obj
-  method unhighlight () = DnD.unhighlight obj
-  method source_set ?modi:m ?(actions=[]) targets =
-    DnD.source_set obj ?modi:m ~actions ~targets:(Array.of_list targets)
-  method source_set_icon ?(colormap = Gdk.Color.get_system_colormap ())
-      (pix : GDraw.pixmap) =
-    DnD.source_set_icon obj ~colormap pix#pixmap ?mask:pix#mask
-  method source_unset () = DnD.source_unset obj
-end
-
-and drag_context context = object
-  inherit GDraw.drag_context context
-  method context = context
-  method finish = DnD.finish context
-  method source_widget =
-    new widget (unsafe_cast (DnD.get_source_widget context))
-  method set_icon_widget (w : widget) =
-    DnD.set_icon_widget context (w#as_widget)
-  method set_icon_pixmap ?(colormap = Gdk.Color.get_system_colormap ())
-      (pix : GDraw.pixmap) =
-    DnD.set_icon_pixmap context ~colormap pix#pixmap ?mask:pix#mask
-end
-
-and misc_signals obj = object (self)
+class misc_signals obj = object (self)
   inherit gtkobj_signals_impl obj
   method show = self#connect Signals.show
   method hide = self#connect Signals.hide
@@ -290,14 +232,6 @@ and misc_ops obj = object (self)
   method set_double_buffered = Widget.set_double_buffered obj
   method set_size_request =
     Widget.size_params [] ~cont:(fun p () -> set_params obj p)
-  method set_size_chars ?desc ?lang ?width ?height () =
-    let metrics = 
-      (self#pango_context : GPango.context)#get_metrics ?desc ?lang () in
-    let width = may_map width ~f:
-        (fun w -> w * GPango.to_pixels metrics#approx_digit_width)
-    and height = may_map height ~f:
-        (fun h -> h * GPango.to_pixels (metrics#ascent+metrics#descent)) in
-    self#set_size_request ?width ?height ()
   method set_style (style : style) = set P.style obj style#as_style
   method modify_fg = iter_setcol Widget.modify_fg obj
   method modify_bg = iter_setcol Widget.modify_bg obj
@@ -306,8 +240,6 @@ and misc_ops obj = object (self)
   method modify_font = Widget.modify_font obj
   method modify_font_by_name s =
     Widget.modify_font obj (Pango.Font.from_string s)
-  method create_pango_context =
-    new GPango.context_rw (Widget.create_pango_context obj)
   (* get functions *)
   method name = get P.name obj
   method toplevel =
@@ -316,14 +248,12 @@ and misc_ops obj = object (self)
   method window = Widget.window obj
   method colormap = Widget.get_colormap obj
   method visual = Widget.get_visual obj
-  method visual_depth = Gdk.Visual.depth (Widget.get_visual obj)
   method pointer = Widget.get_pointer obj
   method style = new style (get P.style obj)
   method visible = self#get_flag `VISIBLE
   method parent =
     may_map (fun w -> new widget (unsafe_cast w)) (get P.parent obj)
   method allocation = Widget.allocation obj
-  method pango_context = new GPango.context (Widget.get_pango_context obj)
   (* icon *)
   method render_icon ?detail ~size id =
     Widget.render_icon obj (GtkStock.convert_id id) size detail
@@ -348,12 +278,8 @@ and widget obj = object (self)
   inherit gtkobj obj
   method as_widget = (obj :> Gtk.widget obj)
   method misc = new misc_ops (obj :> Gtk.widget obj)
-  method drag = new drag_ops (unsafe_cast obj : Gtk.widget obj)
   method coerce = (self :> widget)
 end
-
-(* just to check that GDraw.misc_ops is compatible with misc_ops *)
-let _ = fun (x : #GDraw.misc_ops) -> (x : misc_ops)
 
 class widget_signals_impl (obj : [>Gtk.widget] obj) = gtkobj_signals_impl obj
 

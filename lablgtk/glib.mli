@@ -171,53 +171,6 @@ module Convert :  sig
         [UTF-8] and [s] is the character set name *)
 end
 
-(** Unicode Manipulation
-    @gtkdoc glib glib-Unicode-Manipulation *)
-module Utf8 : sig
-  (** UTF-8 handling, and conversion to UCS-4 *)
-
-  (** If you read an UTF-8 string from somewhere, you should validate it,
-      or risk random segmentation faults *)
-  val validate : string -> bool
-  val length : string -> int
-
-  (** [from_unichar 0xiii] converts a code point [iii] (usually in hexadecimal
-      form) into a string containing the UTF-8 encoded character [0xiii]. See 
-      {{:http://www.unicode.org/}unicode.org} for charmaps.
-      Does not check that the given code point is a valid unicode point. *)
-  val from_unichar : unichar -> string
-  val from_unistring : unistring -> string
-
-  (** [to_unichar_validated] decodes an UTF-8 encoded code point and checks
-      for incomplete characters, invalid characters and overlong encodings. 
-      @raise Convert.Error if invalid *)
-  val to_unichar_validated : string -> pos:int ref -> unichar
-
-  (** [to_unichar] decodes an UTF-8 encoded code point. Result is undefined 
-      if [pos] does not point to a valid UTF-8 encoded character. *)
-  val to_unichar : string -> pos:int ref -> unichar
-
-  (** [to_unistring] decodes an UTF-8 encoded string into an array of
-      [unichar]. The string {e must} be valid. *)
-  val to_unistring : string -> unistring
-
-  val first_char : string -> unichar
-
-(*
-  val offset_to_pos : string -> pos:int -> off:int -> int
-*)
-
-  type normalize_mode = [ `DEFAULT | `DEFAULT_COMPOSE | `ALL | `ALL_COMPOSE ]
-  val normalize : string -> normalize_mode -> string
-
-  val uppercase : string -> string
-  val lowercase : string -> string
-
-  val casefold : string -> string
-  val collate : string -> string -> int
-  val collate_key : string -> string
-end
-
 (** @gtkdoc glib glib-Simple-XML-Subset-Parser *)
 module Markup : sig
   type error =

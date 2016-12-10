@@ -79,17 +79,6 @@ class Widget abstract : Object {
   (* selection *)
   signal selection_get : GtkSelectionData_nocopy info:int time:int32
   signal selection_received : GtkSelectionData time:int32
-  (* dnd *)
-  signal drag_begin : GdkDragContext
-  signal drag_data_delete : GdkDragContext
-  signal drag_data_get :
-    GdkDragContext GtkSelectionData_nocopy info:int time:int32
-  signal drag_data_received :
-    GdkDragContext x:int y:int GtkSelectionData info:int time:int32
-  signal drag_drop : GdkDragContext x:int y:int time:int32 -> bool
-  signal drag_end : GdkDragContext
-  signal drag_leave : GdkDragContext time:int32
-  signal drag_motion : GdkDragContext x:int y:int time:int32 -> bool
   (* events *)
   signal event : GdkEvent -> bool
   signal event_after : GdkEvent

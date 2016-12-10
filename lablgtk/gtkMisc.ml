@@ -32,23 +32,13 @@ open GtkBase
 external _gtkmisc_init : unit -> unit = "ml_gtkmisc_init"
 let () = _gtkmisc_init ()
 
-module ColorSelection = ColorSelection
-
 module Statusbar = Statusbar
-
-module StatusIcon = GtkStatusIcon
-
-module Calendar = Calendar
-
-module DrawingArea = DrawingArea
 
 module Misc = struct
   include Misc
   let all_params ~cont =
     make_params ~cont:(Widget.size_params ~cont)
 end
-
-module Arrow = Arrow
 
 module Image = Image
 
@@ -57,5 +47,3 @@ module Label = Label
 module TipsQuery = TipsQuery
 
 module Separator = Separator
-
-module FontSelection = FontSelection

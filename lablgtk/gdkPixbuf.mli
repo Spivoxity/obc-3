@@ -75,13 +75,6 @@ val from_data :
   width:int -> height:int ->
   ?bits:int -> ?rowstride:int -> ?has_alpha:bool -> Gpointer.region -> pixbuf
 
-(** @gtkdoc gdk gdk-Pixbufs *)
-val get_from_drawable :
-  dest:pixbuf ->
-  ?dest_x:int -> ?dest_y:int ->
-  ?width:int ->  ?height:int ->
-  ?src_x:int -> ?src_y:int ->
-  ?colormap:Gdk.colormap -> [>`drawable] Gobject.obj -> unit
 
 (** {3 Accessors} *)
 
@@ -100,20 +93,6 @@ val get_pixels : pixbuf -> Gpointer.region
 val draw_pixbuf :
   [>`drawable] Gobject.obj ->
   Gdk.gc ->
-  ?dest_x:int ->
-  ?dest_y:int ->
-  ?width:int ->
-  ?height:int ->
-  ?dither:Gdk.Tags.rgb_dither ->
-  ?x_dither:int ->
-  ?y_dither:int -> ?src_x:int -> ?src_y:int -> pixbuf -> unit
-
-
-(** @gtkdoc gdk gdk-Pixbufs
-    @deprecated use {!GdkPixbuf.draw_pixbuf} *)
-val render_to_drawable :
-  [>`drawable] Gobject.obj ->
-  ?gc:Gdk.gc ->
   ?dest_x:int ->
   ?dest_y:int ->
   ?width:int ->

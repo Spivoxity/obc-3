@@ -180,29 +180,6 @@ module Convert = struct
     = "ml_g_filename_to_uri"
 end
 
-module Utf8 = struct
-  include Gutf8
-
-  external validate : string -> bool = "ml_g_utf8_validate"
-  external length : string -> int = "ml_g_utf8_strlen"
-
-(*
-  external offset_to_pos : string -> pos:int -> off:int -> int
-      = "ml_g_utf8_offset_to_pointer" "noalloc"
-*)
-
-  external uppercase : string -> string = "ml_g_utf8_strup"
-  external lowercase : string -> string = "ml_g_utf8_strdown"
-
-  type normalize_mode = [ `DEFAULT | `DEFAULT_COMPOSE | `ALL | `ALL_COMPOSE ]
-  external normalize : string -> normalize_mode -> string
-      = "ml_g_utf8_normalize"
-
-  external casefold : string -> string = "ml_g_utf8_casefold"
-  external collate : string -> string -> int = "ml_g_utf8_collate"
-  external collate_key : string -> string = "ml_g_utf8_collate_key"
-end
-
 module Markup = struct
   type error =
     | BAD_UTF8

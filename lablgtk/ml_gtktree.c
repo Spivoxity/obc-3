@@ -513,59 +513,6 @@ ml_gtk_tree_view_get_cell_area(value treeview, value path, value col)
 }
 
 CAMLprim value
-ml_gtk_tree_view_enable_model_drag_dest (value tv, value t, value a)
-{
-  CAMLparam3 (tv,t,a);
-  GtkTargetEntry *targets = NULL;
-  int i, n_targets = Wosize_val(t);
-  
-  if (n_targets)
-    targets = (GtkTargetEntry *) alloc
-      ( Wosize_asize(n_targets * sizeof(GtkTargetEntry))
-      , Abstract_tag );
-  for (i=0; i<n_targets; i++)
-  {
-    targets[i].target = String_val(Field(Field(t, i), 0));
-    targets[i].flags  = Flags_Target_flags_val(Field(Field(t, i), 1));
-    targets[i].info   = Int_val(Field(Field(t, i), 2));
-  }
-  gtk_tree_view_enable_model_drag_dest
-    ( GtkTreeView_val(tv)
-    , targets
-    , n_targets
-    , Flags_GdkDragAction_val(a) );
-  CAMLreturn(Val_unit);
-}
-ML_1 (gtk_tree_view_unset_rows_drag_dest, GtkTreeView_val, Unit)
-
-CAMLprim value
-ml_gtk_tree_view_enable_model_drag_source (value tv, value m, value t, value a)
-{
-  CAMLparam4 (tv,m,t,a);
-  GtkTargetEntry *targets = NULL;
-  int i, n_targets = Wosize_val(t);
-  
-  if (n_targets)
-    targets = (GtkTargetEntry *) alloc
-      ( Wosize_asize(n_targets * sizeof(GtkTargetEntry))
-      , Abstract_tag );
-  for (i=0; i<n_targets; i++)
-  {
-    targets[i].target = String_val(Field(Field(t, i), 0));
-    targets[i].flags  = Flags_Target_flags_val(Field(Field(t, i), 1));
-    targets[i].info   = Int_val(Field(Field(t, i), 2));
-  }
-  gtk_tree_view_enable_model_drag_source
-    ( GtkTreeView_val(tv)
-    , OptFlags_GdkModifier_val(m)
-    , targets
-    , n_targets
-    , Flags_GdkDragAction_val(a) );
-  CAMLreturn(Val_unit);
-}
-ML_1 (gtk_tree_view_unset_rows_drag_source, GtkTreeView_val, Unit)
-
-CAMLprim value
 ml_gtk_tree_view_get_dest_row_at_pos (value treeview, value x, value y)
 {
   GtkTreePath *path;

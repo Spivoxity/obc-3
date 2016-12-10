@@ -115,18 +115,6 @@ module Toolbar = struct
       = "ml_gtk_toolbar_get_relief_style"
 end
 
-module ColorButton = ColorButton
-
-module FontButton = FontButton
-
-module LinkButton = struct 
-  include LinkButton
-  external create : string -> [>`linkbutton] obj = "ml_gtk_link_button_new"
-  external create_with_label : string -> string -> [>`linkbutton] obj = "ml_gtk_link_button_new_with_label"
-  external set_uri_hook : ([>`linkbutton] obj -> string -> unit) -> unit = 
-    "ml_gtk_link_button_set_uri_hook"
-end
-
 module ToolItem = ToolItem
 
 module SeparatorToolItem = SeparatorToolItem

@@ -95,35 +95,6 @@ let radio_button ?group =
   ToggleButton.make_params ~cont:(
   pack_return (fun p -> new radio_button (RadioButton.create ?group p))))
 
-class color_button_signals obj = object (self)
-  inherit button_signals obj
-  method color_set = self#connect ColorButton.S.color_set
-end
-
-class color_button obj = object
-  inherit button_skel obj
-  inherit color_button_props
-  method connect = new color_button_signals obj
-end
-
-let color_button =
-  ColorButton.make_params [] ~cont:(
-  pack_return (fun pl -> new color_button (ColorButton.create pl)))
-
-class font_button_signals obj = object (self)
-  inherit button_signals obj
-  method font_set = self#connect FontButton.S.font_set
-end
-
-class font_button obj = object
-  inherit button_skel obj
-  inherit font_button_props
-  method connect = new font_button_signals obj
-end
-
-let font_button =
-  FontButton.make_params [] ~cont:(
-  pack_return (fun pl -> new font_button (FontButton.create pl)))
 
 (* Toolbar *)
 
@@ -215,8 +186,6 @@ class tool_item_skel obj = object
   method get_expand = ToolItem.get_expand obj
   method set_tooltip (t : GData.tooltips) =
     ToolItem.set_tooltip obj t#as_tooltips
-  method set_use_drag_window = ToolItem.set_use_drag_window obj
-  method get_use_drag_window = ToolItem.get_use_drag_window obj
 end
 
 class tool_item obj = object
@@ -327,17 +296,3 @@ let menu_tool_button ?menu =
     (may_cons MenuToolButton.P.menu
        (Gaux.may_map (fun m -> m#as_menu) menu)
        [])
-    
-class link_button obj = object
-  inherit button_skel obj
-  inherit link_button_props
-end
-
-let link_button ?label =
-  pack_return 
-    (fun uri -> new link_button 
-       (match label with 
-        | None -> LinkButton.create uri
-        | Some s -> LinkButton.create_with_label uri s))
-
-

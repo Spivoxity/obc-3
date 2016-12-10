@@ -69,121 +69,6 @@ val statusbar :
   ?height:int ->
   ?packing:(widget -> unit) -> ?show:bool -> unit -> statusbar
 
-(** {3 Status icon} *)
-
-(** @gtkdoc gtk GtkStatusIcon *)
-class status_icon_signals : Gtk.status_icon Gobject.obj ->
-  object
-    method activate : callback:(unit -> unit) -> GtkSignal.id
-    method popup_menu : callback:(int -> int -> unit) -> GtkSignal.id
-    method size_changed : callback:(int -> unit) -> GtkSignal.id
-  end
-
-(** Display an icon in the system tray.
-  @gtkdoc gtk GtkStatusIcon *)
-class status_icon : Gtk.gtk_status_icon ->
-  object
-    val obj : Gtk.status_icon Gobject.obj
-    method connect : status_icon_signals
-    method blinking : bool
-    method get_icon_name : string
-    method get_pixbuf : GdkPixbuf.pixbuf
-    method screen : Gdk.screen
-    method get_size : int
-    method get_stock : string
-    method visible : bool
-    method is_embedded : bool
-    method set_blinking : bool -> unit
-    method set_from_file : string -> unit
-    method set_from_icon_name : string -> unit
-    method set_from_pixbuf : GdkPixbuf.pixbuf -> unit
-    method set_from_stock : string -> unit
-    method set_screen : Gdk.screen -> unit
-    method set_tooltip : string -> unit
-    method set_visible : bool -> unit
-  end
-
-val status_icon :
-  ?screen:Gdk.screen -> ?visible:bool -> ?blinking:bool -> unit -> status_icon
-val status_icon_from_pixbuf :
-  ?screen:Gdk.screen -> ?visible:bool -> ?blinking:bool -> GdkPixbuf.pixbuf -> status_icon
-val status_icon_from_file :
-  ?screen:Gdk.screen -> ?visible:bool -> ?blinking:bool -> string -> status_icon
-val status_icon_from_stock :
-  ?screen:Gdk.screen -> ?visible:bool -> ?blinking:bool -> string -> status_icon
-val status_icon_from_icon_name :
-  ?screen:Gdk.screen -> ?visible:bool -> ?blinking:bool -> string -> status_icon
-
-
-(** {3 Calendar} *)
-
-(** @gtkdoc gtk GtkCalendar *)
-class calendar_signals : 'a obj ->
-  object
-    inherit GObj.widget_signals
-    constraint 'a = [> calendar]
-    val obj : 'a obj
-    method day_selected : callback:(unit -> unit) -> GtkSignal.id
-    method day_selected_double_click :
-      callback:(unit -> unit) -> GtkSignal.id
-    method month_changed : callback:(unit -> unit) -> GtkSignal.id
-    method next_month : callback:(unit -> unit) -> GtkSignal.id
-    method next_year : callback:(unit -> unit) -> GtkSignal.id
-    method prev_month : callback:(unit -> unit) -> GtkSignal.id
-    method prev_year : callback:(unit -> unit) -> GtkSignal.id
-  end
-
-(** Display a calendar and/or allow the user to select a date
-    @gtkdoc gtk GtkCalendar *)
-class calendar : Gtk.calendar obj ->
-  object
-    inherit GObj.widget
-    val obj : Gtk.calendar obj
-    method day : int
-    method month : int
-    method year : int
-    method set_day : int -> unit
-    method set_month : int -> unit
-    method set_year : int -> unit
-    method event : event_ops
-    method clear_marks : unit
-    method connect : calendar_signals
-    method date : int * int * int
-    method display_options : Tags.calendar_display_options list -> unit
-    method freeze : unit -> unit
-    method mark_day : int -> unit
-    method select_day : int -> unit
-    method select_month : month:int -> year:int -> unit
-    method thaw : unit -> unit
-    method unmark_day : int -> unit
-    method is_day_marked : int -> bool
-    method num_marked_dates : int
-  end
-
-(** @gtkdoc gtk GtkCalendar *)
-val calendar :
-  ?options:Tags.calendar_display_options list ->
-  ?packing:(widget -> unit) -> ?show:bool -> unit -> calendar
-
-(** {3 Drawing Area} *)
-
-(** A widget for custom user interface elements
-    @gtkdoc gtk GtkDrawingArea *)
-class drawing_area : ([> Gtk.drawing_area] as 'a) obj ->
-  object
-    inherit GObj.widget_full
-    val obj : 'a obj
-    method event : event_ops
-    method set_size : width:int -> height:int -> unit
-  end
-
-(** @gtkdoc gtk GtkDrawingArea *)
-val drawing_area :
-  ?width:int ->
-  ?height:int ->
-  ?packing:(widget -> unit) -> ?show:bool -> unit -> drawing_area
-
-
 (** {3 Misc. Widgets} *)
 
 (** A base class for widgets with alignments and padding
@@ -202,32 +87,6 @@ class misc : ([> Gtk.misc] as 'a) obj ->
     method ypad : int
   end
 
-(** Produces an arrow pointing in one of the four cardinal directions
-    @gtkdoc gtk GtkArrow *)
-class arrow : ([> Gtk.arrow] as 'a) obj ->
-  object
-    inherit misc
-    val obj : 'a obj
-    method set_kind : Tags.arrow_type -> unit
-    method set_shadow : Tags.shadow_type -> unit
-    method kind : Tags.arrow_type
-    method shadow : Tags.shadow_type
-  end
-
-(** @gtkdoc gtk GtkArrow
-    @param kind default value is [`RIGHT]
-    @param shadow default value is [`OUT] *)
-val arrow :
-  ?kind:Tags.arrow_type ->
-  ?shadow:Tags.shadow_type ->
-  ?xalign:float ->
-  ?yalign:float ->
-  ?xpad:int ->
-  ?ypad:int ->
-  ?width:int ->
-  ?height:int ->
-  ?packing:(widget -> unit) -> ?show:bool -> unit -> arrow
-
 type image_type =
   [ `EMPTY | `PIXMAP | `IMAGE | `PIXBUF | `STOCK | `ICON_SET | `ANIMATION ]
 
@@ -241,7 +100,6 @@ class image : 'a obj ->
     method clear : unit -> unit (** since Gtk 2.8 *)
     method storage_type : image_type
     method set_image : Gdk.image -> unit
-    method set_pixmap : GDraw.pixmap -> unit
     method set_mask : Gdk.bitmap option -> unit
     method set_file : string -> unit
     method set_pixbuf : GdkPixbuf.pixbuf -> unit
@@ -250,7 +108,6 @@ class image : 'a obj ->
     method set_icon_size : Tags.icon_size -> unit
     method set_pixel_size : int -> unit
     method image : Gdk.image
-    method pixmap : GDraw.pixmap
     method mask : Gdk.bitmap option
     method pixbuf : GdkPixbuf.pixbuf
     method pixel_size : int
@@ -278,16 +135,6 @@ val image :
   ?height:int ->
   ?packing:(widget -> unit) -> ?show:bool -> unit -> image
 
-(* Use an image as a pixmap... *)
-val pixmap :
-  #GDraw.pixmap ->
-  ?xalign:float ->
-  ?yalign:float ->
-  ?xpad:int ->
-  ?ypad:int ->
-  ?width:int ->
-  ?height:int ->
-  ?packing:(widget -> unit) -> ?show:bool -> unit -> image
 
 (** {4 Labels} *)
 
@@ -418,56 +265,3 @@ val tips_query :
   ?width:int ->
   ?height:int ->
   ?packing:(widget -> unit) -> ?show:bool -> unit -> tips_query
-
-(** {3 Color and font selection} *)
-
-(** A widget used to select a color
-    @gtkdoc gtk GtkColorSelection *)
-class color_selection : Gtk.color_selection obj ->
-  object
-    inherit GObj.widget_full
-    val obj : Gtk.color_selection obj
-    method alpha : int
-    method color : Gdk.color
-    method set_alpha : int -> unit
-    method set_border_width : int -> unit
-    method set_color : Gdk.color -> unit
-    method set_has_opacity_control : bool -> unit
-    method set_has_palette : bool -> unit
-    method has_opacity_control : bool
-    method has_palette : bool
-  end
-
-(** @gtkdoc gtk GtkColorSelection *)
-val color_selection :
-  ?alpha:int ->
-  ?color:Gdk.color ->
-  ?has_opacity_control:bool ->
-  ?has_palette:bool ->
-  ?border_width:int ->
-  ?width:int ->
-  ?height:int ->
-  ?packing:(widget -> unit) -> ?show:bool -> unit -> color_selection
-
-(** A widget for selecting fonts.
-    @gtkdoc gtk GtkFontSelection *)
-class font_selection : Gtk.font_selection obj ->
-  object
-    inherit GObj.widget_full
-    val obj : Gtk.font_selection obj
-    method event : event_ops
-    method font_name : string
-    method preview_text : string
-    method set_border_width : int -> unit
-    method set_font_name : string -> unit
-    method set_preview_text : string -> unit
-  end
-
-(** @gtkdoc gtk GtkFontSelection *)
-val font_selection :
-  ?font_name:string ->
-  ?preview_text:string ->
-  ?border_width:int ->
-  ?width:int ->
-  ?height:int ->
-  ?packing:(widget -> unit) -> ?show:bool -> unit -> font_selection

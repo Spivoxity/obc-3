@@ -147,14 +147,12 @@ class style : Gtk.style ->
     method copy : 'a
     method dark : Gtk.Tags.state_type -> Gdk.color
     method fg : Gtk.Tags.state_type -> Gdk.color
-    method font : Gdk.font
     method light : Gtk.Tags.state_type -> Gdk.color
     method mid : Gtk.Tags.state_type -> Gdk.color
     method set_bg : (Gtk.Tags.state_type * GDraw.color) list -> unit
     method set_base : (Gtk.Tags.state_type * GDraw.color) list -> unit
     method set_dark : (Gtk.Tags.state_type * GDraw.color) list -> unit
     method set_fg : (Gtk.Tags.state_type * GDraw.color) list -> unit
-    method set_font : Gdk.font -> unit
     method set_light : (Gtk.Tags.state_type * GDraw.color) list -> unit
     method set_mid : (Gtk.Tags.state_type * GDraw.color) list -> unit
     method set_text : (Gtk.Tags.state_type * GDraw.color) list -> unit
@@ -183,26 +181,8 @@ class selection_context :
     method return : ?typ:string -> ?format:int -> string -> unit
   end
 
-(** @gtkdoc gtk gtk-Drag-and-Drop *)
-class drag_ops : Gtk.widget obj ->
-  object
-    method connect : drag_signals
-    method dest_set :
-      ?flags:Tags.dest_defaults list ->
-      ?actions:Gdk.Tags.drag_action list -> target_entry list -> unit
-    method dest_unset : unit -> unit
-    method get_data : target:string -> ?time:int32 -> drag_context ->unit
-    method highlight : unit -> unit
-    method source_set :
-      ?modi:Gdk.Tags.modifier list ->
-      ?actions:Gdk.Tags.drag_action list -> target_entry list -> unit
-    method source_set_icon : ?colormap:Gdk.colormap -> GDraw.pixmap -> unit
-    method source_unset : unit -> unit
-    method unhighlight : unit -> unit
-  end
-
 (** @gtkdoc gtk GtkWidget *)
-and misc_ops : Gtk.widget obj ->
+class misc_ops : Gtk.widget obj ->
   object
     inherit gobject_ops
     val obj : Gtk.widget obj
@@ -218,7 +198,6 @@ and misc_ops : Gtk.widget obj ->
     method colormap : Gdk.colormap
     method connect : misc_signals
     method convert_selection : target:string -> ?time:int32 -> Gdk.atom -> bool
-    method create_pango_context : GPango.context_rw
     method draw : Gdk.Rectangle.t option -> unit
     method get_flag : Tags.widget_flags -> bool
     method grab_default : unit -> unit
@@ -238,7 +217,6 @@ and misc_ops : Gtk.widget obj ->
     method modify_font_by_name : string -> unit
     method name : string
     method parent : widget option
-    method pango_context : GPango.context
     method pointer : int * int
     method realize : unit -> unit
     method remove_accelerator :
@@ -254,9 +232,6 @@ and misc_ops : Gtk.widget obj ->
     method set_has_tooltip : bool -> unit
     method set_name : string -> unit
     method set_sensitive : bool -> unit
-    method set_size_chars :
-      ?desc:Pango.font_description ->
-      ?lang:string -> ?width:int -> ?height:int -> unit -> unit
     method set_state : Tags.state_type -> unit
     method set_style : style -> unit
     method set_size_request : ?width:int -> ?height:int -> unit -> unit
@@ -273,7 +248,6 @@ and misc_ops : Gtk.widget obj ->
     method unrealize : unit -> unit
     method visible : bool
     method visual : Gdk.visual
-    method visual_depth : int
     method window : Gdk.window
   end
 
@@ -284,7 +258,6 @@ and widget : ([> Gtk.widget] as 'a) obj ->
     val obj : 'a obj
     method as_widget : Gtk.widget obj
     method coerce : widget
-    method drag : drag_ops
     method misc : misc_ops
   end
 
@@ -310,50 +283,6 @@ and misc_signals : Gtk.widget obj ->
       callback:(Gtk.Tags.state_type -> unit) -> GtkSignal.id
     method style_set : callback:(unit -> unit) -> GtkSignal.id
     method unmap : callback:(unit -> unit) -> GtkSignal.id
-  end
-
-(** @gtkdoc gtk gtk-Drag-and-Drop *)
-and drag_context :
-  Gdk.drag_context ->
-  object
-    val context : Gdk.drag_context
-    method context : Gdk.drag_context
-    method finish : success:bool -> del:bool -> time:int32 -> unit
-    method source_widget : widget 
-    method set_icon_pixmap :
-      ?colormap:Gdk.colormap -> GDraw.pixmap -> hot_x:int -> hot_y:int -> unit
-    method set_icon_widget : widget -> hot_x:int -> hot_y:int -> unit
-    method status : ?time:int32 -> Gdk.Tags.drag_action option -> unit
-    method suggested_action : Gdk.Tags.drag_action
-    method targets : string list
-  end
-
-(** @gtkdoc gtk gtk-Drag-and-Drop *)
-and drag_signals :
-  Gtk.widget obj ->
-  object ('a)
-    method after : 'a
-    method beginning :
-      callback:(drag_context -> unit) -> GtkSignal.id
-    method data_delete :
-      callback:(drag_context -> unit) -> GtkSignal.id
-    method data_get :
-      callback:
-      (drag_context -> selection_context -> info:int -> time:int32 -> unit) ->
-      GtkSignal.id
-    method data_received :
-      callback:(drag_context -> x:int -> y:int ->
-	        selection_data -> info:int -> time:int32 -> unit) -> GtkSignal.id
-    method drop :
-      callback:(drag_context -> x:int -> y:int -> time:int32 -> bool) ->
-      GtkSignal.id
-    method ending :
-      callback:(drag_context -> unit) -> GtkSignal.id
-    method leave :
-      callback:(drag_context -> time:int32 -> unit) -> GtkSignal.id
-    method motion :
-      callback:(drag_context -> x:int -> y:int -> time:int32 -> bool) ->
-      GtkSignal.id
   end
 
 (** @gtkdoc gtk GtkWidget *)

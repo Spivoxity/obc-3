@@ -540,18 +540,6 @@ ML_1 (g_unichar_totitle, Int_val, Val_int)
 ML_1 (g_unichar_digit_value, Int_val, Val_int)
 ML_1 (g_unichar_xdigit_value, Int_val, Val_int)
 
-ML_1 (g_utf8_strlen, SizedString_val, Val_int)
-ML_2 (g_utf8_normalize, SizedString_val, Normalize_mode_val, copy_string_g_free)
-ML_1 (g_utf8_casefold, SizedString_val, copy_string_g_free)
-ML_2 (g_utf8_collate, String_val, String_val, Val_int)
-ML_1 (g_utf8_collate_key, SizedString_val, copy_string_g_free)
-ML_1 (g_utf8_strup, SizedString_val, copy_string_g_free)
-ML_1 (g_utf8_strdown, SizedString_val, copy_string_g_free)
-CAMLprim value ml_g_utf8_offset_to_pointer (value s, value pos, value off)
-{
-  return Val_long (g_utf8_offset_to_pointer (String_val(s) + Long_val(pos), Long_val(off)) - String_val(s));
-}
-
 #define UNI_BOOL(f) ML_1(g_unichar_##f, Int_val, Val_bool)
 UNI_BOOL(validate)
 UNI_BOOL(isalnum)

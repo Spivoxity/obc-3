@@ -49,8 +49,6 @@ CAMLprim value ml_gtkbutton_init(value unit)
         gtk_radio_button_get_type() +
         gtk_toolbar_get_type() +
 #ifdef HASGTK24
-        gtk_color_button_get_type() +
-        gtk_font_button_get_type() +
         gtk_tool_item_get_type() +
         gtk_separator_tool_item_get_type() +
         gtk_tool_button_get_type() +
@@ -59,9 +57,6 @@ CAMLprim value ml_gtkbutton_init(value unit)
 #endif
 #ifdef HASGTK26
         gtk_menu_tool_button_get_type() +
-#endif
-#ifdef HASGTK210
-        gtk_link_button_get_type () +
 #endif
 #ifdef HASGTK212
         gtk_scale_button_get_type () +
@@ -157,8 +152,6 @@ ML_2 (gtk_tool_item_set_homogeneous, GtkToolItem_val, Bool_val, Unit)
 ML_1 (gtk_tool_item_get_homogeneous, GtkToolItem_val, Val_bool)
 ML_2 (gtk_tool_item_set_expand, GtkToolItem_val, Bool_val, Unit)
 ML_1 (gtk_tool_item_get_expand, GtkToolItem_val, Val_bool)
-ML_2 (gtk_tool_item_set_use_drag_window, GtkToolItem_val, Bool_val, Unit)
-ML_1 (gtk_tool_item_get_use_drag_window, GtkToolItem_val, Val_bool)
 ML_4 (gtk_tool_item_set_tooltip, GtkToolItem_val, GtkTooltips_val, String_val, String_val, Unit)
 
 #define GtkToggleToolButton_val(val) check_cast(GTK_TOGGLE_TOOL_BUTTON,val)
@@ -180,8 +173,6 @@ Unsupported_24(gtk_tool_item_set_homogeneous)
 Unsupported_24(gtk_tool_item_get_homogeneous)
 Unsupported_24(gtk_tool_item_set_expand)
 Unsupported_24(gtk_tool_item_get_expand)
-Unsupported_24(gtk_tool_item_set_use_drag_window)
-Unsupported_24(gtk_tool_item_get_use_drag_window)
 Unsupported_24(gtk_tool_item_set_tooltip)
 Unsupported_24(gtk_toggle_tool_button_set_active)
 Unsupported_24(gtk_toggle_tool_button_get_active)
@@ -201,37 +192,3 @@ ML_4 (gtk_menu_tool_button_set_arrow_tooltip, GtkMenuToolButton_val, GtkTooltips
 #else
 Unsupported_26(gtk_menu_tool_button_set_arrow_tooltip)
 #endif /* HASGTK26 */
-
-/* gtklinkbutton.h */ 
-#ifdef HASGTK210
-ML_1(gtk_link_button_new, String_val, Val_GtkWidget_sink)
-ML_2(gtk_link_button_new_with_label, String_val, String_val, Val_GtkWidget_sink)
-static void ml_g_link_button_func(GtkLinkButton *button,
-                                  const gchar *link,
-                                  gpointer user_data) {
-  value *clos = user_data;
-  CAMLparam0();
-  CAMLlocal2(ml_link,ret);
-  ml_link = Val_string(link);
-  ret = callback2_exn(*clos, Val_GtkWidget(button),ml_link);
-  if (Is_exception_result(ret)) {
-    CAML_EXN_LOG("gtk_link_button_func");
-  }
-  CAMLreturn0;
-}
-
-CAMLprim value ml_gtk_link_button_set_uri_hook (value clos) {
-  value *clos_p = ml_global_root_new (clos);
-  
-  gtk_link_button_set_uri_hook
-    (ml_g_link_button_func, 
-     clos_p,
-     ml_global_root_destroy);
-
-  return Val_unit;
-}
-#else
-Unsupported_210(gtk_link_button_set_uri_hook)
-Unsupported_210(gtk_link_button_new)
-Unsupported_210(gtk_link_button_new_with_label)
-#endif

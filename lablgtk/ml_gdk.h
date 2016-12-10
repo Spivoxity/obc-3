@@ -39,8 +39,6 @@
 #define GdkWindow_val(val) check_cast(GDK_WINDOW,val)
 #define Val_GdkWindow Val_GAnyObject
 
-#define GdkCursor_val(val) ((GdkCursor*)Pointer_val(val))
-
 #define GdkDisplay_val(val) ((GdkDisplay*) val)
 #define Val_GdkDisplay(display) ((value) display)
 
@@ -81,25 +79,6 @@ CAMLexport value Val_GdkEvent (GdkEvent *);
 
 #define GdkDevice_val(val) ((GdkDevice*) val)
 #define Val_GdkDevice(device) ((value) device)
-
-#if 0 
-// Future replacement for XID?
-#ifdef GDK_NATIVE_WINDOW_POINTER
-#define GdkNativeWindow_val (GdkNativeWindow*)
-#define Val_GdkNativeWindow(id) (value)
-#else
-#define Val_GdkNativeWindow(id) copy_int32((long) id)
-#define GdkNativeWindow_val Int32_val
-#endif
-#endif
-
-#ifdef _WIN32
-#define Val_XID(id) copy_int32((long) id)
-#else
-#define Val_XID(id) copy_int32((int32_t) id)
-#endif
-#define XID_val(id) ((void *) Int32_val(id))
-
 
 CAMLexport int OptFlags_GdkModifier_val (value);
 CAMLexport int Flags_GdkModifier_val (value);

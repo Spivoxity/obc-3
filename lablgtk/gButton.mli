@@ -159,88 +159,8 @@ val radio_button :
   ?draw_indicator:bool ->
   ?packing:(widget -> unit) -> ?show:bool -> unit -> radio_button
 
-(** {4 GtkColorButton & GtkFontButton} *)
-
-(** @gtkdoc gtk GtkColorButton
-    @since GTK 2.4 *)
-class color_button_signals :
-  ([> Gtk.color_button] as 'a) Gtk.obj ->
-  object
-    inherit button_signals
-    val obj : 'a Gtk.obj
-    method color_set : callback:(unit -> unit) -> GtkSignal.id
-  end
-
-(** @gtkdoc gtk GtkColorButton
-    @since GTK 2.4 *)
-class color_button :
-  ([> Gtk.color_button] as 'a) Gtk.obj ->
-  object
-    inherit button_skel
-    val obj : 'a Gtk.obj
-    method alpha : int
-    method set_alpha : int -> unit
-    method color : Gdk.color
-    method set_color : Gdk.color -> unit
-    method title : string
-    method set_title : string -> unit
-    method use_alpha : bool
-    method set_use_alpha : bool -> unit
-    method connect : color_button_signals
-  end
-
-(** A button to launch a color selection dialog
-    @gtkdoc gtk GtkColorButton
-    @since GTK 2.4 *)
-val color_button :
-  ?color:Gdk.color ->
-  ?title:string ->
-  ?packing:(GObj.widget -> unit) -> ?show:bool -> unit -> color_button
-
-
-(** @gtkdoc gtk GtkFontButton
-    @since GTK 2.4 *)
-class font_button_signals :
-  ([> Gtk.font_button] as 'a) Gtk.obj ->
-  object
-    inherit button_signals
-    val obj : 'a Gtk.obj
-    method font_set : callback:(unit -> unit) -> GtkSignal.id
-  end
-
-(** @gtkdoc gtk GtkFontButton
-    @since GTK 2.4 *)
-class font_button :
-  ([> Gtk.font_button] as 'a) Gtk.obj ->
-  object
-    inherit button_skel
-    val obj : 'a Gtk.obj
-    method font_name : string
-    method set_font_name : string -> unit
-    method show_size : bool
-    method set_show_size : bool -> unit
-    method show_style : bool
-    method set_show_style : bool -> unit
-    method title : string
-    method set_title : string -> unit
-    method use_font : bool
-    method set_use_font : bool -> unit
-    method use_size : bool
-    method set_use_size : bool -> unit
-    method connect : font_button_signals
-  end
-
-
-(** A button to launch a font selection dialog
-    @gtkdoc gtk GtkFontButton
-    @since GTK 2.4 *)
-val font_button :
-  ?font_name:string ->
-  ?title:string ->
-  ?packing:(GObj.widget -> unit) -> ?show:bool -> unit -> font_button
 
 (** {3 GtkToolbar} *)
-
 
 class type tool_item_o = object
   method as_tool_item : Gtk.tool_item obj
@@ -350,8 +270,6 @@ class tool_item_skel :
     method set_expand : bool -> unit
     method get_expand : bool
     method set_tooltip : GData.tooltips -> string -> string -> unit
-    method set_use_drag_window : bool -> unit
-    method get_use_drag_window : bool
 end
 
 (** @gtkdoc gtk GtkToolItem 
@@ -523,24 +441,3 @@ val menu_tool_button :
   ?expand:bool ->
   ?packing:(tool_item_o -> unit) -> 
   ?show:bool -> unit -> menu_tool_button
-
-
-(** @gtkdoc gtk GtkLinkButton
-    @since GTK 2.10 *)
-class link_button :
-  ([> Gtk.link_button] as 'a) Gtk.obj ->
-  object
-    inherit button_skel
-    val obj : 'a Gtk.obj
-    method uri : string
-    method set_uri : string -> unit
-  end
-
-(** A button for URL
-    @gtkdoc gtk GtkLinkButton
-    @since GTK 2.10 *)
-
-val link_button :
-  ?label:string ->
-  string ->
-  ?packing:(widget -> unit) -> ?show:bool -> unit -> link_button
