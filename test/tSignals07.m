@@ -10,7 +10,7 @@ TYPE Sig = POINTER TO Blob;
       left, right: Sig;		(* Operands *)
       value: INTEGER;		(* Truth table *)
       id: INTEGER;		(* Index in stack *)
-      marked: BOOLEAN;		(* Whether used for outputs *)
+      marked: BOOLEAN		(* Whether used for outputs *)
     END;
 
 VAR

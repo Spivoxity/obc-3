@@ -6,7 +6,7 @@ TYPE Queue = POINTER TO QueueRec;
   QueueRec = 
    RECORD 
      n: INTEGER;
-     Clear: PROCEDURE;
+     Clear: PROCEDURE
    END;
 
 (* Clear -- set the queue to be empty *)

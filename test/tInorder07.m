@@ -4,7 +4,7 @@ IMPORT Random, Out;
 
 TYPE 
   Tree = POINTER TO Node;
-  Node = RECORD data: INTEGER; left, right: Tree; END;
+  Node = RECORD data: INTEGER; left, right: Tree END;
 
 PROCEDURE Traverse1(t: Tree);
 BEGIN

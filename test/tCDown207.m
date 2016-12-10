@@ -28,7 +28,7 @@ TYPE blobptr = POINTER TO blob;
       val: INTEGER;		(* Value of expression *)
       used: INTEGER;		(* Bitmap of inputs used *)
       next: blobptr;		(* Next blob with same inputs *)
-      hlink: blobptr;		(* Next blob in hash chain *)
+      hlink: blobptr		(* Next blob in hash chain *)
     END;
 
 (* The binary tree structure of blobs is used by |Grind|, which

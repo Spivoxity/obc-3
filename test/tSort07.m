@@ -15,7 +15,7 @@ BEGIN
     IF q.data < p.data THEN p := q END;
     q := q.next
   END;
-  RETURN p
+RETURN p
 END FindMin;
 
 PROCEDURE Sort(xs: List; VAR ys: List);

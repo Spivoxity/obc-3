@@ -3,7 +3,13 @@ MODULE tSort;
 IMPORT Out;
 
 TYPE List = POINTER TO Cell;
-  Cell = RECORD data: INTEGER; prev, next: List END;
+  Cell = RECORD
+    ;;;;;;;;;;;;;;;;;;;;;;
+    ;; data: INTEGER    ;;
+    ;;;;;;;;;;;;;;;;;;;;;;
+    ;; prev, next: List ;;
+    ;;;;;;;;;;;;;;;;;;;;;;
+  END;
 
 PROCEDURE FindMin(xs: List): List;
   VAR p, q: List;

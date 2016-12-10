@@ -9,7 +9,7 @@ IMPORT Out, GC;
 TYPE SetRec = ABSTRACT RECORD END;
   Set = POINTER TO SetRec;
   UniSet = POINTER TO RECORD (SetRec) END;
-  DelSet = POINTER TO RECORD (SetRec) del: INTEGER; parent: Set; END;
+  DelSet = POINTER TO RECORD (SetRec) del: INTEGER; parent: Set END;
 
 ABSTRACT PROCEDURE (r: Set) Avail(x: INTEGER): BOOLEAN;
 
