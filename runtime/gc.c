@@ -190,9 +190,10 @@ void *scratch_alloc(unsigned size, mybool atomic) {
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
      uchar *p;
 
-     if (scratch_free + alloc_size > scratch_limit) {
+     if (scratch_free == NULL || alloc_size > scratch_limit - scratch_free) {
 	  if (alloc_size > SCRATCH_CHUNK
-	      || scratch_free + 4*PAGESIZE <= scratch_limit)
+	      || (scratch_free != NULL
+                  && scratch_free - scratch_free >= 4*PAGESIZE))
 	       /* Avoid discarding a largish piece */
 	       return get_memory(alloc_size);
 
