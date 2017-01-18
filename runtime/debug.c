@@ -167,7 +167,6 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
 #define cmd(name, n) else if (strcmp(arg[0], name) == 0 && nargs == n)
 #define intarg(i) strtoul(arg[i], NULL, 0)
 
-	  cmd("cont", 1) break;
 	  cmd("run", 1) break;
 
 	  cmd("step", 1) {

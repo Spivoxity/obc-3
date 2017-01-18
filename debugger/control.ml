@@ -130,7 +130,7 @@ let resume cmd =
   continue ();
   location := find_loc !vregs
 
-let run () = resume "cont"
+let run () = resume "run"
 
 let line_test p =
   match !location with 
