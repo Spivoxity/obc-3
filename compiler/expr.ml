@@ -1151,11 +1151,20 @@ and check_builtin env p args e loc =
 	      Name x ->
 		begin try
 		  let d = lookup_typename env x in 
-                  if t2.t_rep.m_size != d.d_type.t_rep.m_size then
+                  let t1 = d.d_type in
+                  if not (scalar t1) then
+                    sem_error
+                      "scalar type expected in SYSTEM.VAL" [] e1.e_loc;
+                  if not (scalar t2) then
+                    sem_error
+                      "scalar value expected in SYSTEM.VAL" [] e2.e_loc;
+                  let s1 = max t1.t_rep.m_size param_rep.m_size in
+                  let s2 = max t2.t_rep.m_size param_rep.m_size in
+                  if s1 != s2 then
                     sem_error 
                       "argument size must match result type in SYSTEM.VAL" 
                       [] e2.e_loc;
-                  d.d_type
+                  t1
 		with Not_found -> errtype
 		end
 	    | _ ->

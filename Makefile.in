@@ -207,7 +207,7 @@ tartan : Tartan.m lib/XYplane.k force
 test: force
 	$(MAKE) -C test all
 	cd test; ./regress && ./bigtest && ./errtest
-	@echo "Passed"
+	@echo "*** Passed"
 
 test0: force
 	$(MAKE) -C test all
