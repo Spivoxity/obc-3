@@ -90,6 +90,12 @@ BEGIN
   RETURN LEN(a, 2)
 END Lenny;
 
+TYPE
+  tt1 = ARRAY 2 OF POINTER TO tt1;
+  tt2 = ARRAY 2 OF POINTER TO tt2;
+
+VAR xx1: tt1; xx2: tt2;
+
 BEGIN
   CASE x OF 3..2: | 1: | 1: | 'a': END;
   CASE 'x' OF 'a': | 'a': END;
@@ -147,5 +153,6 @@ BEGIN
   x := 9999999999;
   f^[0] := f^[long];
   f[0] := f[undecl];
-  FOR x := 0 TO 9 BY 0 DO END
+  FOR x := 0 TO 9 BY 0 DO END;
+  xx1 := xx2
 END SemError.
