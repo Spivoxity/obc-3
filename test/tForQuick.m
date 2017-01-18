@@ -54,8 +54,8 @@ END tForQuick.
 >>*)
 
 (*[[
-!! (SYMFILE #tForQuick 0x00000301 #tForQuick.%main 1)
-!! (CHKSUM 0x78a77d55)
+!! SYMFILE #tForQuick STAMP #tForQuick.%main 1
+!! END STAMP
 !! 
 MODULE tForQuick STAMP 0
 IMPORT Random STAMP
