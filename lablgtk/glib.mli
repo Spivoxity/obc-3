@@ -173,32 +173,6 @@ end
 
 (** Unicode Manipulation
     @gtkdoc glib glib-Unicode-Manipulation *)
-module Unichar : sig 
-  val to_lower : unichar -> unichar
-  val to_upper : unichar -> unichar
-  val to_title : unichar -> unichar
-
-  val digit_value : unichar -> int
-  val xdigit_value : unichar -> int
-  val validate : unichar -> bool
-  val isalnum : unichar -> bool
-  val isalpha : unichar -> bool
-  val iscntrl : unichar -> bool
-  val isdigit : unichar -> bool
-  val isgraph : unichar -> bool
-  val islower : unichar -> bool
-  val isprint : unichar -> bool
-  val ispunct : unichar -> bool
-  val isspace : unichar -> bool
-  val isupper : unichar -> bool
-  val isxdigit : unichar -> bool
-  val istitle : unichar -> bool
-  val isdefined : unichar -> bool
-  val iswide : unichar -> bool
-end
-
-(** Unicode Manipulation
-    @gtkdoc glib glib-Unicode-Manipulation *)
 module Utf8 : sig
   (** UTF-8 handling, and conversion to UCS-4 *)
 
@@ -229,7 +203,9 @@ module Utf8 : sig
 
   val first_char : string -> unichar
 
+(*
   val offset_to_pos : string -> pos:int -> off:int -> int
+*)
 
   type normalize_mode = [ `DEFAULT | `DEFAULT_COMPOSE | `ALL | `ALL_COMPOSE ]
   val normalize : string -> normalize_mode -> string

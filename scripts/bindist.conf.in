@@ -54,4 +54,8 @@ AC_SUBST(OBDB1, '"$LIBDIR/obdb1 -R $LIBDIR/resources"')
 AC_SUBST(DLFLAGS, '-rdynamic')
 AC_SUBST(LIBS, '-ldl')
 
+if test -r etc/obdb.in; then
+    AC_SUBST(HAVE_OBDB, 1)
+fi
+
 AC_OUTPUT(Makefile)

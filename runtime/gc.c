@@ -111,7 +111,6 @@ static void *grab_chunk(unsigned size) {
 #ifdef MACOS
      p = mmap(last_addr, size, PROT_READ|PROT_WRITE, 
 	      MAP_ANON|MAP_PRIVATE, -1, 0);
-     if (p == (void *) -1) p = NULL;
 #else
      static int zero_fd = -1;
 
@@ -120,9 +119,11 @@ static void *grab_chunk(unsigned size) {
 	  if (zero_fd < 0) panic("couldn't open /dev/zero");
      }
 
-     p = mmap(last_addr, size, PROT_READ|PROT_WRITE, MAP_PRIVATE, zero_fd, 0);
+     p = mmap(last_addr, size, PROT_READ|PROT_WRITE,
+              MAP_PRIVATE, zero_fd, 0);
 #endif
 
+     if (p == MAP_FAILED) return NULL;
      last_addr = p;
      return p;
 }
@@ -145,10 +146,12 @@ static void *get_memory(unsigned size) {
      /* This happens e.g. if custom translation makes the code size zero */
      if (alloc_size == 0) return NULL;
 
+     DEBUG_PRINT('b', ("Need %u; requesting chunk of size %u\n",
+                       size, alloc_size));
      p = grab_chunk(alloc_size);
      if (p == NULL) panic("out of memory");
-     ASSERT((unsigned) p % PAGESIZE == 0);
      DEBUG_PRINT('b', ("Allocated chunk at %p\n", p));
+     ASSERT((unsigned) p % PAGESIZE == 0);
      return p;
 }
 
@@ -187,9 +190,10 @@ void *scratch_alloc(unsigned size, mybool atomic) {
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
      uchar *p;
 
-     if (scratch_free + alloc_size > scratch_limit) {
+     if (scratch_free == NULL || alloc_size > scratch_limit - scratch_free) {
 	  if (alloc_size > SCRATCH_CHUNK
-	      || scratch_free + 4*PAGESIZE <= scratch_limit)
+	      || (scratch_free != NULL
+                  && scratch_free - scratch_free >= 4*PAGESIZE))
 	       /* Avoid discarding a largish piece */
 	       return get_memory(alloc_size);
 

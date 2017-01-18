@@ -3,7 +3,13 @@ MODULE tSort;
 IMPORT Out;
 
 TYPE List = POINTER TO Cell;
-  Cell = RECORD data: INTEGER; prev, next: List END;
+  Cell = RECORD
+    ;;;;;;;;;;;;;;;;;;;;;;
+    ;; data: INTEGER    ;;
+    ;;;;;;;;;;;;;;;;;;;;;;
+    ;; prev, next: List ;;
+    ;;;;;;;;;;;;;;;;;;;;;;
+  END;
 
 PROCEDURE FindMin(xs: List): List;
   VAR p, q: List;
@@ -86,7 +92,7 @@ PROC tSort.FindMin 8 3 0x00118001
 ! PROCEDURE FindMin(xs: List): List;
 !   p := xs.next;
 LDLW 12
-NCHECK 11
+NCHECK 17
 LDNW 8
 STLW -4
 !   ASSERT(p # xs);
@@ -94,11 +100,11 @@ LDLW -4
 LDLW 12
 JNEQ L2
 CONST 0
-EASSERT 12
+EASSERT 18
 LABEL L2
 !   q := p.next;
 LDLW -4
-NCHECK 13
+NCHECK 19
 LDNW 8
 STLW -8
 LABEL L3
@@ -108,10 +114,10 @@ LDLW 12
 JEQ L5
 !     IF q.data < p.data THEN p := q END;
 LDLW -8
-NCHECK 15
+NCHECK 21
 LOADW
 LDLW -4
-NCHECK 15
+NCHECK 21
 LOADW
 JGEQ L8
 LDLW -8
@@ -119,7 +125,7 @@ STLW -4
 LABEL L8
 !     q := q.next
 LDLW -8
-NCHECK 16
+NCHECK 22
 LDNW 8
 STLW -8
 JUMP L3
@@ -143,18 +149,18 @@ LDLW 16
 LOADW
 LDLW 16
 LOADW
-NCHECK 25
+NCHECK 31
 STNW 4
 LDLW 16
 LOADW
 LDLW 16
 LOADW
-NCHECK 25
+NCHECK 31
 STNW 8
 LABEL L9
 !   WHILE xs.next # xs DO
 LDLW 12
-NCHECK 27
+NCHECK 33
 LDNW 8
 LDLW 12
 JEQ L11
@@ -165,46 +171,46 @@ CALLW 1
 STLW -4
 !     p.prev.next := p.next; p.next.prev := p.prev;
 LDLW -4
-NCHECK 29
+NCHECK 35
 LDNW 8
 LDLW -4
-NCHECK 29
+NCHECK 35
 LDNW 4
-NCHECK 29
+NCHECK 35
 STNW 8
 LDLW -4
-NCHECK 29
+NCHECK 35
 LDNW 4
 LDLW -4
-NCHECK 29
+NCHECK 35
 LDNW 8
-NCHECK 29
+NCHECK 35
 STNW 4
 !     p.prev := ys.prev; p.next := ys;
 LDLW 16
 LOADW
-NCHECK 30
+NCHECK 36
 LDNW 4
 LDLW -4
-NCHECK 30
+NCHECK 36
 STNW 4
 LDLW 16
 LOADW
 LDLW -4
-NCHECK 30
+NCHECK 36
 STNW 8
 !     ys.prev.next := p; ys.prev := p
 LDLW -4
 LDLW 16
 LOADW
-NCHECK 31
+NCHECK 37
 LDNW 4
-NCHECK 31
+NCHECK 37
 STNW 8
 LDLW -4
 LDLW 16
 LOADW
-NCHECK 31
+NCHECK 37
 STNW 4
 JUMP L9
 LABEL L11
@@ -221,29 +227,29 @@ CALLW 2
 STLW -4
 LDLW 16
 LDLW -4
-NCHECK 38
+NCHECK 44
 STOREW
 !   p.prev := xs.prev; p.next := xs;
 LDLW 12
-NCHECK 39
+NCHECK 45
 LDNW 4
 LDLW -4
-NCHECK 39
+NCHECK 45
 STNW 4
 LDLW 12
 LDLW -4
-NCHECK 39
+NCHECK 45
 STNW 8
 !   xs.prev.next := p; xs.prev := p
 LDLW -4
 LDLW 12
-NCHECK 40
+NCHECK 46
 LDNW 4
-NCHECK 40
+NCHECK 46
 STNW 8
 LDLW -4
 LDLW 12
-NCHECK 40
+NCHECK 46
 STNW 4
 RETURN
 END
@@ -259,11 +265,11 @@ STLW -16
 !   xs.prev := xs; xs.next := xs;
 LDLW -16
 LDLW -16
-NCHECK 47
+NCHECK 53
 STNW 4
 LDLW -16
 LDLW -16
-NCHECK 47
+NCHECK 53
 STNW 8
 !   m := 37;
 CONST 37
@@ -306,7 +312,7 @@ GLOBAL tSort.Sort
 CALL 2
 !   p := ys.next;
 LDLW -20
-NCHECK 60
+NCHECK 66
 LDNW 8
 STLW -12
 LABEL L14
@@ -317,13 +323,13 @@ JEQ L16
 !     Out.Int(p.data, 3);
 CONST 3
 LDLW -12
-NCHECK 62
+NCHECK 68
 LOADW
 GLOBAL Out.Int
 CALL 2
 !     p := p.next
 LDLW -12
-NCHECK 63
+NCHECK 69
 LDNW 8
 STLW -12
 JUMP L14

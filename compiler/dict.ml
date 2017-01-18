@@ -525,20 +525,22 @@ let proc_match t1 t2 =
     | (_, _) -> false
 
 (* This is used to detect confusing clashes of anonymous types *)
-let rec approx_same t1 t2 =
-  if t1.t_module = t2.t_module && t1.t_id = t2.t_id then
-    true
-  else
-    match (t1.t_guts, t2.t_guts) with
-	(PointerType d1, PointerType d2) ->
-	  approx_same d1.d_type d2.d_type
-      | (ArrayType (b1, u1), ArrayType (b2, u2)) ->
-	  b1 = b2 && approx_same u1 u2
-      | (RecordType _, RecordType _) ->
-	  t1.t_name = anon && t2.t_name = anon
-      | (ProcType p1, ProcType p2) ->
-          proc_match t1 t2
-      | _ -> false
+let approx_same u1 u2 =
+  let rec compare n t1 t2 =
+    if n = 0 || (t1.t_module = t2.t_module && t1.t_id = t2.t_id) then
+      true
+    else
+      match (t1.t_guts, t2.t_guts) with
+          (PointerType d1, PointerType d2) ->
+            compare (n-1) d1.d_type d2.d_type
+        | (ArrayType (b1, u1), ArrayType (b2, u2)) ->
+            b1 = b2 && compare n u1 u2
+        | (RecordType _, RecordType _) ->
+            t1.t_name = anon && t2.t_name = anon
+        | (ProcType p1, ProcType p2) ->
+            proc_match t1 t2
+        | _ -> false in
+  compare 2 u1 u2
 
 (* This is used for matching types in assignment and value parameters *)
 let rec subtype t1 t2 = 
@@ -573,7 +575,7 @@ let align alignment offset =
 (* Initial environment *)
 
 let make_def1 s x k lab t =
-  { d_tag = intern (if !Config.lcflag then String.lowercase s else s); 
+  { d_tag = intern (if !Config.lcflag then Util.strlower s else s); 
     d_module = anon; d_export = x; d_kind = k; d_used = true; 
     d_loc = no_loc; d_line = 0; d_type = t; d_lab = lab; d_level = 0; 
     d_offset = 0; d_param = 0; d_comment = None; d_env = empty_env; 

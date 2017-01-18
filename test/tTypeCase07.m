@@ -9,7 +9,7 @@ TYPE
   OpObj = POINTER TO OpNode;
   OpNode = RECORD (Empty)
 	name : CHAR;
-	left, right : Obj;
+	left, right : Obj
     END;
 
 PROCEDURE doeval (ex: Obj): INTEGER;

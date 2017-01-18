@@ -7,7 +7,7 @@ TYPE
   node = 
     ARRAY 8 OF RECORD 
       a: INTEGER; 
-      b: ARRAY 40 OF RECORD x: tree; y: INTEGER; END; 
+      b: ARRAY 40 OF RECORD x: tree; y: INTEGER END; 
       c: tree 
     END;
 

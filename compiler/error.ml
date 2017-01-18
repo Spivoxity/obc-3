@@ -222,7 +222,7 @@ let sem_error fmt args loc =
 let capitalize s0 =
   let s = Bytes.of_string s0 in
   if Bytes.length s > 0 then 
-    Bytes.set s 0 (Char.uppercase (Bytes.get s 0));
+    Bytes.set s 0 (Util.toupper (Bytes.get s 0));
   Bytes.to_string s
 
 let sem_context fmt args =

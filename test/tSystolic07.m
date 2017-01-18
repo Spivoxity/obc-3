@@ -58,12 +58,12 @@ TYPE
       pc, next: INTEGER;
       left, right: Channel;
       buf: INTEGER;
-      step: StepProc;
+      step: StepProc
     END;
 
   ChanRec = RECORD
       chid: INTEGER;
-      sender, receiver: Process;
+      sender, receiver: Process
     END;
 
 PROCEDURE Init(self: Process; pid: INTEGER; left, right: Channel; 
@@ -159,7 +159,7 @@ END Eval;
 (* Specific processes *)
 
 TYPE
-  Injector = POINTER TO RECORD (ProcRec) r: INTEGER; x: INTEGER; END;
+  Injector = POINTER TO RECORD (ProcRec) r: INTEGER; x: INTEGER END;
 
 PROCEDURE MakeInjector(pid: INTEGER; right: Channel): Injector;
   VAR p: Injector;
@@ -198,7 +198,7 @@ END StepInj;
 
 
 TYPE
-  Comparator = POINTER TO RECORD (ProcRec) x, y: INTEGER; END;
+  Comparator = POINTER TO RECORD (ProcRec) x, y: INTEGER END;
 
 PROCEDURE MakeComparator(pid: INTEGER; left, right: Channel): Comparator;
   VAR p: Comparator;
@@ -224,7 +224,7 @@ END StepComp;
 
 
 TYPE
-  Collector = POINTER TO RECORD (ProcRec) x: INTEGER; END;
+  Collector = POINTER TO RECORD (ProcRec) x: INTEGER END;
 
 PROCEDURE MakeCollector(pid: INTEGER; left: Channel): Collector;
   VAR p: Collector;

@@ -77,23 +77,6 @@ let missing_semi loc =
   if yyerrstate () = 0 then
     syn_error "missing ';'" [] loc
 
-(*
-let _ = Random.self_init ()
-
-let shown = ref false
-
-let unmatched loc = 
-  let msg =
-    if not !shown && Random.float 1.0 < 0.2 then
-      (shown := true;
-        "\"(an unmatched left parenthesis creates an unresolved"
-	^ " tension that will stay with you all day\"")
-    else
-      "unmatched left parenthesis" in
-  parse_error2 msg loc;
-  raise Parse_error
-*)
-
 let lloc () = (symbol_start (), symbol_end ())
 let rloc n = (rhs_start n, rhs_end n)
 let rend n = (rhs_end n, rhs_end n)
@@ -163,6 +146,11 @@ body :
     /* empty */                 { makeStmt (Skip, no_loc) }
   | BEGIN stmts		        { $stmts } ;  
 
+/* The syntax of RETURN clauses is different in Oberon07, so in 07
+   mode we make the lexer return a different token RETURN07; the abstract
+   syntax allows both RETURN statements and 07-style clauses, but only
+   one is accessible from the concrete syntax in each mode. */
+
 ret :
     /* empty */		        { None }
   | RETURN07 expr		{ Some $expr } ;
@@ -179,21 +167,21 @@ decl :
   | TYPE tdecls			{ [TypeDecl $tdecls] } ;
 
 cdecls :
-    /* empty */ %prec INFINITY  { [] }
+    cdecl %prec INFINITY        { [$cdecl] }
   | cdecl cdecls		{ $cdecl :: $cdecls } ;
 
 cdecl :
     doc defid EQUAL expr semi	{ ConstDecl ($defid, $expr, $doc) } ;
 
 tdecls :
-    /* empty */ %prec INFINITY  { [] }
+    tdecl %prec INFINITY        { [$tdecl] }
   | tdecl tdecls		{ $tdecl :: $tdecls } ;
 
 tdecl :	
     doc defid EQUAL texpr semi { ($defid, $texpr, $doc) } ;
 
 vdecls :
-    /* empty */ %prec INFINITY  { [] }
+    vdecl %prec INFINITY        { [$vdecl] }
   | vdecl vdecls		{ $vdecl :: $vdecls } ;
 
 vdecl :
@@ -203,29 +191,43 @@ texpr :
     tname			{ $tname }
   | LPAR defids RPAR		{ typexp (Enum $defids) }
   | POINTER TO texpr		{ typexp (Pointer $texpr) }
-  | ARRAY exprs OF texpr	{ let array n t = typexp (Array (n, t)) in
-				  List.fold_right array $exprs $texpr }
   | ARRAY OF texpr		{ typexp (Flex $texpr) }
-  | RECORD parent fields END 	{ typexp (Record (false, $parent, $fields)) }
-  | ABSTRACT RECORD parent fields END 
-    	     	    	   	{ typexp (Record (true, $parent, $fields)) }
+  | ARRAY exprs OF texpr
+      { let array n t = typexp (Array (n, t)) in
+        List.fold_right array $exprs $texpr }
+  | abstract RECORD parent fields END
+      { typexp (Record ($abstract, $parent, $fields)) }
   | PROCEDURE params		{ typexp (Proc $params) } ;
 
 tname :
     qualid			{ typexp (TypeName $qualid) } ;
+
+abstract :
+    /* empty */			{ false }
+  | ABSTRACT			{ true } ;
 
 parent :
     /* empty */			{ None }
   | LPAR tname RPAR		{ Some $tname } ;
 
 fields :
-    fieldlist			{ $fieldlist }
-  | fieldlist SEMI fields	{ $fieldlist @ $fields } ;
-
-fieldlist :	
     /* empty */			{ [] }
-  | doc defids COLON texpr	{ [VarDecl (FieldDef, $defids, 
-							$texpr, $doc)] } ;
+  | fdecls			{ $fdecls }
+  | stray fields		{ $fields } ;
+    
+fdecls :
+    fdecl			{ [$fdecl] }
+  | fdecls stray 		{ $fdecls }
+  | fdecls SEMI fdecl		{ $fdecls @ [$fdecl] } ;
+
+fdecl :	
+    doc defids COLON texpr
+      { VarDecl (FieldDef, $defids, $texpr, $doc) } ;
+
+stray :
+    SEMI
+      { if !Config.ob07flag then
+          syn_error "Oberon07 forbids a semicolon here" [] (rloc 1) } ;
 
 proc :
     doc PROCEDURE procid params semi pblock semi	

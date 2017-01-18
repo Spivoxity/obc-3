@@ -20,7 +20,7 @@ four 1's, one in each of the four groups of columns above. *)
 TYPE 
   Cell = POINTER TO RECORD 
       up, down, left, right: Cell; 	(* Neighbours *)
-      column: Column;			(* Top of the column *)
+      column: Column			(* Top of the column *)
     END;
 
   Column = POINTER TO RECORD
@@ -29,7 +29,7 @@ TYPE
       size: INTEGER;			(* No. of intersecting rows *)
       covered: BOOLEAN;			(* Whether covered *)
       prev, next: Column;		(* Links to adjacent columns *)
-      head: Cell;			(* Dummy node for this column *)
+      head: Cell			(* Dummy node for this column *)
     END;
 
 VAR 

@@ -42,7 +42,7 @@ let idtable = Hashtbl.create 1009
 let init () = 
   let add (s, v) = 
     Hashtbl.add idtable 
-      (if !Config.lcflag then String.lowercase s else s) v in
+      (if !Config.lcflag then Util.strlower s else s) v in
   List.iter add
     [ "ARRAY", ARRAY; "BEGIN", BEGIN; "BY", BY; "CASE", CASE; "CONST", CONST;
       "DIV", MULOP Div; "DO", DO; "ELSE", ELSE; "ELSIF", ELSIF; 

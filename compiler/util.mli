@@ -48,3 +48,7 @@ val can : ('a -> 'b) -> 'a -> bool
 
 (* offset -- add base address and offset *)
 val offset : int32 -> int -> int32
+
+val toupper : char -> char
+
+val strlower : string -> string

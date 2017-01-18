@@ -11,7 +11,7 @@ TYPE
   ADesc = RECORD END;
                                         
   B = POINTER TO BDesc;
-  BDesc = RECORD(ADesc) s: INTEGER; END;
+  BDesc = RECORD(ADesc) s: INTEGER END;
                         
  VAR a: A; b: B;
                                 

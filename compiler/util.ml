@@ -93,3 +93,11 @@ let can f x = try f x; true with Not_found -> false
 
 (* offset -- add base address and offset *)
 let offset addr k = Int32.add addr (Int32.of_int k)
+
+let toupper ch =
+  if ch >= 'a' && ch <= 'z' then Char.chr (Char.code ch - 32) else ch
+
+let tolower ch =
+  if ch >= 'A' && ch <= 'Z' then Char.chr (Char.code ch + 32) else ch
+
+let strlower str = String.map tolower str
