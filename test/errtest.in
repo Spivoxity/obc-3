@@ -14,6 +14,8 @@ top_srcdir=@top_srcdir@
 DIFF=@DIFF@
 # End of config
 
+echo Errtest
+
 for d in ../lib $top_srcdir/lib; do
     if [ -r $d/lscript ]; then
 	lib=$d; break
@@ -30,8 +32,6 @@ if [ "$1" = -promote ]; then promote=true; shift; fi
 compiler="../compiler/obc1 -I $lib -O"
 
 cp -f $srcdir/SemError0.m SemError.m
-
-set -x
 
 $compiler $srcdir/SemDefs.m >SemDefs.k
 

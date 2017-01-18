@@ -625,6 +625,12 @@ let init_env () =
       builtin "ASSERT" Assert (-1) [];
       builtin "INCL" InclProc 2 [settype; inttype];
       builtin "EXCL" ExclProc 2 [settype; inttype];
+
+      builtin "LSL" LslFun 2 [inttype; inttype];
+      builtin "LSR" LsrFun 2 [inttype; inttype];
+      builtin "ASR" AsrFun 2 [inttype; inttype];
+      builtin "ROR" RorFun 2 [inttype; inttype];
+      builtin "ASH" AshFun 2 [inttype; inttype];
   
       (* These library procedures are genuine procedures *)
       libproc "HALT" 1 ["n", ParamDef, inttype] voidtype ]
@@ -634,11 +640,7 @@ let init_env () =
         builtin "FLT" FltFun 1 [inttype];
         builtin "FLOOR" Entier 1 [];
         builtin "PACK" PackProc 2 [];
-        builtin "UNPK" UnpkProc 2 [];
-        builtin "LSL" LslFun 2 [inttype; inttype];
-        builtin "LSR" LsrFun 2 [inttype; inttype];
-        builtin "ASR" AsrFun 2 [inttype; inttype];
-        builtin "ROR" RorFun 2 [inttype; inttype] ]
+        builtin "UNPK" UnpkProc 2 [] ]
     else 
       [ make_def "TRUE" (ConstDef (IntVal (integer 1))) boolean;
         make_def "FALSE" (ConstDef (IntVal (integer 0))) boolean;
@@ -650,7 +652,6 @@ let init_env () =
         builtin "SHORT" Short 1 [];
         builtin "LONG" Long 1 [];
         builtin "SIZE" SizeFun 1 [];
-        builtin "ASH" AshFun 2 [inttype; inttype];
         builtin "ENTIER" Entier 1 [] ] in 
   make_env defs  
 

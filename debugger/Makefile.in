@@ -120,7 +120,7 @@ ML = procio.mli procio.ml binary.mli binary.ml \
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
-	$(CAMLDEP) -I ../compiler $^ >$@
+	$(CAMLDEP) -I ../compiler -I ../lablgtk $^ >$@
 endif
 
 include $(srcdir)/Depend
