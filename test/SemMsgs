@@ -268,17 +268,20 @@ statement
 >   Out.Anything;
 >   ^^^^^^^^^^^^
 
-"SemError.m", line 127: this record does not have a field called 'frown'
+"SemError.m", line 127: this record does not have a visible field called
+'frown'
 >   u.frown;
 >   ^
 > This expression has record type 'SemDefs.fred'
 
-"SemError.m", line 128: this record does not have a field called 'mint'
+"SemError.m", line 128: this record does not have a visible field called
+'mint'
 >   x := u.mint;
 >        ^
 > This expression has record type 'SemDefs.fred'
 
-"SemError.m", line 129: this record does not have a field called 'humbug'
+"SemError.m", line 129: this record does not have a visible field called
+'humbug'
 >   x := u.humbug;
 >        ^
 > This expression has record type 'SemDefs.fred'

@@ -16,6 +16,9 @@ BEGIN
   IF lo+1 < hi THEN
     pivot := a[lo];
     j := lo;
+
+    (* Inv: a[lo+1..j+1) < pivot and a[j+1..k) >= pivot *)
+
     FOR k := lo+1 TO hi-1 DO
       IF a[k] < pivot THEN j := j+1; Swap(a[j], a[k]) END
     END;
@@ -24,7 +27,7 @@ BEGIN
   END
 END Sort;
 
-CONST N = 10;
+CONST N = 20;
 
 VAR b: ARRAY N OF REAL;
 
@@ -41,21 +44,31 @@ BEGIN
 END tForQuick.
 
 (*<<
+0.0500813
+0.0704103
 0.0706561
+0.0953171
+0.105540
 0.129891
 0.157322
 0.165174
 0.383834
+0.519090
+0.520604
 0.638730
+0.690535
 0.704353
+0.774786
+0.795043
 0.834650
 0.901363
 0.948559
+0.986639
 >>*)
 
 (*[[
-!! SYMFILE #tForQuick STAMP #tForQuick.%main 1
-!! END STAMP
+!! (SYMFILE #tForQuick 0x00000301 #tForQuick.%main 1)
+!! (CHKSUM 0x78a77d55)
 !! 
 MODULE tForQuick STAMP 0
 IMPORT Random STAMP
@@ -110,7 +123,7 @@ JGT L5
 LDLW 12
 LDLW -8
 LDLW 16
-BOUND 20
+BOUND 23
 LDIF
 LDLF -12
 FJGEQ L8
@@ -118,12 +131,12 @@ INCL -4
 LDLW 12
 LDLW -8
 LDLW 16
-BOUND 20
+BOUND 23
 INDEXW
 LDLW 12
 LDLW -4
 LDLW 16
-BOUND 20
+BOUND 23
 INDEXW
 GLOBAL tForQuick.Swap
 CALL 2
@@ -136,12 +149,12 @@ LABEL L5
 LDLW 12
 LDLW -4
 LDLW 16
-BOUND 22
+BOUND 25
 INDEXW
 LDLW 12
 LDLW 20
 LDLW 16
-BOUND 22
+BOUND 25
 INDEXW
 GLOBAL tForQuick.Swap
 CALL 2
@@ -170,22 +183,22 @@ CONST 0
 STLW -4
 LABEL L9
 LDLW -4
-CONST 9
+CONST 19
 JGT L10
 GLOBAL Random.Uniform
 CALLF 0
 GLOBAL tForQuick.b
 LDLW -4
-CONST 10
-BOUND 34
+CONST 20
+BOUND 37
 STIF
 INCL -4
 JUMP L9
 LABEL L10
 !   Sort(b, 0, N);
-CONST 10
+CONST 20
 CONST 0
-CONST 10
+CONST 20
 GLOBAL tForQuick.b
 GLOBAL tForQuick.Sort
 CALL 4
@@ -194,12 +207,12 @@ CONST 0
 STLW -4
 LABEL L11
 LDLW -4
-CONST 9
+CONST 19
 JGT L12
 GLOBAL tForQuick.b
 LDLW -4
-CONST 10
-BOUND 36
+CONST 20
+BOUND 39
 LDIF
 GLOBAL Out.Real
 CALL 1
@@ -219,7 +232,7 @@ RETURN
 END
 
 ! Global variables
-GLOVAR tForQuick.b 40
+GLOVAR tForQuick.b 80
 
 ! End of file
 ]]*)
