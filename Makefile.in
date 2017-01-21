@@ -80,10 +80,18 @@ all : revid subdirs build sanity
 
 PREDIRS = compat yacc
 SUBDIRS = compiler runtime lib
+EXTRADIRS = test
 BUILD = obx obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
-
 PRIMS = lib/oblib.o
+
+ifdef MACOS
+  EXTRADIRS += macport
+endif
+
+ifdef WINDOWS
+  EXTRADIRS += winport
+endif
 
 ifndef DYNLINK
   PRIMS += lib/primtab.o
@@ -328,9 +336,8 @@ bindist: force
 #   realclean removes all but original source
 
 CONFIG = Makefile config.h stamp-h config.status config.cache
-EXTRADIRS = test winport macport
 
-.PHONY: cleanhere distcleanhere clean distclean quitecleanhere quiteclean
+.PHONY: clean distclean quiteclean cleanhere distcleanhere quitecleanhere 
 
 cleanhere: force
 	rm -f a.out fac tartan *.[kio] Fac.[cx] FacPrims.c config.log \
