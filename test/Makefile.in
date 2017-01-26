@@ -35,15 +35,15 @@ srcdir = @srcdir@
 subdir = test
 # End
 
-all:: regress bigtest edtest errtest
+all:: regress bigtest edtest
 
 clean:
 	rm -f *.[kixco] *.k0 a.* code code.0 out out.0 fib newprims.c \
 		obprof.out planner primtab.c prims.c primtest editor \
-		SemError.m msgs prim Plan.* data
+		msgs prim Plan.* data
 
 quiteclean: clean
-	rm -f regress bigtest edtest errtest
+	rm -f regress bigtest edtest
 
 distclean realclean: quiteclean
 	rm -f Makefile

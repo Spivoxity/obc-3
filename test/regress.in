@@ -65,10 +65,11 @@ $compiler -x $srcdir/xTypes.m >xTypes.k
 $compiler -07 $srcdir/xTypes07.m >xTypes07.k
 $compiler -x $srcdir/xPrelude.m >xPrelude.k
 
-for f in ${*:-`cd $srcdir; echo t*.m`}; do
+for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
     echo "$f"
 
     case $f in
+        e*.m) flag=;;
         tMixIt.m) flag='-w -x';;
         *07.m) flag='-07 -x';;
         *) flag=-x ;;
@@ -80,7 +81,7 @@ for f in ${*:-`cd $srcdir; echo t*.m`}; do
 	&& ../runtime/oblink -L $lib \
                              xTypes.k xTypes07.k xPrelude.k a.k -o a.out \
 	&& if $run; then \
-	    $interp ./a.out dummy arguments 2>&1 | $fixup >out; fi)
+	    $interp ./a.out dummy arguments; fi) 2>&1 | $fixup >out
     if $promote; then
 	sed -f $srcdir/promote.sed $srcdir/$f >$f.new
 	mv $f.new $srcdir/$f
@@ -88,7 +89,7 @@ for f in ${*:-`cd $srcdir; echo t*.m`}; do
 	sed -n -e '1,/^(\*<</d' -e '/^>>\*)/q' -e p $srcdir/$f | $fixexp >out.0
 	sed -n -e '1,/^(\*\[\[/d' -e '/^]]\*)/q' -e p $srcdir/$f >code.0
 	if $run; then $DIFF out.0 out || status=1; fi
-	if $code; then $DIFF -c code.0 code; fi
+	if $code && [ -r code ]; then $DIFF -c code.0 code; fi
     fi
 done
 
