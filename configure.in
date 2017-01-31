@@ -45,7 +45,6 @@ AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
 AC_CONFIG_FILES(test/regress, chmod +x test/regress)
 AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)
 AC_CONFIG_FILES(test/edtest, chmod +x test/edtest)
-AC_CONFIG_FILES(test/errtest, chmod +x test/errtest)
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_SUBDIRS(yacc)
 AC_CANONICAL_HOST
