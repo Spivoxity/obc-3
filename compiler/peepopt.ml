@@ -167,7 +167,6 @@ let ruleset1 replace =
 	  with Not_found -> ()
 	end
 
-
     (* Convert int to char or short, then store char *)
     | CONV (IntT, (CharT | ShortT)) 
 	  :: (LOCAL _ | GLOBAL _) :: STORE CharT :: _ -> 
@@ -196,7 +195,7 @@ let ruleset1 replace =
 	  CONST a; BINOP (PtrT, PlusA); STORE s]
 
     (* For simultaneous assignment *)
-    | (LOCAL _ | GLOBAL _ as i1) :: CONST b :: 
+    | (LOCAL _ | GLOBAL _ | CONST _ as i1) :: CONST b :: 
 	  (LOCAL _ | GLOBAL _ as i2) :: STORE s :: _ ->
 	replace 4 [CONST b; i2; STORE s; i1]
     | (LOCAL _ | GLOBAL _ as i1) :: (LOCAL _ | GLOBAL _ as i2) :: 

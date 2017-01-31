@@ -311,6 +311,10 @@ stmts1 :
 
 stmt0 :
     desig ASSIGN expr		{ Assign ($desig, $expr) }
+  | desig COMMA desigs ASSIGN expr COMMA exprs
+      { if List.length $desigs <> List.length $exprs then
+	  syn_error "Wrong number of expressions on RHS" [] (here ());
+	SimAssign (List.combine ($desig::$desigs) ($expr::$exprs)) }
   | desig			{ ProcCall (make_call $desig) } ;
 
 stmt1 :
@@ -432,6 +436,10 @@ actuals :
   | LPAR exprs %prec error	{ parse_error2 
 				    "unmatched left parenthesis" (rloc 1);
 				  raise Parse_error } ;
+
+desigs :
+    desig			{ [$desig] }
+  | desig COMMA desigs		{ $desig :: $desigs } ;
 
 exprs :	
     expr %prec error		{ [$expr] }
