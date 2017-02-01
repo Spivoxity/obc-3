@@ -48,17 +48,36 @@ EXEEXT = @EXEEXT@
 VPATH = @srcdir@
 OCAMLDIR = @OCAMLDIR@
 COMPAT = @COMPAT@
+PKG_CONFIG = @PKG_CONFIG@
+GTKPKGS = @GTKPKGS@
 # End
 
 all: obdb1
 
 INCLUDE = -I ../compat -I ../compiler -I ../lablgtk
 
+PKGCONF = $(PKG_ENV) $(PKG_CONFIG) $(PKG_FLAGS)
+
+ifdef WINDOWS
+  PKG_PATH = $(abs_top_srcdir)/winport:/cygdrive/c/GTK/lib/pkgconfig
+  PKG_ENV = env PKG_CONFIG_PATH=$(PKG_PATH)
+  PKG_FLAGS = --define-variable=prefix=C:/GTK
+endif
+
+ifdef MACOS
+  GTKLIBS := -L$(abs_top_builddir)/macport/gtklib \
+	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
+else
+  GTKLIBS := $(shell $(PKGCONF) --libs-only-L $(GTKPKGS)) \
+	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
+endif
+
 LIBS = unix.cma threads.cma lablgtk.cma str.cma gtkThread.cmo $(YYPARSE) 
 OBDB1 = ../compiler/basis.cma debugger.cma debmain.cmo
 obdb1: $(OBDB1) debprims.o ../lablgtk/lablgtk.cma ../lablgtk/liblablgtk.a
 	$(OCAMLC) $(MLFLAGS) -custom -thread $(INCLUDE) -o $@ \
-		$(COMPAT) $(LIBS) $(OBDB1) debprims.o $(MLLINKFLAGS)
+		$(COMPAT) $(LIBS) $(OBDB1) debprims.o $(MLLINKFLAGS) \
+		-cclib "-llablgtk $(GTKLIBS)"
 
 DEBUGGER = debconf.cmo binary.cmo info.cmo procio.cmo data.cmo \
 	control.cmo sourcebook.cmo varsview.cmo stackview.cmo

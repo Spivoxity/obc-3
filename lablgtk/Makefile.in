@@ -85,18 +85,14 @@ ifdef WINDOWS
   PKG_FLAGS = --define-variable=prefix=C:/GTK
 endif
 
+GTKFLAGS := $(shell $(PKGCONF) --cflags $(GTKPKGS))
+
 ifdef MACOS
-  GTKFLAGS := $(shell $(PKGCONF) --cflags $(GTKPKGS)) -DHAS_GTKQUARTZ
-  GTKLIBS := -L$(abs_top_builddir)/macport/gtklib \
-	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
-else
-  GTKFLAGS := $(shell $(PKGCONF) --cflags $(GTKPKGS))
-  GTKLIBS := $(shell $(PKGCONF) --libs-only-L $(GTKPKGS)) \
-	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
+  GTKFLAGS += -DHAS_GTKQUARTZ
 endif
 
 lablgtk.cma: $(MLOBJS)
-	ocamlc $(MLFLAGS) -a -o $@ $^ -cclib -llablgtk -cclib "$(GTKLIBS)"
+	ocamlc $(MLFLAGS) -a -o $@ $^
 
 liblablgtk.a: $(COBJS)
 	ar cr $@ $^
