@@ -637,6 +637,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  data_word(rands[0]);
 	  break;
 
+/*
      case D_FLOAT:
 	  fcvt.f = atof(rands[0]);
 	  data_value(fcvt.n, R_WORD);
@@ -653,6 +654,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  data_value(dcvt.n.lo, R_WORD);
 	  data_value(dcvt.n.hi, R_WORD);
 	  break;
+*/
 
      case D_GLOVAR:
 	  def_global(find_symbol(rands[0]), BSS, bloc, X_DATA);

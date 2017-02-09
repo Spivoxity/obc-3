@@ -123,7 +123,6 @@ extern struct primdef {
 
 EXTERN value _result[2];	/* Procedure result */
 #define ob_res _result[0]
-#define ob_dres _result[0]
 
 EXTERN value *statlink;		/* Static link for procedure call */
 EXTERN int level;		/* Recursion level in bytecode interp. */

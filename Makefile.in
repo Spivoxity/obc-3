@@ -143,7 +143,7 @@ compiler lablgtk debugger: compat
 compiler: yacc
 lib: compiler
 debugger: compiler lablgtk
-$(PREDIRS) $(SUBDIRS): config.h
+$(PREDIRS) $(SUBDIRS): revid config.h
 
 $(PREDIRS) $(SUBDIRS) :
 	$(MAKE) -C $@ all

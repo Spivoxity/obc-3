@@ -534,7 +534,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_SLIDEQ:
 	  proc_call(pc, arg1);
-	  push(I_LOADQ, INT, rZERO, (unsigned) &ob_dres, 2);
+	  push(I_LOADQ, INT, rZERO, (unsigned) &ob_res, 2);
 	  break;
 
      case I_SLIDEF:
@@ -544,7 +544,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_SLIDED:
 	  proc_call(pc, arg1);
-	  push(I_LOADD, FLO, rZERO, (unsigned) &ob_dres, 2);
+	  push(I_LOADD, FLO, rZERO, (unsigned) &ob_res, 2);
 	  break;
 
      case I_RESULTF:
@@ -553,7 +553,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_RESULTD:
-	  push(I_CON, INT, rZERO, (unsigned) &ob_dres, 1);
+	  push(I_CON, INT, rZERO, (unsigned) &ob_res, 1);
 	  store(I_LOADD, FLO, 2);
 	  break;
 
@@ -563,7 +563,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_RESULTQ:
-	  move_longval(peek(1), rZERO, (unsigned) &ob_dres);
+	  move_longval(peek(1), rZERO, (unsigned) &ob_res);
 	  pop(1);
 	  break;
 

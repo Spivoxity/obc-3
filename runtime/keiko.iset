@@ -138,13 +138,6 @@ inst LOADQ 0		M.qp  {getlong($1.p)}
 inst STOREQ 0		S2qp  {putlong($2.p, $1.q);}
 inst LDKQ {1 2}         V.q   {getlong(&const($a))}
 
-#inst LDID 0		B.qpi {getlong($1.p + 2*$2.i)}
-#inst STID 0		S3qpi {putlong($2.p + 2*$3.i, $1.q);}
-#inst LDLD {1 2}	V.q   {getlong((value *) local($a))}
-#inst STLD {1 2}	S1q   {putlong((value *) local($a), $1.q);}
-#inst LDGD {K L}	V.q   {getlong(const($a).p)}
-#inst STGD {K L}	S1q   {putlong(const($a).p, $1.q);}
-
 equiv LDID 0  		{INDEXD, LOADD}
 equiv STID 0		{INDEXD, STORED}
 equiv LDLD 1		{LOCAL $a, LOADD}
@@ -152,12 +145,12 @@ equiv STLD 1		{LOCAL $a, STORED}
 equiv LDGD K		{LDKW $a, LOADD}
 equiv STGD K		{LDKW $a, STORED}
 
-equiv LDIQ 0 {INDEXD, LOADQ}
-equiv STIQ 0 {INDEXD, STOREQ}
-equiv LDLQ 1 {LOCAL $a, LOADQ}
-equiv STLQ 1 {LOCAL $a, STOREQ}
-equiv LDGQ K {LDKW $a, LOADQ}
-equiv STGQ K {LDKW $a, STOREQ}
+equiv LDIQ 0 		{INDEXD, LOADQ}
+equiv STIQ 0 		{INDEXD, STOREQ}
+equiv LDLQ 1 		{LOCAL $a, LOADQ}
+equiv STLQ 1 		{LOCAL $a, STOREQ}
+equiv LDGQ K 		{LDKW $a, LOADQ}
+equiv STGQ K 		{LDKW $a, STOREQ}
 
 # ASSORTED INSTRUCTIONS
 
@@ -394,17 +387,13 @@ equiv QJNEQ R		{QCMP, JNEQZ $a}
 
 # CONVERSIONS
 
-defs {
-#define signext(x) 	((int) (x) << 16 >> 16)
-}
-
 # ENTIER is now a subroutine
 inst CONVNF 0		M.f  {flo_conv($1.i)}
 inst CONVND 0		M.di {flo_conv($1.i)}
 inst CONVFD 0		M.df {$1.f}
 inst CONVDF 0		M.fd {(float) $1.d}
 inst CONVNC 0		M.i  {$1.i & 0xff}
-inst CONVNS 0		M.i  {signext($1.i)}
+inst CONVNS 0		M.i  {(short) $1.i}
 inst CONVNQ 0		M.qi {$1.i}
 inst CONVQN 0		M.iq {(int) $1.q}
 inst CONVQD 0		M.dq {flo_convq($1.q)}
@@ -558,10 +547,10 @@ defs {
 inst SLIDE 1		S0 {slide($a);}
 inst SLIDEW 1		S0 {slide($a); sp--; sp[0].i = ob_res.i;}
 inst SLIDED 1		S0 {slide($a); sp -= 2; 
-     	    			putdbl(&sp[0], getdbl(&ob_dres));}
+     	    			putdbl(&sp[0], getdbl(&ob_res));}
 inst SLIDEF 1		S0 {slide($a); sp--; sp[0].f = ob_res.f;}
 inst SLIDEQ 1		S0 {slide($a); sp -= 2;
-				putlong(&sp[0], getlong(&ob_dres));}
+				putlong(&sp[0], getlong(&ob_res));}
 
 equiv RETURNW 0		{RESULTW, RETURN}
 equiv RETURNF 0		{RESULTF, RETURN}
@@ -569,9 +558,9 @@ equiv RETURND 0		{RESULTD, RETURN}
 equiv RETURNQ 0		{RESULTQ, RETURN}
 
 inst RESULTW 0		S1 {ob_res = $1;}
-inst RESULTD 0		S1d {putdbl(&ob_dres, $1.d);}
+inst RESULTD 0		S1d {putdbl(&ob_res, $1.d);}
 inst RESULTF 0 		S1 {ob_res.f = $1.f;}
-inst RESULTQ 0 		S1q {putlong(&ob_dres, $1.q);}
+inst RESULTQ 0 		S1q {putlong(&ob_res, $1.q);}
 
 inst RETURN 0 S0 {
      if (bp == base) {
@@ -671,9 +660,6 @@ dir MODULE ???
 dir ENDHDR 0
 dir IMPORT ??
 dir STKMAP ?
-dir FLOAT ?
-dir DOUBLE ?
-dir LONG ?
 dir LINE ?
 
 

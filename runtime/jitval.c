@@ -366,10 +366,9 @@ static mybool transient(ctvalue v) {
      switch (v->v_op) {
      case I_LOADW:
      case I_LOADF:
-	  return ((unsigned) v->v_val == (unsigned) &ob_res);
      case I_LOADQ:
      case I_LOADD:
-	  return ((unsigned) v->v_val == (unsigned) &ob_dres);
+	  return ((unsigned) v->v_val == (unsigned) &ob_res);
      default:
 	  return FALSE;
      }
