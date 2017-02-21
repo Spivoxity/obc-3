@@ -89,6 +89,7 @@ let rec bit_item origin =
   function
       GC_Offset o -> bit origin o
     | GC_Repeat (base, count, stride, m) ->
+        if count > 31 then raise Not_found;
 	combine (List.map
 	  (fun i -> bitmap origin (shift (base+i*stride) m))
 	  (Util.range 0 (count-1)))
