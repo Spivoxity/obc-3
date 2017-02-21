@@ -33,7 +33,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 3.0.3, mike@cs.ox.ac.uk)
+AC_INIT(obc, 3.0.4, mike@cs.ox.ac.uk)
 # Don't forget to update version number in debian/changelog too.
 AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
@@ -64,6 +64,8 @@ AC_DEFINE_UNQUOTED(SIG, $SIG, [Version signature for symbol tables])
 AC_SUBST(SIG)
 DOS_VERSION=`echo $PACKAGE_VERSION | sed 's/\./-/g'`
 AC_SUBST(DOS_VERSION)
+AC_SUBST(PACKAGE_TRACKER, https://bitbucket.org/Spivey/obc-3/issues)
+AC_DEFINE_UNQUOTED(PACKAGE_TRACKER, "$PACKAGE_TRACKER", [Bug tracker])
 
 ABS_SRCDIR=`cd $srcdir; pwd`
 ABS_BINDIR=`pwd`

@@ -64,7 +64,8 @@ let crash fmt args =
   fprintf stderr "*** (This message should never be displayed: it may\n" [];
   fprintf stderr "***   indicate a bug in the Oberon compiler.\n" [];
   fprintf stderr "***   Please save your program as evidence and report\n" [];
-  fprintf stderr "***   the error to '$'.)\n" [fStr Config.bugaddr];
+  fprintf stderr "***   the error at '$'\n"  [fStr Config.tracker];
+  fprintf stderr "***   or by e-mail to '$'.)\n" [fStr Config.bugaddr];
   exit 3
 
 let catch_failure f x =
