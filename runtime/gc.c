@@ -882,8 +882,8 @@ static void traverse_stack(value *xsp) {
      value *f, *r, *sp = NULL;
      value pc; pc.i = 0;
 
-     for (f = xsp; f != NULL; f = f[BP].p) {
-	  value *c = f[CP].p;
+     for (f = xsp; f != NULL; f = valptr(f[BP])) {
+	  value *c = valptr(f[CP]);
 #ifdef TRACE
 	  proc x = find_proc(c);
 #endif
@@ -896,16 +896,16 @@ static void traverse_stack(value *xsp) {
 	  if (pc.i != 0) {
 	       /* Evaluation stack: look up calling PC value in
 		  stack map table. */
-	       if (c[CP_PRIM].z == interp) {
-		    r = c[CP_STKMAP].p;
+	       if (primptr(c[CP_PRIM]) == interp) {
+		    r = valptr(c[CP_STKMAP]);
 		    if (r == NULL) continue;
-		    DEBUG_PRINT('m', ("\n<SM pc=%p>", pc.x));
-		    while (r[0].x != NULL) {
-			 DEBUG_PRINT('m', (" %p", r[0].x));
-			 if (r[0].x == pc.x) break;
+		    DEBUG_PRINT('m', ("\n<SM pc=%p>", pointer(pc)));
+		    while (pointer(r[0]) != NULL) {
+			 DEBUG_PRINT('m', (" %p", pointer(r[0])));
+			 if (pointer(r[0]) == pointer(pc)) break;
 			 r += 2;
 		    }
-		    if (r[0].x != NULL) {
+		    if (pointer(r[0]) != NULL) {
 			 DEBUG_PRINT('m', ("\nEval stack (%#x)", r[1].i));
 			 redir_map(r[1].i, (uchar *) sp, 0);
 		    }

@@ -51,13 +51,17 @@ typedef union value value;
 
 typedef void primitive(value *sp);
 
+typedef unsigned addr;
+
 union value {
      int i;
      float f;
-     value *p;
-     uchar *x;
-     primitive *z;
+     addr a;
 };
+
+#define valptr(v) ((value *) (unsigned long) ((v).a))
+#define pointer(v) ((uchar *) (unsigned long) ((v).a))
+#define primptr(v) ((primitive *) (unsigned long) ((v).a))
 
 typedef struct _proc *proc;
 typedef struct _module *module;

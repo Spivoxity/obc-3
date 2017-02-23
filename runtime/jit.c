@@ -82,10 +82,10 @@ static code_addr prolog(const char *name) {
 
 /* stack_map -- find pointer map for eval stack at procedure call */
 static int stack_map(uchar *pc) {
-     value *r = context[CP_STKMAP].p;
+     value *r = valptr(context[CP_STKMAP]);
      if (r == NULL) return 0;
-     while (r[0].x != NULL) {
-	  if (r[0].x == pc) return r[1].i;
+     while (pointer(r[0]) != NULL) {
+	  if (pointer(r[0]) == pc) return r[1].i;
 	  r += 2;
      }
      return 0;
@@ -853,7 +853,7 @@ void jit_compile(value *cp) {
 
      context = cp; 
      frame = context[CP_FRAME].i;
-     pcbase = context[CP_CODE].x;
+     pcbase = pointer(context[CP_CODE]);
      pclimit = pcbase + context[CP_SIZE].i;
 
      init_regs();
@@ -868,7 +868,7 @@ void jit_compile(value *cp) {
      translate();
      do_errors(make_error);
      vm_end();
-     cp[CP_PRIM].z = (primitive *) entry;
+     cp[CP_PRIM].a = (addr) entry;
 
 #ifdef DEBUG
      if (dflag > 0) fflush(stdout);
@@ -877,14 +877,14 @@ void jit_compile(value *cp) {
 
 /* jit_trap -- translate procedure on first call */
 void jit_trap(value *bp) {
-     value *cp = bp[CP].p;
+     value *cp = valptr(bp[CP]);
      jit_compile(cp);
-     cp[CP_PRIM].z(bp);
+     (*primptr(cp[CP_PRIM]))(bp);
 }
 
 /* jit_proc -- translate a specified procedure */
 void jit_proc(value *bp) {
-     value *p = bp[HEAD].p;
+     value *p = valptr(bp[HEAD]);
      jit_compile(p);
 }
 

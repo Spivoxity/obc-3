@@ -78,8 +78,8 @@ $$ macro definitions
 
 /* interp -- main loop of the interpreter */
 void interp(value *sp0) {
-     register value *cp = sp0[CP].p;
-     uchar *pc = cp[CP_CODE].x;
+     register value *cp = valptr(sp0[CP]);
+     uchar *pc = pointer(cp[CP_CODE]);
      register uchar *pc0 = NULL;
      register value *sp = sp0;
      register uchar ir = 0;
@@ -130,7 +130,7 @@ $$ jump table
 	  if (dflag > 1) {
 	       int i;
 	       printf("pc=%s+%d(%p) sp=%p bp=%p cp=%p",
-		      thisproc->p_name, pc - cp[1].x, pc, sp, bp, cp);
+		      thisproc->p_name, pc - pointer(cp[1]), pc, sp, bp, cp);
 	       fflush(stdout);
 	       for (i = 0; i < 8; i++) printf(" %x", sp[i].i);
 	       printf("\n");

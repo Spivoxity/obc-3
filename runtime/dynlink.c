@@ -89,8 +89,8 @@ primitive *find_prim(char *name) {
 
 void dltrap(value *sp) {
      value *bp = sp;
-     value *cp = bp[CP].p;
-     char *name = (char * ) cp[CP_CODE].x;
+     value *cp = valptr(bp[CP]);
+     char *name = (char * ) pointer(cp[CP_CODE]);
      primitive *prim;
 
 #ifdef DYNLINK
@@ -103,7 +103,7 @@ void dltrap(value *sp) {
 	  panic("couldn't find primitive %s", name);
 
      /* Bind the primitive to the library symbol */
-     cp[CP_PRIM].z = prim;
+     cp[CP_PRIM].a = (addr) prim;
 
      /* Call the primitive for the first time */
      ( * prim)(sp);

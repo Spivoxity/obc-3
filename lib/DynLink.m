@@ -31,7 +31,7 @@
 MODULE DynLink;
 
 PROCEDURE Load*(fname: ARRAY OF CHAR) IS "DynLink_Load";
-(* CODE load_lib((char * ) args[0].x); *)
+(* CODE load_lib((char * ) pointer(args[0])); *)
 
 END DynLink.
 

@@ -58,7 +58,7 @@ proc make_prim {pname code} {
     out ""
     out "PRIMDEF void ${pname}(value *sp) {"
     out "     value UNUSED *bp = sp;"
-    out "     value UNUSED *cp = bp\[CP\].p;"
+    out "     value UNUSED *cp = valptr(bp\[CP\]);"
     out "     FPINIT;"
     out $code
     out "}"

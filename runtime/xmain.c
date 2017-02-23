@@ -95,7 +95,7 @@ proc make_proc(char *name, uchar *addr) {
 #endif
 #ifdef OBXDEB
      debug_message("proc %s %#x %#x %d", name, (unsigned) addr, 
-		   (unsigned) p->p_addr[CP_CODE].x, p->p_addr[CP_SIZE].i);
+		   (unsigned) p->p_addr[CP_CODE].a, p->p_addr[CP_SIZE].i);
 #endif
      return p;
 }
@@ -115,7 +115,7 @@ void make_symbol(const char *kind, char *name, uchar *addr) {
 #define NBUF (BOT+GAP-1)
 
 static void backtrace(value *bp) {
-     value *fp = bp, *cp = bp[CP].p;
+     value *fp = bp, *cp = valptr(bp[CP]);
      proc p = find_proc(cp);
      int n, j;
      proc fbuf[NBUF];
@@ -126,9 +126,9 @@ static void backtrace(value *bp) {
 	and saving the last NBUF in a circular buffer. */
      for (n = 0; ; n++) {
 	  /* Each frame contains the cp and bp of its caller */
-	  fp = fp[BP].p;	/* Base pointer of next frame */
+	  fp = valptr(fp[BP]);	/* Base pointer of next frame */
 	  if (fp == NULL) break;
-	  cp = fp[CP].p;	/* Constant pool of next frame */
+	  cp = valptr(fp[CP]);	/* Constant pool of next frame */
 	  fbuf[n%NBUF] = p = find_proc(cp);
 	  if (n < TOP)
 	       fprintf(stderr, "   called from %s\n", p->p_name);
@@ -188,7 +188,7 @@ static const char *message(int code) {
 
 /* error_stop -- runtime error with explicit message text */
 void error_stop(const char *msg, int line, value *bp, uchar *pc) {
-     value *cp = bp[CP].p;
+     value *cp = valptr(bp[CP]);
 
 #ifdef OBXDEB
      char buf[256];
@@ -241,10 +241,10 @@ static void run(value *prog) {
      sp = (value *) (stack + stack_size) - 32; 
 
      sp -= HEAD; 
-     sp[BP].p = NULL; 
-     sp[PC].x = NULL; 
-     sp[CP].p = prog;
-     (*(prog[CP_PRIM].z))(sp);
+     sp[BP].a = (addr) NULL; 
+     sp[PC].a = (addr) NULL; 
+     sp[CP].a = (addr) prog;
+     (*primptr(prog[CP_PRIM]))(sp);
 }
 
 mybool custom_file(char *name) {
@@ -551,7 +551,7 @@ int obgetc(FILE *fp) {
      for (;;) {
 	  int c = getc(fp);
 	  if (c == EOF && intflag && prim_bp != NULL) {
-	       value *cp = prim_bp[CP].p;
+	       value *cp = valptr(prim_bp[CP]);
 	       debug_break(cp , prim_bp, NULL, "interrupt");
 	       continue;
 	  }

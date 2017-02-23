@@ -136,15 +136,15 @@ static void relocate(int size) {
 		    (*p).i = m;
 		    break;
 	       case R_DATA:
-		    (*p).x = dmem + m;
+		    (*p).a = (addr) (dmem + m);
 		    break;
 	       case R_CODE:
-		    (*p).x = imem + m;
+		    (*p).a = (addr) (imem + m);
 		    break;
 	       case R_SUBR:
 		    switch (m) {
-		    case INTERP: (*p).z = interpreter; break;
-		    case DLTRAP: (*p).z = dltrap; break;
+		    case INTERP: (*p).a = (addr) interpreter; break;
+		    case DLTRAP: (*p).a = (addr) dltrap; break;
 		    default:
 			 panic("bad subr code");
 		    }

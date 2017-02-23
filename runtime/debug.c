@@ -286,7 +286,7 @@ static void intr_handler(int sig) {
      if (prim_bp == NULL)
 	  intflag = TRUE;
      else {
-	  value *cp = prim_bp[CP].p;
+	  value *cp = valptr(prim_bp[CP]);
 	  debug_break(cp, prim_bp, NULL, "interrupt");
      }
 }

@@ -50,19 +50,20 @@ VAR
 
 (* COPY
 static FILE *get_file(value *p, value *cp, value *bp) {
-     if (p == NULL || p[0].x == NULL) liberror("file is not open");
-     return (FILE * ) p[0].x;
+     if (p == NULL || pointer(p[0]) == NULL) liberror("file is not open");
+     return (FILE * ) pointer(p[0]);
 }
 
-#define file_arg(a) get_file(a.p, cp, bp)
+#define file_arg(a) get_file(valptr(a), cp, bp)
 *)
 
 PROCEDURE PrimOpen(name, mode: ARRAY OF CHAR): SYSTEM.PTR IS "Files_PrimOpen";
-(* CODE ob_res.x = (uchar * ) fopen((char * )args[0].x, (char * )args[2].x); *)
+(* CODE ob_res.a =
+     (addr) fopen((char * ) pointer(args[0]), (char * ) pointer(args[2])); *)
 
 PROCEDURE PrimFDOpen(fd: INTEGER;
 	  		mode: ARRAY OF CHAR): SYSTEM.PTR IS "File_PrimFDOpen";
-(* CODE ob_res.x = (uchar * ) fdopen(args[0].i, (char * ) args[1].x); *)
+(* CODE ob_res.a = (addr) fdopen(args[0].i, (char * ) pointer(args[1])); *)
 
 (** Open -- open a file by name; return NIL if not found *)
 PROCEDURE Open*(CONST name, mode: ARRAY OF CHAR): File;
@@ -84,7 +85,7 @@ END FDOpen;
 
 (** Close -- close a file *)
 PROCEDURE Close*(fp: File) IS "Files_Close";
-(* CODE fclose(file_arg(args[0])); args[0].p[0].x = NULL; *)
+(* CODE fclose(file_arg(args[0])); valptr(args[0])[0].a = (addr) NULL; *)
 
 (** Eof -- test of end of file *)
 PROCEDURE Eof*(fp: File): BOOLEAN IS "Files_Eof";
@@ -101,7 +102,7 @@ PROCEDURE Flush*(fp: File) IS "Files_Flush";
 
 (** ReadChar -- read a character *)
 PROCEDURE ReadChar*(f: File; VAR c: CHAR) IS "Files_ReadChar";
-(* CODE *(args[1].x) = obgetc(file_arg(args[0])); *)
+(* CODE *pointer(args[1]) = obgetc(file_arg(args[0])); *)
 
 (** WriteInt -- output an integer with a specified width *)
 PROCEDURE WriteInt*(f: File; n: INTEGER; width: INTEGER) IS "Files_WriteInt";
@@ -151,7 +152,7 @@ PROCEDURE WriteChar*(f: File; c: CHAR) IS "Files_WriteChar";
 
 (** WriteString -- output a null-terminated string *)
 PROCEDURE WriteString*(f: File; CONST s: ARRAY OF CHAR) IS "Files_WriteString";
-(* CODE fprintf(file_arg(args[0]), "%.*s", args[2].i, args[1].x); *)
+(* CODE fprintf(file_arg(args[0]), "%.*s", args[2].i, pointer(args[1])); *)
 
 (** WriteLn -- output a newline *)
 PROCEDURE WriteLn*(f: File) IS "Files_WriteLn";
@@ -160,12 +161,12 @@ PROCEDURE WriteLn*(f: File) IS "Files_WriteLn";
 (** Read -- read an arbitary binary object *)
 PROCEDURE Read*(f: File; VAR buf: ARRAY OF SYSTEM.BYTE) IS "Files_Read";
 (* CODE int UNUSED nread =
-     fread(args[1].x, args[2].i, 1, file_arg(args[0])); *)
+     fread(pointer(args[1]), args[2].i, 1, file_arg(args[0])); *)
 
 (** Write -- write an arbitary binary object *)
 PROCEDURE Write*(f: File; VAR buf: ARRAY OF SYSTEM.BYTE) IS "Files_Write";
 (* CODE int UNUSED nwritten = 
-     fwrite(args[1].x, args[2].i, 1, file_arg(args[0])); *)
+     fwrite(pointer(args[1]), args[2].i, 1, file_arg(args[0])); *)
 
 (** Seek -- set the file pointer to a specified offset *)
 PROCEDURE Seek*(f: File; offset, whence: INTEGER) IS "Files_Seek";
@@ -185,9 +186,9 @@ PROCEDURE Tell*(f: File): INTEGER IS "Files_Tell";
 
 PROCEDURE Init(VAR in, out, err: SYSTEM.PTR) IS "Files_Init";
 (* CODE 
-     ( * (args[0].p)).x = (uchar * ) stdin; 
-     ( * (args[1].p)).x = (uchar * ) stdout;
-     ( * (args[2].p)).x = (uchar * ) stderr; *)
+     ( *valptr(args[0])).a = (addr) stdin; 
+     ( *valptr(args[1])).a = (addr) stdout;
+     ( *valptr(args[2])).a = (addr) stderr; *)
 
 BEGIN
   NEW(stdin); NEW(stdout); NEW(stderr);

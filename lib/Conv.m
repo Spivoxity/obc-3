@@ -32,11 +32,11 @@ MODULE Conv;
 
 (** IntVal -- convert string to integer *)
 PROCEDURE IntVal*(CONST s: ARRAY OF CHAR): INTEGER IS "Conv_IntVal";
-(* CODE ob_res.i = atoi((char * ) args[0].x); *)
+(* CODE ob_res.i = atoi((char * ) pointer(args[0])); *)
 
 (** LongIntVal -- convert string to long integer *)
 PROCEDURE LongIntVal*(CONST s: ARRAY OF CHAR): LONGINT IS "Conv_LongIntVal";
-(* CODE put_long(&ob_res, strtoll((char * ) args[0].x, NULL, 10)); *)
+(* CODE put_long(&ob_res, strtoll((char * ) pointer(args[0]), NULL, 10)); *)
 
 (** RealVal -- convert string to real *)
 PROCEDURE RealVal*(CONST s: ARRAY OF CHAR): REAL;
@@ -46,10 +46,10 @@ END RealVal;
 
 (** LongRealVal -- convert string to long real *)
 PROCEDURE LongRealVal*(CONST s: ARRAY OF CHAR): LONGREAL IS "Conv_LongRealVal";
-(* CODE put_double(&ob_res, atof((char * ) args[0].x)); *)
+(* CODE put_double(&ob_res, atof((char * ) pointer(args[0]))); *)
 
 (** ConvInt -- convert integer to string and store in buffer *)
 PROCEDURE ConvInt*(n: INTEGER; VAR s: ARRAY OF CHAR) IS "Conv_ConvInt";
-(* CODE snprintf((char * ) args[1].x, args[2].i, "%d", args[0].i); *)
+(* CODE snprintf((char * ) pointer(args[1]), args[2].i, "%d", args[0].i); *)
 
 END Conv.

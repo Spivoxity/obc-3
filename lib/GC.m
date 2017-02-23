@@ -46,13 +46,13 @@ CONST all* = "abcdghlmz";
 
 (** Debug -- set flags for debugging the garbage collector *)
 PROCEDURE Debug*(flags: ARRAY OF CHAR) IS "GC_Debug";
-(* CODE gc_debug((char * ) args[0].x); *)
+(* CODE gc_debug((char * ) pointer(args[0])); *)
 
 (** Dump -- print heap layout *)
 PROCEDURE Dump* IS "GC_Dump";
 (* CODE gc_dump(); *)
 
 PROCEDURE AllocSize*(p: SYSTEM.PTR): INTEGER IS "GC_AllocSize";
-(* CODE ob_res.i = gc_alloc_size(args[0].x); *)
+(* CODE ob_res.i = gc_alloc_size(pointer(args[0])); *)
 
 END GC.

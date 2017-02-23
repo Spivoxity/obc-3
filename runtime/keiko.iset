@@ -30,7 +30,7 @@
 
 defs {
 #define local(n) 	((uchar *) bp + (n))
-#define parent(a, t)	indir(bp[SL].x + a, t)
+#define parent(a, t)	indir(pointer(bp[SL]) + a, t)
 #define indir(p, t) 	(* (t *) (p))
 #define subs(p, n, t)	((t *) (p))[n]
 #define const(n)	cp[CP_CONST+n]
@@ -54,10 +54,10 @@ inst LOCAL {1 2}	V.x {local($a)}
 # Compute indexed address
 # INDEXs :: a, b --> a + s * b
 equiv PLUSA 0  	       	{INDEXC}
-inst INDEXC 0		B.x {$1.x + $2.i}
-inst INDEXS 0		B.x {$1.x + ($2.i<<1)}
-inst INDEXW 0		B.x {$1.x + ($2.i<<2)}
-inst INDEXD 0		B.x {$1.x + ($2.i<<3)}
+inst INDEXC 0		B.x {pointer($1) + $2.i}
+inst INDEXS 0		B.x {pointer($1) + ($2.i<<1)}
+inst INDEXW 0		B.x {pointer($1) + ($2.i<<2)}
+inst INDEXD 0		B.x {pointer($1) + ($2.i<<3)}
 
 
 # LOADS AND STORES
@@ -65,14 +65,14 @@ inst INDEXD 0		B.x {$1.x + ($2.i<<3)}
 # Load/store from address
 # LOADs :: a --> mem_s[a]
 # STOREs :: a, b --> []; mem_s[b] := a
-inst LOADW 0		M.i {indir($1.x, int)}
-inst LOADS 0		M.i {indir($1.x, short)}
-inst LOADC 0		M.i {indir($1.x, uchar)}
-inst LOADF 0		M.f {indir($1.x, float)}
-inst STOREW 0		S2  {indir($2.x, int) = $1.i;}
-inst STORES 0		S2  {indir($2.x, short) = $1.i;}
-inst STOREC 0		S2  {indir($2.x, uchar) = $1.i;}
-inst STOREF 0		S2  {indir($2.x, float) = $1.f;}
+inst LOADW 0		M.i {indir(pointer($1), int)}
+inst LOADS 0		M.i {indir(pointer($1), short)}
+inst LOADC 0		M.i {indir(pointer($1), uchar)}
+inst LOADF 0		M.f {indir(pointer($1), float)}
+inst STOREW 0		S2  {indir(pointer($2), int) = $1.i;}
+inst STORES 0		S2  {indir(pointer($2), short) = $1.i;}
+inst STOREC 0		S2  {indir(pointer($2), uchar) = $1.i;}
+inst STOREF 0		S2  {indir(pointer($2), float) = $1.f;}
 
 # Load/store local
 # LDLs n :: --> mem_s[bp+n]
@@ -91,32 +91,32 @@ inst STLF {1 2}		S1  {indir(local($a), float) = $1.f;}
 # Load/store global
 # LDGs n :: --> mem_s[const(n)]
 # STGs n :: a --> []; mem_s[const(n)] := a
-inst LDGW {K L}		V.i {indir(const($a).x, int)}
-inst LDGS {K L}		V.i {indir(const($a).x, short)}
-inst LDGC {K L}		V.i {indir(const($a).x, uchar)}
-inst LDGF {K L}		V.f {indir(const($a).x, float)}
-inst STGW {K L}		S1  {indir(const($a).x, int) = $1.i;}
-inst STGS {K L}		S1  {indir(const($a).x, short) = $1.i;}
-inst STGC {K L}		S1  {indir(const($a).x, uchar) = $1.i;}
-inst STGF {K L}		S1  {indir(const($a).x, float) = $1.f;}
+inst LDGW {K L}		V.i {indir(pointer(const($a)), int)}
+inst LDGS {K L}		V.i {indir(pointer(const($a)), short)}
+inst LDGC {K L}		V.i {indir(pointer(const($a)), uchar)}
+inst LDGF {K L}		V.f {indir(pointer(const($a)), float)}
+inst STGW {K L}		S1  {indir(pointer(const($a)), int) = $1.i;}
+inst STGS {K L}		S1  {indir(pointer(const($a)), short) = $1.i;}
+inst STGC {K L}		S1  {indir(pointer(const($a)), uchar) = $1.i;}
+inst STGF {K L}		S1  {indir(pointer(const($a)), float) = $1.f;}
 
 # Indexed load/store
 # LDNs n :: a -> mem_s[a+n]
 # STNs n :: a, b -> []; mem_s[b+n] := a
-inst LDNW {[-16,40,4] 1 2} M.i {indir($1.x + $a, int)}
-inst STNW {[-16,20,4] 1 2} S2  {indir($2.x + $a, int) = $1.i;}
+inst LDNW {[-16,40,4] 1 2} M.i {indir(pointer($1) + $a, int)}
+inst STNW {[-16,20,4] 1 2} S2  {indir(pointer($2) + $a, int) = $1.i;}
 
 # Double indexed load/store
 # LDIs :: a, b --> mem_s[a+s*b]
 # STIs :: a, b, c --> []; mem_s[b+s*c] := a
-inst LDIW 0		B.i {subs($1.x, $2.i, int)}
-inst LDIF 0		B.f {subs($1.x, $2.i, float)}
-inst LDIS 0		B.i {subs($1.x, $2.i, short)}
-inst LDIC 0		B.i {subs($1.x, $2.i, uchar)}
-inst STIW 0		S3  {subs($2.x, $3.i, int) = $1.i;}
-inst STIF 0		S3  {subs($2.x, $3.i, float) = $1.f;}
-inst STIS 0		S3  {subs($2.x, $3.i, short) = $1.i;}
-inst STIC 0		S3  {subs($2.x, $3.i, uchar) = $1.i;}
+inst LDIW 0		B.i {subs(pointer($1), $2.i, int)}
+inst LDIF 0		B.f {subs(pointer($1), $2.i, float)}
+inst LDIS 0		B.i {subs(pointer($1), $2.i, short)}
+inst LDIC 0		B.i {subs(pointer($1), $2.i, uchar)}
+inst STIW 0		S3  {subs(pointer($2), $3.i, int) = $1.i;}
+inst STIF 0		S3  {subs(pointer($2), $3.i, float) = $1.f;}
+inst STIS 0		S3  {subs(pointer($2), $3.i, short) = $1.i;}
+inst STIC 0		S3  {subs(pointer($2), $3.i, uchar) = $1.i;}
 
 # Load/store in enclosing frame
 # LDEs n :: --> mem_s[mem_4[bp-4]+n]
@@ -130,12 +130,12 @@ inst STEW {1 2}		S1  {parent($a, int) = $1.i;}
 # for example, LDLW n --> LDKW [n] / LOADW
 
 # Loads and stores for doubles
-inst LOADD 0		M.dp  {getdbl($1.p)}
-inst STORED 0		S2dp  {putdbl($2.p, $1.d);}
+inst LOADD 0		M.dp  {getdbl(valptr($1))}
+inst STORED 0		S2dp  {putdbl(valptr($2), $1.d);}
 inst LDKD {1 2}		V.d   {getdbl(&const($a))}
 
-inst LOADQ 0		M.qp  {getlong($1.p)}
-inst STOREQ 0		S2qp  {putlong($2.p, $1.q);}
+inst LOADQ 0		M.qp  {getlong(valptr($1))}
+inst STOREQ 0		S2qp  {putlong(valptr($2), $1.q);}
 inst LDKQ {1 2}         V.q   {getlong(&const($a))}
 
 equiv LDID 0  		{INDEXD, LOADD}
@@ -431,8 +431,8 @@ checkdef(globcheck, value *, p,, p != NULL, E_GLOB)
 }
 
 inst BOUND 2		B.i {czech2(boundcheck, $1.i, $2.i, $a)}
-inst NCHECK 2		M.x {czech(nullcheck, $1.x, $a)}
-inst GCHECK 2		S1  {czech(globcheck, $1.p, $a);}
+inst NCHECK 2		M.x {czech(nullcheck, pointer($1), $a)}
+inst GCHECK 2		S1  {czech(globcheck, valptr($1), $a);}
 inst ZCHECK 2		M.i {czech(zerocheck, $1.i, $a)}
 inst FZCHECK 2 		M.f {czech(fzerocheck, $1.f, $a)}
 inst DZCHECK 2 		M.d {czech(fzerocheck, $1.d, $a)}
@@ -468,7 +468,7 @@ defs {
 defs {
 #define fixcopy(a, b, n) prof_charge(n/4); memcpy(a, b, n)
 }
-inst FIXCOPY 0	   	S3 {fixcopy($1.x, $2.x, $3.i);}
+inst FIXCOPY 0	   	S3 {fixcopy(pointer($1), pointer($2), $3.i);}
 
 # FLEXCOPY expects to find on the stack the address of a flex array parameter 
 # and a size in bytes; it copies the parameter to dynamic local space, 
@@ -480,10 +480,10 @@ defs {
        sp -= sizew;							\
        if ((uchar *) sp < stack + SLIMIT)				\
             error(E_STACK, 0);						\
-       memcpy(sp, d[0].x, size);					\
-       d[0].x = (uchar *) sp;}
+       memcpy(sp, pointer(d[0]), size);					\
+       d[0].a = (addr) sp;}
 }
-inst FLEXCOPY 0		S2 {flexcopy($1.x, $2.i);}
+inst FLEXCOPY 0		S2 {flexcopy(pointer($1), $2.i);}
 
 # In the interpreter, the CALLW and CALLD instructions are implemented as 
 # two operations, an ordinary CALL followed by a SLIDE; the return address 
@@ -495,8 +495,8 @@ equiv CALLQ 1 		{JPROC, SLIDEQ $a}
 equiv CALLF 1 		{JPROC, SLIDEF $a}
 equiv CALLD 1		{JPROC, SLIDED $a}
 
-inst LINK 0 		S1 {statlink = $1.p;}
-inst SAVELINK 0		S0 {bp[SL].p = statlink;}
+inst LINK 0 		S1 {statlink = valptr($1);}
+inst SAVELINK 0		S0 {bp[SL].a = (addr) statlink;}
 
 defs {
 #define frame()								\
@@ -515,9 +515,9 @@ defs {
 }
 
 inst JPROC 0 S0 {
-     value *p = sp[0].p;
-     sp -= HEAD-1; sp[BP].p = bp; sp[PC].x = pc;
-     if (p[CP_PRIM].z != interp) {
+     value *p = valptr(sp[0]);
+     sp -= HEAD-1; sp[BP].a = (addr) bp; sp[PC].a = (addr) pc;
+     if (primptr(p[CP_PRIM]) != interp) {
 #ifdef PROFILE
 	  /* Calling a native-code routine */
 	  prof_enter(p, ticks, PROF_PRIM);
@@ -526,7 +526,7 @@ inst JPROC 0 S0 {
 #ifdef OBXDEB
 	  prim_bp = sp;
 #endif
-	  (*(p[CP_PRIM].z))(sp);
+	  (*primptr(p[CP_PRIM]))(sp);
 #ifdef OBXDEB
 	  prim_bp = NULL;
 #endif
@@ -534,7 +534,7 @@ inst JPROC 0 S0 {
 #ifdef PROFILE
 	  prof_enter(p, ticks, PROF_CALL);
 #endif
-	  cp = p; pc = cp[CP_CODE].x;
+	  cp = p; pc = pointer(cp[CP_CODE]);
 	  do_find_proc;
 	  frame();
      }
@@ -571,7 +571,7 @@ inst RETURN 0 S0 {
 	  return;
      }
 
-     sp = bp; pc = sp[PC].x; bp = sp[BP].p; cp = bp[CP].p;
+     sp = bp; pc = pointer(sp[PC]); bp = valptr(sp[BP]); cp = valptr(bp[CP]);
      do_find_proc;
 #ifdef PROFILE
      prof_exit(cp, ticks);
@@ -605,34 +605,6 @@ inst BREAK 2 S0 {
      debug_break(cp, bp, pc0, "break");
 #endif
 }
-
-if {[info exists SPECIALS]} {
-
-# SPECIALS FOR COMPILERS COURSE
-
-defs {
-#define casejump(x, n0)					\
-     {							\
-	  int n = n0;					\
-	  pc0 = pc; pc += 4*n;				\
-	  while (n > 0) {				\
-	       if (x == get2(pc0)) {			\
-		    jump(get2(pc0+2));			\
-		    break;				\
-	       }					\
-	       pc0 += 4; n--;				\
-	  }						\
-     }
-}
-
-inst CASEJUMP 1   	S1  {casejump($1.i, $a);}
-zinst CASEARM 2R
-
-inst PACK 0		B.i {pack($2.p, $1.x)}
-inst UNPACK 0		S0 {sp--; sp[0].p = getcode(sp[1].i); 
-     	    		   	   sp[1].x = getenvt(sp[1].i);}
-}
-
 
 zinst REG 0
 zinst ADDR 0

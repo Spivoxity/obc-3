@@ -47,9 +47,9 @@ PROCEDURE HALT(n: INTEGER) IS "HALT";
 
 PROCEDURE NEW(desc: SYSTEM.PTR; size: INTEGER): SYSTEM.PTR IS "NEW";
 (* CODE 
-     value *desc = args[0].p;
+     value *desc = valptr(args[0]);
      int size = args[1].i;
-     ob_res.p = (value * ) gc_alloc(desc, size, bp);
+     ob_res.a = (addr) gc_alloc(desc, size, bp);
 *)
 
 (*
@@ -85,7 +85,7 @@ Parameters NEWFLEX(elmap, elsize, k: INTEGER;
 
 PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 (* CODE 
-     value *elmap = args[0].p;
+     value *elmap = valptr(args[0]);
      int elsize = args[1].i;
      int k = args[2].i;
      value *dim = &args[3];		/* Array of bounds */
@@ -108,10 +108,10 @@ PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 
      desc = q + arsize/4;
      map = desc + k + 1;
-     q[-1].p = desc;
+     q[-1].a = (addr) desc;
 
      /* Fill in the descriptor */
-     desc[DESC_MAP].p = map;
+     desc[DESC_MAP].a = (addr) map;
      dim = &args[3];			/* In case our stack moved */
      for (i = 0; i < k; i++) desc[DESC_BOUND+i].i = dim[i].i;
 
@@ -126,17 +126,17 @@ PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 	  map[4].i = n;
 	  map[5].i = elsize;
 	  map[6].i = GC_MAP;
-	  map[7].p = elmap;
+	  map[7].a = (addr) elmap;
 	  map[8].i = GC_END;
 	  map[9].i = GC_END;
      }
 
-     ob_res.p = q; 
+     ob_res.a = (addr) q; 
 *)
 
 PROCEDURE COMPARE(s, t: ARRAY OF CHAR): INTEGER IS "COMPARE";
 (* CODE 
-     uchar *s1 = args[0].x, *s2 = args[2].x;
+     uchar *s1 = pointer(args[0]), *s2 = pointer(args[2]);
      int i = 0, n = min(args[1].i, args[3].i);
 
      while (i < n && s1[i] != '\0' && s1[i] == s2[i]) i++;
@@ -148,17 +148,17 @@ PROCEDURE CAP(c: CHAR): CHAR IS "CAP";
 (* CODE ob_res.i = toupper(align_byte(args[0].i)); *)
 
 PROCEDURE COPY(VAR s, t: ARRAY OF CHAR) IS "COPY";
-(* CODE obcopy((char * ) args[2].x, (char * ) args[0].x, 
+(* CODE obcopy((char * ) pointer(args[2]), (char * ) pointer(args[0]), 
 					min(args[1].i, args[3].i)); *)
 
 PROCEDURE SYSMOVE(src, dest: INTEGER; n: INTEGER) IS "MOVE";
-(* CODE memmove(args[1].x, args[0].x, args[2].i); *)
+(* CODE memmove(pointer(args[1]), pointer(args[0]), args[2].i); *)
 
 PROCEDURE FLEXASSIGN(elsize, dim: INTEGER (* ... *)) IS "FLEXASSIGN";
 (* CODE
      int size = args[0].i;
      int dim = args[1].i;
-     uchar *src = args[2].x, *dst = args[dim+3].x;
+     uchar *src = pointer(args[2]), *dst = pointer(args[dim+3]);
      value *sbound = &args[3], *dbound = &args[dim+4];
      int i;
 
@@ -216,7 +216,7 @@ PROCEDURE ASH(a, b: INTEGER): INTEGER IS "ASH";
 
 PROCEDURE PACK(VAR x: REAL; n: INTEGER) IS "PACK";
 (* CODE
-     value *x = args[0].p;
+     value *x = valptr(args[0]);
      int n = args[1].i;
      float y = x->f;
      y = ldexpf(y, n);
@@ -225,8 +225,8 @@ PROCEDURE PACK(VAR x: REAL; n: INTEGER) IS "PACK";
 
 PROCEDURE UNPK(VAR x: REAL; VAR n: INTEGER) IS "UNPK";
 (* CODE
-    value *x = args[0].p;
-    value *n = args[1].p;
+    value *x = valptr(args[0]);
+    value *n = valptr(args[1]);
     float y = x->f; int k;
     y = frexpf(y, &k);
     if (y != 0.0) { y *= 2; k--; }
@@ -235,7 +235,7 @@ PROCEDURE UNPK(VAR x: REAL; VAR n: INTEGER) IS "UNPK";
 
 PROCEDURE PACKLONG(VAR x: REAL; n: INTEGER) IS "PACKLONG";
 (* CODE
-     value *x = args[0].p;
+     value *x = valptr(args[0]);
      int n = args[1].i;
      double y = get_double(x);
      y = ldexp(y, n);
@@ -244,8 +244,8 @@ PROCEDURE PACKLONG(VAR x: REAL; n: INTEGER) IS "PACKLONG";
 
 PROCEDURE UNPKLONG(VAR x: REAL; VAR n: INTEGER) IS "UNPKLONG";
 (* CODE
-    value *x = args[0].p;
-    value *n = args[1].p;
+    value *x = valptr(args[0]);
+    value *n = valptr(args[1]);
     double y = get_double(x); int k;
     y = frexp(y, &k);
     if (y != 0.0) { y *= 2; k--; }

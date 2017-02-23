@@ -74,9 +74,9 @@ void dump(void) {
 	  value *cp = p->p_addr;
 	  uchar *pc, *limit;
 
-	  if (cp[CP_PRIM].z != interp) continue;
+	  if (primptr(cp[CP_PRIM]) != interp) continue;
 	  
-	  pc = cp[CP_CODE].x; limit = pc + cp[CP_SIZE].i;
+	  pc = pointer(cp[CP_CODE]); limit = pc + cp[CP_SIZE].i;
 
 	  printf("Procedure %s:\n", proctab[k]->p_name);
 	  while (pc < limit) {
@@ -111,6 +111,6 @@ void dump(void) {
 }
 
 const char *prim_name(value *p) {
-     if (p[1].x != NULL) return (char *) p[1].x;
+     if (pointer(p[1]) != NULL) return (char *) pointer(p[1]);
      return "(unknown)";
 }
