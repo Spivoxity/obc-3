@@ -71,14 +71,12 @@ char *fmt_inst(uchar *pc) {
 void dump(void) {
      int i, k;
 
-     printf("PLUGH %p\n", interp);
-
      for (k = 0; k < nprocs; k++) {
 	  proc p = proctab[k];
 	  value *cp = p->p_addr;
 	  uchar *pc, *limit;
 
-	  if (primptr(cp[CP_PRIM]) != interp) continue;
+	  if (! interpreted(cp)) continue;
 	  
 	  pc = pointer(cp[CP_CODE]); limit = pc + cp[CP_SIZE].i;
 

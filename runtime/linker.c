@@ -526,8 +526,7 @@ static phrase put_mark(symbol s) {
 /* const_head -- start of constant pool */
 static void const_head(int prim, int code, int reloc, 
 		       int frame, int stack, char *map) {
-     data_value(prim, R_SUBR);	/* Primitive (64 bits) */
-     data_value(0, R_WORD);
+     data_value(prim, R_SUBR);	/* Primitive */
      data_value(code, reloc);	/* Entry point */
      data_value(0, R_WORD);	/* Code size */
      data_value(frame, R_WORD);	/* Frame size in words */

@@ -103,7 +103,7 @@ void dltrap(value *sp) {
 	  panic("couldn't find primitive %s", name);
 
      /* Bind the primitive to the library symbol */
-     primptr(cp[CP_PRIM]) = prim;
+     cp[CP_PRIM].a = wrap_prim(prim);
 
      /* Call the primitive for the first time */
      ( * prim)(sp);

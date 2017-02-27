@@ -159,10 +159,10 @@ void get_halflong(ctvalue src, int off, reg dst);
 
 #define __func1__(name, fun) name,
 typedef enum {
-     __FUNC__(__func1__)
+     __FUNC__(__func1__) NFUNC
 } func;
 
 void gcall(func f, int n);
-void gcallr(reg r, int off, int n);
+void gcallr(reg r, int n);
 
           

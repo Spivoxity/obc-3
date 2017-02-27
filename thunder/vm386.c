@@ -84,7 +84,31 @@ const int nvreg = 4, nireg = 3;
 const vmreg vreg[] = { &reg_v0, &reg_v1, &reg_v2, &reg_v3 }; /* Callee-save */
 const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2 };      /* Caller-save */
 
+#define IJUMP_SHIFT 2
+
 #else
+
+/* This version includes a crude native amd64 port (enabled with M64X32)
+   that still uses 32-bit addresses.  
+
+* We rely on the host software to supply an implementation of vm_alloc
+  that allocates storage in the bottom 4GB of the address space.  This
+  is easily achieved on Linux with the MAP_32BITS flag to mmap.
+
+* The top 16 integer registers are not made available.  For simple JIT
+  applications, they do not give much benefit, but they could be added
+  with code to compile the appropriate REX prefixes.  That would, to be
+  fair, allow us to reserve the argument registers EDI, ESI and EDX.
+
+* We still use x87 for floating point.
+
+* All addresses that are passed to the code generation interface must
+  fit in 32 bits.  That means global data storage needs to be in the bottom
+  4GB of memory.  For function addresses, we use wrappers, so that the
+  CALL instruction is in effect an indirect call, receiving the 32-bit
+  address of cell that contains the 64-bit address of the function.
+  It's up to the host software to create and manage these indirection
+  cells. */
 
 struct _vmreg
      reg_i3 = { "I3", ESI },
@@ -97,13 +121,14 @@ const vmreg vreg[] = { &reg_v0, &reg_v1 }; /* Callee-save */
 const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2, &reg_i3, &reg_i4 };
                                            /* Caller-save */
 
+#define IJUMP_SHIFT 3
+
 #endif
 
 const int nfreg = 6;
 const vmreg freg[] = { &reg_f0, &reg_f1, &reg_f2,        /* Floating point */
                        &reg_f3, &reg_f4, &reg_f5 };
 const vmreg ret = &reg_i0, zero = &reg_zz;
-
 
 /* The first four registers have 8-bit fields like AL */
 #define is8bit(r) ((r) <= EBX)
@@ -127,16 +152,20 @@ static char *_regname[] = {
 
 static char **regname = &_regname[1];
 
-static char *fmt_addr(int rs, int imm) {
+static char *fmt_addr_s(int rs, int imm, int shift) {
      static char buf[32];
 
      if (rs == NOREG)
           sprintf(buf, "%#x", imm);
+     else if (shift > 0)
+          sprintf(buf, "%s(%s<<%d)", fmt_val(imm), regname[rs], shift);
      else
           sprintf(buf, "%s(%s)", fmt_val(imm), regname[rs]);
 
      return buf;
 }
+
+#define fmt_addr(rs, imm) fmt_addr_s(rs, imm, 0)
 
 /* When Thunder is compiled for debugging, numeric opcodes are accompanied
    by textual mnemonics as they are passed around, and the act of generating
@@ -175,6 +204,7 @@ static char *fmt_addr(int rs, int imm) {
 
 /* Instructions */
 
+#define REX(op)		((op)|0x4000)
 #define REX_W(op)       ((op)|0x4800)
 
 /* ALU operation codes for the 386 */
@@ -251,6 +281,7 @@ static char *fmt_addr(int rs, int imm) {
 #define opMOVL_m 	MNEM("movl", 0x89) // Move to memory
 #define opMOVW_m 	MNEM("movw", 0x6689)
 #define opMOVB_m 	MNEM("movb", 0x88)
+#define opMOVB2_m 	MNEM("movb***", REX(0x88))
 #define opMOVL_i 	MNEM("movl", 0xb8) // Load immediate into register
 
 #define xMONOP 0xf7 		// Unary ALU op
@@ -360,7 +391,7 @@ static void memory(int ra, int rb, int d) {
 	    Baseless addressing [d+reg(i)*2^s]
 
         mode = 0, r/m = 4, i = 4, b = 5
-            Absolute addressing [d]
+            Absolute addressing [d], useful for amd64
 
 	mode = 0, r/m = 4, i = 4, b != 5:
   	    Based addressing [d+reg(b)].     */
@@ -389,6 +420,12 @@ static void memory(int ra, int rb, int d) {
 	  else
 	       addr(2, ra, rb), word(d);
      }
+}
+
+/* memory operand with shift */
+static void memory_s(int ra, int rb, int d, int s) {
+     // Assuming rb != ESP and d needs 32 bits
+     addr(0, ra, 4), sib(s, rb, 5), word(d);
 }
 
 /* ASSEMBLY ROUTINES for various instructions formats.  
@@ -456,10 +493,16 @@ static void instr2_ri8(OPDECL2, int rm, int imm) {
      opcode(op); addr(3, op2, rm); byte(imm);
 }
 
-/* instruction with 2 opcodes and memory operand */
+/* instruction with 2 opcodes, memory operand */
 static void instr2_m(OPDECL2, int rs, int imm) {
      vm_debug2("%s *%s", mnem, fmt_addr(rs, imm));
      opcode(op); memory(op2, rs, imm);
+}
+
+/* instruction with 2 opcodes, memory operand and shift */
+static void instr2_ms(OPDECL2, int rs, int imm, int s) {
+     vm_debug2("%s *%s", mnem, fmt_addr_s(rs, imm, s));
+     opcode(op); memory_s(op2, rs, imm, s);
 }
 
 /* instruction with 2 opcodes and 8/32 bit immediate */
@@ -517,6 +560,7 @@ static void instr_m(OPDECL, int rs, int imm) {
 
 #define add64_i(rd, imm)  instr2_ri(MNEM2("addq", xALUq_i, aluADD), rd, imm)
 #define sub64_i(rd, imm)  instr2_ri(MNEM2("subq", xALUq_i, aluSUB), rd, imm)
+#define add64_rr(r1, r2)  instr_rr(MNEM("addq", xALUq_r(aluADD)), r1, r2)
 
 #define push_r(r)	instr_reg(opPUSH_r, r)
 #define push_i(imm)	instr_imm(opPUSH_i, imm)
@@ -553,18 +597,23 @@ static void move_r(OPDECL, int rd, int rs) {
 
 /* shift instructions (3 registers) */
 static void shift3_r(OPDECL, int rd, int rs1, int rs2) {
+     int rx = rd;
+
      if (rd == ECX || (rd != rs1 && rd == rs2)) {
-	  int rx = (rs2 == EAX ? EDX : EAX);
-	  push_r(rx); shift3_r(OP, rx, rs1, rs2); 
+	  rx = (rs2 == EAX ? EDX : EAX);
+	  push_r(rx);
+     }
+
+     move(rx, rs1);
+     if (rs2 == ECX)
+          shift2cl_r(OP, rx);
+     else {
+          push_r(ECX); move(ECX, rs2); 
+          shift2cl_r(OP, rx); pop(ECX);
+     }
+
+     if (rx != rd) {
           move(rd, rx); pop(rx);
-     } else {
-	  move(rd, rs1);
-	  if (rs2 == ECX)
-	       shift2cl_r(OP, rd);
-	  else {
-	       push_r(ECX); move(ECX, rs2); 
-               shift2cl_r(OP, rd); pop(ECX);
-	  }
      }
 }
 
@@ -579,10 +628,14 @@ static void storec(int rt, int rs, int imm) {
      if (is8bit(rt))
           instr_st(opMOVB_m, rt, rs, imm);
      else {
+#ifdef M64X32
+          instr_st(opMOVB2_m, rt, rs, imm);
+#else
 	  int rx = (rs == EAX ? EDX : EAX);
 	  push_r(rx); move(rx, rt);
 	  instr_st(opMOVB_m, rx, rs, imm);
 	  pop(rx);
+#endif
      }
 }
 
@@ -603,8 +656,6 @@ static void binop3c_r(OPDECL, int rd, int rs1, int rs2) {
 }
 
 #ifdef M64X32
-#define add64_rr(r1, r2)  instr_rr(MNEM("addq", xALUq_r(aluADD)), r1, r2)
-
 static void add64_r(int rd, int rs1, int rs2) {
      if (rd == rs2)
           add64_rr(rd, rs1);
@@ -815,10 +866,7 @@ static void fcompare(OPDECL, int rd, int rs1, int rs2) {
      setcc_r(OP, rd);
 }	  
 
-
-/* Translation routines */
-
-#define badop() vm_unknown(__FUNCTION__, op)
+/* STACK FRAMES */
 
 #ifndef M64X32
 
@@ -860,6 +908,17 @@ static void post_call(void) {
           add_i(ESP, nargs * sizeof(int));
 }
 
+void call_r(int ra) {
+     instr2_r(opCALL, ra);
+     post_call();
+}
+
+code_addr vm_prelude(int n) {
+     code_addr entry = pc;
+     push_r(EBP); push_r(EBX); push_r(ESI); push_r(EDI); 
+     return entry;
+}
+
 #else
 
 /*
@@ -875,17 +934,18 @@ sp:     blank space
 If there is only one incoming arg (the most common case) we don't bother 
 to save it in the stack, as the GETARG instruction will save it immediately.
 The ABI requires sp to be a multiple of 16 when another routine is called, 
-so 8 bytes of blank space is needed unless n = 3.  The incoming args are 
-addressible at sp+blank+16.
+so 8 bytes of blank space is needed unless n is odd and > 1.  The incoming 
+args are addressible at sp+blank+16.  (Note: we only support one arg 
+at present.)
 
-Outgoing arguments are passed in EDI, ESI, EDX.  If nout = 1, then we can 
+Outgoing arguments are passed in EDI, ESI, EDX.  If nargs = 1, then we can 
 move the argument into EDI directly; otherwise outgoing arguments are pushed 
 on the stack, then popped into the argument registers before the call.
 Messy but effective!
 */
 
 static int nargs;               /* Number of outgoing args */
-static int argreg;              /* One argument kept in a register */
+static int argreg;              /* One outgoing argument kept in a register */
 
 static void prep_call(int n) {
      nargs = n; argreg = NOREG;
@@ -905,7 +965,31 @@ static void move_args() {
      if (nargs >= 3) pop(EDX);
 }
 
+void call_r(int ra) {
+     // An indirect call
+     if ((nargs == 1 && ra == EDI) || nargs > 1) {
+          // Protect routine address from overwriting
+          if (argreg != EAX)
+               move(EAX, ra), ra = EAX;
+          else
+               move(ECX, ra), ra = ECX;
+     }
+     move_args();
+     instr2_m(opCALL, ra, 0);
+}
+
+code_addr vm_prelude(int n) {
+     code_addr entry = pc;
+     push_r(EBP); push_r(EBX); sub64_i(ESP, 8);
+     if (n > 1) vm_panic("sorry, only one parameter allowed today");
+     return entry;
+}
+
 #endif
+
+/* TRANSLATION ROUTINES */
+
+#define badop() vm_unknown(__FUNCTION__, op)
 
 void vm_gen0(operation op) {
      vm_debug1(op, 0);
@@ -946,12 +1030,9 @@ void vm_gen1r(operation op, vmreg rega) {
 #endif
 	  break;
 
-#ifndef M64X32
      case CALL:
-          instr2_r(opCALL, ra);
-          post_call();
+          call_r(ra);
           break;
-#endif
           
      case ZEROF:
      case ZEROD:
@@ -980,12 +1061,16 @@ void vm_gen1i(operation op, int a) {
           push_i(a);
           break;
 
-#ifndef M64X32
      case CALL:
+#ifndef M64X32
           instr_lab(opCALL_i, (code_addr) a);
           post_call();
-          break;
+#else
+          /* Indirect call via gate */
+          move_args();
+          instr_rm(opCALL, NOREG, a);
 #endif
+          break;
 
      default:
 	  badop();
@@ -1091,23 +1176,7 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
           break;
 
      case IJUMP:
-          instr2_m(opJMP, ra, b);
-          break;
-
-     case ICALL:
-#ifndef M64X32
-          instr2_m(opCALL, ra, b);
-          post_call();
-#else          
-          if (ra != NOREG) {
-               if (argreg != EAX)
-                    move(EAX, ra), ra = EAX;
-               else
-                    move(ECX, ra), ra = ECX;
-          }
-          move_args();
-          instr2_m(opCALL, ra, b);
-#endif
+          instr2_ms(opJMP, ra, b, IJUMP_SHIFT);
           break;
 
      default:
@@ -1215,6 +1284,7 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 #ifndef M64X32
                instr_reg(opINC_r, ra);
 #else
+               /* The shorter form has become REX */
                instr2_r(opINC_m, ra);
 #endif
           } else {
@@ -1394,20 +1464,6 @@ void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
 void vm_patch(code_addr loc, code_addr lab) {
      int *p = ((int *) loc);
      *p = lab - loc - 4;
-}
-
-code_addr vm_prelude(int n) {
-     code_addr entry = pc;
-
-#ifndef M64X32
-     push_r(EBP); push_r(EBX); push_r(ESI); push_r(EDI); 
-#else
-     push_r(EBP); push_r(EBX); sub64_i(ESP, 8);
-
-     if (n > 1) vm_panic("sorry, only one parameter allowed");
-#endif
-
-     return entry;
 }
 
 void vm_postlude(void) {

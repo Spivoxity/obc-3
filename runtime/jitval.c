@@ -749,7 +749,7 @@ static void *func_table[] = {
 };
 
 #ifdef M64X32
-static void **_func_table;
+static word func_wrapper[NFUNC];
 #endif
 
 /* gcall -- call with arguments on stack */
@@ -757,21 +757,19 @@ void gcall(func f, int n) {
      gen_args(n);
 
 #ifndef M64X32
-     vm_gen1i(CALL, (int) func_table[f]);
+     vm_gen1i(CALL, address(func_table[f]));
 #else
-     if (_func_table == NULL) {
-          _func_table = (void **) scratch_alloc(sizeof(func_table));
-          memcpy(_func_table, func_table, sizeof(func_table));
-     }
+     if (func_wrapper[f] == 0)
+          func_wrapper[f] = wrap_prim(func_table[f]);
 
-     vm_gen2ri(ICALL, zero, address(&_func_table[f]));
+     vm_gen1i(CALL, func_wrapper[f]);
 #endif
 }
 
 /* gcallr -- indirect function call */
-void gcallr(reg r, int off, int n) {
+void gcallr(reg r, int n) {
      gen_args(n);
-     vm_gen2ri(ICALL, r->r_reg, off);
+     vm_gen1r(CALL, r->r_reg);
 }
 
 

@@ -736,10 +736,8 @@ void vm_gen1r(operation op, vmreg rega) {
      case JUMP: 
 	  jump_r(opBX, ra); break;
 
-#if 0
      case CALL:
           proc_call(ra); break;
-#endif
           
      case ARG:
 	  argp--;
@@ -893,11 +891,6 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 	  else
 	       move_immed(ra, * (int *) b);
 	  break;
-
-     case ICALL:
-          load_store(opLDR, IP, ra, b);
-          proc_call(IP);
-          break;
 
      case IJUMP:
           load_store(opLDR, IP, ra, b);

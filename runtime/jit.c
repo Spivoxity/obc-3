@@ -236,9 +236,10 @@ static void proc_call(uchar *pc, int arg) {
      flush_stack(0, nargs+3);
      killregs();
      r2 = ralloc(INT); rthaw(r1);
+     vm_gen3rri(LDW, r1->r_reg, r1->r_reg, 4*CP_PRIM);
      get_sp(r2);
      push_reg(r2);
-     gcallr(r1, 0, 1);
+     gcallr(r1, 1);
      pop(nargs+3);
 }
 
@@ -374,11 +375,9 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  a = vm_jumptable(arg1);
 
 	  flush(1);
-	  r1 = move_to_reg(1, INT); pop(1); 
-	  r2 = ralloc_suggest(INT, r1); unlock(1);
+	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
 	  vm_gen3rij(BGEQU, r1->r_reg, arg1, lab);
-          vm_gen3rri(LSH, r2->r_reg, r1->r_reg, JTABLE_SHIFT);
-	  vm_gen2ri(IJUMP, r2->r_reg, address(a));
+	  vm_gen2ri(IJUMP, r1->r_reg, address(a));
 	  vm_label(lab);
 
 	  pc += 2;
@@ -826,7 +825,7 @@ void jit_compile(value *cp) {
      translate();
      do_errors(make_error);
      vm_end();
-     primptr(cp[CP_PRIM]) = (primitive *) entry;
+     cp[CP_PRIM].a = wrap_prim((primitive *) entry);
 
 #ifdef DEBUG
      if (dflag > 0) fflush(stdout);
@@ -837,7 +836,7 @@ void jit_compile(value *cp) {
 void jit_trap(value *bp) {
      value *cp = valptr(bp[CP]);
      jit_compile(cp);
-     (*primptr(cp[CP_PRIM]))(bp);
+     primcall(cp, bp);
 }
 
 /* jit_proc -- translate a specified procedure */

@@ -517,7 +517,7 @@ defs {
 inst JPROC 0 S0 {
      value *p = valptr(sp[0]);
      sp -= HEAD-1; sp[BP].a = address(bp); sp[PC].a = address(pc);
-     if (primptr(p[CP_PRIM]) != interp) {
+     if (! interpreted(p)) {
 #ifdef PROFILE
 	  /* Calling a native-code routine */
 	  prof_enter(p, ticks, PROF_PRIM);
@@ -526,7 +526,7 @@ inst JPROC 0 S0 {
 #ifdef OBXDEB
 	  prim_bp = sp;
 #endif
-	  (*primptr(p[CP_PRIM]))(sp);
+	  primcall(p, sp);
 #ifdef OBXDEB
 	  prim_bp = NULL;
 #endif

@@ -62,7 +62,6 @@ union value {
 
 #define valptr(v) ((value *) (ptrtype) ((v).a))
 #define pointer(v) ((uchar *) (ptrtype) ((v).a))
-#define primptr(v) (* (primitive **) &(v))
 
 #define address(p) ((word) (ptrtype) (p))
 #define ptrcast(t, a) ((t *) (ptrtype) (a))
@@ -115,7 +114,15 @@ EXTERN int stack_size;		/* Size of main stack */
 EXTERN char *libpath;		/* Path to dynamic library */
 EXTERN value *entry;		/* Program entry point */
 EXTERN value *gcmap;		/* Global pointer map */
-EXTERN primitive *interpreter;
+EXTERN word interpreter, dyntrap;
+
+#define interpreted(p) ((p)[CP_PRIM].a == interpreter)
+
+#ifndef M64X32
+#define primcall(p, sp)  ((primitive *) p[CP_PRIM].a)(sp)
+#else
+#define primcall(p, sp)  (*ptrcast(primitive *, p[CP_PRIM].a))(sp)
+#endif
 
 #define get1(p)  ((int) ((signed char) (p)[0]))
 #define get2(p)  ((int) ((short) (((p)[1]<<8) + (p)[0])))
@@ -211,6 +218,8 @@ void long_neg(value *sp);
 void long_cmp(value *sp);
 void long_flo(value *sp);
 void long_ext(value *sp);
+
+word wrap_prim(primitive *prim);
 
 /* dynlink.c */
 void load_lib(char *fname);

@@ -35,7 +35,7 @@ typedef unsigned char *code_addr;
      p(ADD) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)	    \
      p(BGEQU) p(BGT) p(BGTF) p(BLEQ) p(BLEQF) p(BLT) p(BLTF)	    \
      p(BLTU) p(BNEQ) p(BNEQF) p(CONVIC) p(CONVIF) p(CONVIS) p(DIVF) \
-     p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF) p(ICALL)    \
+     p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF)             \
      p(JUMP) p(LDW) p(LDCU) p(LDD) p(LDSU) p(LDC) p(LDS) p(LEQ)     \
      p(LEQF) p(LSH) p(LT) p(LTF) p(MOV)	p(MUL) p(MULF)		    \
      p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
@@ -79,7 +79,9 @@ BEQD/BNEQD/BLTD/BLEQD/BGTD/BGEQD fa, fb, lab
 BLTU/BGEQU ra, rb/imm, lab                    
   -- unsigned conditional branches
 JUMP lab
-  -- unconditionl branch
+  -- unconditional branch
+IJUMP ra, imm
+  -- indexed jump with implicit multiplication
 EQ/NEQ/LT/LEQ/GT/GEQ ra, rb, rb/imm                         
   -- comparisons with boolean result
 EQF/NEQF/LTF/LEQF/GTF/GEQF ra, fb, fc
@@ -110,6 +112,10 @@ ZEROF/ZEROD fa
   -- set float/double register to zero
 LDKW ra/fa, imm
   -- load register with constant from specified address
+SXTOFF ra, rb
+  -- sign extend an addressing offset (typically from 32 to 64 bits)
+ADDOFF ra, rb, rc
+  -- add two addressing offsets.
 
 The remaining instructions are associated with subroutine calls, and are
 used only in special patterns.

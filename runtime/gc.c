@@ -890,7 +890,7 @@ static void traverse_stack(value *xsp) {
 	  if (pc.i != 0) {
 	       /* Evaluation stack: look up calling PC value in
 		  stack map table. */
-	       if (primptr(c[CP_PRIM]) == interp) {
+	       if (interpreted(c)) {
 		    r = valptr(c[CP_STKMAP]);
 		    if (r == NULL) continue;
 		    DEBUG_PRINT('m', ("\n<SM pc=%p>", pointer(pc)));

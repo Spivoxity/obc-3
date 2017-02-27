@@ -244,7 +244,7 @@ static void run(value *prog) {
      sp[BP].a = address(NULL); 
      sp[PC].a = address(NULL); 
      sp[CP].a = address(prog);
-     (*primptr(prog[CP_PRIM]))(sp);
+     primcall(prog, sp);
 }
 
 mybool custom_file(char *name) {
@@ -496,17 +496,18 @@ int main(int ac, char *av[]) {
 
      gc_init();
 
+#ifdef JIT
+     vm_debug = dflag;
+     interpreter = wrap_prim(jit_trap);
+#else
+     interpreter = wrap_prim(interp);
+#endif
+     dyntrap = wrap_prim(dltrap);
+
 #ifdef M64X32
      /* Allocate ob_res and statlink in 32-bit addressible storage */
      _result = (value *) scratch_alloc(2 * sizeof(value));
      _stat = (value **) scratch_alloc(sizeof(value *));
-#endif
-
-#ifdef JIT
-     vm_debug = dflag;
-     interpreter = jit_trap;
-#else
-     interpreter = interp;
 #endif
 
      fp = fopen(codefile, "rb");

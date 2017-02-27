@@ -184,3 +184,14 @@ proc find_symbol(value *p, proc *table, int nelem) {
 
      return table[a];
 }
+
+word wrap_prim(primitive *prim) {
+#ifndef M64X32
+     return (word) prim;
+#else
+     primitive **wrapper =
+          (primitive **) scratch_alloc(sizeof(primitive *));
+     *wrapper = prim;
+     return address(wrapper);
+#endif
+}
