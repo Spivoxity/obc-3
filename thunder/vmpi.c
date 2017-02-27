@@ -409,6 +409,13 @@ static void ldst_rr(OPDECL, int rd, int rn, int rm) {
      instr(op|RRBIT|UBIT, reg(rd), reg(rn), reg(rm));
 }
 
+// rd :=: mem[rn + rm<<s]
+static void ldst_rr_s(OPDECL, int rd, int rn, int rm, int s) {
+     vm_debug2("%s, %s, [%s, %s, LSL %d]", mnem, regname[rd],
+               regname[rn], regname[rm], s);
+     instr(op|RRBIT|UBIT, reg(rd), reg(rn), reg(rm)|(s<<7));
+}
+
 // Fancy indexed loads and stores
 
 #define IBIT  (0x04<<20)
@@ -624,6 +631,12 @@ static void load_store(OPDECL, int ra, int rb, int c) {
 
 #define load_word(ra, rb, off) \
      load_store(opLDR, ra, rb, off)
+
+/* Loads and stores for word and unsigned byte */
+static void load_store_s(OPDECL, int ra, int rb, int c, int s) {
+     int rc = const_reg(c);
+     ldst_rr_s(OP, ra, rc, rb, s);
+}
 
 /* Other integer loads and stores */
 static void load_store_x(OPDECL, int ra, int rb, int c) {
@@ -893,7 +906,7 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 	  break;
 
      case IJUMP:
-          load_store(opLDR, IP, ra, b);
+          load_store_s(opLDR, IP, ra, b, 2);
           jump_r(opBX, IP);
           break;
 
