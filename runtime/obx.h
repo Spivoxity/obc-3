@@ -51,17 +51,21 @@ typedef union value value;
 
 typedef void primitive(value *sp);
 
-typedef unsigned addr;
+typedef unsigned word;
+typedef unsigned long ptrtype;
 
 union value {
      int i;
      float f;
-     addr a;
+     word a;
 };
 
-#define valptr(v) ((value *) (unsigned long) ((v).a))
-#define pointer(v) ((uchar *) (unsigned long) ((v).a))
-#define primptr(v) ((primitive *) (unsigned long) ((v).a))
+#define valptr(v) ((value *) (ptrtype) ((v).a))
+#define pointer(v) ((uchar *) (ptrtype) ((v).a))
+#define primptr(v) (* (primitive **) &(v))
+
+#define address(p) ((word) (ptrtype) (p))
+#define ptrcast(t, a) ((t *) (ptrtype) (a))
 
 typedef struct _proc *proc;
 typedef struct _module *module;
@@ -125,10 +129,20 @@ extern struct primdef {
      primitive *p_prim;
 } primtab[];
 
-EXTERN value _result[2];	/* Procedure result */
+#ifdef M64X32
+EXTERN value *_result;          /* Procedure result */
+#else
+EXTERN value _result[2];
+#endif
 #define ob_res _result[0]
 
+#ifdef M64X32
+EXTERN value **_stat;
+#define statlink (*_stat)
+#else
 EXTERN value *statlink;		/* Static link for procedure call */
+#endif
+
 EXTERN int level;		/* Recursion level in bytecode interp. */
 #ifdef OBXDEB
 EXTERN value *prim_bp;		/* Base pointer during primitive call */
@@ -198,15 +212,6 @@ void long_cmp(value *sp);
 void long_flo(value *sp);
 void long_ext(value *sp);
 
-#ifdef SPECIALS
-int pack(value *code, uchar *env);
-value *getcode(int word);
-uchar *getenvt(int word);
-
-void pack_closure(value *sp);
-void unpack_closure(value *sp);
-#endif
-
 /* dynlink.c */
 void load_lib(char *fname);
 void dltrap(value *sp);
@@ -256,7 +261,7 @@ double flo_convq(longint);
 /* gc.c */
 
 /* scratch_alloc -- allocate memory that will not be freed */
-void *scratch_alloc(unsigned bytes, mybool atomic);
+void *scratch_alloc(unsigned bytes);
 
 /* gc_alloc -- allocate an object for the managed heap */
 void *gc_alloc(value *desc, unsigned size, value *sp);

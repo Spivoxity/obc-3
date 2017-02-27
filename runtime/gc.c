@@ -104,13 +104,23 @@ typedef unsigned word;
 #include <fcntl.h>
 #include <sys/mman.h>
 
+#ifdef M64X32
+#define mmap_flags MAP_PRIVATE|MAP_32BIT
+#else
+#define mmap_flags MAP_PRIVATE
+#endif
+
+#ifdef MACOS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
 static void *grab_chunk(unsigned size) {
      void *p;
      static void *last_addr = NULL;
 
-#ifdef MACOS
+#ifdef MAP_ANONYMOUS
      p = mmap(last_addr, size, PROT_READ|PROT_WRITE, 
-	      MAP_ANON|MAP_PRIVATE, -1, 0);
+	      mmap_flags|MAP_ANONYMOUS, -1, 0);
 #else
      static int zero_fd = -1;
 
@@ -120,7 +130,7 @@ static void *grab_chunk(unsigned size) {
      }
 
      p = mmap(last_addr, size, PROT_READ|PROT_WRITE,
-              MAP_PRIVATE, zero_fd, 0);
+              mmap_flags, zero_fd, 0);
 #endif
 
      if (p == MAP_FAILED) return NULL;
@@ -151,7 +161,7 @@ static void *get_memory(unsigned size) {
      p = grab_chunk(alloc_size);
      if (p == NULL) panic("out of memory");
      DEBUG_PRINT('b', ("Allocated chunk at %p\n", p));
-     ASSERT((unsigned) p % PAGESIZE == 0);
+     ASSERT((ptrtype) p % PAGESIZE == 0);
      return p;
 }
 
@@ -177,16 +187,12 @@ static void *get_memory(unsigned size) {
 
 /* The scratch allocator keeps hold of just one piece of free memory,
    and wastefully discards it if it is too small to satisfy the next
-   memory request. 
-
-   The 'atomic' argument to scratch_alloc is not used, but has
-   significance if the runtime system is built with the Boehm garbage
-   collector in place of this one. */
+   memory request. */
 
 static uchar *scratch_free = NULL;
 static uchar *scratch_limit = NULL;
 
-void *scratch_alloc(unsigned size, mybool atomic) {
+void *scratch_alloc(unsigned size) {
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
      uchar *p;
 
@@ -209,7 +215,7 @@ void *scratch_alloc(unsigned size, mybool atomic) {
 	  scratch_free += alloc_size;
      }
 
-     ASSERT((unsigned) p % SCRATCH_ALIGN == 0);
+     ASSERT((ptrtype) p % SCRATCH_ALIGN == 0);
 
      return p;
 }
@@ -242,7 +248,7 @@ static header *alloc_header(void) {
      header *h;
 
      if (hdr_free == NULL) 
-	  h = (header *) scratch_alloc(sizeof(header), FALSE);
+	  h = (header *) scratch_alloc(sizeof(header));
      else {
 	  h = hdr_free;
 	  hdr_free = h->h_next;
@@ -311,34 +317,21 @@ static header *new_list(void) {
 
 #define mask(x, n) ((x) & ((1 << (n)) - 1))
 
-#define top_part(p)  (((unsigned) (p)) >> (BOT_BITS + LOG_PAGESIZE))
-#define bot_part(p)  mask(((unsigned) (p)) >> LOG_PAGESIZE, BOT_BITS)
+#define top_part(p)  (address(p) >> (BOT_BITS + LOG_PAGESIZE))
+#define bot_part(p)  mask(address(p) >> LOG_PAGESIZE, BOT_BITS)
 
 /* Here's the layout of the page table; unused elements of the
    top-level table are all initialized to empty_index, a page full
    of NULLs. */
 
-typedef header *page_index[BOT_SIZE];
+typedef word page_index[BOT_SIZE];
 
-static page_index *page_table[TOP_SIZE];
+static word page_table[TOP_SIZE];
 static page_index *empty_index;
 
-#define get_header(p) (*page_table[top_part(p)])[bot_part(p)]
-
-/* We can illustrate the use of this table with the following routine
-   that finds the start of an object, given an address anywhere within
-   it; NULL is returned if p does not point within a page that belongs
-   to us. */
-
-#if 0
-/* find_start -- find the start of an object from an internal pointer */
-static inline uchar *find_start(uchar *p) {
-     header *h = get_header(p);
-     if (h == NULL) return NULL; /* Page doesn't belong to us */
-     ASSERT(h->h_objsize > 0); /* Block must be in use */
-     return h->h_memory + round_down(p - h->h_memory, h->h_objsize);
-}
-#endif
+#define get_header(p) \
+     ptrcast(header, (*ptrcast(page_index, \
+                               page_table[top_part(p)]))[bot_part(p)])
 
 /* page_setup -- make page table entries point to a given header */
 static void page_setup(uchar *base, unsigned size, header *h) {
@@ -348,11 +341,12 @@ static void page_setup(uchar *base, unsigned size, header *h) {
 
      for (p = base; p < base + size; p += PAGESIZE) {
 	  /* Make sure lower index exists */
-	  if (page_table[top_part(p)] == empty_index)
+	  if (page_table[top_part(p)] == address(empty_index))
 	       page_table[top_part(p)] = 
-		    (page_index *) scratch_alloc(sizeof(page_index), FALSE);
+		    address(scratch_alloc(sizeof(page_index)));
 
-	  get_header(p) = h;
+          (*ptrcast(page_index, page_table[top_part(p)]))[bot_part(p)]
+               = address(h);
      }
 }
 
@@ -700,7 +694,7 @@ void *gc_alloc(value *desc, unsigned size, value *sp) {
 
      alloc_since_gc += alloc_size;
      DEBUG_PRINT('c', ("[Alloc %d %p]", size, p));
-     *p = (word) desc;
+     *p = address(desc);
      return p+1;
 }
 
@@ -720,15 +714,15 @@ void *gc_alloc(value *desc, unsigned size, value *sp) {
 #define BROKEN_HEART 0xbabeface
 
 #define get_word(p, i) (((word *) p)[i])
-#define desc(p) ((word *) get_word(p, 0))
+#define desc(p) ptrcast(word, get_word(p, 0))
 
 /* redirect -- translate pointer into new space */
-static void redirect(uchar **p) {
+static void redirect(word *p) {
      uchar *q, *r, *s;
      header *h;
      int index;
 
-     q  = *p;			/* q is the old pointer value */
+     q  = ptrcast(uchar, *p); /* q is the old pointer value */
      if (q == NULL) return;
      h = get_header(q);
      if (h == NULL) return;	/* Not in the managed heap */
@@ -742,7 +736,7 @@ static void redirect(uchar **p) {
 	  /* r is the start of the object containing q */
 
 	  if (get_word(r, 0) == BROKEN_HEART) 
-	       s = (uchar *) get_word(r, 1);
+	       s = ptrcast(uchar, get_word(r, 1));
 	  else {
 	       /* Evacuate object at r */
 	       if (free_count[index] == 0) add_block(index);
@@ -751,10 +745,10 @@ static void redirect(uchar **p) {
 	       free_ptr[index] += pool_size(index);
 	       free_count[index]--;
 	       get_word(r, 0) = BROKEN_HEART;
-	       get_word(r, 1) = (word) s;
+	       get_word(r, 1) = address(s);
 	  }
 	  /* s is the new location for the object r */
-	  *p = s + (q - r);
+	  *p = address(s + (q - r));
      } else if (h->h_epoch < gencount) {
 	  /* A big block, not already moved to the new semispace */
 	  unlink(h);
@@ -805,26 +799,26 @@ static void redir_map(unsigned map, uchar *base, int bmshift) {
 
 	  while (map != 0) {
 	       if ((map & 0x1) != 0)
-		    redirect((uchar **) &get_word(base, i));
+		    redirect((word *) &get_word(base, i));
 	       i++; map >>= 1;
 	  }
 
 	  return;
      }
 
-     p = (int *) map;
+     p = ptrcast(int, map);
 
      for (;;) {
 	  if (*p % 4 == 0) {
 	       /* A pointer offset */
-	       redirect((uchar **) (base + *p));
+	       redirect((word *) (base + *p));
 	       p++;
 	       continue;
 	  }
 
 	  switch (op = *p) {
 	  case GC_BASE:
-	       base = (uchar *) p[1];
+	       base = ptrcast(uchar, p[1]);
 	       break;
 
 	  case GC_REPEAT:
@@ -835,7 +829,7 @@ static void redir_map(unsigned map, uchar *base, int bmshift) {
 	       ASSERT(count > 0);
 
 	       for (i = 0; i < count; i++)
-		    redir_map((unsigned) (p+4), base2 + i*stride, 0);
+		    redir_map(address(p+4), base2 + i*stride, 0);
 
 	       break;
 
@@ -844,7 +838,7 @@ static void redir_map(unsigned map, uchar *base, int bmshift) {
 	       count = p[2];
 
 	       for (i = 0; i < count; i++)
-		    redirect((uchar **) &get_word(base2, i));
+		    redirect((word *) &get_word(base2, i));
 	       break;
 			 
 	  case GC_MAP:
@@ -860,9 +854,9 @@ static void redir_map(unsigned map, uchar *base, int bmshift) {
 	       for (i = 0; i < ndim; i++) 
 		    count *= get_word(base2, i+1);
 	       
-	       base2 = (uchar *) get_word(base2, 0);
+	       base2 = ptrcast(uchar, get_word(base2, 0));
 	       for (i = 0; i < count; i++)
-		    redir_map((unsigned) (p+4), base2 + i*stride, 0);
+		    redir_map(address(p+4), base2 + i*stride, 0);
 
 	       break;
 
@@ -1074,7 +1068,7 @@ void gc_collect(value *sp) {
 	  free_ptr[i] = NULL; free_count[i] = 0;
      }
 
-     redir_map((unsigned) gcmap, NULL, 0);  /* Redirect global variables */
+     redir_map(address(gcmap), NULL, 0);  /* Redirect global variables */
      traverse_stack(sp);	/* Redirect pointers in the stack */
      migrate();			/* Redirect internal pointers */
 
@@ -1098,8 +1092,8 @@ void gc_init(void) {
 
      ASSERT(sizeof(page_index) == PAGESIZE);
 
-     empty_index = (page_index *) scratch_alloc(sizeof(page_index), FALSE);
-     for (i = 0; i < TOP_SIZE; i++) page_table[i] = empty_index;
+     empty_index = (page_index *) scratch_alloc(sizeof(page_index));
+     for (i = 0; i < TOP_SIZE; i++) page_table[i] = address(empty_index);
 
      init_sizes();
 

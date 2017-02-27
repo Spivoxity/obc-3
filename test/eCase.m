@@ -9,20 +9,20 @@ BEGIN
 END eCase.
 
 (*<<
-"./eCase.m", line 6: this case label specifies an empty range
+"t/eCase.m", line 6: this case label specifies an empty range
 >   CASE x OF 3..2: | 1: | 1: | 'a': END;
 >             ^^^^
 
-"./eCase.m", line 6: a case label should have type INTEGER
+"t/eCase.m", line 6: a case label should have type INTEGER
 >   CASE x OF 3..2: | 1: | 1: | 'a': END;
 >                               ^^^
 > This expression has type CHAR
 
-"./eCase.m", line 7: this is a duplicate case label for value 'a'
+"t/eCase.m", line 7: this is a duplicate case label for value 'a'
 >   CASE 'x' OF 'a': | 'a': END;
 >                      ^^^
 
-"./eCase.m", line 8: CASE expects an integer or character expression
+"t/eCase.m", line 8: CASE expects an integer or character expression
 >   CASE TRUE OF TRUE: END
 >        ^^^^
 > (Use the -x flag to remove this restriction)

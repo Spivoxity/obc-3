@@ -53,18 +53,18 @@ code for a program. This idea was stolen from CAML Light.
 #define S_BSS 2			/* Below stack storage */
 #define S_STACK 3		/* Stack */
 
-typedef uchar word[4];
+typedef uchar word4[4];
 
 typedef struct {
-     word magic;		/* Magic number 'OBCX' */
-     word sig;			/* Signature */
-     word primsig;		/* Checksum of primitives */
-     word start;		/* Offset of data start from end of file */
-     word entry;		/* Entry point */
-     word gcmap;		/* Global pointer map */
-     word libdir;		/* Location of dynamic libraries */
-     word segment[NSEGS];	/* Segment sizes */
-     word nprocs, nmods, nsyms;	/* No. of procs, modules, symbols */
+     word4 magic;		/* Magic number 'OBCX' */
+     word4 sig;			/* Signature */
+     word4 primsig;		/* Checksum of primitives */
+     word4 start;		/* Offset of data start from end of file */
+     word4 entry;		/* Entry point */
+     word4 gcmap;		/* Global pointer map */
+     word4 libdir;		/* Location of dynamic libraries */
+     word4 segment[NSEGS];	/* Segment sizes */
+     word4 nprocs, nmods, nsyms; /* No. of procs, modules, symbols */
 } trailer;
 
 

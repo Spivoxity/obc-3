@@ -30,8 +30,6 @@
 
 #include "vm.h"
 
-#define INT64
-
 /* jitlab.c */
 
 typedef struct _codepoint *codepoint;
@@ -149,10 +147,22 @@ void save_stack(codepoint lab);
 void restore_stack(codepoint lab);
 vmlabel target(int lab);
 
-#ifdef INT64
 void move_longval(ctvalue src, reg rd, int offd);
 void get_halflong(ctvalue src, int off, reg dst);
-#endif
 
-void gcall(void *f, int n);
-void gcallr(reg f, int n);
+#define __FUNC__(p) \
+     p(MEMCPY, memcpy) p(STKOFLO, stkoflo) p(MEMSET, memset) \
+     p(RTERROR, rterror) p(INT_DIV, int_div) p(INT_MOD, int_mod) \
+     p(LONG_ADD, long_add) p(LONG_SUB, long_sub) p(LONG_MUL, long_mul) \
+     p(LONG_DIV, long_div) p(LONG_MOD, long_mod) p(LONG_NEG, long_neg) \
+     p(LONG_CMP, long_cmp) p(LONG_EXT, long_ext) p(LONG_FLO, long_flo)
+
+#define __func1__(name, fun) name,
+typedef enum {
+     __FUNC__(__func1__)
+} func;
+
+void gcall(func f, int n);
+void gcallr(reg r, int off, int n);
+
+          

@@ -120,13 +120,29 @@ fi
 AC_SUBST(OBDB1)
 AC_SUBST(OBDB1_DEBUG)   
 
+LD=ld
+JTABLE_SHIFT=2
 
-# Checks for programs.
+AC_ARG_ENABLE(m64x32,
+  AS_HELP_STRING([--disable-m64x32], [disable 64-bit runtime for amd64]))
+
 case $host in
-  x86_64-*-darwin*) CC='gcc -m32'; LD=ld;;
-  x86_64-*-*) CC='gcc -m32'; LD='ld -melf_i386';;
-  *) LD=ld;;
+  x86_64-*-darwin*)
+    CC='gcc -m32';;
+
+  x86_64-*-linux-*)
+    if test "$enable_m64x32" != no; then
+      AC_DEFINE(M64X32, 1, [Define for 64-bit runtime with 32-bit pointers])
+      JTABLE_SHIFT=3
+    else
+      CC='gcc -m32'; LD='ld -melf_i386'
+    fi;;
+
+  x86_64-*-*)
+    CC='gcc -m32'; LD='ld -melf_i386';;
 esac
+
+AC_DEFINE_UNQUOTED(JTABLE_SHIFT, $JTABLE_SHIFT, [Shift for indexed jumps])
 
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -165,13 +181,10 @@ AC_ARG_ENABLE(debug,
   fi)
 AC_SUBST(DEBUG)
 
-DYNLINK=1
 AC_ARG_ENABLE(dynlink,
-  AS_HELP_STRING([--disable-dynlink], [do not use dynamic linking]),
-  if test "$enable_dynlink" = no; then
-    DYNLINK=
-  fi)
-if test "$DYNLINK" = 1; then
+  AS_HELP_STRING([--disable-dynlink], [do not use dynamic linking]))
+if test "$enable_dynlink" != no; then
+  DYNLINK=1
   AC_DEFINE(DYNLINK, 1, [Define if dynamic linking enabled])
   AC_SEARCH_LIBS(dlopen, dl)
   AC_TEST_RDYNAMIC(DLFLAGS="-rdynamic")

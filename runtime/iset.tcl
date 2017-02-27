@@ -311,7 +311,7 @@ proc make_body {key action argv} {
         B.x {
 	    regsub -all {\$1} $body {sp[0]} body
 	    regsub -all {\$2} $body {sp[-1]} body
- 	    return "sp++; sp\[0\].a = (addr) ($body);"
+ 	    return "sp++; sp\[0\].a = address($body);"
         }
 	B.? {
 	    regsub -all {\$1} $body {sp[0]} body
@@ -356,7 +356,7 @@ proc make_body {key action argv} {
 	}	    
         M.x {
 	    regsub -all {\$1} $body {sp[0]} body
-	    return "sp\[0\].a = (addr) ($body);"
+	    return "sp\[0\].a = address($body);"
         }            
 	M.? {
 	    regsub -all {\$1} $body {sp[0]} body
@@ -369,7 +369,7 @@ proc make_body {key action argv} {
 	    return "sp -= 2; putlong(&sp\[0\], $body);"
 	}
         V.x {
-            return "sp--; sp\[0\].a = (addr) ($body);"
+            return "sp--; sp\[0\].a = address($body);"
         }
 	V.? {
 	    return "sp--; sp\[0\].$suffix = $body;"

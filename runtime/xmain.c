@@ -67,7 +67,7 @@ extern int vm_debug;
 /* Helper functions for the loader */
 
 module make_module(char *name, uchar *addr, int chksum, int nlines) {
-     module m = (module) scratch_alloc(sizeof(struct _module), FALSE);
+     module m = (module) scratch_alloc(sizeof(struct _module));
      m->m_name = name;
      m->m_addr = addr;
 #ifdef PROFILE
@@ -75,7 +75,7 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
      m->m_lcount = NULL;
      if (lflag && nlines > 0) {
 	  m->m_lcount = 
-	       (unsigned *) scratch_alloc(nlines * sizeof(unsigned), TRUE);
+	       (unsigned *) scratch_alloc(nlines * sizeof(unsigned));
 	  memset(m->m_lcount, 0, nlines * sizeof(int));
      }
 #endif
@@ -86,7 +86,7 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
 }
 
 proc make_proc(char *name, uchar *addr) {
-     proc p = (proc) scratch_alloc(sizeof(struct _proc), FALSE);
+     proc p = (proc) scratch_alloc(sizeof(struct _proc));
      p->p_name = name;
      p->p_addr = (value *) addr;
 #ifdef PROFILE
@@ -94,15 +94,15 @@ proc make_proc(char *name, uchar *addr) {
      p->p_parents = p->p_children = NULL;
 #endif
 #ifdef OBXDEB
-     debug_message("proc %s %#x %#x %d", name, (unsigned) addr, 
-		   (unsigned) p->p_addr[CP_CODE].a, p->p_addr[CP_SIZE].i);
+     debug_message("proc %s %#lx %#lx %d", name, (unsigned long) addr, 
+		   (unsigned long) p->p_addr[CP_CODE].a, p->p_addr[CP_SIZE].i);
 #endif
      return p;
 }
 
 void make_symbol(const char *kind, char *name, uchar *addr) {
 #ifdef OBXDEB
-     debug_message("%s %s %#x", kind, name, (unsigned) addr);
+     debug_message("%s %s %#lx", kind, name, (unsigned long) addr);
 #endif
 }
 
@@ -241,9 +241,9 @@ static void run(value *prog) {
      sp = (value *) (stack + stack_size) - 32; 
 
      sp -= HEAD; 
-     sp[BP].a = (addr) NULL; 
-     sp[PC].a = (addr) NULL; 
-     sp[CP].a = (addr) prog;
+     sp[BP].a = address(NULL); 
+     sp[PC].a = address(NULL); 
+     sp[CP].a = address(prog);
      (*primptr(prog[CP_PRIM]))(sp);
 }
 
@@ -496,6 +496,12 @@ int main(int ac, char *av[]) {
 
      gc_init();
 
+#ifdef M64X32
+     /* Allocate ob_res and statlink in 32-bit addressible storage */
+     _result = (value *) scratch_alloc(2 * sizeof(value));
+     _stat = (value **) scratch_alloc(sizeof(value *));
+#endif
+
 #ifdef JIT
      vm_debug = dflag;
      interpreter = jit_trap;
@@ -525,7 +531,8 @@ int main(int ac, char *av[]) {
 #endif
 #ifdef DEBUG
      if (dflag)
-	  printf("Starting program at address %d\n", ((uchar *) entry) - dmem);
+	  printf("Starting program at address %ld\n",
+                 (long) ((uchar *) entry - dmem));
 #endif
      run(entry);
      xmain_exit(0);

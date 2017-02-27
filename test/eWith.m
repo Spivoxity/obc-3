@@ -7,7 +7,7 @@ BEGIN
 END eWith.
 
 (*<<
-"./eWith.m", line 6: a record pointer or VAR parameter is needed here
+"t/eWith.m", line 6: a record pointer or VAR parameter is needed here
 >   WITH x: REAL DO END
 >        ^
 > This expression has type INTEGER

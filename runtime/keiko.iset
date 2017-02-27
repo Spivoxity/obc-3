@@ -481,7 +481,7 @@ defs {
        if ((uchar *) sp < stack + SLIMIT)				\
             error(E_STACK, 0);						\
        memcpy(sp, pointer(d[0]), size);					\
-       d[0].a = (addr) sp;}
+       d[0].a = address(sp);}
 }
 inst FLEXCOPY 0		S2 {flexcopy(pointer($1), $2.i);}
 
@@ -496,7 +496,7 @@ equiv CALLF 1 		{JPROC, SLIDEF $a}
 equiv CALLD 1		{JPROC, SLIDED $a}
 
 inst LINK 0 		S1 {statlink = valptr($1);}
-inst SAVELINK 0		S0 {bp[SL].a = (addr) statlink;}
+inst SAVELINK 0		S0 {bp[SL].a = address(statlink);}
 
 defs {
 #define frame()								\
@@ -516,7 +516,7 @@ defs {
 
 inst JPROC 0 S0 {
      value *p = valptr(sp[0]);
-     sp -= HEAD-1; sp[BP].a = (addr) bp; sp[PC].a = (addr) pc;
+     sp -= HEAD-1; sp[BP].a = address(bp); sp[PC].a = address(pc);
      if (primptr(p[CP_PRIM]) != interp) {
 #ifdef PROFILE
 	  /* Calling a native-code routine */

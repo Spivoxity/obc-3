@@ -52,7 +52,7 @@ void setup_regs(void) {
 
      assert(nwregs >= 5);
 
-     regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg), TRUE);
+     regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg));
 
      nregs = 0;
      for (i = 0; i < nireg; i++)

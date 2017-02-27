@@ -7,7 +7,7 @@ Standards-Version: 3.6.2
 
 Package: obc
 Architecture: any
-Depends: ${shlibs:Depends}, libc6:i386 [amd64]
+Depends: ${shlibs:Depends}
 Description: Oxford Oberon-2 compiler
  This compiler translates Oberon-2 into a portable bytecode, and comes
  with an interpreter (or on some architecures, a JIT) for the bytecode.

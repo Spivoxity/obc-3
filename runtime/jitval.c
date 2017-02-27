@@ -328,13 +328,11 @@ void move_to_frame(int i) {
      if (v->v_op != I_STACKW && v->v_op != I_STACKD) {
 	  switch (v->v_type) {
 	  case INT:
-#ifdef INT64	       
 	       if (v->v_size == 2) {
 		    move_longval(v, breg, base+offset[sp-i]);
 		    rfree(v->v_reg);
 		    break;
 	       }
-#endif
 
 	       r = move_to_reg(i, INT); runlock(r); rfree(r);
 	       vm_gen3rri(STW, r->r_reg, breg->r_reg, base+offset[sp-i]);
@@ -368,7 +366,7 @@ static mybool transient(ctvalue v) {
      case I_LOADF:
      case I_LOADQ:
      case I_LOADD:
-	  return ((unsigned) v->v_val == (unsigned) &ob_res);
+	  return (v->v_val == address(&ob_res));
      default:
 	  return FALSE;
      }
@@ -395,8 +393,13 @@ void spill(reg r) {
      int *rc = &r->r_refct;
      mybool saved = FALSE;
 
+#ifndef M64X32
      static double _tmp;
-     int tmp = (int) &_tmp;
+     unsigned tmp = address(&_tmp);
+#else
+     static unsigned tmp;
+     if (tmp == 0) tmp = address(scratch_alloc(sizeof(double)));
+#endif
 
      for (i = sp; i > 0 && *rc > 0; i--) {
           ctvalue v = &vstack[sp-i];
@@ -477,7 +480,7 @@ reg move_to_reg(int i, int ty) {
 
 	  switch (ty) {
 	  case INT:
-	       vm_gen2ri(MOV, r->r_reg, * (int *) v->v_val);
+	       vm_gen2ri(MOV, r->r_reg, *ptrcast(int, v->v_val));
 	       break;
 
 	  case FLO:
@@ -561,7 +564,7 @@ ctvalue fix_const(int i, mybool rflag) {
 	  break;
 
      case I_LDKW:
-	  set(sp-i, I_CON, INT, * (int *) v->v_val, rZERO, 1);
+	  set(sp-i, I_CON, INT, *ptrcast(int, v->v_val), rZERO, 1);
 	  break;
 
      default:
@@ -673,8 +676,11 @@ void plusa() {
 	  pop(2); unlock(2);
 	  if (v2->v_op == I_CON)
 	       push(I_CON, INT, rZERO, v1->v_val + v2->v_val, 1);
-	  else
-	       push(I_ADDR, INT, v2->v_reg, v1->v_val, 1);
+	  else {
+               r2 = v2->v_reg;
+               vm_gen2rr(SXTOFF, r2->r_reg, r2->r_reg);
+	       push(I_ADDR, INT, r2, v1->v_val, 1);
+          }
 	  break;
 
      case I_ADDR:
@@ -684,10 +690,12 @@ void plusa() {
 	  if (v2->v_op == I_CON)
 	       push(I_ADDR, INT, v1->v_reg, v1->v_val + v2->v_val, 1);
 	  else {
-	       rlock(v1->v_reg); 
+               // Sign extend v2, then use ADDOFF
 	       r1 = ralloc_suggest(INT, v1->v_reg); 
-	       unlock(2);
-	       vm_gen3rrr(ADD, r1->r_reg, v1->v_reg->r_reg, v2->v_reg->r_reg);
+               r2 = v2->v_reg;
+	       runlock(v2->v_reg);
+               vm_gen2rr(SXTOFF, r2->r_reg, r2->r_reg);
+	       vm_gen3rrr(ADD, r1->r_reg, v1->v_reg->r_reg, r2->r_reg);
 	       push(I_ADDR, INT, r1, v1->v_val, 1);
 	  }
 	  break;
@@ -697,13 +705,16 @@ void plusa() {
 	  v2 = move_to_rc(1); 
 	  pop(2);
 	  if (v2->v_op == I_CON) {
+               // No need to sign extend as r1 is an address
 	       unlock(2);
 	       push(I_ADDR, INT, r1, v2->v_val, 1);
 	  } else {
+               // Sign extend v2 and use ADDOFF
 	       r2 = ralloc_suggest(INT, r1); 
-	       unlock(2);			
-	       vm_gen3rrr(ADD, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);		
-	       push(I_REG, INT, r1, 0, 1);
+	       unlock(2);
+               vm_gen2rr(SXTOFF, v2->v_reg->r_reg, v2->v_reg->r_reg);
+	       vm_gen3rrr(ADDOFF, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);
+	       push(I_REG, INT, r2, 0, 1);
 	  }
      }
 }
@@ -711,6 +722,7 @@ void plusa() {
 
 /* Procedure calls */
 
+/* gen_args -- generate ARG instructions from right to left */
 static void gen_args(int n) {
      int i;
 
@@ -731,23 +743,39 @@ static void gen_args(int n) {
      pop(n);
 }
 
+#define __func2__(name, fun) fun,
+static void *func_table[] = {
+     __FUNC__(__func2__)
+};
+
+#ifdef M64X32
+static void **_func_table;
+#endif
+
 /* gcall -- call with arguments on stack */
-void gcall(void *f, int n) {
+void gcall(func f, int n) {
      gen_args(n);
-     vm_gen1i(CALL, (int) f);
+
+#ifndef M64X32
+     vm_gen1i(CALL, (int) func_table[f]);
+#else
+     if (_func_table == NULL) {
+          _func_table = (void **) scratch_alloc(sizeof(func_table));
+          memcpy(_func_table, func_table, sizeof(func_table));
+     }
+
+     vm_gen2ri(ICALL, zero, address(&_func_table[f]));
+#endif
 }
 
-void gcallr(reg f, int n) {
+/* gcallr -- indirect function call */
+void gcallr(reg r, int off, int n) {
      gen_args(n);
-     vm_gen1r(CALL, f->r_reg);
+     vm_gen2ri(ICALL, r->r_reg, off);
 }
 
 
-#ifdef INT64
 /* 64-bit operations */
-
-/* Just for fun, we support 64-bit integers, though the code is
-   quite nasty, because there are not really enough registers. */
 
 /* move_long -- move a 64-bit value */
 static void move_long(reg rs, int offs, reg rd, int offd) {
@@ -774,7 +802,7 @@ static int half_const(ctvalue v, int off) {
 	       return (v->v_val < 0 ? -1 : 0);
 
      case I_LDKQ:
-	  return ((int *) v->v_val)[off];
+	  return ptrcast(int, v->v_val)[off];
 
      default:
 	  panic("half_const %s", instrs[v->v_op].i_name);
@@ -839,4 +867,4 @@ void get_halflong(ctvalue src, int off, reg dst) {
 	  panic("get_halflong %s", instrs[src->v_op].i_name);
      }
 }     
-#endif
+

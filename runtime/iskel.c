@@ -129,12 +129,13 @@ $$ jump table
 #ifdef TRACE
 	  if (dflag > 1) {
 	       int i;
-	       printf("pc=%s+%d(%p) sp=%p bp=%p cp=%p",
-		      thisproc->p_name, pc - pointer(cp[1]), pc, sp, bp, cp);
+	       printf("pc=%s+%ld(%p) sp=%p bp=%p cp=%p",
+		      thisproc->p_name, (long) (pc - pointer(cp[CP_CODE])),
+                      pc, sp, bp, cp);
 	       fflush(stdout);
 	       for (i = 0; i < 8; i++) printf(" %x", sp[i].i);
 	       printf("\n");
-	       printf("%6d: %s\n", pc-imem, fmt_inst(pc));
+	       printf("%6ld: %s\n", (long) (pc-imem), fmt_inst(pc));
 	       fflush(stdout);
 	  }
 #endif

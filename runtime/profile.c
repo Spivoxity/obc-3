@@ -54,9 +54,9 @@ struct _trans {
 };
 
 #define MBIT 0x00000001
-#define mark(p) ((value *) ((unsigned) (p) | MBIT))
-#define ptr(p) ((value *) ((unsigned) (p) & ~MBIT))
-#define marked(p) ((unsigned) (p) & MBIT)
+#define mark(p) ((value *) ((unsigned long) (p) | MBIT))
+#define ptr(p) ((value *) ((unsigned long) (p) & ~MBIT))
+#define marked(p) ((unsigned long) (p) & MBIT)
 
 /* format_count -- format a counter as a decimal string */
 static char *format_count(counter n) {
@@ -125,7 +125,9 @@ static state s_head = NULL, s_tail;
 
 #define HSIZE 32771		/* Not a power of 2! */
 static trans *trtable;
-#define hash(s0, addr) ((((unsigned) (s0) << 4) ^ (unsigned) (addr)) % HSIZE)
+#define hash(s0, a) \
+     ((((unsigned) (unsigned long) (s0) << 4) \
+       ^ (unsigned) (unsigned long) (addr)) % HSIZE)
 
 static state make_state(value *addr, int n, value **history) {
      state s;
@@ -143,7 +145,7 @@ static state make_state(value *addr, int n, value **history) {
 
      if (t == NULL) {
 	  /* Create the dummy transition for (NULL, p) */
-	  t = (trans) scratch_alloc(sizeof(struct _trans), FALSE);
+	  t = (trans) scratch_alloc(sizeof(struct _trans));
 	  t->t_from = NULL;
 	  t->t_to = NULL;
 	  t->t_addr = addr;
@@ -157,10 +159,10 @@ static state make_state(value *addr, int n, value **history) {
 	       return s;
 
      /* If all else fails, make a new state */
-     s = (state) scratch_alloc(sizeof(struct _state), FALSE);
+     s = (state) scratch_alloc(sizeof(struct _state));
      s->s_num = n_states++;
      s->s_depth = n;
-     s->s_history = (value **) scratch_alloc(n * sizeof(value *), FALSE);
+     s->s_history = (value **) scratch_alloc(n * sizeof(value *));
      memcpy(s->s_history, history, n * sizeof(value *));
      s->s_calls = s->s_rec = s->s_time = 0;
      s->s_next = t->t_to;
@@ -222,7 +224,7 @@ static state next_state(state s0, value *addr) {
      }
 
      /* Create the new transition */
-     t = (trans) scratch_alloc(sizeof(struct _trans), FALSE);
+     t = (trans) scratch_alloc(sizeof(struct _trans));
      t->t_from = s0;
      t->t_to = s;
      t->t_addr = addr;
@@ -337,11 +339,11 @@ void prof_init(void) {
 
 	  if (pstack == NULL)
 	       pstack = 
-		    (state *) scratch_alloc(PSTACKSIZE * sizeof(state), FALSE);
+		    (state *) scratch_alloc(PSTACKSIZE * sizeof(state));
 	  if (trtable == NULL) {
 	       int i;
 	       trtable = 
-		    (trans *) scratch_alloc(HSIZE * sizeof (trans), FALSE);
+		    (trans *) scratch_alloc(HSIZE * sizeof (trans));
 	       for (i = 0; i < HSIZE; i++) trtable[i] = NULL;
 	  }
 	       
@@ -384,7 +386,7 @@ static arc find_arc(value *src, value *dst) {
 	  if (a->a_src == psrc) break;
 
      if (a == NULL) {
-	  a = (arc) scratch_alloc(sizeof(struct _arc), FALSE);
+	  a = (arc) scratch_alloc(sizeof(struct _arc));
 	  a->a_count = a->a_self1 = a->a_child1 = a->a_self2 = a->a_child2 = 0;
 	  a->a_src = psrc;
 	  a->a_dst = pdst;
@@ -546,7 +548,7 @@ static void flat_profile(FILE *fp) {
 static void graph_profile(FILE *fp) {
      int i, j, n;
      char buf1[64], buf2[64];
-     arc *abuf = (arc *) scratch_alloc(256 * sizeof(arc), FALSE);
+     arc *abuf = (arc *) scratch_alloc(256 * sizeof(arc));
 
      /* Finished executing, so we can sort the proc table into
 	a different order. */

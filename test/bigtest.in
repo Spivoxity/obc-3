@@ -16,18 +16,8 @@ EXEEXT=@EXEEXT@
 GC_LIB=@GC_LIB@
 # End of config
 
-for d in ../lib $top_srcdir/lib; do
-    if [ -r $d/lscript ]; then
-	lib=$d; break
-    fi
-done
-if [ -z "$lib" ]; then
-    echo Couldn\'t find library files
-    exit 2
-fi
-
-compiler="../compiler/obc1 -I $lib -O"
-browser="../compiler/obb1 -I $lib"
+compiler="../compiler/obc1 -I ../lib -O"
+browser="../compiler/obb1 -I ../lib -I $top_srcdir/lib"
 OBC_LIB=../lib
 export OBC_LIB
 
@@ -41,25 +31,25 @@ else
 fi
 
 echo Library
-../runtime/oblink -nostdlib -L $lib `sed "s:^:$lib/:" $lib/lscript`
+../runtime/oblink -nostdlib -L ../lib `sed "s:^:../lib/:" ../lib/lscript`
 
 echo Planner
 rm -f Planner.k planner
 $compiler -pl $srcdir/Planner.m >Planner.k \
-    && ../runtime/oblink -pl -L $lib Planner.k -o planner \
+    && ../runtime/oblink -pl -L ../lib Planner.k -o planner \
     && ../obprof -g -o Plan.pro -l ./planner <$srcdir/Planner.in >Plan.out \
     && ($fixup Plan.out | diff $srcdir/Planner.out -; \
 	sed -f $srcdir/stamp.sed Planner.k >Plan.code; \
         diff $srcdir/Planner.code Plan.code; \
 	$fixup Plan.pro | diff $srcdir/Planner.pro -; \
-	../obxj ../oblist $srcdir/Planner.m >Plan.dmp; \
+	../obx ../oblist $srcdir/Planner.m >Plan.dmp; \
 	$fixup Plan.dmp | diff $srcdir/Planner.dmp -)
 
 echo Fib
 ($compiler $srcdir/FibFun.m >FibFun.k \
     && $compiler $srcdir/FibMain.m >FibMain.k \
     && ../runtime/oblink -i `cd ..; pwd`/obx \
-	-L $lib FibFun.k FibMain.k -o fib \
+	-L ../lib FibFun.k FibMain.k -o fib \
     && chmod +x fib \
     && ./fib | $fixup | cmp $srcdir/Fib.out -)
 
@@ -73,7 +63,7 @@ echo Primtest
 prim=prim$EXEEXT
 (tclsh $top_srcdir/lib/makeprims.tcl $srcdir/PrimTest.m >newprims.c \
     && $compiler $srcdir/PrimTest.m >PrimTest.k \
-    && ../runtime/oblink -custom -L $lib PrimTest.k \
+    && ../runtime/oblink -custom -L ../lib PrimTest.k \
 	-o PrimTest.x >primtab.c \
     && gcc -g -I $top_srcdir/runtime -I .. primtab.c newprims.c \
 	../runtime/obx.a ../lib/dlstub.o ../lib/oblib.a \

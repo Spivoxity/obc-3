@@ -9,7 +9,7 @@ END mopsy;
 END eNestMeth.
 
 (*<<
-"./eNestMeth.m", line 6: methods may only be declared at the outermost level
+"t/eNestMeth.m", line 6: methods may only be declared at the outermost level
 >   PROCEDURE (VAR x: ptr) methylate; END methylate;
 >                          ^^^^^^^^^
 >>*)

@@ -736,8 +736,10 @@ void vm_gen1r(operation op, vmreg rega) {
      case JUMP: 
 	  jump_r(opBX, ra); break;
 
+#if 0
      case CALL:
           proc_call(ra); break;
+#endif
           
      case ARG:
 	  argp--;
@@ -817,6 +819,11 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
                move_reg(ra, rb); 
 	  break;
 
+     case SXTOFF:
+          write_reg(ra);
+          move_reg(ra, rb);
+          break;
+          
      case NEG:    
           write_reg(ra);
           // Unlike the assembler's neg pseudo-instruction, 
@@ -887,6 +894,16 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 	       move_immed(ra, * (int *) b);
 	  break;
 
+     case ICALL:
+          load_store(opLDR, IP, ra, b);
+          proc_call(IP);
+          break;
+
+     case IJUMP:
+          load_store(opLDR, IP, ra, b);
+          jump_r(opBX, IP);
+          break;
+
      default:
 	  badop();
      }
@@ -900,6 +917,7 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      switch (op) {
      case ADD: 
+     case ADDOFF:
           write_reg(ra);
 	  op_rrr(opADD, ra, rb, rc); break;
      case AND: 

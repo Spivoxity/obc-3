@@ -63,10 +63,6 @@ struct _vmreg
      reg_i0 = { "I0", EAX },
      reg_i1 = { "I1", ECX },
      reg_i2 = { "I2", EDX },
-     reg_v0 = { "V0", EBX },
-     reg_v1 = { "V1", ESI },
-     reg_v2 = { "V2", EDI },
-     reg_v3 = { "V3", EBP },
      reg_f0 = { "F0", FPR0 },
      reg_f1 = { "F1", FPR1 },
      reg_f2 = { "F2", FPR2 },
@@ -75,13 +71,39 @@ struct _vmreg
      reg_f5 = { "F5", FPR5 },
      reg_zz = { "ZERO", NOREG };
 
+#ifndef M64X32
+
+struct _vmreg
+     reg_v0 = { "V0", EBX },
+     reg_v1 = { "V1", ESI },
+     reg_v2 = { "V2", EDI },
+     reg_v3 = { "V3", EBP };
+
 /* Register layout for use by JIT client */
-const int nvreg = 4, nireg = 3, nfreg = 6;
+const int nvreg = 4, nireg = 3;
 const vmreg vreg[] = { &reg_v0, &reg_v1, &reg_v2, &reg_v3 }; /* Callee-save */
 const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2 };      /* Caller-save */
+
+#else
+
+struct _vmreg
+     reg_i3 = { "I3", ESI },
+     reg_i4 = { "I4", EDI },
+     reg_v0 = { "V0", EBX },
+     reg_v1 = { "V1", EBP };
+
+const int nvreg = 2, nireg = 5;
+const vmreg vreg[] = { &reg_v0, &reg_v1 }; /* Callee-save */
+const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2, &reg_i3, &reg_i4 };
+                                           /* Caller-save */
+
+#endif
+
+const int nfreg = 6;
 const vmreg freg[] = { &reg_f0, &reg_f1, &reg_f2,        /* Floating point */
                        &reg_f3, &reg_f4, &reg_f5 };
 const vmreg ret = &reg_i0, zero = &reg_zz;
+
 
 /* The first four registers have 8-bit fields like AL */
 #define is8bit(r) ((r) <= EBX)
@@ -153,6 +175,8 @@ static char *fmt_addr(int rs, int imm) {
 
 /* Instructions */
 
+#define REX_W(op)       ((op)|0x4800)
+
 /* ALU operation codes for the 386 */
 #define aluADD 		0		/* Binary */
 #define aluSUB 		5
@@ -218,10 +242,12 @@ static char *fmt_addr(int rs, int imm) {
 
 /* Integer moves */
 #define opMOVL_r 	MNEM("movl", 0x8b) // Move to register
+#define opMOVQ_r	MNEM("movq", REX_W(0x8b))
 #define opMOVZWL_r 	MNEM("movzwl", 0x0fb7)
 #define opMOVSWL_r 	MNEM("movswl", 0x0fbf)
 #define opMOVZBL_r 	MNEM("movzbl", 0x0fb6)
 #define opMOVSBL_r 	MNEM("movsbl", 0x0fbe)
+#define opMOVSXD_r      MNEM("movsxd", REX_W(0x63))
 #define opMOVL_m 	MNEM("movl", 0x89) // Move to memory
 #define opMOVW_m 	MNEM("movw", 0x6689)
 #define opMOVB_m 	MNEM("movb", 0x88)
@@ -230,22 +256,26 @@ static char *fmt_addr(int rs, int imm) {
 #define xMONOP 0xf7 		// Unary ALU op
 #define x_byte 0x2
 #define xALU_r(op) (op<<3)|0x3
+#define xALUq_r(op) REX_W(xALU_r(op))
 #define xALU_i 0x81
+#define xALUq_i REX_W(xALU_i)
 #define xSHIFT_r 0xd3
 #define xSHIFT_1 0xd1
 #define xSHIFT_i 0xc1
 
 #define opIMUL_i MNEM("imul", 0x69) // Integer multiply
 #define opIMUL_r MNEM("imul", 0x0faf)
-#define opINC MNEM("inc", 0x40)
-#define opDEC MNEM("dec", 0x48)
+#define opINC_r MNEM("inc", 0x40)
+#define opDEC_r MNEM("dec", 0x48)
+#define opINC_m MNEM2("inc", 0xff, 0)
+#define opDEC_m MNEM2("dec", 0xff, 1)     
 #define opPUSH_r MNEM("push", 0x50)
 #define opPUSH_i MNEM("push", 0x68)
 #define opPOP MNEM("pop", 0x58)
 #define opRET MNEM("ret", 0xc3)
-#define opJMPL_i MNEM("jmp", 0xe9)
-#define opJMPL_r MNEM2("jmp", 0xff, 4)
-#define opCALL_r MNEM2("call", 0xff, 2)
+#define opJMP MNEM2("jmp", 0xff, 4)
+#define opJMP_i MNEM("jmp", 0xe9)
+#define opCALL MNEM2("call", 0xff, 2)
 #define opCALL_i MNEM("call", 0xe8)
 #define opFLDZ MNEM("fldz", 0xd9ee)
 #define opTEST MNEM("test", 0x85)
@@ -318,24 +348,31 @@ static void memory(int ra, int rb, int d) {
             For [ESP+d] use (mode, ra, 4) followed by SIB = (0, 4, ESP).
 
 	mode = 0 and r/m = 5:
-	    Absolute addressing [d].
+	    Absolute addressing [d] (x86 only; on amd64, this gives 
+            PC-relative addressing).
 
 	r/m = 4:
 	    The triple is followed by another byte containing three
 	    values (s, i, b) to encode the address [reg(b)+d+reg(i)*2^s].
-	    But we must not have i = ESP, and there are further special 
-	    cases:
+	    But i = ESP and b = EBP give further special cases:
 	    
 	mode = 0, r/m = 4, b = 5:
 	    Baseless addressing [d+reg(i)*2^s]
 
-	mode = 0, r/m = 4, i = 4, b != 5:
-  	    Based addressing [d+reg(b)]. */
+        mode = 0, r/m = 4, i = 4, b = 5
+            Absolute addressing [d]
 
-     if (rb == NOREG)
+	mode = 0, r/m = 4, i = 4, b != 5:
+  	    Based addressing [d+reg(b)].     */
+
+     if (rb == NOREG) {
 	  // Absolute [d]
+#ifndef M64X32
 	  addr(0, ra, 5), word(d);
-     else if (rb == ESP) {
+#else
+          addr(0, ra, 4), sib(0, 4, 5), word(d);
+#endif
+     } else if (rb == ESP) {
 	  // Special case to use ESP as base [ESP+d]
 	  if (d == 0)
 	       addr(0, ra, 4), sib(0, 4, ESP);
@@ -364,8 +401,7 @@ static void memory(int ra, int rb, int d) {
    * an 8/32 bit immediate (i8)
    * a 32 bit immediate (i)
    * a memory address (m)
-   * a branch target (lab)
-*/
+   * a branch target (lab) */
 
 /* instr -- fixed instruction, opcode only */
 static void instr(OPDECL) {
@@ -418,6 +454,12 @@ static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
 static void instr2_ri8(OPDECL2, int rm, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
      opcode(op); addr(3, op2, rm); byte(imm);
+}
+
+/* instruction with 2 opcodes and memory operand */
+static void instr2_m(OPDECL2, int rs, int imm) {
+     vm_debug2("%s *%s", mnem, fmt_addr(rs, imm));
+     opcode(op); memory(op2, rs, imm);
 }
 
 /* instruction with 2 opcodes and 8/32 bit immediate */
@@ -473,8 +515,11 @@ static void instr_m(OPDECL, int rs, int imm) {
 #define add_i(rd, imm)	instr2_ri(MNEM2("add", xALU_i, aluADD), rd, imm)
 #define sub_i(rd, imm)	instr2_ri(MNEM2("sub", xALU_i, aluSUB), rd, imm)
 
-#define pushr(r)	instr_reg(opPUSH_r, r)
-#define pushi(imm)	instr_imm(opPUSH_i, imm)
+#define add64_i(rd, imm)  instr2_ri(MNEM2("addq", xALUq_i, aluADD), rd, imm)
+#define sub64_i(rd, imm)  instr2_ri(MNEM2("subq", xALUq_i, aluSUB), rd, imm)
+
+#define push_r(r)	instr_reg(opPUSH_r, r)
+#define push_i(imm)	instr_imm(opPUSH_i, imm)
 #define pop(r)		instr_reg(opPOP, r)
 #define fld_r(r) 	instr_reg(opFLD_r, r)
 #define fst_r(r) 	instr_reg(opFST_r, r)
@@ -495,23 +540,29 @@ static void shift2_i(OPDECL, int rd, int imm) {
 /* SYNTHETIC INSTRUCTIONS */
 
 /* Optional move */
-static void move(int rd, int rs) {
+static void move_r(OPDECL, int rd, int rs) {
      if (rd != rs) 
-          instr_rr(opMOVL_r, rd, rs);
+          instr_rr(OP, rd, rs);
 }
+
+#define move(rd, rs)  move_r(opMOVL_r, rd, rs)
+#define move64(rd, rs)  move_r(opMOVQ_r, rd, rs)
+
+/* Load word */
+#define load(rd, rs, off)  instr_rm(opMOVL_r, rd, rs, off)
 
 /* shift instructions (3 registers) */
 static void shift3_r(OPDECL, int rd, int rs1, int rs2) {
      if (rd == ECX || (rd != rs1 && rd == rs2)) {
 	  int rx = (rs2 == EAX ? EDX : EAX);
-	  pushr(rx); shift3_r(OP, rx, rs1, rs2); 
+	  push_r(rx); shift3_r(OP, rx, rs1, rs2); 
           move(rd, rx); pop(rx);
      } else {
 	  move(rd, rs1);
 	  if (rs2 == ECX)
 	       shift2cl_r(OP, rd);
 	  else {
-	       pushr(ECX); move(ECX, rs2); 
+	       push_r(ECX); move(ECX, rs2); 
                shift2cl_r(OP, rd); pop(ECX);
 	  }
      }
@@ -529,7 +580,7 @@ static void storec(int rt, int rs, int imm) {
           instr_st(opMOVB_m, rt, rs, imm);
      else {
 	  int rx = (rs == EAX ? EDX : EAX);
-	  pushr(rx); move(rx, rt);
+	  push_r(rx); move(rx, rt);
 	  instr_st(opMOVB_m, rx, rs, imm);
 	  pop(rx);
      }
@@ -550,6 +601,19 @@ static void binop3c_r(OPDECL, int rd, int rs1, int rs2) {
 	  aluop_rr(OP, rd, rs2);
      }
 }
+
+#ifdef M64X32
+#define add64_rr(r1, r2)  instr_rr(MNEM("addq", xALUq_r(aluADD)), r1, r2)
+
+static void add64_r(int rd, int rs1, int rs2) {
+     if (rd == rs2)
+          add64_rr(rd, rs1);
+     else {
+          move64(rd, rs1);
+          add64_rr(rd, rs2);
+     }
+}
+#endif
 
 /* subtract (3 registers) */
 static void subtract_r(int rd, int rs1, int rs2) {
@@ -605,7 +669,7 @@ static void setcc_r(OPDECL, int rd) {
 	  instr2_r(MNEM2(mnem, op, 0), rd); /* Compute boolean result */
           instr_rr(opMOVZBL_r, rd, rd); /* Zero-extend */
      } else {
-	  pushr(EAX);
+	  push_r(EAX);
 	  instr2_r(MNEM2(mnem, op, 0), EAX); /* Compute boolean result */
 	  instr_rr(opMOVZBL_r, rd, EAX); /* Move and zero-extend */
 	  pop(EAX);
@@ -705,7 +769,8 @@ static void flop3(OPDECL, OPDECL_r, int rd, int rs1, int rs2) {
 
 /* Load float or double from memory */
 static void loadf(OPDECL, int rt, int rs, int imm) {
-     instr_m(OP, rs, imm); fstp_r(rt+1);
+     instr_m(OP, rs, imm);
+     fstp_r(rt+1);
 }
 
 #define floads(rt, rs, imm) 	loadf(opFLDS_m, rt, rs, imm)
@@ -755,25 +820,30 @@ static void fcompare(OPDECL, int rd, int rs1, int rs2) {
 
 #define badop() vm_unknown(__FUNCTION__, op)
 
+#ifndef M64X32
+
 /*
 We don't use space on the C stack for locals, and don't bother 
 to keep the stack pointer always aligned. So just before a call 
 instruction, the stack layout is like this:
 
-old sp:	incoming args (at bp+8)
+old sp:	incoming args (at sp0+20)
 	return address
-bp:	saved bp
+	saved bp
 	saved bx
 	saved si
-	saved di
+sp0:	saved di
 	blank space
 sp:	outgoing args
+
+Here, sp0 denotes the sp position just after entry, used in implementing
+the GETARG instruction.
 
 On the Mac, sp must be 16-byte aligned at this point, so 
 nargs + blank + 5 must be a multiple of 4 in words.
 */
 
-static int nargs;
+static int nargs;               /* Effective number of outgoing args */
 
 static void prep_call(int n) {
 #ifdef MACOS
@@ -785,13 +855,69 @@ static void prep_call(int n) {
 #endif
 }
 
+static void post_call(void) {
+     if (nargs > 0) 
+          add_i(ESP, nargs * sizeof(int));
+}
+
+#else
+
+/*
+On AMD64, the frame layout is like this:
+
+old sp:
+        return address
+        saved bp
+        saved bx
+        saved args if n > 1
+sp:     blank space
+
+If there is only one incoming arg (the most common case) we don't bother 
+to save it in the stack, as the GETARG instruction will save it immediately.
+The ABI requires sp to be a multiple of 16 when another routine is called, 
+so 8 bytes of blank space is needed unless n = 3.  The incoming args are 
+addressible at sp+blank+16.
+
+Outgoing arguments are passed in EDI, ESI, EDX.  If nout = 1, then we can 
+move the argument into EDI directly; otherwise outgoing arguments are pushed 
+on the stack, then popped into the argument registers before the call.
+Messy but effective!
+*/
+
+static int nargs;               /* Number of outgoing args */
+static int argreg;              /* One argument kept in a register */
+
+static void prep_call(int n) {
+     nargs = n; argreg = NOREG;
+}
+
+/* Move args from stack into registers */
+static void move_args() {
+     /* Args were pushed from right to left, to the first arg is on
+        top of the stack. */
+     if (nargs >= 1) {
+          if (argreg != NOREG)
+               move(EDI, argreg);
+          else
+               pop(EDI);
+     }
+     if (nargs >= 2) pop(ESI);
+     if (nargs >= 3) pop(EDX);
+}
+
+#endif
+
 void vm_gen0(operation op) {
      vm_debug1(op, 0);
      vm_space(0);
 
      switch (op) {
      case RET: 
-	  pop(EDI); pop(ESI); pop(EBX); pop(EBP); 
+#ifndef M64X32
+	  pop(EDI); pop(ESI); pop(EBX); pop(EBP);
+#else
+          add64_i(ESP, 8); pop(EBX); pop(EBP);
+#endif
           instr(opRET);
 	  break;
 
@@ -808,19 +934,25 @@ void vm_gen1r(operation op, vmreg rega) {
 
      switch (op) {
      case JUMP: 
-	  instr2_r(opJMPL_r, ra); break;
+	  instr2_r(opJMP, ra); break;
 
      case ARG:
-	  pushr(ra);
+          /* Args get pushed from right to left */
+#ifndef M64X32
+	  push_r(ra);
+#else
+          if (argreg != NOREG) push_r(argreg);
+          argreg = ra;
+#endif
 	  break;
 
+#ifndef M64X32
      case CALL:
-	  instr2_r(opCALL_r, ra);
-	  if (nargs > 0) 
-               add_i(ESP, nargs * sizeof(int));
-	  nargs = 0;
-	  break;
-
+          instr2_r(opCALL, ra);
+          post_call();
+          break;
+#endif
+          
      case ZEROF:
      case ZEROD:
 	  fzero(ra); break;
@@ -840,15 +972,20 @@ void vm_gen1i(operation op, int a) {
 	  break;
 
      case ARG:
-          pushi(a);
+#ifdef M64X32
+          if (argreg != NOREG) {
+               push_r(argreg); argreg = NOREG;
+          }
+#endif
+          push_i(a);
           break;
 
+#ifndef M64X32
      case CALL:
-	  instr_lab(opCALL_i, (code_addr) a);
-	  if (nargs > 0) 
-               add_i(ESP, nargs * sizeof(int));
-	  nargs = 0;
-	  break;
+          instr_lab(opCALL_i, (code_addr) a);
+          post_call();
+          break;
+#endif
 
      default:
 	  badop();
@@ -863,7 +1000,7 @@ void vm_gen1j(operation op, vmlabel lab) {
 
      switch (op) {
      case JUMP: 
-	  loc = instr_lab(opJMPL_i, NULL);
+	  loc = instr_lab(opJMP_i, NULL);
           vm_branch(BRANCH, loc, lab);
           break;
 
@@ -883,14 +1020,22 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  if (isfloat(ra) && isfloat(rb)) {
 	       movef(ra, rb);
 	  } else if (isfloat(ra)) {
-	       pushr(rb); floads(ra, ESP, 0); pop(rb);
+	       push_r(rb); floads(ra, ESP, 0); pop(rb);
 	  } else if (isfloat(rb)) {
 	       /* Make a stack slot, then overwrite it. */
-	       pushr(ra); fstores(rb, ESP, 0); pop(ra);
+	       push_r(ra); fstores(rb, ESP, 0); pop(ra);
 	  } else {
 	       move(ra, rb); 
 	  }
 	  break;
+
+     case SXTOFF:
+#ifndef M64X32
+          move(ra, rb);
+#else
+          instr_rr(opMOVSXD_r, ra, rb);
+#endif
+          break;
 
      case NEG:    
 	  monop(opNEG, ra, rb); break;
@@ -902,7 +1047,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 
      case CONVIF:
      case CONVID:
-	  pushr(rb); loadf(opFILDL_m, ra, ESP, 0); pop(rb); break;
+	  push_r(rb); loadf(opFILDL_m, ra, ESP, 0); pop(rb); break;
      case CONVIC: 
 	  binop3_i(opAND, ra, rb, 0xff); break;
      case CONVIS: 
@@ -931,13 +1076,38 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 	  break;
 
      case GETARG: 
-	  instr_rm(opMOVL_r, ra, ESP, 4*b+20); break;
+#ifndef M64X32
+	  load(ra, ESP, 4*b+20); 
+#else
+          move(ra, EDI);
+#endif
+          break;
 
      case LDKW:
           if (isfloat(ra))
                floads(ra, NOREG, b);
           else
-               instr_regi32(opMOVL_i, ra, * (int *) b);
+               instr_regi32(opMOVL_i, ra, * (int *) (unsigned long) b);
+          break;
+
+     case IJUMP:
+          instr2_m(opJMP, ra, b);
+          break;
+
+     case ICALL:
+#ifndef M64X32
+          instr2_m(opCALL, ra, b);
+          post_call();
+#else          
+          if (ra != NOREG) {
+               if (argreg != EAX)
+                    move(EAX, ra), ra = EAX;
+               else
+                    move(ECX, ra), ra = ECX;
+          }
+          move_args();
+          instr2_m(opCALL, ra, b);
+#endif
           break;
 
      default:
@@ -1019,6 +1189,14 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
      case NEQD:
 	  fcompare(opSETNE, ra, rb, rc); break;
 
+     case ADDOFF:
+#ifndef M64X32
+	  binop3c_r(opADD, ra, rb, rc);
+#else
+          add64_r(ra, rb, rc);
+#endif
+          break;
+           
      default:
 	  badop();
      }
@@ -1032,20 +1210,32 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 
      switch (op) {
      case ADD: 
-          if (c == 1)
-               move(ra, rb), instr_reg(opINC, ra);
-          else
-               binop3_i(opADD, ra, rb, c); 
+          if (c == 1) {
+               move(ra, rb);
+#ifndef M64X32
+               instr_reg(opINC_r, ra);
+#else
+               instr2_r(opINC_m, ra);
+#endif
+          } else {
+               binop3_i(opADD, ra, rb, c);
+          }
           break;
      case AND: 
 	  binop3_i(opAND, ra, rb, c); break;
      case OR: 
 	  binop3_i(opOR, ra, rb, c); break;
      case SUB: 
-          if (c == 1)
-               move(ra, rb), instr_reg(opDEC, ra);
-          else
-               binop3_i(opSUB, ra, rb, c); 
+          if (c == 1) {
+               move(ra, rb);
+#ifndef M64X32
+               instr_reg(opDEC_r, ra);
+#else
+               instr2_r(opDEC_m, ra);
+#endif
+          } else {
+               binop3_i(opSUB, ra, rb, c);
+          }
           break;
      case XOR: 
 	  binop3_i(opXOR, ra, rb, c); break;
@@ -1065,7 +1255,7 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 	  if (isfloat(ra)) 
                floads(ra, rb, c); 
           else 
-               instr_rm(opMOVL_r, ra, rb, c); 
+               load(ra, rb, c); 
 	  break;
      case LDSU: 
           instr_rm(opMOVZWL_r, ra, rb, c); break;
@@ -1208,7 +1398,15 @@ void vm_patch(code_addr loc, code_addr lab) {
 
 code_addr vm_prelude(int n) {
      code_addr entry = pc;
-     pushr(EBP); pushr(EBX); pushr(ESI); pushr(EDI); 
+
+#ifndef M64X32
+     push_r(EBP); push_r(EBX); push_r(ESI); push_r(EDI); 
+#else
+     push_r(EBP); push_r(EBX); sub64_i(ESP, 8);
+
+     if (n > 1) vm_panic("sorry, only one parameter allowed");
+#endif
+
      return entry;
 }
 
@@ -1216,5 +1414,5 @@ void vm_postlude(void) {
 }
 
 void vm_chain(code_addr p) {
-     instr_lab(opJMPL_i, p);
+     instr_lab(opJMP_i, p);
 }

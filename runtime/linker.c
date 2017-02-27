@@ -526,7 +526,8 @@ static phrase put_mark(symbol s) {
 /* const_head -- start of constant pool */
 static void const_head(int prim, int code, int reloc, 
 		       int frame, int stack, char *map) {
-     data_value(prim, R_SUBR);	/* Primitive */
+     data_value(prim, R_SUBR);	/* Primitive (64 bits) */
+     data_value(0, R_WORD);
      data_value(code, reloc);	/* Entry point */
      data_value(0, R_WORD);	/* Code size */
      data_value(frame, R_WORD);	/* Frame size in words */
@@ -637,25 +638,6 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  data_word(rands[0]);
 	  break;
 
-/*
-     case D_FLOAT:
-	  fcvt.f = atof(rands[0]);
-	  data_value(fcvt.n, R_WORD);
-	  break;
-
-     case D_DOUBLE:
-	  dcvt.d = atof(rands[0]);
-	  data_value(dcvt.n.lo, R_WORD);
-	  data_value(dcvt.n.hi, R_WORD);
-	  break;
-
-     case D_LONG:
-	  dcvt.q = strtoll(rands[0], NULL, 0);
-	  data_value(dcvt.n.lo, R_WORD);
-	  data_value(dcvt.n.hi, R_WORD);
-	  break;
-*/
-
      case D_GLOVAR:
 	  def_global(find_symbol(rands[0]), BSS, bloc, X_DATA);
 	  bloc = align(bloc + strtoul(rands[1], NULL, 0), 4);
@@ -671,6 +653,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 
      case D_PRIMDEF:
 	  nprocs++;
+	  dloc = align(dloc, 8);
 	  def_global(find_symbol(rands[0]), DATA, dloc, X_PROC);
 	  const_head(DLTRAP, dloc + 4*CP_CONST, R_DATA, 
 		     atoi(rands[2]), 0, rands[3]);
@@ -679,12 +662,14 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 
      case D_PROC:
 	  nprocs++;
+	  dloc = align(dloc, 8);
 	  this_proc = find_symbol(rands[0]);
-	  def_global(this_proc, DATA, dloc, X_PROC);
-	  proc_start = dloc;
+          proc_start = dloc;
+	  def_global(this_proc, DATA, proc_start, X_PROC);
 	  const_head(INTERP, iloc, R_CODE, atoi(rands[1]), 
 		     atoi(rands[2]), rands[3]);
-	  init_abuf();
+
+          init_abuf();
 	  init_labels();
 	  nconsts = 0;
 	  smp = 0;

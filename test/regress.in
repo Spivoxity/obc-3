@@ -65,6 +65,8 @@ $compiler -x $srcdir/xTypes.m >xTypes.k
 $compiler -07 $srcdir/xTypes07.m >xTypes07.k
 $compiler -x $srcdir/xPrelude.m >xPrelude.k
 
+rm -f t; ln -s $srcdir t
+
 for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
     echo "$f"
 
@@ -76,7 +78,7 @@ for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
     esac
 
     rm -f a.out a.k out code
-    ($compiler $flag -O $srcdir/$f >a.k \
+    ($compiler $flag -O t/$f >a.k \
 	&& sed -f $srcdir/stamp.sed a.k >code \
 	&& ../runtime/oblink -L $lib \
                              xTypes.k xTypes07.k xPrelude.k a.k -o a.out \
@@ -92,6 +94,8 @@ for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
 	if $code && [ -r code ]; then $DIFF -c code.0 code; fi
     fi
 done
+
+rm -f t
 
 if [ $status -ne 0 ]; then echo Failed!; fi
 exit $status

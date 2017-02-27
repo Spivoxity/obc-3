@@ -36,7 +36,7 @@ IMPORT SYSTEM;
 TYPE 
   (** File -- type of open files *)
   File* = POINTER TO FileDesc;
-  FileDesc = RECORD file: SYSTEM.PTR END;
+  FileDesc = RECORD file: LONGINT END;
 
 VAR
   (** stdin -- standard input file *)
@@ -50,42 +50,44 @@ VAR
 
 (* COPY
 static FILE *get_file(value *p, value *cp, value *bp) {
-     if (p == NULL || pointer(p[0]) == NULL) liberror("file is not open");
-     return (FILE * ) pointer(p[0]);
+     if (p == NULL || get_long(p) == 0) liberror("file is not open");
+     return ptrcast(FILE, get_long(p));
 }
 
 #define file_arg(a) get_file(valptr(a), cp, bp)
 *)
 
-PROCEDURE PrimOpen(name, mode: ARRAY OF CHAR): SYSTEM.PTR IS "Files_PrimOpen";
-(* CODE ob_res.a =
-     (addr) fopen((char * ) pointer(args[0]), (char * ) pointer(args[2])); *)
+PROCEDURE PrimOpen(name, mode: ARRAY OF CHAR): LONGINT IS "Files_PrimOpen";
+(* CODE put_long(&ob_res, 
+            (long) fopen((char * ) pointer(args[0]),
+                         (char * ) pointer(args[2]))); *)
 
 PROCEDURE PrimFDOpen(fd: INTEGER;
-	  		mode: ARRAY OF CHAR): SYSTEM.PTR IS "File_PrimFDOpen";
-(* CODE ob_res.a = (addr) fdopen(args[0].i, (char * ) pointer(args[1])); *)
+	  		mode: ARRAY OF CHAR): LONGINT IS "File_PrimFDOpen";
+(* CODE put_long(&ob_res,
+            (long) fdopen(args[0].i, (char * ) pointer(args[1]))); *)
 
 (** Open -- open a file by name; return NIL if not found *)
 PROCEDURE Open*(CONST name, mode: ARRAY OF CHAR): File;
-  VAR fp: SYSTEM.PTR; f: File;
+  VAR fp: LONGINT; f: File;
 BEGIN
   fp := PrimOpen(name, mode);
-  IF fp = NIL THEN RETURN NIL END;
+  IF fp = 0 THEN RETURN NIL END;
   NEW(f); f.file := fp; RETURN f
 END Open;
 
 (** FDOpen -- open a file given a file descriptor, or return NIL *)
 PROCEDURE FDOpen*(fd: INTEGER; CONST mode: ARRAY OF CHAR): File;
-  VAR fp: SYSTEM.PTR; f: File;
+  VAR fp: LONGINT; f: File;
 BEGIN
   fp := PrimFDOpen(fd, mode);
-  IF fp = NIL THEN RETURN NIL END;
+  IF fp = 0 THEN RETURN NIL END;
   NEW(f); f.file := fp; RETURN f
 END FDOpen;
 
 (** Close -- close a file *)
 PROCEDURE Close*(fp: File) IS "Files_Close";
-(* CODE fclose(file_arg(args[0])); valptr(args[0])[0].a = (addr) NULL; *)
+(* CODE fclose(file_arg(args[0])); valptr(args[0])[0].a = address(NULL); *)
 
 (** Eof -- test of end of file *)
 PROCEDURE Eof*(fp: File): BOOLEAN IS "Files_Eof";
@@ -118,17 +120,6 @@ PROCEDURE WriteLongInt*(f: File; n: LONGINT;
      const char *fmt = "%*lld";
 #endif
      fprintf(file_arg(args[0]), fmt, args[3].i, get_long(&args[1]));
-
-#if 0
-     char buf[32];
-     char *p = &buf[32];
-     long long int x = get_long(&args[1]);
-     unsigned long long int y = (x < 0 ? -x : x);
-     *(--p) = '\0';
-     do { *(--p) = (y % 10) + '0'; y /= 10; } while (y != 0);
-     if (x < 0) *(--p) = '-';
-     fprintf(file_arg(args[0]), "%*s", args[3].i, p);   
-#endif
 *)
 
 (** WriteReal -- output a real in scientific notation *)
@@ -142,9 +133,8 @@ PROCEDURE WriteLongReal*(f: File; x: LONGREAL) IS "Files_WriteLongReal";
 (** WriteFixed -- output a long real in fixed decimal notation *)
 PROCEDURE WriteFixed*(f: File; x: LONGREAL; 
 				width, dec: INTEGER) IS "Files_WriteFixed";
-(* CODE 
-     fprintf(file_arg(args[0]), "%*.*f", 
-	     args[3].i, args[4].i, get_double(&args[1])); *)
+(* CODE fprintf(file_arg(args[0]), "%*.*f", 
+	        args[3].i, args[4].i, get_double(&args[1])); *)
 
 (** WriteChar -- output a character *)
 PROCEDURE WriteChar*(f: File; c: CHAR) IS "Files_WriteChar";
@@ -184,11 +174,11 @@ CONST
 PROCEDURE Tell*(f: File): INTEGER IS "Files_Tell";
 (* CODE ob_res.i = ftell(file_arg(args[0])); *)
 
-PROCEDURE Init(VAR in, out, err: SYSTEM.PTR) IS "Files_Init";
+PROCEDURE Init(VAR in, out, err: LONGINT) IS "Files_Init";
 (* CODE 
-     ( *valptr(args[0])).a = (addr) stdin; 
-     ( *valptr(args[1])).a = (addr) stdout;
-     ( *valptr(args[2])).a = (addr) stderr; *)
+     put_long(valptr(args[0]), (long) stdin); 
+     put_long(valptr(args[1]), (long) stdout);
+     put_long(valptr(args[2]), (long) stderr); *)
 
 BEGIN
   NEW(stdin); NEW(stdout); NEW(stderr);

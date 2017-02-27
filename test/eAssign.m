@@ -30,102 +30,102 @@ BEGIN
 END eAssign.
 
 (*<<
-"./eAssign.m", line 12: 'qqq' has not been declared
+"t/eAssign.m", line 12: 'qqq' has not been declared
 >   x := qqq^;
 >        ^^^
 
-"./eAssign.m", line 13: a pointer is needed here
+"t/eAssign.m", line 13: a pointer is needed here
 >   x := x^;
 >        ^
 > This expression has type INTEGER
 
-"./eAssign.m", line 14: 't1' is not a variable
+"t/eAssign.m", line 14: 't1' is not a variable
 >   x := t1;
 >        ^^
 
-"./eAssign.m", line 15: an array is needed here
+"t/eAssign.m", line 15: an array is needed here
 >   x := x[y];
 >        ^
 > This expression has type INTEGER
 
-"./eAssign.m", line 15: a subscript must be an integer
+"t/eAssign.m", line 15: a subscript must be an integer
 >   x := x[y];
 >          ^
 > This expression has type REAL
 
-"./eAssign.m", line 16: a record or record pointer is needed here
+"t/eAssign.m", line 16: a record or record pointer is needed here
 >   x := x.x;
 >        ^
 > This expression has type INTEGER
 
-"./eAssign.m", line 17: the operands of - must be both numeric or both sets
+"t/eAssign.m", line 17: the operands of - must be both numeric or both sets
 >   x := x - FALSE;
 >        ^^^^^^^^^
 > The left operand has type INTEGER
 > The right operand has type BOOLEAN
 
-"./eAssign.m", line 18: the operands of - must be both numeric or both sets
+"t/eAssign.m", line 18: the operands of - must be both numeric or both sets
 >   x := x - {};
 >        ^^^^^^
 > The left operand has type INTEGER
 > The right operand has type SET
 
-"./eAssign.m", line 19: the operands of / must be both real or both sets
+"t/eAssign.m", line 19: the operands of / must be both real or both sets
 >   x := x / FALSE;
 >        ^^^^^^^^^
 > The left operand has type INTEGER
 > The right operand has type BOOLEAN
 
-"./eAssign.m", line 20: the operand of unary + must be numeric
+"t/eAssign.m", line 20: the operand of unary + must be numeric
 >   x := +FALSE;
 >         ^^^^^
 > This expression has type BOOLEAN
 
-"./eAssign.m", line 21: the operand of ~ must have type BOOLEAN
+"t/eAssign.m", line 21: the operand of ~ must have type BOOLEAN
 >   x := ~x;
 >         ^
 > This expression has type INTEGER
 
-"./eAssign.m", line 21: type INTEGER is needed on the RHS of this assignment
+"t/eAssign.m", line 21: type INTEGER is needed on the RHS of this assignment
 >   x := ~x;
 >        ^^
 > This expression has type BOOLEAN
 
-"./eAssign.m", line 22: the operands of DIV must be integers
+"t/eAssign.m", line 22: the operands of DIV must be integers
 >   x := x DIV y;
 >        ^^^^^^^
 > The left operand has type INTEGER
 > The right operand has type REAL
 
-"./eAssign.m", line 23: type INTEGER is needed on the RHS of this assignment
+"t/eAssign.m", line 23: type INTEGER is needed on the RHS of this assignment
 >   x := x < y;
 >        ^^^^^
 > This expression has type BOOLEAN
 
-"./eAssign.m", line 24: the operands of = have incompatible types
+"t/eAssign.m", line 24: the operands of = have incompatible types
 >   b := 'a' = 3;
 >        ^^^^^^^
 > The left operand has type CHAR
 > The right operand has type INTEGER
 
-"./eAssign.m", line 25: the operands of & must have type BOOLEAN
+"t/eAssign.m", line 25: the operands of & must have type BOOLEAN
 >   b := TRUE & 3;
 >        ^^^^^^^^
 > The left operand has type BOOLEAN
 > The right operand has type INTEGER
 
-"./eAssign.m", line 26: warning -- the integer value 9999999999 does not fit
+"t/eAssign.m", line 26: warning -- the integer value 9999999999 does not fit
 in type INTEGER
 >   x := 9999999999;
 >        ^^^^^^^^^^
 
-"./eAssign.m", line 27: open array parameter 'a' should have type ARRAY OF
+"t/eAssign.m", line 27: open array parameter 'a' should have type ARRAY OF
 INTEGER
 >   x := Max(f^);
 >            ^^
 > This expression has type ARRAY OF CHAR
 
-"./eAssign.m", line 29: a function call is not allowed here
+"t/eAssign.m", line 29: a function call is not allowed here
 >   foo()^ := NIL
 >   ^^^^^
 >>*)

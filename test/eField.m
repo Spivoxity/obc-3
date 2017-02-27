@@ -10,13 +10,13 @@ BEGIN
 END eField.
 
 (*<<
-"./eField.m", line 8: this record does not have a visible field called
+"t/eField.m", line 8: this record does not have a visible field called
 'frown'
 >   u.frown;
 >   ^
 > This expression has record type 'xTypes.rec'
 
-"./eField.m", line 9: this record does not have a visible field called 'mint'
+"t/eField.m", line 9: this record does not have a visible field called 'mint'
 >   x := u.mint
 >        ^
 > This expression has record type 'xTypes.rec'

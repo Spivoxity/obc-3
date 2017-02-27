@@ -49,7 +49,7 @@ PROCEDURE NEW(desc: SYSTEM.PTR; size: INTEGER): SYSTEM.PTR IS "NEW";
 (* CODE 
      value *desc = valptr(args[0]);
      int size = args[1].i;
-     ob_res.a = (addr) gc_alloc(desc, size, bp);
+     ob_res.a = address(gc_alloc(desc, size, bp));
 *)
 
 (*
@@ -108,10 +108,10 @@ PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 
      desc = q + arsize/4;
      map = desc + k + 1;
-     q[-1].a = (addr) desc;
+     q[-1].a = address(desc);
 
      /* Fill in the descriptor */
-     desc[DESC_MAP].a = (addr) map;
+     desc[DESC_MAP].a = address(map);
      dim = &args[3];			/* In case our stack moved */
      for (i = 0; i < k; i++) desc[DESC_BOUND+i].i = dim[i].i;
 
@@ -126,12 +126,12 @@ PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 	  map[4].i = n;
 	  map[5].i = elsize;
 	  map[6].i = GC_MAP;
-	  map[7].a = (addr) elmap;
+	  map[7].a = address(elmap);
 	  map[8].i = GC_END;
 	  map[9].i = GC_END;
      }
 
-     ob_res.a = (addr) q; 
+     ob_res.a = address(q); 
 *)
 
 PROCEDURE COMPARE(s, t: ARRAY OF CHAR): INTEGER IS "COMPARE";

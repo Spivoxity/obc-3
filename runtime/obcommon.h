@@ -77,14 +77,14 @@ typedef union {
 #define FRAME_SHIFT 16		/* Shift for pointer map of stack frame */
 
 /* Constant pool layout */
-#define CP_PRIM 0		/* Primitive address */
-#define CP_CODE 1		/* Bytecode address */
-#define CP_SIZE 2		/* Size of bytecode */
-#define CP_FRAME 3		/* Frame size */
-#define CP_STACK 4		/* Stack size */
-#define CP_MAP 5		/* Frame map */
-#define CP_STKMAP 6		/* Stack map table */
-#define CP_CONST 7		/* First constant */
+#define CP_PRIM 0		/* Primitive address (64 bits) */
+#define CP_CODE 2		/* Bytecode address */
+#define CP_SIZE 3		/* Size of bytecode */
+#define CP_FRAME 4		/* Frame size */
+#define CP_STACK 5		/* Stack size */
+#define CP_MAP 6		/* Frame map */
+#define CP_STKMAP 7		/* Stack map table */
+#define CP_CONST 8		/* First constant */
 
 /* Descriptor layout */
 #define DESC_MAP 0		/* Pointer map */

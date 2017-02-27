@@ -21,35 +21,35 @@ BEGIN
 END eRetType.
 
 (*<<
-"./eRetType.m", line 16: a procedure may not return an array or record type
+"t/eRetType.m", line 16: a procedure may not return an array or record type
 > PROCEDURE pip*(): rec; END pip;
 >                   ^^^
 > This expression has record type 'rec'
 
-"./eRetType.m", line 7: this RETURN statement should specify a result
+"t/eRetType.m", line 7: this RETURN statement should specify a result
 >   RETURN;
 >   ^^^^^^
 
-"./eRetType.m", line 8: type INTEGER is needed in this RETURN statement
+"t/eRetType.m", line 8: type INTEGER is needed in this RETURN statement
 >   RETURN 'c'
 >          ^^^
 > This expression has type CHAR
 
-"./eRetType.m", line 13: this RETURN statement should not specify a result
+"t/eRetType.m", line 13: this RETURN statement should not specify a result
 >   RETURN 7
 >   ^^^^^^^^
 
-"./eRetType.m", line 16: warning -- this typed procedure returns no result
+"t/eRetType.m", line 16: warning -- this typed procedure returns no result
 > PROCEDURE pip*(): rec; END pip;
 >           ^^^
 
-"./eRetType.m", line 19: a call that returns a result cannot be used as a
+"t/eRetType.m", line 19: a call that returns a result cannot be used as a
 statement
 >   pip();
 >   ^^^^^
 > (Use the -x flag to remove this restriction)
 
-"./eRetType.m", line 20: a RETURN statement is not allowed in a module body
+"t/eRetType.m", line 20: a RETURN statement is not allowed in a module body
 >   RETURN 2
 >   ^^^^^^^^
 >>*)

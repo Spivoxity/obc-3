@@ -149,8 +149,8 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
      one_shot = FALSE;
 
      /* %p may print NULL as "(nil)", so use %#x instead. */
-     debug_message("regs %#x %#x %#x", 
-		   (unsigned) cp, (unsigned) bp, (unsigned) pc);
+     debug_message("regs %#lx %#lx %#lx", (unsigned long) cp,
+                   (unsigned long) bp, (unsigned long) pc);
 
      va_start(va, fmt);
      debug_va_message(fmt, va);
@@ -178,17 +178,17 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
 
 	  cmd("peek1", 2) {
 	       unsigned addr = intarg(1);
-	       debug_message("value %#x", * (uchar *) addr);
+	       debug_message("value %#x", *ptrcast(uchar, addr));
 	  }
 
 	  cmd("peek2", 2) {
 	       unsigned addr = intarg(1);
-	       debug_message("value %#x", * (unsigned short *) addr);
+	       debug_message("value %#x", *ptrcast(unsigned short, addr));
 	  }
 
 	  cmd("peek4", 2) {
 	       unsigned addr = intarg(1);
-	       debug_message("value %#x", * (unsigned *) addr);
+	       debug_message("value %#x", *ptrcast(unsigned, addr));
 	  }
 
 	  cmd("breakpt", 3) {

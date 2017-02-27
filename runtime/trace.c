@@ -53,9 +53,11 @@ char *fmt_inst(uchar *pc) {
 	  case '2': case 'L':
 	       s += sprintf(s, " %d", get2(pc)); pc += 2; break;
 	  case 'R':
-	       s += sprintf(s, " %d", get2(pc)+(args-imem)); pc += 2; break;
+	       s += sprintf(s, " %ld", (long) (get2(pc)+(args-imem)));
+               pc += 2; break;
 	  case 'S':
-	       s += sprintf(s, " %d", get1(pc)+(args-imem)); pc += 1; break;
+	       s += sprintf(s, " %ld", (long) (get1(pc)+(args-imem)));
+               pc += 1; break;
 	  case 'N':
 	       s += sprintf(s, " %d", ip->i_arg); break;
 	  default:
@@ -68,6 +70,8 @@ char *fmt_inst(uchar *pc) {
 
 void dump(void) {
      int i, k;
+
+     printf("PLUGH %p\n", interp);
 
      for (k = 0; k < nprocs; k++) {
 	  proc p = proctab[k];
@@ -83,29 +87,19 @@ void dump(void) {
 	       int op = *pc;
 	       uchar *pc1 = pc + optable[op].i_len;
 
-	       printf("%6d: %-30s", pc-imem, fmt_inst(pc));
+	       printf("%6ld: %-30s", (long) (pc-imem), fmt_inst(pc));
 	       while (pc < pc1) printf(" %d", *pc++);
 	       printf("\n");
 
 	       if (op == K_JCASE_1) {
 		    int n = pc[-1];
 		    for (i = 0; i < n; i++) {
-			 printf("%6d:   CASEL %-22d %d %d\n", pc-imem, 
-				get2(pc)+(pc-imem), pc[0], pc[1]);
+			 printf("%6ld:   CASEL %-22ld %d %d\n",
+                                (long) (pc-imem), (long) (get2(pc)+(pc-imem)),
+                                pc[0], pc[1]);
 			 pc += 2;
 		    }
 	       }
-
-#ifdef SPECIALS
- 	       if (op == K_CASEJUMP_1) {
- 		    int n = pc[-1];
- 		    for (i = 0; i < n; i++) {
- 			 printf("%6d:   CASEV %d %d\n", pc-imem,
- 				get2(pc), get2(pc+2)+(pc-imem));
- 			 pc += 4;
- 		    }
- 	       }
-#endif
 	  }
      }
 }

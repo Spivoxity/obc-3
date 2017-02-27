@@ -35,17 +35,17 @@ typedef unsigned char *code_addr;
      p(ADD) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)	    \
      p(BGEQU) p(BGT) p(BGTF) p(BLEQ) p(BLEQF) p(BLT) p(BLTF)	    \
      p(BLTU) p(BNEQ) p(BNEQF) p(CONVIC) p(CONVIF) p(CONVIS) p(DIVF) \
-     p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF) p(JUMP)	    \
-     p(LDW) p(LDCU) p(LDD) p(LDSU) p(LDC) p(LDS) p(LEQ)		    \
+     p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF) p(ICALL)    \
+     p(JUMP) p(LDW) p(LDCU) p(LDD) p(LDSU) p(LDC) p(LDS) p(LEQ)     \
      p(LEQF) p(LSH) p(LT) p(LTF) p(MOV)	p(MUL) p(MULF)		    \
      p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
      p(RSH) p(RSHU) p(STW) p(STC) p(STD) p(STS) p(SUB)		    \
      p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
-     p(BGTU) p(BLEQU) p(LDKW)                                       \
+     p(BGTU) p(BLEQU) p(LDKW) p(IJUMP)                              \
      p(ADDD) p(SUBD) p(MULD) p(DIVD) p(NEGD) p(ZEROD)               \
      p(BEQD) p(BGEQD) p(BLEQD) p(BLTD) p(BNEQD) p(BGTD)             \
      p(EQD) p(GEQD) p(LEQD) p(LTD) p(NEQD) p(GTD)                   \
-     p(CONVFD) p(CONVDF) p(CONVID) p(ROR)
+     p(CONVFD) p(CONVDF) p(CONVID) p(ROR) p(SXTOFF) p(ADDOFF)
 
 #define __op1__(op) op,
 

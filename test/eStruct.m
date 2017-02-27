@@ -11,7 +11,7 @@ BEGIN
 END eStruct.
 
 (*<<
-"./eStruct.m", line 10: types do not match exactly on the RHS of this
+"t/eStruct.m", line 10: types do not match exactly on the RHS of this
 assignment
 >   xx1 := xx2
 >          ^^^

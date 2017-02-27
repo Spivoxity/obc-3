@@ -57,7 +57,7 @@ static char *read_string() {
 	  buf[n++] = c;
      } while (c != '\0');
 
-     p = (char *) scratch_alloc(n, TRUE);
+     p = (char *) scratch_alloc(n);
      strcpy(p, buf);
      return p;
 }
@@ -136,15 +136,15 @@ static void relocate(int size) {
 		    (*p).i = m;
 		    break;
 	       case R_DATA:
-		    (*p).a = (addr) (dmem + m);
+		    (*p).a = address(dmem + m);
 		    break;
 	       case R_CODE:
-		    (*p).a = (addr) (imem + m);
+		    (*p).a = address(imem + m);
 		    break;
 	       case R_SUBR:
 		    switch (m) {
-		    case INTERP: (*p).a = (addr) interpreter; break;
-		    case DLTRAP: (*p).a = (addr) dltrap; break;
+		    case INTERP: primptr(*p) = interpreter; break;
+		    case DLTRAP: primptr(*p) = dltrap; break;
 		    default:
 			 panic("bad subr code");
 		    }
@@ -166,8 +166,8 @@ static void read_symbols(int dseg) {
 #define debug_kind(n)
 #endif
 	  
-     modtab = (module *) scratch_alloc(nmods * sizeof(module), FALSE);
-     proctab = (proc *) scratch_alloc(nprocs * sizeof(proc), FALSE);
+     modtab = (module *) scratch_alloc(nmods * sizeof(module));
+     proctab = (proc *) scratch_alloc(nprocs * sizeof(proc));
 
      for (i = 0; i < nsyms; i++) {
 	  kind = read_int();
@@ -277,17 +277,17 @@ void load_file(FILE *bfp) {
      binfp = bfp;
 
      /* Load the code */
-     imem = (uchar *) scratch_alloc(seglen[S_CODE], TRUE);
+     imem = (uchar *) scratch_alloc(seglen[S_CODE]);
      binread(imem, seglen[S_CODE]);
 
      /* Load and relocate the data */
-     dmem = (uchar *) scratch_alloc(seglen[S_DATA]+seglen[S_BSS], FALSE);
+     dmem = (uchar *) scratch_alloc(seglen[S_DATA]+seglen[S_BSS]);
      binread(dmem, seglen[S_DATA]);
      relocate(seglen[S_DATA]);
      memset(dmem+seglen[S_DATA], 0, seglen[S_BSS]);
 
      /* Allocate stack */
-     stack = (uchar *) scratch_alloc(stack_size, FALSE);
+     stack = (uchar *) scratch_alloc(stack_size);
 
      /* Save the entry point, pointer map and library path */
      entry = (value *) &dmem[get_int(t.entry)];
