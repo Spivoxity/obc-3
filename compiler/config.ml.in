@@ -33,6 +33,7 @@
 let version = "@PACKAGE_VERSION@"
 let signature = @SIG@
 let bugaddr = "@PACKAGE_BUGREPORT@"
+let tracker = "@PACKAGE_TRACKER@"
 
 let optflag = ref true
 let tailflag = ref false

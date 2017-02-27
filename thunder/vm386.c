@@ -61,8 +61,8 @@
 
 struct _vmreg
      reg_i0 = { "I0", EAX },
-     reg_i1 = { "I2", EDX },
-     reg_i2 = { "I1", ECX },
+     reg_i1 = { "I1", ECX },
+     reg_i2 = { "I2", EDX },
      reg_v0 = { "V0", EBX },
      reg_v1 = { "V1", ESI },
      reg_v2 = { "V2", EDI },
@@ -315,7 +315,7 @@ static void memory(int ra, int rb, int d) {
 	    
 	mode = 1 or 2:
 	    Based addressing [rb+d]. 
-            For [ESP+d] use (mode, r, 4) followed by SIB = (0, 4, ESP).
+            For [ESP+d] use (mode, ra, 4) followed by SIB = (0, 4, ESP).
 
 	mode = 0 and r/m = 5:
 	    Absolute addressing [d].

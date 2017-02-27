@@ -168,6 +168,12 @@ let rec check_stmt i0 s =
 	let i1 = check_assign i0 e1 in
 	let i2 = check_expr i0 e2 in
 	inijoin i1 i2
+    | SimAssign pairs ->
+	List.fold_left (fun i (e1, e2) ->
+	    let i1 = check_assign i0 e1 in
+	    let i2 = check_expr i0 e2 in
+	    inijoin i (inijoin i1 i2))
+	  i0 pairs
     | ProcCall e1 ->
 	check_expr i0 e1
     | IfStmt (arms, elsept) ->

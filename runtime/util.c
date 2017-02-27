@@ -70,7 +70,8 @@ void panic(const char *msg, ...) {
        fprintf(stderr, " in %s", err_file);
      fprintf(stderr, "\n");
      if (bug)
-	  fprintf(stderr, "Please report bugs to %s\n", PACKAGE_BUGREPORT);
+	  fprintf(stderr, "Please report bugs to %s or %s\n",
+                  PACKAGE_TRACKER, PACKAGE_BUGREPORT);
 
      exit(2);
 }

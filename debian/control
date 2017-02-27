@@ -2,12 +2,12 @@ Source: obc
 Section: devel
 Priority: optional
 Maintainer: Mike Spivey <mike@cs.ox.ac.uk>
-Build-Depends: debhelper (>= 4.0.0), autotools-dev, tcl8.6, ocaml|ocaml-nox
+Build-Depends: debhelper (>= 4.0.0), autotools-dev, tcl8.6, ocaml|ocaml-nox, gtksourceview2.0-dev
 Standards-Version: 3.6.2
 
 Package: obc
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, libc6:i386 [amd64]
 Description: Oxford Oberon-2 compiler
  This compiler translates Oberon-2 into a portable bytecode, and comes
  with an interpreter (or on some architecures, a JIT) for the bytecode.
