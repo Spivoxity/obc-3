@@ -501,9 +501,19 @@ let rec equal_types t1 t2 =
   match (t1.t_guts, t2.t_guts) with
       (FlexType u1, FlexType u2) ->
 	equal_types u1 u2
+    | (ProcType _, ProcType _) ->
+        proc_match t1 t2
     | _ -> same_types t1 t2
 
-let match_args fp1 fp2 = 
+and proc_match t1 t2 =
+  match (t1.t_guts, t2.t_guts) with
+      (ProcType p1, ProcType p2) ->
+        p1.p_kind = p2.p_kind
+        && match_args p1.p_fparams p2.p_fparams 
+        && same_types p1.p_result p2.p_result
+    | (_, _) -> false
+
+and match_args fp1 fp2 = 
   begin try 
     let match_one (f1, f2) =
       match (f1.d_kind, f2.d_kind) with
@@ -515,14 +525,6 @@ let match_args fp1 fp2 =
   with Invalid_argument _ -> 
     false
   end
-
-let proc_match t1 t2 =
-  match (t1.t_guts, t2.t_guts) with
-      (ProcType p1, ProcType p2) ->
-        p1.p_kind = p2.p_kind
-        && match_args p1.p_fparams p2.p_fparams 
-        && same_types p1.p_result p2.p_result
-    | (_, _) -> false
 
 (* This is used to detect confusing clashes of anonymous types *)
 let approx_same u1 u2 =
