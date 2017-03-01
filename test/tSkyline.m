@@ -103,8 +103,8 @@ END tSkyline.
 >>*)
 
 (*[[
-!! (SYMFILE #tSkyline 0x00000301 #tSkyline.%main 1)
-!! (CHKSUM 0x38c39d8b)
+!! (SYMFILE #tSkyline STAMP #tSkyline.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSkyline STAMP 0
 IMPORT Random STAMP

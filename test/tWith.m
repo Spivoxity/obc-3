@@ -38,10 +38,10 @@ END tWith.
 >>*)
 
 (*[[
-!! (SYMFILE #tWith 0x00000301 #tWith.%main 1)
+!! (SYMFILE #tWith STAMP #tWith.%main 1)
 !! (TYPE #Obj* !1 (POINTER))
 !! (TARGET =1 !2 (RECORD #tWith.Empty 0 VOID))
-!! (CHKSUM 0x213efc73)
+!! (CHKSUM STAMP)
 !! 
 MODULE tWith STAMP 0
 IMPORT Out STAMP

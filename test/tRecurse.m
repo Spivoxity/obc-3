@@ -40,8 +40,8 @@ BEGIN
 END tRecurse.
 
 (*[[
-!! (SYMFILE #tRecurse 0x00000301 #tRecurse.%main 1)
-!! (CHKSUM 0x1ba4cf9f)
+!! (SYMFILE #tRecurse STAMP #tRecurse.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tRecurse STAMP 0
 IMPORT Out STAMP

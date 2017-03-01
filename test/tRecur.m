@@ -41,8 +41,8 @@ END tRecur.
 >>*)
 
 (*[[
-!! (SYMFILE #tRecur 0x00000301 #tRecur.%main 1)
-!! (CHKSUM 0x19595b4f)
+!! (SYMFILE #tRecur STAMP #tRecur.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tRecur STAMP 0
 IMPORT Out STAMP

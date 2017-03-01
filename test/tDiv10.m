@@ -34,9 +34,9 @@ Done
 >>*)
 
 (*[[
-!! (SYMFILE #tDiv10 0x00000301 #tDiv10.%main 1)
+!! (SYMFILE #tDiv10 STAMP #tDiv10.%main 1)
 !! (CONST #inv10* INTEGER 3277)
-!! (CHKSUM 0x72f5d533)
+!! (CHKSUM STAMP)
 !! 
 MODULE tDiv10 STAMP 0
 IMPORT Out STAMP

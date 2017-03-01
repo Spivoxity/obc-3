@@ -11,8 +11,8 @@ BEGIN
 END tPi.
 
 (*[[
-!! (SYMFILE #tPi 0x00000301 #tPi.%main 1)
-!! (CHKSUM 0x104cb0bf)
+!! (SYMFILE #tPi STAMP #tPi.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tPi STAMP 0
 IMPORT MathL STAMP

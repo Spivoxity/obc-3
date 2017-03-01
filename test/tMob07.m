@@ -29,8 +29,8 @@ END tMob07.
 >>*)
 
 (*[[
-!! (SYMFILE #tMob07 0x00000301 #tMob07.%main 1)
-!! (CHKSUM 0x0d2ae8f7)
+!! (SYMFILE #tMob07 STAMP #tMob07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tMob07 STAMP 0
 IMPORT Out STAMP

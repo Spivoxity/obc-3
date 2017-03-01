@@ -206,7 +206,7 @@ BEGIN
 END tMerge.
 
 (*[[
-!! (SYMFILE #tMerge 0x00000301 #tMerge.%main 1)
+!! (SYMFILE #tMerge STAMP #tMerge.%main 1)
 !! (DEF !1 (POINTER))
 !! (DEF !2 (POINTER))
 !! (PROCEDURE #NewMergeStream* 118 #tMerge.NewMergeStream !3 (PROC 2 =2
@@ -241,7 +241,7 @@ END tMerge.
 !!     (PARAM #s 12 =2)))
 !! (METHOD =5 #Fix 128 4 #tMerge.mergestreamrec.Fix !14 (METH 1 VOID
 !!     (PARAM #s 12 =2)))
-!! (CHKSUM 0x1c0bf7e0)
+!! (CHKSUM STAMP)
 !! 
 MODULE tMerge STAMP 0
 IMPORT Out STAMP

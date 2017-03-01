@@ -792,8 +792,6 @@ void vm_gen1i(operation op, int a) {
 }
 
 void vm_gen1j(operation op, vmlabel lab) {
-     code_addr loc;
-
      vm_debug1(op, 1, fmt_lab(lab));
      vm_space(0);
 

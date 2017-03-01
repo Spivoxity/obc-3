@@ -38,8 +38,8 @@ BEGIN
 END tFCmp.
 
 (*[[
-!! (SYMFILE #tFCmp 0x00000301 #tFCmp.%main 1)
-!! (CHKSUM 0x21d29e79)
+!! (SYMFILE #tFCmp STAMP #tFCmp.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tFCmp STAMP 0
 IMPORT Out STAMP

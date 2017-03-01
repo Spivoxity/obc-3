@@ -21,10 +21,10 @@ END tLongShort.
 >>*)
 
 (*[[
-!! (SYMFILE #tLongShort 0x00000301 #tLongShort.%main 1)
+!! (SYMFILE #tLongShort STAMP #tLongShort.%main 1)
 !! (PROCEDURE #P* 8 #tLongShort.P !1 (PROC 2 INTEGER
 !!     (PARAM #x 12 LONGREAL)))
-!! (CHKSUM 0x30317810)
+!! (CHKSUM STAMP)
 !! 
 MODULE tLongShort STAMP 0
 IMPORT Out STAMP

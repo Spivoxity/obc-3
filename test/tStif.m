@@ -18,8 +18,8 @@ END tStif.
 >>*)
 
 (*[[
-!! (SYMFILE #tStif 0x00000301 #tStif.%main 1)
-!! (CHKSUM 0x27db9f79)
+!! (SYMFILE #tStif STAMP #tStif.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tStif STAMP 0
 IMPORT Out STAMP

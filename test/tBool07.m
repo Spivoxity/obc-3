@@ -16,8 +16,8 @@ BEGIN
 END tBool07.
 
 (*[[
-!! (SYMFILE #tBool07 0x00000301 #tBool07.%main 1)
-!! (CHKSUM 0x1eb94953)
+!! (SYMFILE #tBool07 STAMP #tBool07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tBool07 STAMP 0
 IMPORT Out STAMP

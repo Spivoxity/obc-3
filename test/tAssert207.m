@@ -14,8 +14,8 @@ In procedure tAssert207.%main
 >>*)
 
 (*[[
-!! (SYMFILE #tAssert207 0x00000301 #tAssert207.%main 1)
-!! (CHKSUM 0x2986d5c3)
+!! (SYMFILE #tAssert207 STAMP #tAssert207.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tAssert207 STAMP 0
 ENDHDR

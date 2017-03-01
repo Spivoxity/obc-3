@@ -49,8 +49,8 @@ BEGIN
 END tDigits07.
 
 (*[[
-!! (SYMFILE #tDigits07 0x00000301 #tDigits07.%main 1)
-!! (CHKSUM 0x2545bdc3)
+!! (SYMFILE #tDigits07 STAMP #tDigits07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tDigits07 STAMP 0
 IMPORT Out STAMP

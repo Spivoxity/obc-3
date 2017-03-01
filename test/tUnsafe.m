@@ -35,8 +35,8 @@ END tUnsafe.
 >>*)
 
 (*[[
-!! (SYMFILE #tUnsafe 0x00000301 #tUnsafe.%main 1)
-!! (CHKSUM 0x01d764b1)
+!! (SYMFILE #tUnsafe STAMP #tUnsafe.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tUnsafe STAMP 0
 IMPORT Out STAMP

@@ -45,8 +45,8 @@ Good!
 >>*)
 
 (*[[
-!! (SYMFILE #tLongInt 0x00000301 #tLongInt.%main 1)
-!! (CHKSUM 0x093f8c63)
+!! (SYMFILE #tLongInt STAMP #tLongInt.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tLongInt STAMP 0
 IMPORT Out STAMP

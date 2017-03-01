@@ -14,8 +14,8 @@ BEGIN
 END tPNil.
 
 (*[[
-!! (SYMFILE #tPNil 0x00000301 #tPNil.%main 1)
-!! (CHKSUM 0x157fcad3)
+!! (SYMFILE #tPNil STAMP #tPNil.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tPNil STAMP 0
 ENDHDR

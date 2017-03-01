@@ -18,8 +18,8 @@ END tAggreg07.
 >>*)
 
 (*[[
-!! (SYMFILE #tAggreg07 0x00000301 #tAggreg07.%main 1)
-!! (CHKSUM 0x4411f8d5)
+!! (SYMFILE #tAggreg07 STAMP #tAggreg07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tAggreg07 STAMP 0
 IMPORT Out STAMP

@@ -47,8 +47,8 @@ END tSet.
 >>*)
 
 (*[[
-!! (SYMFILE #tSet 0x00000301 #tSet.%main 1)
-!! (CHKSUM 0x70de6a55)
+!! (SYMFILE #tSet STAMP #tSet.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSet STAMP 0
 IMPORT Out STAMP

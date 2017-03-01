@@ -38,8 +38,8 @@ END tEgyptian.
 >>*)
 
 (*[[
-!! (SYMFILE #tEgyptian 0x00000301 #tEgyptian.%main 1)
-!! (CHKSUM 0x5ab20b6f)
+!! (SYMFILE #tEgyptian STAMP #tEgyptian.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tEgyptian STAMP 0
 IMPORT Out STAMP

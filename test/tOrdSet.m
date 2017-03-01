@@ -14,8 +14,8 @@ END tOrdSet.
 >>*)
 
 (*[[
-!! (SYMFILE #tOrdSet 0x00000301 #tOrdSet.%main 1)
-!! (CHKSUM 0x59ef692f)
+!! (SYMFILE #tOrdSet STAMP #tOrdSet.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tOrdSet STAMP 0
 IMPORT Out STAMP

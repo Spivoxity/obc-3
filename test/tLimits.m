@@ -85,8 +85,8 @@ BEGIN
 END tLimits.
 
 (*[[
-!! (SYMFILE #tLimits 0x00000301 #tLimits.%main 1)
-!! (CHKSUM 0x61b6e231)
+!! (SYMFILE #tLimits STAMP #tLimits.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tLimits STAMP 0
 IMPORT Out STAMP

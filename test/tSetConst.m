@@ -20,8 +20,8 @@ True
 >>*)
 
 (*[[
-!! (SYMFILE #tSetConst 0x00000301 #tSetConst.%main 1)
-!! (CHKSUM 0x0ae78113)
+!! (SYMFILE #tSetConst STAMP #tSetConst.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSetConst STAMP 0
 IMPORT Out STAMP

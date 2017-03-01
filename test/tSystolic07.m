@@ -414,8 +414,8 @@ Time 49: chan10.INF
 >>*)
 
 (*[[
-!! (SYMFILE #tSystolic07 0x00000301 #tSystolic07.%main 1)
-!! (CHKSUM 0x04ae994f)
+!! (SYMFILE #tSystolic07 STAMP #tSystolic07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSystolic07 STAMP 0
 IMPORT Out STAMP

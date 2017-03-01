@@ -13,9 +13,9 @@ OK
 >>*)
 
 (*[[
-!! (SYMFILE #tMemOflo 0x00000301 #tMemOflo.%main 1)
+!! (SYMFILE #tMemOflo STAMP #tMemOflo.%main 1)
 !! (GLOBAL #string* #tMemOflo.string !1 (ARRAY 268435455 CHAR))
-!! (CHKSUM 0x0f0fa020)
+!! (CHKSUM STAMP)
 !! 
 MODULE tMemOflo STAMP 0
 IMPORT Out STAMP

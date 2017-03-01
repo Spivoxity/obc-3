@@ -11,8 +11,8 @@ BEGIN
 END tBigReal07.
 
 (*[[
-!! (SYMFILE #tBigReal07 0x00000301 #tBigReal07.%main 1)
-!! (CHKSUM 0x076bd607)
+!! (SYMFILE #tBigReal07 STAMP #tBigReal07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tBigReal07 STAMP 0
 IMPORT Out STAMP

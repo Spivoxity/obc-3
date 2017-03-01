@@ -25,8 +25,8 @@ BEGIN
 END tOpen207.
 
 (*[[
-!! (SYMFILE #tOpen207 0x00000301 #tOpen207.%main 1)
-!! (CHKSUM 0x6b42e1c3)
+!! (SYMFILE #tOpen207 STAMP #tOpen207.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tOpen207 STAMP 0
 IMPORT Out STAMP

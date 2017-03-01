@@ -18,8 +18,8 @@ BEGIN
 END tFJump.
 
 (*[[
-!! (SYMFILE #tFJump 0x00000301 #tFJump.%main 1)
-!! (CHKSUM 0x05da4dc1)
+!! (SYMFILE #tFJump STAMP #tFJump.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tFJump STAMP 0
 IMPORT Out STAMP

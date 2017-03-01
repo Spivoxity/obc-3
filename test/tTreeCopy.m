@@ -118,8 +118,8 @@ END tTreeCopy.
 >>*)
 
 (*[[
-!! (SYMFILE #tTreeCopy 0x00000301 #tTreeCopy.%main 1)
-!! (CHKSUM 0x3c2194a3)
+!! (SYMFILE #tTreeCopy STAMP #tTreeCopy.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tTreeCopy STAMP 0
 IMPORT Random STAMP

@@ -16,8 +16,8 @@ END tByte07.
 >>*)
 
 (*[[
-!! (SYMFILE #tByte07 0x00000301 #tByte07.%main 1)
-!! (CHKSUM 0x5dda8f83)
+!! (SYMFILE #tByte07 STAMP #tByte07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tByte07 STAMP 0
 IMPORT Out STAMP

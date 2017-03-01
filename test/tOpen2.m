@@ -25,8 +25,8 @@ BEGIN
 END tOpen2.
 
 (*[[
-!! (SYMFILE #tOpen2 0x00000301 #tOpen2.%main 1)
-!! (CHKSUM 0x4b15d605)
+!! (SYMFILE #tOpen2 STAMP #tOpen2.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tOpen2 STAMP 0
 IMPORT Out STAMP

@@ -17,8 +17,8 @@ BEGIN
 END tAssert.
 
 (*[[
-!! (SYMFILE #tAssert 0x00000301 #tAssert.%main 1)
-!! (CHKSUM 0x466eaf51)
+!! (SYMFILE #tAssert STAMP #tAssert.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tAssert STAMP 0
 ENDHDR

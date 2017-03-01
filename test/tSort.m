@@ -81,8 +81,8 @@ END tSort.
 >>*)
 
 (*[[
-!! (SYMFILE #tSort 0x00000301 #tSort.%main 1)
-!! (CHKSUM 0x3a847ffd)
+!! (SYMFILE #tSort STAMP #tSort.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSort STAMP 0
 IMPORT Out STAMP

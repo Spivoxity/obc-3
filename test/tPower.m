@@ -140,8 +140,8 @@ x2:=x*x; x3:=x*x2; x6:=x3*x3; x9:=x3*x6; x15:=x6*x9;
 >>*)
 
 (*[[
-!! (SYMFILE #tPower 0x00000301 #tPower.%main 1)
-!! (CHKSUM 0x58f036e7)
+!! (SYMFILE #tPower STAMP #tPower.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tPower STAMP 0
 IMPORT Out STAMP

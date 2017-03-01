@@ -20,8 +20,8 @@ END tCarry.
 >>*)
 
 (*[[
-!! (SYMFILE #tCarry 0x00000301 #tCarry.%main 1)
-!! (CHKSUM 0x734496af)
+!! (SYMFILE #tCarry STAMP #tCarry.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tCarry STAMP 0
 IMPORT Out STAMP

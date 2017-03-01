@@ -605,9 +605,12 @@ static void unalias(int a, ctvalue v) {
      for (i = sp; i > a; i--) {
 	  ctvalue w = &vstack[sp-i];
 	  if (alias(v, w)) {
+#ifndef M64X32
 	       if (w->v_op == I_LOADQ)
 		    move_to_frame(i);
-	       else {
+               else
+#endif
+	       {
 		    reg r = move_to_reg(i, w->v_type);
                     runlock(r);
                }

@@ -25,8 +25,8 @@ none
 >>*)
 
 (*[[
-!! (SYMFILE #tGloWith 0x00000301 #tGloWith.%main 1)
-!! (CHKSUM 0x4658eb59)
+!! (SYMFILE #tGloWith STAMP #tGloWith.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tGloWith STAMP 0
 IMPORT Out STAMP

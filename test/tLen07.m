@@ -28,8 +28,8 @@ END tLen07.
 >>*)
 
 (*[[
-!! (SYMFILE #tLen07 0x00000301 #tLen07.%main 1)
-!! (CHKSUM 0x7551e609)
+!! (SYMFILE #tLen07 STAMP #tLen07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tLen07 STAMP 0
 IMPORT Out STAMP

@@ -56,8 +56,8 @@ BEGIN
 END tDivMod07.
 
 (*[[
-!! (SYMFILE #tDivMod07 0x00000301 #tDivMod07.%main 1)
-!! (CHKSUM 0x53b0ebc1)
+!! (SYMFILE #tDivMod07 STAMP #tDivMod07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tDivMod07 STAMP 0
 IMPORT Out STAMP

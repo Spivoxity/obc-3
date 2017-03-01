@@ -29,8 +29,8 @@ BEGIN
 END tSamson07.
 
 (*[[
-!! (SYMFILE #tSamson07 0x00000301 #tSamson07.%main 1)
-!! (CHKSUM 0x7f48ea1d)
+!! (SYMFILE #tSamson07 STAMP #tSamson07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSamson07 STAMP 0
 IMPORT Out STAMP

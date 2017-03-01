@@ -22,13 +22,13 @@ END tBigMap.
 >>*)
 
 (*[[
-!! (SYMFILE #tBigMap 0x00000301 #tBigMap.%main 1)
+!! (SYMFILE #tBigMap STAMP #tBigMap.%main 1)
 !! (GLOBAL #exp1* #tBigMap.exp1 !1 (ARRAY 500000 !2 (POINTER)))
 !! (TARGET =2 !3 (RECORD #tBigMap.ExpTree 4 VOID
 !!     (FIELD #value 0 INTEGER)))
 !! (GLOBAL #exp2* #tBigMap.exp2 !4 (ARRAY 31 =2))
 !! (GLOBAL #exp3* #tBigMap.exp3 !5 (ARRAY 32 =2))
-!! (CHKSUM 0x16754609)
+!! (CHKSUM STAMP)
 !! 
 MODULE tBigMap STAMP 0
 IMPORT Out STAMP

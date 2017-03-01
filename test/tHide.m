@@ -31,7 +31,7 @@ BEGIN
 END tHide.
 
 (*[[
-!! (SYMFILE #tHide 0x00000301 #tHide.%main 1)
+!! (SYMFILE #tHide STAMP #tHide.%main 1)
 !! (DEF ?1 #xPrelude 2 #blob (RECORD #xPrelude.blob 8 VOID
 !!     (FIELD #x 0 INTEGER)
 !!     (FIELD #y* 4 INTEGER)))
@@ -51,7 +51,7 @@ END tHide.
 !! (METHOD =2 #proc* 42 2 #xPrelude.blob.proc =5)
 !! (METHOD =2 #one 15 3 #tHide.spot.one !7 (METH 2 VOID
 !!     (VPARAM #b 12 =2)))
-!! (CHKSUM 0x1f3ff68a)
+!! (CHKSUM STAMP)
 !! 
 MODULE tHide STAMP 0
 IMPORT xPrelude STAMP

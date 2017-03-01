@@ -11,8 +11,8 @@ END tImpField07.
 >>*)
 
 (*[[
-!! (SYMFILE #tImpField07 0x00000301 #tImpField07.%main 1)
-!! (CHKSUM 0x1a36e66f)
+!! (SYMFILE #tImpField07 STAMP #tImpField07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tImpField07 STAMP 0
 IMPORT xTypes07 STAMP

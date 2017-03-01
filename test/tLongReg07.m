@@ -23,8 +23,8 @@ BEGIN
 END tLongReg07.
 
 (*[[
-!! (SYMFILE #tLongReg07 0x00000301 #tLongReg07.%main 1)
-!! (CHKSUM 0x63723317)
+!! (SYMFILE #tLongReg07 STAMP #tLongReg07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tLongReg07 STAMP 0
 IMPORT Out STAMP

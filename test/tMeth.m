@@ -35,8 +35,8 @@ BEGIN
 END tMeth.
 
 (*[[
-!! (SYMFILE #tMeth 0x00000301 #tMeth.%main 1)
-!! (CHKSUM 0x0f2f8ac9)
+!! (SYMFILE #tMeth STAMP #tMeth.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tMeth STAMP 0
 IMPORT Out STAMP

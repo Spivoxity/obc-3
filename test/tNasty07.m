@@ -27,8 +27,8 @@ BEGIN
 END tNasty07.
 
 (*[[
-!! (SYMFILE #tNasty07 0x00000301 #tNasty07.%main 1)
-!! (CHKSUM 0x49345809)
+!! (SYMFILE #tNasty07 STAMP #tNasty07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tNasty07 STAMP 0
 IMPORT Out STAMP

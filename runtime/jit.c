@@ -325,9 +325,11 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	     letting it remain unevaluated on the stack if it uses an 
 	     index register. */
 	  deref(I_LOADQ, INT, 2); 
+#ifndef M64X32
 	  v = peek(1);
 	  if (member(v->v_reg, INT) && n_reserved() > 3) 
 	       move_to_frame(1); 
+#endif
 	  break;
 
      case I_STOREW:	store(I_LOADW, INT, 1); break;

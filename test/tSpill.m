@@ -46,8 +46,8 @@ END tSpill.
 >>*)
 
 (*[[
-!! (SYMFILE #tSpill 0x00000301 #tSpill.%main 1)
-!! (CHKSUM 0x46bd5345)
+!! (SYMFILE #tSpill STAMP #tSpill.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSpill STAMP 0
 IMPORT Out STAMP

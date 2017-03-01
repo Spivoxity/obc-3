@@ -42,8 +42,8 @@ END tPeriod.
 >>*)
 
 (*[[
-!! (SYMFILE #tPeriod 0x00000301 #tPeriod.%main 1)
-!! (CHKSUM 0x6b83cc33)
+!! (SYMFILE #tPeriod STAMP #tPeriod.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tPeriod STAMP 0
 IMPORT Strings STAMP

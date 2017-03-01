@@ -64,8 +64,8 @@ END tQuicksort.
 >>*)
 
 (*[[
-!! (SYMFILE #tQuicksort 0x00000301 #tQuicksort.%main 1)
-!! (CHKSUM 0x60570577)
+!! (SYMFILE #tQuicksort STAMP #tQuicksort.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tQuicksort STAMP 0
 IMPORT Random STAMP

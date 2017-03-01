@@ -393,8 +393,8 @@ Move  0<-5 2<-5 3<-1 4<-5 1<-6
 >>*)
 
 (*[[
-!! (SYMFILE #tPermute07 0x00000301 #tPermute07.%main 1)
-!! (CHKSUM 0x14bca45f)
+!! (SYMFILE #tPermute07 STAMP #tPermute07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tPermute07 STAMP 0
 IMPORT Random STAMP

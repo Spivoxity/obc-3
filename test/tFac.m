@@ -25,8 +25,8 @@ BEGIN
 END tFac.
 
 (*[[
-!! (SYMFILE #tFac 0x00000301 #tFac.%main 1)
-!! (CHKSUM 0x51fc25f1)
+!! (SYMFILE #tFac STAMP #tFac.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tFac STAMP 0
 IMPORT Out STAMP

@@ -24,8 +24,8 @@ BEGIN
 END tShort07.
 
 (*[[
-!! (SYMFILE #tShort07 0x00000301 #tShort07.%main 1)
-!! (CHKSUM 0x47f2a89b)
+!! (SYMFILE #tShort07 STAMP #tShort07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tShort07 STAMP 0
 IMPORT Out STAMP

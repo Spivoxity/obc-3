@@ -30,8 +30,8 @@ END tParamGC.
 >>*)
 
 (*[[
-!! (SYMFILE #tParamGC 0x00000301 #tParamGC.%main 1)
-!! (CHKSUM 0x4b362903)
+!! (SYMFILE #tParamGC STAMP #tParamGC.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tParamGC STAMP 0
 IMPORT Out STAMP

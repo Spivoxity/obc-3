@@ -87,8 +87,8 @@ END tChange07.
 >>*)
 
 (*[[
-!! (SYMFILE #tChange07 0x00000301 #tChange07.%main 1)
-!! (CHKSUM 0x7c8ff347)
+!! (SYMFILE #tChange07 STAMP #tChange07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tChange07 STAMP 0
 IMPORT Out STAMP

@@ -63,8 +63,8 @@ BEGIN
 END tSuper.
 
 (*[[
-!! (SYMFILE #tSuper 0x00000301 #tSuper.%main 1)
-!! (CHKSUM 0x4865538b)
+!! (SYMFILE #tSuper STAMP #tSuper.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSuper STAMP 0
 IMPORT Out STAMP

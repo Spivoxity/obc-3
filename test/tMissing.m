@@ -120,8 +120,8 @@ END tMissing.
 >>*)
 
 (*[[
-!! (SYMFILE #tMissing 0x00000301 #tMissing.%main 1)
-!! (CHKSUM 0x371b2731)
+!! (SYMFILE #tMissing STAMP #tMissing.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tMissing STAMP 0
 IMPORT Random STAMP

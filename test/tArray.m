@@ -22,8 +22,8 @@ BEGIN
 END tArray.
 
 (*[[
-!! (SYMFILE #tArray 0x00000301 #tArray.%main 1)
-!! (CHKSUM 0x7266794b)
+!! (SYMFILE #tArray STAMP #tArray.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tArray STAMP 0
 IMPORT Out STAMP

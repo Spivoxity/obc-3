@@ -17,8 +17,8 @@ END tSysVal.
 >>*)
 
 (*[[
-!! (SYMFILE #tSysVal 0x00000301 #tSysVal.%main 1)
-!! (CHKSUM 0x05563591)
+!! (SYMFILE #tSysVal STAMP #tSysVal.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSysVal STAMP 0
 IMPORT Out STAMP

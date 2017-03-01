@@ -16,8 +16,8 @@ END tAbsLong.
 >>*)
 
 (*[[
-!! (SYMFILE #tAbsLong 0x00000301 #tAbsLong.%main 1)
-!! (CHKSUM 0x4f9b7389)
+!! (SYMFILE #tAbsLong STAMP #tAbsLong.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tAbsLong STAMP 0
 IMPORT Out STAMP

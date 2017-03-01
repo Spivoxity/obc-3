@@ -37,8 +37,8 @@ END tPythag.
 >>*)
 
 (*[[
-!! (SYMFILE #tPythag 0x00000301 #tPythag.%main 1)
-!! (CHKSUM 0x2dd5aec7)
+!! (SYMFILE #tPythag STAMP #tPythag.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tPythag STAMP 0
 IMPORT Out STAMP

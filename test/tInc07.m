@@ -15,8 +15,8 @@ END tInc07.
 >>*)
 
 (*[[
-!! (SYMFILE #tInc07 0x00000301 #tInc07.%main 1)
-!! (CHKSUM 0x33269c8f)
+!! (SYMFILE #tInc07 STAMP #tInc07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tInc07 STAMP 0
 IMPORT Out STAMP

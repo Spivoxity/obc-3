@@ -34,8 +34,8 @@ BEGIN
 END tFlex.
 
 (*[[
-!! (SYMFILE #tFlex 0x00000301 #tFlex.%main 1)
-!! (CHKSUM 0x53d5694b)
+!! (SYMFILE #tFlex STAMP #tFlex.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tFlex STAMP 0
 IMPORT Out STAMP

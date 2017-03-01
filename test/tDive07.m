@@ -26,8 +26,8 @@ BEGIN
 END tDive07.
 
 (*[[
-!! (SYMFILE #tDive07 0x00000301 #tDive07.%main 1)
-!! (CHKSUM 0x3ff108eb)
+!! (SYMFILE #tDive07 STAMP #tDive07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tDive07 STAMP 0
 ENDHDR

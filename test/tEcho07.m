@@ -25,8 +25,8 @@ BEGIN
 END tEcho07.
 
 (*[[
-!! (SYMFILE #tEcho07 0x00000301 #tEcho07.%main 1)
-!! (CHKSUM 0x27e55a59)
+!! (SYMFILE #tEcho07 STAMP #tEcho07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tEcho07 STAMP 0
 IMPORT Args STAMP

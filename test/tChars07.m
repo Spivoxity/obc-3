@@ -19,8 +19,8 @@ BEGIN
 END tChars07.
 
 (*[[
-!! (SYMFILE #tChars07 0x00000301 #tChars07.%main 1)
-!! (CHKSUM 0x4f59b08d)
+!! (SYMFILE #tChars07 STAMP #tChars07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tChars07 STAMP 0
 IMPORT Out STAMP

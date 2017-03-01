@@ -15,8 +15,8 @@ BEGIN
 END tFNeg.
 
 (*[[
-!! (SYMFILE #tFNeg 0x00000301 #tFNeg.%main 1)
-!! (CHKSUM 0x63e58ead)
+!! (SYMFILE #tFNeg STAMP #tFNeg.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tFNeg STAMP 0
 IMPORT Out STAMP

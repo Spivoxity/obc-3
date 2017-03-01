@@ -22,8 +22,8 @@ OK
 >>*)
 
 (*[[
-!! (SYMFILE #tLongBool 0x00000301 #tLongBool.%main 1)
-!! (CHKSUM 0x186e44e5)
+!! (SYMFILE #tLongBool STAMP #tLongBool.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tLongBool STAMP 0
 IMPORT Out STAMP

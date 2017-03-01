@@ -14,8 +14,8 @@ BEGIN
 END tDivZ64.
 
 (*[[
-!! (SYMFILE #tDivZ64 0x00000301 #tDivZ64.%main 1)
-!! (CHKSUM 0x19998ddb)
+!! (SYMFILE #tDivZ64 STAMP #tDivZ64.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tDivZ64 STAMP 0
 ENDHDR

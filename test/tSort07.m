@@ -75,8 +75,8 @@ END tSort07.
 >>*)
 
 (*[[
-!! (SYMFILE #tSort07 0x00000301 #tSort07.%main 1)
-!! (CHKSUM 0x0f47bbcb)
+!! (SYMFILE #tSort07 STAMP #tSort07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tSort07 STAMP 0
 IMPORT Out STAMP

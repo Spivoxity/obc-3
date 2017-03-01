@@ -16,8 +16,8 @@ yes
 >>*)
 
 (*[[
-!! (SYMFILE #tLtd07 0x00000301 #tLtd07.%main 1)
-!! (CHKSUM 0x31a39dc3)
+!! (SYMFILE #tLtd07 STAMP #tLtd07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tLtd07 STAMP 0
 IMPORT Out STAMP

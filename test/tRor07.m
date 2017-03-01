@@ -29,8 +29,8 @@ END tRor07.
 >>*)
 
 (*[[
-!! (SYMFILE #tRor07 0x00000301 #tRor07.%main 1)
-!! (CHKSUM 0x362c5631)
+!! (SYMFILE #tRor07 STAMP #tRor07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tRor07 STAMP 0
 IMPORT Out STAMP

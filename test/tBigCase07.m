@@ -219,8 +219,8 @@ END tBigCase07.
 >>*)
 
 (*[[
-!! (SYMFILE #tBigCase07 0x00000301 #tBigCase07.%main 1)
-!! (CHKSUM 0x10864217)
+!! (SYMFILE #tBigCase07 STAMP #tBigCase07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tBigCase07 STAMP 0
 IMPORT Out STAMP

@@ -35,8 +35,8 @@ BEGIN
 END tMeth07.
 
 (*[[
-!! (SYMFILE #tMeth07 0x00000301 #tMeth07.%main 1)
-!! (CHKSUM 0x4761c2d7)
+!! (SYMFILE #tMeth07 STAMP #tMeth07.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tMeth07 STAMP 0
 IMPORT Out STAMP

@@ -66,8 +66,8 @@ BEGIN
 END tChain.
 
 (*[[
-!! (SYMFILE #tChain 0x00000301 #tChain.%main 1)
-!! (CHKSUM 0x48528453)
+!! (SYMFILE #tChain STAMP #tChain.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tChain STAMP 0
 IMPORT GC STAMP

@@ -27,8 +27,8 @@ S
 >>*)
 
 (*[[
-!! (SYMFILE #tPParam 0x00000301 #tPParam.%main 1)
-!! (CHKSUM 0x742e34cf)
+!! (SYMFILE #tPParam STAMP #tPParam.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tPParam STAMP 0
 IMPORT Out STAMP

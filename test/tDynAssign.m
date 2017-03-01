@@ -36,8 +36,8 @@ In procedure tDynAssign.R.Assign
 >>*)
 
 (*[[
-!! (SYMFILE #tDynAssign 0x00000301 #tDynAssign.%main 1)
-!! (CHKSUM 0x6e6bba5d)
+!! (SYMFILE #tDynAssign STAMP #tDynAssign.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tDynAssign STAMP 0
 ENDHDR
