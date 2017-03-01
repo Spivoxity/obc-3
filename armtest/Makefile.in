@@ -1,8 +1,10 @@
 #
-# armtest/Makefile
+# @configure_input@
+#
+# armtest/Makefile.in
 # 
 # This file is part of the Oxford Oberon-2 compiler
-# Copyright (c) 2006--2016  J. M. Spivey
+# Copyright (c) 2006--2016 J. M. Spivey
 # All rights reserved
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,11 +30,19 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Config stuff
+top_srcdir = @top_srcdir@
+srcdir = @srcdir@
+subdir = armtest
+SHELL = /bin/sh
+# End
+
 REVID := $(shell cat ../revid)
 
-subdir = armtest
 CC = arm-linux-gnueabihf-gcc -marm -march=armv6
-CFLAGS = -g -O2 -I . -I ../runtime -I ../thunder
+CFLAGS = -g -O2 $(INCLUDE)
+INCLUDE = -I . -I $(top_srcdir)/runtime -I $(top_srcdir)/thunder \
+	-I ../runtime
 RTFLAGS = -rdynamic
 LIBS = -ldl
 LIBDIR = /usr/arm-linux-gnueabihf/lib
@@ -42,10 +52,10 @@ PRIMS = Builtin Args GC Timer DynLink Files Conv Random
 DLPRIMS = Math MathL
 TCLSH = tclsh
 
-vpath %.c ../runtime ../thunder ../lib
-vpath %.h ../runtime
+vpath %.c $(top_srcdir)/runtime $(top_srcdir)/thunder ../runtime ../lib
+vpath %.h $(top_srcdir)/runtime $(top_srcdir)/thunder ../runtime
 
-all: obxj-arm $(DLPRIMS:%=%.so) sanity
+all: obxj-arm $(DLPRIMS:%=%.so) regress sanity
 
 obxj-arm: $(OBXJ) $(PRIMS:%=%.o)
 	$(CC) $(RTFLAGS) -o $@ $^ $(LIBS)
@@ -59,18 +69,41 @@ Math.so MathL.so: %.so: %.c
 primtab.c: $(PRIMS:%=../lib/%.m)
 	$(TCLSH) ../lib/makeprims.tcl -t $^ >$@
 
-config.h: config.h.in
+config.h: $(srcdir)/config.h.in
 	cd .. && ./config.status --file=$(subdir)/$@
+
+regress: $(srcdir)/regress.in
+	cd .. && ./config.status --file=$(subdir)/$@
+	chmod +x $@
 
 sanity: force
 	env OBC_LIB=. qemu-arm -B 0x100000 $(LIBDIR)/ld-linux.so.3 \
 	    --library-path $(LIBDIR) ./obxj-arm ../Fac.x 19
 	@echo The factorial of 19 is 121645100408832000
 
+force:
+
+.DELETE_ON_ERROR:
+
+## Cleanup
+
+# clean: remove object files
 clean: force
 	rm -f obxj-arm *.o *.so primtab.c *.k a.out data out.0 out config.h code
 
-force:
+# quiteclean: remove generated files too
+quiteclean: clean
+
+# distclean: also remove all non-distributed files
+distclean: quiteclean
+
+realclean: distclean
+	rm -f Makefile regress
+
+## Configuration and dependencies
+
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && ./config.status $(subdir)/$@
 
 ### Crude approximation
 

@@ -213,3 +213,4 @@ bindist
 doc/think
 doc/think2
 autom4te.cache
+regress

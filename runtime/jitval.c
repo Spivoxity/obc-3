@@ -63,8 +63,8 @@ static void show(ctvalue v) {
      case I_STACKW: 
 	  printf("stackw %d", v->v_val); break;
 
-     case I_STACKD: 
-	  printf("stackd %d", v->v_val); break;
+     case I_STACKQ: 
+	  printf("stackq %d", v->v_val); break;
 
      default:
 	  printf("[%s %d", instrs[v->v_op].i_name, v->v_val);
@@ -214,7 +214,7 @@ static void set(int i, int op, int type, int val, reg r, int s) {
      ctvalue v = &vstack[i];
      reserve(r);
 
-     if (op == I_STACKW || op == I_STACKD) val = offset[i];
+     if (op == I_STACKW || op == I_STACKQ) val = offset[i];
 
      if (v->v_op == op && v->v_type == type && v->v_val == val
          && v->v_reg == r && v->v_size == s) return;
@@ -289,7 +289,7 @@ void restore_stack(codepoint lab) {
      sp = 0; pdepth = 0;
      for (i = 0; i < n; i++) {
 	  if (map & (1 << i))
-	       push(I_STACKD, INT, rZERO, 0, 2);
+	       push(I_STACKQ, INT, rZERO, 0, 2);
 	  else
 	       push(I_STACKW, INT, rZERO, 0, 1);	       
      }
@@ -320,38 +320,31 @@ ctvalue move_from_frame(int i) {
 #define choose(size, opw, opd) \
      ((size) == 1 ? opw : (size) == 2 ? opd : (panic("choose"), 999))
 
+void ldst_item(int op, reg r, int i) {
+     vm_gen3rri(op, r->r_reg, breg->r_reg, base+offset[sp-i]);
+}
+
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
      ctvalue v = &vstack[sp-i];
      reg r = rZERO;
 
-     if (v->v_op != I_STACKW && v->v_op != I_STACKD) {
-	  switch (v->v_type) {
-	  case INT:
-	       if (v->v_size == 2) {
-		    move_longval(v, breg, base+offset[sp-i]);
-		    rfree(v->v_reg);
-		    break;
-	       }
+     if (v->v_op != I_STACKW && v->v_op != I_STACKQ) {
+#ifndef M64X32
+	  if (v->v_type == INT && v->v_size == 2) {
+               move_longval(v, breg, base+offset[sp-i]);
+               rfree(v->v_reg);
+          } else
+#endif
+          {
+               r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
+               ldst_item(choose(v->v_size, STW, STQ), r, i);
 
-	       r = move_to_reg(i, INT); runlock(r); rfree(r);
-	       vm_gen3rri(STW, r->r_reg, breg->r_reg, base+offset[sp-i]);
-	       break;
+               if (r != rZERO && v->v_op != I_REG && v->v_reg != r) 
+                    set_cache(r, v);
+          }
 
-	  case FLO:
-	       r = move_to_reg(i, FLO); runlock(r); rfree(r);
-               vm_gen3rri(choose(v->v_size, STW, STD), 
-                          r->r_reg, breg->r_reg, base+offset[sp-i]);
-	       break;
-
-	  default:
-	       panic("move_to_frame");
-	  }
-
-	  if (r != rZERO && v->v_op != I_REG && v->v_reg != r) 
-	       set_cache(r, v);
-
-	  set(sp-i, (v->v_size == 1 ? I_STACKW : I_STACKD), 
+	  set(sp-i, choose(v->v_size, I_STACKW, I_STACKQ), 
 	      v->v_type, 0, rZERO, v->v_size);
      }
 }
@@ -413,14 +406,14 @@ void spill(reg r) {
                     int c = *rc;
 
                     if (!saved) {
-                         vm_gen3rri(choose(v->v_size, STW, STD), 
+                         vm_gen3rri(choose(v->v_size, STW, STQ), 
                                     r->r_reg, rZERO->r_reg, tmp);
                          saved = TRUE;
                     }
 
                     *rc = 1;
                     move_to_frame(i);
-                    vm_gen3rri(choose(v->v_size, LDW, LDD), 
+                    vm_gen3rri(choose(v->v_size, LDW, LDQ), 
                                r->r_reg, rZERO->r_reg, tmp);
                     *rc = c-1;
                }
@@ -472,6 +465,10 @@ reg move_to_reg(int i, int ty) {
      case I_CON:
 	  r = ralloc(INT);
 	  vm_gen2ri(MOV, r->r_reg, v->v_val);
+#ifdef M64X32
+          if (v->v_size == 2)
+               vm_gen2rr(SXT64, r->r_reg, r->r_reg);
+#endif
 	  break;
 
      case I_LDKW:
@@ -492,10 +489,10 @@ reg move_to_reg(int i, int ty) {
 	  }
 	  break;
 	  
+     case I_LDKQ:
      case I_LDKD:
-	  assert(ty == FLO);
-	  r = ralloc(FLO);
-	  vm_gen3rri(LDD, r->r_reg, rZERO->r_reg, v->v_val);
+	  r = ralloc(ty);
+	  vm_gen3rri(LDQ, r->r_reg, rZERO->r_reg, v->v_val);
 	  break;
 
      case I_ADDR:
@@ -520,18 +517,15 @@ reg move_to_reg(int i, int ty) {
 
      case I_LOADD: 
      case I_LOADQ:
-          /* Could be LOADQ if the result of SYSTEM.VAL(LONGREAL, ...) */
-	  assert(ty == FLO);
-	  r = load(LDD, FLO, v->v_reg, v->v_val); 
+	  r = load(LDQ, ty, v->v_reg, v->v_val); 
 	  break;
 
      case I_STACKW:
 	  r = load(LDW, ty, breg, base + v->v_val);
 	  break;
 
-     case I_STACKD:
-	  assert(ty == FLO);
-	  r = load(LDD, FLO, breg, base + v->v_val);
+     case I_STACKQ:
+	  r = load(LDQ, ty, breg, base + v->v_val);
 	  break;
 
      default:
@@ -544,11 +538,15 @@ reg move_to_reg(int i, int ty) {
         See test tValReal.m */
      if (rkind(r) != ty) {
 	  r2 = ralloc(ty);
+#ifndef M64X32
 	  vm_gen2rr(MOV, r2->r_reg, r->r_reg);
+#else
+	  vm_gen2rr(choose(v->v_size, MOV, MOV64), r2->r_reg, r->r_reg);
+#endif
 	  r = r2;
      }
 
-     if (v->v_op != I_STACKW && v->v_op != I_STACKD && v->v_reg != r)
+     if (v->v_op != I_STACKW && v->v_op != I_STACKQ && v->v_reg != r)
 	  set_cache(r, v);
 
      set(sp-i, I_REG, ty, 0, r, v->v_size);
@@ -621,6 +619,8 @@ static void unalias(int a, ctvalue v) {
 void store(int ldop, int ty, int s) {
      reg r1;
      ctvalue v;
+     int op = -1;
+     mybool cache = TRUE;
 
      deref(ldop, ty, s);							
      v = &vstack[sp-1];
@@ -634,33 +634,37 @@ void store(int ldop, int ty, int s) {
 
      unalias(2, v); 
 
+#ifndef M64X32
      if (ldop == I_LOADQ) {
 	  move_longval(&vstack[sp-2], vstack[sp-1].v_reg, vstack[sp-1].v_val);
 	  pop(2);
 	  return;
      }
-
+#endif
+     
      rlock(v->v_reg);
      r1 = move_to_reg(2, v->v_type); 
      pop(2); unlock(2);						
 
      switch (ldop) {
-     case I_LOADW: vm_gen3rri(STW, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
-     case I_LOADF: vm_gen3rri(STW, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
-     case I_LOADC: vm_gen3rri(STC, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
-     case I_LOADS: vm_gen3rri(STS, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
-     case I_LOADD: vm_gen3rri(STD, r1->r_reg, v->v_reg->r_reg, v->v_val); break;
+     case I_LOADW:
+     case I_LOADF:
+          op = STW; break;
+     case I_LOADC:
+          op = STC; cache = FALSE; break;
+     case I_LOADS:
+          op = STS; cache = FALSE; break;
+     case I_LOADD:
+     case I_LOADQ:
+          op = STQ; break;
 
      default:
 	  panic("put %s", instrs[ldop].i_name);
      }
 
+     vm_gen3rri(op, r1->r_reg, v->v_reg->r_reg, v->v_val);
      kill_alias(v);
-
-     if (v->v_reg != r1 
-	 /* Don't cache truncated values */
-	 && ldop != I_LOADC && ldop != I_LOADS)
-	  set_cache(r1, v);
+     if (cache && v->v_reg != r1) set_cache(r1, v);
 }
 
 /* plusa -- add address and offset */
@@ -775,6 +779,7 @@ void gcallr(reg r, int n) {
 
 /* 64-bit operations */
 
+#ifndef M64X32
 /* move_long -- move a 64-bit value */
 static void move_long(reg rs, int offs, reg rd, int offd) {
      reg r1, r2;
@@ -790,7 +795,7 @@ static void move_long(reg rs, int offs, reg rd, int offd) {
      vm_gen3rri(STW, r2->r_reg, rd->r_reg, offd+4);
 }
      
-/* half-const -- fetch one or other half of a 64-bit constant */
+/* half_const -- fetch one or other half of a 64-bit constant */
 static int half_const(ctvalue v, int off) {
      switch (v->v_op) {
      case I_CON:
@@ -831,7 +836,7 @@ void move_longval(ctvalue src, reg rd, int offd) {
           /* Could be LOADD if the result of SYSTEM.VAL(LONGINT, ...) */
 	  move_long(src->v_reg, src->v_val, rd, offd);
 	  break;
-     case I_STACKD:
+     case I_STACKQ:
 	  move_long(breg, base + src->v_val, rd, offd);
 	  break;
      case I_LDKQ:
@@ -841,28 +846,10 @@ void move_longval(ctvalue src, reg rd, int offd) {
      case I_REG:
           /* Must be result of SYSTEM.VAL(LONGINT, x) */
           assert(src->v_type == FLO);
-          vm_gen3rri(STD, src->v_reg->r_reg, rd->r_reg, offd);
+          vm_gen3rri(STQ, src->v_reg->r_reg, rd->r_reg, offd);
           break;
      default:
 	  panic("move_longval %s", instrs[src->v_op].i_name);
      }
 }
-
-/* get_halflong -- fetch one or other half of a 64-bit value */
-void get_halflong(ctvalue src, int off, reg dst) {
-     switch (src->v_op) {
-     case I_LOADQ:
-	  vm_gen3rri(LDW, dst->r_reg, src->v_reg->r_reg, src->v_val + 4*off);
-	  break;
-     case I_STACKD:
-	  vm_gen3rri(LDW, dst->r_reg, breg->r_reg, base + src->v_val + 4*off);
-	  break;
-     case I_LDKQ:
-     case I_CON:
-	  vm_gen2ri(MOV, dst->r_reg, half_const(src, off));
-	  break;
-     default:
-	  panic("get_halflong %s", instrs[src->v_op].i_name);
-     }
-}     
-
+#endif

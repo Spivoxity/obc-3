@@ -68,6 +68,23 @@ void int_mod(value *sp) {
      sp[1].i = int_divop(sp[1].i, sp[0].i, 0);
 }
 
+void long_div(value *sp) {
+     put_long(sp+2, longint_divop(get_long(sp+2), get_long(sp), 1));
+}
+
+void long_mod(value *sp) {
+     put_long(sp+2, longint_divop(get_long(sp+2), get_long(sp), 0));
+}
+
+void long_flo(value *sp) {
+     put_double(sp, get_long(sp));
+}
+
+void long_zcheck(value *sp) {
+     if (get_long(sp+2) == 0)
+          rterror(E_DIV, sp[0].i, ptrcast(value, sp[1].a));
+}
+#ifndef M64X32
 void long_add(value *sp) {
      put_long(sp+2, get_long(sp+2) + get_long(sp));
 }
@@ -78,14 +95,6 @@ void long_sub(value *sp) {
 
 void long_mul(value *sp) {
      put_long(sp+2, get_long(sp+2) * get_long(sp));
-}
-
-void long_div(value *sp) {
-     put_long(sp+2, longint_divop(get_long(sp+2), get_long(sp), 1));
-}
-
-void long_mod(value *sp) {
-     put_long(sp+2, longint_divop(get_long(sp+2), get_long(sp), 0));
 }
 
 void long_neg(value *sp) {
@@ -100,10 +109,7 @@ void long_cmp(value *sp) {
 void long_ext(value *sp) {
      put_long(sp-1, (longint) sp[0].i);
 }
-
-void long_flo(value *sp) {
-     put_double(sp, get_long(sp));
-}
+#endif
 
 
 /* Conversions between int and floating point */

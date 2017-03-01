@@ -328,8 +328,6 @@ Rough instruction layout:
 
 extern void panic(char *msg, ...);
 
-static code_addr branch(OPDECL, code_addr lab);
-
 
 // ---------------- INSTRUCTION FORMATTING ----------------
 
@@ -580,11 +578,10 @@ void vm_patch(code_addr loc, code_addr lab) {
      *p = (*p & ~0xffffff) | (off & 0xffffff);
 }
 
-static code_addr branch(OPDECL, code_addr lab) {
+static void branch(OPDECL, vmlabel lab) {
      code_addr loc = pc;
      branch_i(OP, 0);
-     if (lab != NULL) vm_patch(loc, lab);
-     return loc;
+     vm_branch(BRANCH, loc, lab);
 }
 
 #define bool_reg(ispec, ra, rb, rc) \
@@ -600,16 +597,16 @@ static code_addr branch(OPDECL, code_addr lab) {
      op_rr(opFCMPD, rb, rc), fmstat(), boolcond(ispec, ra)
 
 #define br_reg(ispec, ra, rb, lab) \
-     ( cmp_r(opCMP, ra, rb), branch(ispec, lab) )
+     cmp_r(opCMP, ra, rb), branch(ispec, lab)
 
 #define br_reg_f(ispec, ra, rb, lab) \
-     ( op_rr(opFCMPS, ra, rb), fmstat(), branch(ispec, lab) )
+     op_rr(opFCMPS, ra, rb), fmstat(), branch(ispec, lab)
  
 #define br_reg_d(ispec, ra, rb, lab) \
-     ( op_rr(opFCMPD, ra, rb), fmstat(), branch(ispec, lab) )
+     op_rr(opFCMPD, ra, rb), fmstat(), branch(ispec, lab)
  
 #define br_immed(ispec, ra, b, lab) \
-     ( compare_immed(ra, b), branch(ispec, lab) )
+     compare_immed(ra, b), branch(ispec, lab)
 
 /* Loads and stores for word and unsigned byte */
 static void load_store(OPDECL, int ra, int rb, int c) {
@@ -802,8 +799,7 @@ void vm_gen1j(operation op, vmlabel lab) {
 
      switch (op) {
      case JUMP: 
-	  loc = branch(opB, NULL);
-          vm_branch(BRANCH, loc, lab);
+	  branch(opB, lab);
           break;
 
      default:
@@ -1107,9 +1103,9 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
      case STC: 
 	  load_store(opSTRB, ra, rb, c); break;
 
-     case LDD: 
+     case LDQ: 
           load_store_d(opFLDS, ra, rb, c); break;
-     case STD:    
+     case STQ:    
           load_store_d(opFSTS, ra, rb, c); break;
 
      case EQ:
@@ -1138,102 +1134,94 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 
 void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
-     code_addr loc;
 
      vm_debug1(op, 3, rega->vr_name, regb->vr_name, fmt_lab(lab));
      vm_space(0);
 
      switch (op) {
      case BEQ: 
-	  loc = br_reg(opBEQ, ra, rb, NULL); break;
+	  br_reg(opBEQ, ra, rb, lab); break;
      case BGEQ: 
-	  loc = br_reg(opBGE, ra, rb, NULL); break;
+	  br_reg(opBGE, ra, rb, lab); break;
      case BGT: 
-	  loc = br_reg(opBGT, ra, rb, NULL); break;
+	  br_reg(opBGT, ra, rb, lab); break;
      case BLEQ: 
-	  loc = br_reg(opBLE, ra, rb, NULL); break;
+	  br_reg(opBLE, ra, rb, lab); break;
      case BLT: 
-	  loc = br_reg(opBLT, ra, rb, NULL); break;
+	  br_reg(opBLT, ra, rb, lab); break;
      case BNEQ: 
-	  loc = br_reg(opBNE, ra, rb, NULL); break;
+	  br_reg(opBNE, ra, rb, lab); break;
      case BLTU: 
-	  loc = br_reg(opBLO, ra, rb, NULL); break;
+	  br_reg(opBLO, ra, rb, lab); break;
      case BGEQU:
-	  loc = br_reg(opBHS, ra, rb, NULL); break;
+	  br_reg(opBHS, ra, rb, lab); break;
      case BGTU:
-	  loc = br_reg(opBHI, ra, rb, NULL); break;
+	  br_reg(opBHI, ra, rb, lab); break;
      case BLEQU:
-	  loc = br_reg(opBLS, ra, rb, NULL); break;
+	  br_reg(opBLS, ra, rb, lab); break;
 
      case BEQF:
-	  loc = br_reg_f(opBEQ, ra, rb, NULL); break;
+	  br_reg_f(opBEQ, ra, rb, lab); break;
      case BGEQF:
-	  loc = br_reg_f(opBHS, ra, rb, NULL); break;
+	  br_reg_f(opBHS, ra, rb, lab); break;
      case BGTF:
-	  loc = br_reg_f(opBHI, ra, rb, NULL); break;
+	  br_reg_f(opBHI, ra, rb, lab); break;
      case BLEQF:
-	  loc = br_reg_f(opBLS, ra, rb, NULL); break;
+	  br_reg_f(opBLS, ra, rb, lab); break;
      case BLTF:
-	  loc = br_reg_f(opBLO, ra, rb, NULL); break;
+	  br_reg_f(opBLO, ra, rb, lab); break;
      case BNEQF:
-	  loc = br_reg_f(opBNE, ra, rb, NULL); break;
+	  br_reg_f(opBNE, ra, rb, lab); break;
 
      case BEQD:
-	  loc = br_reg_d(opBEQ, ra, rb, NULL); break;
+	  br_reg_d(opBEQ, ra, rb, lab); break;
      case BGEQD:
-	  loc = br_reg_d(opBHS, ra, rb, NULL); break;
+	  br_reg_d(opBHS, ra, rb, lab); break;
      case BGTD:
-	  loc = br_reg_d(opBHI, ra, rb, NULL); break;
+	  br_reg_d(opBHI, ra, rb, lab); break;
      case BLEQD:
-	  loc = br_reg_d(opBLS, ra, rb, NULL); break;
+	  br_reg_d(opBLS, ra, rb, lab); break;
      case BLTD:
-	  loc = br_reg_d(opBLO, ra, rb, NULL); break;
+	  br_reg_d(opBLO, ra, rb, lab); break;
      case BNEQD:
-	  loc = br_reg_d(opBNE, ra, rb, NULL); break;
+	  br_reg_d(opBNE, ra, rb, lab); break;
 
      default:
 	  badop();
-	  return;
      }
-
-     vm_branch(BRANCH, loc, lab);
 }
 
 void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
      int ra = rega->vr_reg;
-     code_addr loc;
 
      vm_debug1(op, 3, rega->vr_name, fmt_val(b), fmt_lab(lab));
      vm_space(0);
 
      switch (op) {
      case BEQ: 
-	  loc = br_immed(opBEQ, ra, b, NULL); break;
+	  br_immed(opBEQ, ra, b, lab); break;
      case BGEQU: 
-	  loc = br_immed(opBHS, ra, b, NULL); break;
+	  br_immed(opBHS, ra, b, lab); break;
      case BGEQ: 
-	  loc = br_immed(opBGE, ra, b, NULL); break;
+	  br_immed(opBGE, ra, b, lab); break;
      case BGT: 
-	  loc = br_immed(opBGT, ra, b, NULL); break;
+	  br_immed(opBGT, ra, b, lab); break;
      case BLEQ: 
-	  loc = br_immed(opBLE, ra, b, NULL); break;
+	  br_immed(opBLE, ra, b, lab); break;
      case BLTU: 
-	  loc = br_immed(opBLO, ra, b, NULL); break;
+	  br_immed(opBLO, ra, b, lab); break;
      case BLT: 
-	  loc = br_immed(opBLT, ra, b, NULL); break;
+	  br_immed(opBLT, ra, b, lab); break;
      case BNEQ: 
-	  loc = br_immed(opBNE, ra, b, NULL); break;
+	  br_immed(opBNE, ra, b, lab); break;
      case BGTU:
-	  loc = br_immed(opBHI, ra, b, NULL); break;
+	  br_immed(opBHI, ra, b, lab); break;
      case BLEQU:
-	  loc = br_immed(opBLS, ra, b, NULL); break;
+	  br_immed(opBLS, ra, b, lab); break;
 
      default:
 	  badop();
-	  return;
      }
-
-     vm_branch(BRANCH, loc, lab);
 }
 
 static code_addr cploc;
@@ -1260,7 +1248,9 @@ code_addr vm_prelude(int n) {
 }
 
 void vm_chain(code_addr p) {
-     branch(opB, p);
+     code_addr loc = pc;
+     branch_i(opB, 0);
+     vm_patch(loc, p);
 }
 
 int parity(short x) {

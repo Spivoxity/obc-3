@@ -169,78 +169,86 @@ static char *fmt_addr_s(int rs, int imm, int shift) {
 
 /* When Thunder is compiled for debugging, numeric opcodes are accompanied
    by textual mnemonics as they are passed around, and the act of generating
-   an instrruction is optionally augmented with printing the instruction in
+   an instruction is optionally augmented with printing the instruction in
    assembly-language form.  Depending on whether DEBUG is defined, the macro
    MNEM(mnem, op) expands to either the pair of arguments "mnem, op" or just
    "op" on its own.  Other macros provide declarations for corresponding
    formal parameters of code-generating routines, etc. */
 
-#define OPDECL const char *mnem, int op
-#define OPDECL2 const char *mnem, int op, int op2
-#define OPDECL_p const char *mnem_p, int op_p
-#define OPDECL_r const char *mnem_r, int op_r
-#define OP mnem, op
-#define OP_p mnem_p, op_p
-#define ifdebug(text) text,
-
 #define MNEM(mnem, op) mnem, op
+#define OPDECL const char *mnem, int op
+#define OP mnem, op
+
 #define MNEM2(mnem, op, op2) mnem, op, op2
+#define OPDECL2 const char *mnem, int op, int op2
+#define OP2 mnem, op, op2
+
+#define OPDECL_(suff) const char *mnem_##suff, int op_##suff
+#define OP_(suff) mnem_##suff, op_##suff
+
+#define OPDECL2_(suff) const char *mnem_##suff, int op_##suff, int op2_##suff
+#define OP2_(suff) mnem_##suff, op_##suff, op2_##suff
+
+#define ifdebug(text) text,
 
 #else
 
-#define OPDECL int op
-#define OPDECL2 int op, int op2
-#define OPDECL_p int op_p
-#define OPDECL_r int op_r
-#define OP op
-#define OP_p op_p
-#define ifdebug(text)
-
 #define MNEM(mnem, op) op
+#define OPDECL int op
+#define OP op
+
 #define MNEM2(mnem, op, op2) op, op2
+#define OPDECL2 int op, int op2
+#define OP2 op, op2
+
+#define OPDECL_(suff) int op_##suff
+#define OP_(suff) op_##suff
+
+#define OPDECL2_(suff) int op_##suff, int op2_##suff
+#define OP2_(suff) op_##suff, op2_##suff
+
+#define ifdebug(text)
 
 #endif
 
 
 /* Instructions */
 
-#define REX(op)		((op)|0x4000)
-#define REX_W(op)       ((op)|0x4800)
+#define pfx(a, b) (((b)<<8)|(a))
+
+#define REX		0x40
+#define REX_W           0x48
 
 /* ALU operation codes for the 386 */
-#define aluADD 		0		/* Binary */
-#define aluSUB 		5
-#define aluCMP 		7
-
-#define opADD 		MNEM("add", aluADD)
+#define opADD 		MNEM("add", 0) /* Binary */
 #define opOR 		MNEM("or", 1)
 #define opAND		MNEM("and", 4)
-#define opSUB 		MNEM("sub", aluSUB)
+#define opSUB 		MNEM("sub", 5)
 #define opXOR 		MNEM("xor", 6)
-#define opCMP 		MNEM("cmp", aluCMP)
+#define opCMP 		MNEM("cmp", 7)
 
 #define opNOT 		MNEM("not", 2)  /* Unary */
 #define opNEG 		MNEM("neg", 3)
 
 /* Condition codes for branches */
-#define testB 		2               /* unsigned < */
-#define testAE 		3		/* unsigned >= */
-#define testE 		4               /* = */
-#define testNE 		5		/* != */
-#define testBE 		6		/* unsigned <= */
-#define testA 		7               /* unsigned > */
-#define testS 		8               /* negative */
-#define testNS 		9		/* non-negative */
-#define testL 		12		/* signed < */
-#define testGE 		13		/* signed >= */
-#define testLE 		14		/* signed <= */
-#define testG 		15		/* signed > */
+#define opB 		MNEM("b", 2)    /* unsigned < */
+#define opAE 		MNEM("ae", 3)	/* unsigned >= */
+#define opE 		MNEM("e", 4)    /* = */
+#define opNE 		MNEM("ne", 5)	/* != */
+#define opBE 		MNEM("be", 6)	/* unsigned <= */
+#define opA 		MNEM("a", 7)    /* unsigned > */
+#define opS 		MNEM("s", 8)    /* negative */
+#define opNS 		MNEM("ns", 9)	/* non-negative */
+#define opL 		MNEM("l", 12)	/* signed < */
+#define opGE 		MNEM("ge", 13)	/* signed >= */
+#define opLE 		MNEM("le", 14)	/* signed <= */
+#define opG 		MNEM("g", 15)	/* signed > */
 	
 /* Operation codes for shifts */
-#define opRotateR 	MNEM("ror", 1)
-#define opShiftL 	MNEM("shl", 4)
-#define opShiftRU 	MNEM("shr", 5)
-#define opShiftR 	MNEM("sar", 7)
+#define opROR 		MNEM("ror", 1)
+#define opSHL 		MNEM("shl", 4)
+#define opSHR 		MNEM("shr", 5)
+#define opSAR 		MNEM("sar", 7)
 
 /* Floating point operation codes */
 #define opFadd 		MNEM("fadd", 0)
@@ -250,103 +258,110 @@ static char *fmt_addr_s(int rs, int imm, int shift) {
 #define opFdiv 		MNEM("fdiv", 6)
 #define opFdivR 	MNEM("fdivr", 7)
 
-/* Instruction opcodes */
 #define xFLOP_0 	0xd8		// Flop with result in ST(0)
 #define xFLOP_r 	0xdc		// Flop with result in ST(r)
 #define xFLOPP_r 	0xde		// Flop with result popped to ST(r)
-
-/* Floating point instructions */
-#define opFCHS 		MNEM("fchs", 0xd9e0)
-#define opFILDL_m 	MNEM("fildl", 0xdb00)
-#define opFLD_r 	MNEM("fld", 0xd9c0)
-#define opFLDS_m	MNEM("flds", 0xd900)
-#define opFLDL_m	MNEM("fldl", 0xdd00)
-#define opFST_r 	MNEM("fst", 0xddd0)
-#define opFSTP_r 	MNEM("fstp", 0xddd8)
-#define opFSTS_m 	MNEM("fsts", 0xd902)
-#define opFSTL_m 	MNEM("fstl", 0xdd02)
-#define opFSTPS_m	MNEM("fstps", 0xd903)
-#define opFSTPL_m	MNEM("fstpl", 0xdd03)
-#define opFUCOMI_r 	MNEM("fucomi", 0xdbe8)
-#define opFUCOMIP_r 	MNEM("fucomip", 0xdfe8)
-
-/* Integer moves */
-#define opMOVL_r 	MNEM("movl", 0x8b) // Move to register
-#define opMOVQ_r	MNEM("movq", REX_W(0x8b))
-#define opMOVZWL_r 	MNEM("movzwl", 0x0fb7)
-#define opMOVSWL_r 	MNEM("movswl", 0x0fbf)
-#define opMOVZBL_r 	MNEM("movzbl", 0x0fb6)
-#define opMOVSBL_r 	MNEM("movsbl", 0x0fbe)
-#define opMOVSXD_r      MNEM("movsxd", REX_W(0x63))
-#define opMOVL_m 	MNEM("movl", 0x89) // Move to memory
-#define opMOVW_m 	MNEM("movw", 0x6689)
-#define opMOVB_m 	MNEM("movb", 0x88)
-#define opMOVB2_m 	MNEM("movb***", REX(0x88))
-#define opMOVL_i 	MNEM("movl", 0xb8) // Load immediate into register
-
-#define xMONOP 0xf7 		// Unary ALU op
 #define x_byte 0x2
-#define xALU_r(op) (op<<3)|0x3
-#define xALUq_r(op) REX_W(xALU_r(op))
-#define xALU_i 0x81
-#define xALUq_i REX_W(xALU_i)
 #define xSHIFT_r 0xd3
 #define xSHIFT_1 0xd1
 #define xSHIFT_i 0xc1
 
-#define opIMUL_i MNEM("imul", 0x69) // Integer multiply
-#define opIMUL_r MNEM("imul", 0x0faf)
-#define opINC_r MNEM("inc", 0x40)
-#define opDEC_r MNEM("dec", 0x48)
-#define opINC_m MNEM2("inc", 0xff, 0)
-#define opDEC_m MNEM2("dec", 0xff, 1)     
-#define opPUSH_r MNEM("push", 0x50)
-#define opPUSH_i MNEM("push", 0x68)
-#define opPOP MNEM("pop", 0x58)
-#define opRET MNEM("ret", 0xc3)
-#define opJMP MNEM2("jmp", 0xff, 4)
-#define opJMP_i MNEM("jmp", 0xe9)
-#define opCALL MNEM2("call", 0xff, 2)
-#define opCALL_i MNEM("call", 0xe8)
-#define opFLDZ MNEM("fldz", 0xd9ee)
-#define opTEST MNEM("test", 0x85)
+/* Floating point instructions */
+#define opFCHS 		MNEM("fchs", pfx(0xd9, 0xe0))
+#define opFLD_r 	MNEM("fld", pfx(0xd9, 0xc0))
+#define opFST_r 	MNEM("fst", pfx(0xdd, 0xd0))
+#define opFSTP_r 	MNEM("fstp", pfx(0xdd, 0xd8))
+#define opFUCOMI_r 	MNEM("fucomi", pfx(0xdb, 0xe8))
+#define opFUCOMIP_r 	MNEM("fucomip", pfx(0xdf, 0xe8))
 
-/* Conditional branches */
-#define xJMPCC 0x0f80
-#define opJE MNEM("je", xJMPCC|testE)
-#define opJB MNEM("jb", xJMPCC|testB)
-#define opJAE MNEM("jae", xJMPCC|testAE)
-#define opJNE MNEM("jne", xJMPCC|testNE)
-#define opJBE MNEM("jbe", xJMPCC|testBE)
-#define opJA MNEM("ja", xJMPCC|testA)
-#define opJL MNEM("jl", xJMPCC|testL)
-#define opJGE MNEM("jge", xJMPCC|testGE)
-#define opJLE MNEM("jle", xJMPCC|testLE)
-#define opJG MNEM("jg", xJMPCC|testG)
+#define opFLDS_m	MNEM2("flds", 0xd9, 0)
+#define opFLDL_m	MNEM2("fldl", 0xdd, 0)
+#define opFSTS_m 	MNEM2("fsts", 0xd9, 2)
+#define opFSTL_m 	MNEM2("fstl", 0xdd, 2)
+#define opFSTPS_m	MNEM2("fstps", 0xd9, 3)
+#define opFSTPL_m	MNEM2("fstpl", 0xdd, 3)
+#define opFILDL_m 	MNEM2("fildl", 0xdb, 0)
 
-/* Comparisons with boolean result */
-#define xSETCC 0x0f90
-#define opSETE MNEM("sete", xSETCC|testE)
-#define opSETB MNEM("setb", xSETCC|testB)
-#define opSETAE MNEM("setae", xSETCC|testAE)
-#define opSETNE MNEM("setne", xSETCC|testNE)
-#define opSETBE MNEM("setbe", xSETCC|testBE)
-#define opSETA MNEM("seta", xSETCC|testA)
-#define opSETL MNEM("setl", xSETCC|testL)
-#define opSETGE MNEM("setge", xSETCC|testGE)
-#define opSETLE MNEM("setle", xSETCC|testLE)
-#define opSETG MNEM("setg", xSETCC|testG)
+/* Integer moves */
+#define opMOVL_r 	MNEM("movl", 0x8b) // Move to register
+#define opMOVQ_r	MNEM("movq", pfx(REX_W, 0x8b))
+#define opMOVZWL_r 	MNEM("movzwl", pfx(0x0f, 0xb7))
+#define opMOVSWL_r 	MNEM("movswl", pfx(0x0f, 0xbf))
+#define opMOVZBL_r 	MNEM("movzbl", pfx(0x0f, 0xb6))
+#define opMOVZBL2_r	MNEM("movzbl", pfx(REX, pfx(0x0f, 0xb6)))
+#define opMOVSBL_r 	MNEM("movsbl", pfx(0x0f, 0xbe))
+#define opMOVSXD_r      MNEM("movsxd", pfx(REX_W, 0x63))
+#define opMOVL_m 	MNEM("movl", 0x89) // Move to memory
+#define opMOVQ_m	MNEM("movq", pfx(REX_W, 0x89))
+#define opMOVW_m 	MNEM("movw", pfx(0x66, 0x89))
+#define opMOVB_m 	MNEM("movb", 0x88)
+#define opMOVB2_m 	MNEM("movb", pfx(REX, 0x88))
+#define opMOVL_i 	MNEM("movl", 0xb8) // Load immediate into register
+
+#define ALUOP(op) 	family(__ALU, _id_, op)
+#define __ALU(op) 	  (op<<3)|0x3
+
+#define ALUOP64(op) 	family(__ALUq, _q, op)
+#define __ALUq(op) 	  pfx(REX_W, __ALU(op))
+
+#define ALUOP_i(op) 	family(__ALU_i, _id_, op)
+#define __ALU_i(op) 	  0x81, op
+
+#define ALUOP64_i(op) 	family(__ALUq_i, _q, op)
+#define __ALUq_i(op) 	  pfx(REX_W, 0x81), op
+
+#define MONOP(op) 	family(__MONOP, _id_, op)
+#define __MONOP(op) 	  0xf7, op
+
+#define MONOP64(op) 	family(__MONOPq, _q, op)
+#define __MONOPq(op) 	  pfx(REX_W, 0xf7), op
+
+#define CONDJ(op) 	family(__CONDJ, j_, op)
+#define __CONDJ(op) 	  pfx(0x0f, 0x80|op)
+
+#define SETCC(op) 	family(__SETCC, set_, op)
+#define __SETCC(op) 	  pfx(0x0f, 0x90|op)
+
+#ifdef DEBUG
+#define family(f, s, mnem, op) s(mnem), f(op)
+#define _id_(s) s
+#define _q(s) s "q"
+#define j_(s) "j" s
+#define set_(s) "set" s
+#else
+#define family(f, s, op) f(op)
+#endif
+
+#define opIMUL_i 	MNEM("imul", 0x69) // Integer multiply
+#define opIMULq_i 	MNEM("imulq", pfx(REX_W, 0x69))
+#define opIMUL_r	MNEM("imul", pfx(0x0f, 0xaf))
+#define opIMULq_r	MNEM("imulq", pfx(REX_W, pfx(0x0f, 0xaf)))
+#define opINC_r		MNEM("inc", 0x40)
+#define opDEC_r		MNEM("dec", 0x48)
+#define opINC_m		MNEM2("inc", 0xff, 0)
+#define opDEC_m		MNEM2("dec", 0xff, 1)     
+#define opINCq_m	MNEM2("incq", pfx(REX_W, 0xff), 0)
+#define opDECq_m	MNEM2("decq", pfx(REX_W, 0xff), 1)
+#define opPUSH_r	MNEM("push", 0x50)
+#define opPUSH_i	MNEM("push", 0x68)
+#define opPOP		MNEM("pop", 0x58)
+#define opRET		MNEM("ret", 0xc3)
+#define opJMP		MNEM2("jmp", 0xff, 4)
+#define opJMP_i		MNEM("jmp", 0xe9)
+#define opCALL		MNEM2("call", 0xff, 2)
+#define opCALL_i	MNEM("call", 0xe8)
+#define opFLDZ		MNEM("fldz", pfx(0xd9, 0xee))
+#define opTEST		MNEM("test", 0x85)
+#define opTESTq		MNEM("testq", pfx(REX_W, 0x85))
 
 
 /* Instruction formats */
 
-/* opcode -- one or two opcode bytes */
-static void opcode(int op) {
-     if (op < 256)
-	  byte(op);
-     else {
-	  // The byte order as written is swapped
-	  byte(op>>8); byte(op&0xff);
+/* opcode -- one, two or three opcode bytes */
+static void opcode(unsigned op) {
+     while (op != 0) {
+          byte(op & 0xff);
+          op >>= 8;
      }
 }
 
@@ -361,8 +376,10 @@ static void addr(int mode, int reg, int rm) {
 #define signed8(x) ((x) >= -128 && (x) < 128)
 
 /* memory operand */
-static void memory(int ra, int rb, int d) {
-     /* Encode the register ra and the memory address [rb+d]
+#define memory(ra, rb, d)  memory_s(ra, rb, d, 0)
+
+static void memory_s(int ra, int rb, int d, int s) {
+     /* Encode the register ra and the memory address [rb<<s+d]
 
         Most of the time (with no indexing), we need a (mode, reg, r/m) 
         triple, where mode determines the size of displacement 
@@ -388,10 +405,10 @@ static void memory(int ra, int rb, int d) {
 	    But i = ESP and b = EBP give further special cases:
 	    
 	mode = 0, r/m = 4, b = 5:
-	    Baseless addressing [d+reg(i)*2^s]
+	    Baseless addressing [d + reg(i)<<s]
 
         mode = 0, r/m = 4, i = 4, b = 5
-            Absolute addressing [d], useful for amd64
+            Absolute addressing [d], useful on amd64
 
 	mode = 0, r/m = 4, i = 4, b != 5:
   	    Based addressing [d+reg(b)].     */
@@ -411,7 +428,7 @@ static void memory(int ra, int rb, int d) {
 	       addr(1, ra, 4), sib(0, 4, ESP), byte(d);
 	  else
 	       addr(2, ra, 4), sib(0, 4, ESP), word(d);
-     }  else {
+     }  else if (s == 0) {
 	  // Base + Displacement [rb+d]
 	  if (d == 0 && rb != EBP)
 	       addr(0, ra, rb);
@@ -419,14 +436,13 @@ static void memory(int ra, int rb, int d) {
 	       addr(1, ra, rb), byte(d);
 	  else
 	       addr(2, ra, rb), word(d);
+     } else {
+          // Scaled [rb<<s + d]
+          assert(rb != ESP);
+          addr(0, ra, 4), sib(s, rb, 5), word(d);
      }
 }
 
-/* memory operand with shift */
-static void memory_s(int ra, int rb, int d, int s) {
-     // Assuming rb != ESP and d needs 32 bits
-     addr(0, ra, 4), sib(s, rb, 5), word(d);
-}
 
 /* ASSEMBLY ROUTINES for various instructions formats.  
    These each produce debugging ouput.
@@ -449,14 +465,14 @@ static void instr(OPDECL) {
 /* instr_reg -- opcode packed with register */
 static void instr_reg(OPDECL, int reg) {
      vm_debug2("%s %s", mnem, regname[reg]);
-     opcode(op|register(reg));
+     opcode(op); modify(register(reg));
 }
 
 /* instr_imm -- opcode plus 8/32 bit immediate */
 static void instr_imm(OPDECL, int imm) {
      vm_debug2("%s #%s", mnem, fmt_val(imm));
      if (signed8(imm)) {
-          opcode(op|x_byte); byte(imm);
+          opcode(op); modify(x_byte); byte(imm);
      } else {
           opcode(op); word(imm);
      }
@@ -465,17 +481,13 @@ static void instr_imm(OPDECL, int imm) {
 /* instr_regi32 -- opcode packed with register plus a 32-bit immediate */
 static void instr_regi32(OPDECL, int r, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[r], fmt_val(imm));
-     opcode(op|register(r)); word(imm);
+     opcode(op); modify(register(r)); word(imm);
 }
 
 /* instr_rr -- opcode plus two registers */
 static void instr_rr(OPDECL, int r1, int r2) {
      vm_debug2("%s %s, %s", mnem, regname[r1], regname[r2]);
      opcode(op); addr(3, r1, r2);
-}
-
-static void aluop_rr(OPDECL, int r1, int r2) {
-     instr_rr(MNEM(mnem, xALU_r(op)), r1, r2);
 }
 
 /* General form of instr2_r for shifts and floating point ops */
@@ -494,10 +506,7 @@ static void instr2_ri8(OPDECL2, int rm, int imm) {
 }
 
 /* instruction with 2 opcodes, memory operand */
-static void instr2_m(OPDECL2, int rs, int imm) {
-     vm_debug2("%s *%s", mnem, fmt_addr(rs, imm));
-     opcode(op); memory(op2, rs, imm);
-}
+#define instr2_m(opdecl2, rs, imm)  instr2_ms(opdecl2, rs, imm, 0)
 
 /* instruction with 2 opcodes, memory operand and shift */
 static void instr2_ms(OPDECL2, int rs, int imm, int s) {
@@ -509,7 +518,7 @@ static void instr2_ms(OPDECL2, int rs, int imm, int s) {
 static void instr2_ri(OPDECL2, int rm, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
      if (signed8(imm)) {
-	  opcode(op|x_byte); addr(3, op2, rm); byte(imm);
+	  opcode(op); modify(x_byte); addr(3, op2, rm); byte(imm);
      } else {
 	  opcode(op); addr(3, op2, rm); word(imm);
      }
@@ -519,7 +528,7 @@ static void instr2_ri(OPDECL2, int rm, int imm) {
 static void instr_rri(OPDECL, int reg, int rm, int imm) {
      vm_debug2("%s %s, %s, #%s", mnem, regname[reg], regname[rm], fmt_val(imm));
      if (signed8(imm)) {
-	  opcode(op|x_byte); addr(3, reg, rm); byte(imm);
+	  opcode(op); modify(x_byte); addr(3, reg, rm); byte(imm);
      } else {
 	  opcode(op); addr(3, reg, rm); word(imm);
      }
@@ -537,30 +546,35 @@ static void instr_st(OPDECL, int rt, int rs, int imm) {
      opcode(op); memory(rt, rs, imm);
 }
 
-/* instr_lab -- opcode plus branch target */
-static code_addr instr_lab(OPDECL, code_addr lab) {
+/* instr_tgt -- opcode plus branch target */
+static code_addr instr_tgt(OPDECL, code_addr tgt) {
      code_addr r;
-     vm_debug2("%s ...", mnem);
+     vm_debug2("%s %#lx", mnem, (unsigned long) tgt);
      opcode(op); r = pc; word(0);
-     if (lab != NULL) vm_patch(r, lab);
+     if (tgt != NULL) vm_patch(r, tgt);
      return r;
 }
 
+static void instr_lab(OPDECL, vmlabel lab) {
+     code_addr r;
+     vm_debug2("%s %s", mnem, fmt_lab(lab));
+     opcode(op); r = pc; word(0);
+     vm_branch(BRANCH, r, lab);
+}
+
 /* instr_m -- floating point load or store */
-static void instr_m(OPDECL, int rs, int imm) {
+static void instr_m(OPDECL2, int rs, int imm) {
      vm_debug2("%s %s", mnem, fmt_addr(rs, imm));
-     opcode(op>>8); memory(op, rs, imm);
+     opcode(op); memory(op2, rs, imm);
 }
 
 
 /* SPECIFIC INSTRUCTIONS */
 
-#define add_i(rd, imm)	instr2_ri(MNEM2("add", xALU_i, aluADD), rd, imm)
-#define sub_i(rd, imm)	instr2_ri(MNEM2("sub", xALU_i, aluSUB), rd, imm)
-
-#define add64_i(rd, imm)  instr2_ri(MNEM2("addq", xALUq_i, aluADD), rd, imm)
-#define sub64_i(rd, imm)  instr2_ri(MNEM2("subq", xALUq_i, aluSUB), rd, imm)
-#define add64_rr(r1, r2)  instr_rr(MNEM("addq", xALUq_r(aluADD)), r1, r2)
+#define add_i(rd, imm)	instr2_ri(ALUOP_i(opADD), rd, imm)
+#define sub_i(rd, imm)	instr2_ri(ALUOP_i(opSUB), rd, imm)
+#define add64_i(rd, imm)  instr2_ri(ALUOP64_i(opADD), rd, imm)
+#define sub64_i(rd, imm)  instr2_ri(ALUOP64_i(opSUB), rd, imm)
 
 #define push_r(r)	instr_reg(opPUSH_r, r)
 #define push_i(imm)	instr_imm(opPUSH_i, imm)
@@ -569,9 +583,19 @@ static void instr_m(OPDECL, int rs, int imm) {
 #define fst_r(r) 	instr_reg(opFST_r, r)
 #define fstp_r(r) 	instr_reg(opFSTP_r, r)
 
+#ifndef M64X32
+#define inc_r(r)  instr_reg(opINC_r, r)
+#define dec_r(r)  instr_reg(opDEC_r, r)
+#else
+/* The shorter form has been usurped for REX */
+#define inc_r(r)  instr2_r(opINC_m, ra)
+#define dec_r(r)  instr2_r(opDEC_m, ra)
+#endif
+
 /* shift instruction with one operand in CL */
-#define shift2cl_r(ispec, r) \
-     instr2_fmt(ifdebug("%s %s, cl") MNEM2(mnem, xSHIFT_r, op), r)
+static void shift2cl_r(OPDECL, int r) {
+     instr2_fmt(ifdebug("%s %s, cl") MNEM2(mnem, xSHIFT_r, op), r);
+}
 
 /* shift by constant */
 static void shift2_i(OPDECL, int rd, int imm) {
@@ -597,7 +621,7 @@ static void move_r(OPDECL, int rd, int rs) {
 
 /* shift instructions (3 registers) */
 static void shift3_r(OPDECL, int rd, int rs1, int rs2) {
-     int rx = rd;
+     int rx = rd;               /* Working register */
 
      if (rd == ECX || (rd != rs1 && rd == rs2)) {
 	  rx = (rs2 == EAX ? EDX : EAX);
@@ -640,104 +664,130 @@ static void storec(int rt, int rs, int imm) {
 }
 
 /* unary ALU operation (2 registers) */
-static void monop(OPDECL, int rd, int rs) {
-     move(rd, rs);
-     instr2_r(MNEM2(mnem, xMONOP, op), rd);
+static void gmonop(OPDECL2, OPDECL_(move), int rd, int rs) {
+     move_r(OP_(move), rd, rs);
+     instr2_r(OP2, rd);
 }
+
+#define monop(opdecl2, rd, rs)  gmonop(opdecl2, opMOVL_r, rd, rs)
+#define neg64(rd, rs)  gmonop(MONOP64(opNEG), opMOVQ_r, rd, rs)
 
 /* commutative ALU operation (3 register operands) */
-static void binop3c_r(OPDECL, int rd, int rs1, int rs2) {
+static void gcommute(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
      if (rd == rs2)
-	  aluop_rr(OP, rd, rs1);
+	  instr_rr(OP, rd, rs1);
      else {
-	  move(rd, rs1);
-	  aluop_rr(OP, rd, rs2);
+	  move_r(OP_(move), rd, rs1);
+	  instr_rr(OP, rd, rs2);
      }
 }
 
-#ifdef M64X32
-static void add64_r(int rd, int rs1, int rs2) {
-     if (rd == rs2)
-          add64_rr(rd, rs1);
-     else {
-          move64(rd, rs1);
-          add64_rr(rd, rs2);
-     }
-}
-#endif
+#define commute(op, rd, rs1, rs2) gcommute(op, opMOVL_r, rd, rs1, rs2)
+#define commute64(op, rd, rs1, rs2) gcommute(op, opMOVQ_r, rd, rs1, rs2)
 
 /* subtract (3 registers) */
-static void subtract_r(int rd, int rs1, int rs2) {
+static void gsubtract(OPDECL, OPDECL2_(neg), OPDECL_(move),
+                      int rd, int rs1, int rs2) {
      if (rd == rs2) {
-	  aluop_rr(opSUB, rd, rs1);
-	  monop(opNEG, rd, rd);
+          instr_rr(OP, rd, rs1);
+	  instr2_r(OP2_(neg), rd);
      } else {
-	  move(rd, rs1);
-	  aluop_rr(opSUB, rd, rs2);
+	  move_r(OP_(move), rd, rs1);
+	  instr_rr(OP, rd, rs2);
      }
 }
 
-/* multiply (3 registers) */
-static void multiply_r(int rd, int rs1, int rs2) {
-     if (rd == rs2)
-	  instr_rr(opIMUL_r, rd, rs1);
-     else {
-	  move(rd, rs1);
-	  instr_rr(opIMUL_r, rd, rs2);
-     }
-}
+#define subtract(rd, rs1, rs2) \
+     gsubtract(ALUOP(opSUB), MONOP(opNEG), opMOVL_r, rd, rs1, rs2)
+#define subtract64(rd, rs1, rs2) \
+     gsubtract(ALUOP64(opSUB), MONOP64(opNEG), opMOVQ_r, rd, rs1, rs2)
 
 /* binary ALU operation, 2 registers + immediate */
-static void binop3_i(OPDECL, int rd, int rs, int imm) {
+static void binop3_i(OPDECL2, int rd, int rs, int imm) {
      move(rd, rs);
-     instr2_ri(MNEM2(mnem, xALU_i, op), rd, imm);
+     instr2_ri(OP2, rd, imm);
 }
-
-/* routines for branch instructions return the location for patching */
 
 /* Conditional branch, 2 registers */
-static code_addr branch_r(OPDECL, int rs1, int rs2, code_addr lab) {
-     aluop_rr(opCMP, rs1, rs2);
-     return instr_lab(OP, lab);
+static void gbranch_r(OPDECL, OPDECL_(cmp),
+                      int rs1, int rs2, vmlabel lab) {
+     instr_rr(OP_(cmp), rs1, rs2);
+     instr_lab(OP, lab);
 }
+
+#define branch_r(op, rs1, rs2, lab) \
+     gbranch_r(op, ALUOP(opCMP), rs1, rs2, lab)
+#define branch64_r(op, rs1, rs2, lab) \
+     gbranch_r(op, ALUOP64(opCMP), rs1, rs2, lab)
 
 /* Set flags by comparing register and immediate */
 static void comp_i(int rs, int imm) {
      if (imm == 0)
 	  instr_rr(opTEST, rs, rs);
      else
-	  instr2_ri(MNEM2("cmp", xALU_i, aluCMP), rs, imm);
+	  instr2_ri(ALUOP_i(opCMP), rs, imm);
 }
 
 /* Conditional branch, register + immediate */
-static code_addr branch_i(OPDECL, int rs, int imm, code_addr lab) {
+static void branch_i(OPDECL, int rs, int imm, vmlabel lab) {
      comp_i(rs, imm);
-     return instr_lab(OP, lab);
+     instr_lab(OP, lab);
 }
+
+#ifdef M64X32
+static void comp64_i(int rs, int imm) {
+     if (imm == 0)
+          instr_rr(opTESTq, rs, rs);
+     else
+          instr2_ri(ALUOP64_i(opCMP), rs, imm);
+}
+
+static void branch64_i(OPDECL, int rs, int imm, vmlabel lab) {
+     comp64_i(rs, imm);
+     instr_lab(OP, lab);
+}
+#endif
 
 static void setcc_r(OPDECL, int rd) {
      if (is8bit(rd)) {
 	  instr2_r(MNEM2(mnem, op, 0), rd); /* Compute boolean result */
           instr_rr(opMOVZBL_r, rd, rd); /* Zero-extend */
      } else {
+#ifdef M64X32
+          instr2_r(MNEM2(mnem, pfx(REX, op), 0), rd);
+          instr_rr(opMOVZBL2_r, rd, rd);
+#else
 	  push_r(EAX);
 	  instr2_r(MNEM2(mnem, op, 0), EAX); /* Compute boolean result */
 	  instr_rr(opMOVZBL_r, rd, EAX); /* Move and zero-extend */
 	  pop(EAX);
+#endif
      }
 }
 
 /* comparison with boolean result (2 registers) */
-static void compare_r(OPDECL, int rd, int rs1, int rs2) {
-     aluop_rr(opCMP, rs1, rs2);
+static void gcompare_r(OPDECL, OPDECL_(cmp), int rd, int rs1, int rs2) {
+     instr_rr(ALUOP(opCMP), rs1, rs2);
      setcc_r(OP, rd);
 }
+
+#define compare_r(opdecl, rd, rs1, rs2) \
+     gcompare_r(opdecl, ALUOP(opCMP), rd, rs1, rs2)
+#define compare64_r(opdecl, rd, rs1, rs2) \
+     gcompare_r(opdecl, ALUOP64(opCMP), rd, rs1, rs2)
 
 /* comparison with boolean result (register + immediate) */
 static void compare_i(OPDECL, int rd, int rs, int imm) {
      comp_i(rs, imm);
      setcc_r(OP, rd);
 }
+
+#ifdef M64X32
+static void compare64_i(OPDECL, int rd, int rs, int imm) {
+     comp64_i(rs, imm);
+     setcc_r(OP, rd);
+}
+#endif
 
 
 /* FLOATING POINT: we treat the 387's stack as a set of ordinary registers,
@@ -805,7 +855,7 @@ static void flop2(OPDECL, int op_r, int rd, int rs) {
 }
 
 /* Binary floating point, 3 registers */
-static void flop3(OPDECL, OPDECL_r, int rd, int rs1, int rs2) {
+static void flop3(OPDECL, OPDECL_(r), int rd, int rs1, int rs2) {
      if (rd == rs1)
 	  flop2(MNEM2(mnem, op, op_r), rd, rs2);
      else if (rd == rs2)
@@ -819,8 +869,8 @@ static void flop3(OPDECL, OPDECL_r, int rd, int rs1, int rs2) {
 }
 
 /* Load float or double from memory */
-static void loadf(OPDECL, int rt, int rs, int imm) {
-     instr_m(OP, rs, imm);
+static void loadf(OPDECL2, int rt, int rs, int imm) {
+     instr_m(OP2, rs, imm);
      fstp_r(rt+1);
 }
 
@@ -828,12 +878,12 @@ static void loadf(OPDECL, int rt, int rs, int imm) {
 #define floadl(rt, rs, imm) 	loadf(opFLDL_m, rt, rs, imm)
 
 /* Store float or double to memory */
-static void storef(OPDECL, OPDECL_p, int rt, int rs, int imm) {
+static void storef(OPDECL2, OPDECL2_(p), int rt, int rs, int imm) {
      if (rt == FPR0)
-	  instr_m(OP, rs, imm);
+	  instr_m(OP2, rs, imm);
      else {
 	  fld_r(rt); 
-	  instr_m(OP_p, rs, imm); 
+	  instr_m(OP2_(p), rs, imm); 
      }
 }
 
@@ -855,9 +905,9 @@ static void fcomp(int rs1, int rs2) {
 }
 
 /* Floating point branch */
-static code_addr fbranch(OPDECL, int rs1, int rs2, code_addr lab) {
+static void fbranch(OPDECL, int rs1, int rs2, vmlabel lab) {
      fcomp(rs1, rs2);
-     return instr_lab(OP, lab);   /* Jump on integer flags */
+     instr_lab(OP, lab);   /* Jump on integer flags */
 }
 
 /* floating point comparison with boolean result */
@@ -912,6 +962,11 @@ void call_r(int ra) {
      instr2_r(opCALL, ra);
      post_call();
 }
+
+void call_i(int a) {
+     instr_tgt(opCALL_i, (code_addr) a);
+     post_call();
+}     
 
 code_addr vm_prelude(int n) {
      code_addr entry = pc;
@@ -977,6 +1032,12 @@ void call_r(int ra) {
      move_args();
      instr2_m(opCALL, ra, 0);
 }
+
+void call_i(int a) {
+     /* Indirect call via gate */
+     move_args();
+     instr2_m(opCALL, NOREG, a);
+}     
 
 code_addr vm_prelude(int n) {
      code_addr entry = pc;
@@ -1062,14 +1123,7 @@ void vm_gen1i(operation op, int a) {
           break;
 
      case CALL:
-#ifndef M64X32
-          instr_lab(opCALL_i, (code_addr) a);
-          post_call();
-#else
-          /* Indirect call via gate */
-          move_args();
-          instr_rm(opCALL, NOREG, a);
-#endif
+          call_i(a);
           break;
 
      default:
@@ -1078,15 +1132,12 @@ void vm_gen1i(operation op, int a) {
 }
 
 void vm_gen1j(operation op, vmlabel lab) {
-     code_addr loc;
-
      vm_debug1(op, 1, fmt_lab(lab));     
      vm_space(0);
 
      switch (op) {
      case JUMP: 
-	  loc = instr_lab(opJMP_i, NULL);
-          vm_branch(BRANCH, loc, lab);
+	  instr_lab(opJMP_i, lab);
           break;
 
      default:
@@ -1114,18 +1165,35 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  }
 	  break;
 
-     case SXTOFF:
 #ifndef M64X32
-          move(ra, rb);
+     case SXTOFF:
+          move(ra, rb); break;
 #else
-          instr_rr(opMOVSXD_r, ra, rb);
-#endif
+     case MOV64:
+	  if (isfloat(ra) && isfloat(rb)) {
+	       movef(ra, rb);
+	  } else if (isfloat(ra)) {
+	       push_r(rb); floadl(ra, ESP, 0); pop(rb);
+	  } else if (isfloat(rb)) {
+	       /* Make a stack slot, then overwrite it. */
+	       push_r(ra); fstorel(rb, ESP, 0); pop(ra);
+	  } else {
+	       move64(ra, rb); 
+	  }
           break;
 
+     case SXTOFF:
+     case SXT64:
+          instr_rr(opMOVSXD_r, ra, rb);
+          break;
+     case NEG64:
+          neg64(ra, rb); break;
+#endif
+
      case NEG:    
-	  monop(opNEG, ra, rb); break;
+	  monop(MONOP(opNEG), ra, rb); break;
      case NOT:    
-	  monop(opNOT, ra, rb); break;
+	  monop(MONOP(opNOT), ra, rb); break;
      case NEGF:
      case NEGD:
 	  fmonop(opFCHS, ra, rb); break;
@@ -1134,7 +1202,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      case CONVID:
 	  push_r(rb); loadf(opFILDL_m, ra, ESP, 0); pop(rb); break;
      case CONVIC: 
-	  binop3_i(opAND, ra, rb, 0xff); break;
+	  binop3_i(ALUOP_i(opAND), ra, rb, 0xff); break;
      case CONVIS: 
 	  instr_rr(opMOVSWL_r, ra, rb); break;
      case CONVFD:
@@ -1155,7 +1223,7 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
      switch (op) {
      case MOV: 
           if (b == 0)
-	       aluop_rr(opXOR, ra, ra);
+	       instr_rr(ALUOP(opXOR), ra, ra);
           else
 	       instr_regi32(opMOVL_i, ra, b);
 	  break;
@@ -1192,26 +1260,29 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      switch (op) {
      case ADD: 
-	  binop3c_r(opADD, ra, rb, rc); break;
+#ifndef M64X32
+     case ADDOFF:
+#endif
+          commute(ALUOP(opADD), ra, rb, rc); break;
      case AND: 
-	  binop3c_r(opAND, ra, rb, rc); break;
+	  commute(ALUOP(opAND), ra, rb, rc); break;
      case XOR: 
-	  binop3c_r(opXOR, ra, rb, rc); break;
+	  commute(ALUOP(opXOR), ra, rb, rc); break;
      case OR: 
-	  binop3c_r(opOR, ra, rb, rc); break;
+	  commute(ALUOP(opOR), ra, rb, rc); break;
      case SUB: 
-	  subtract_r(ra, rb, rc); break;
+	  subtract(ra, rb, rc); break;
      case MUL: 
-	  multiply_r(ra, rb, rc); break;
+	  commute(opIMUL_r, ra, rb, rc); break;
 
      case LSH: 
-	  shift3_r(opShiftL, ra, rb, rc); break;
+	  shift3_r(opSHL, ra, rb, rc); break;
      case RSH: 
-	  shift3_r(opShiftR, ra, rb, rc); break;
+	  shift3_r(opSAR, ra, rb, rc); break;
      case RSHU: 
-	  shift3_r(opShiftRU, ra, rb, rc); break;
+	  shift3_r(opSHR, ra, rb, rc); break;
      case ROR:
-          shift3_r(opRotateR, ra, rb, rc); break;
+          shift3_r(opROR, ra, rb, rc); break;
 
      case ADDF:
      case ADDD:
@@ -1227,44 +1298,63 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 	  flop3(opFdiv, opFdivR, ra, rb, rc); break;
 
      case EQ: 
-	  compare_r(opSETE, ra, rb, rc); break;
+	  compare_r(SETCC(opE), ra, rb, rc); break;
      case GEQ:
-	  compare_r(opSETGE, ra, rb, rc); break;
+	  compare_r(SETCC(opGE), ra, rb, rc); break;
      case GT: 
-	  compare_r(opSETG, ra, rb, rc); break;
+	  compare_r(SETCC(opG), ra, rb, rc); break;
      case LEQ:
-	  compare_r(opSETLE, ra, rb, rc); break;
+	  compare_r(SETCC(opLE), ra, rb, rc); break;
      case LT: 
-	  compare_r(opSETL, ra, rb, rc); break;
+	  compare_r(SETCC(opL), ra, rb, rc); break;
      case NEQ:
-	  compare_r(opSETNE, ra, rb, rc); break;
+	  compare_r(SETCC(opNE), ra, rb, rc); break;
+
+#ifdef M64X32
+     case EQ64: 
+	  compare64_r(SETCC(opE), ra, rb, rc); break;
+     case GEQ64:
+	  compare64_r(SETCC(opGE), ra, rb, rc); break;
+     case GT64: 
+	  compare64_r(SETCC(opG), ra, rb, rc); break;
+     case LEQ64:
+	  compare64_r(SETCC(opLE), ra, rb, rc); break;
+     case LT64: 
+	  compare64_r(SETCC(opL), ra, rb, rc); break;
+     case NEQ64:
+	  compare64_r(SETCC(opNE), ra, rb, rc); break;
+#endif
 
      case EQF:
      case EQD:
-	  fcompare(opSETE, ra, rb, rc); break;
+	  fcompare(SETCC(opE), ra, rb, rc); break;
      case GEQF:
      case GEQD:
-	  fcompare(opSETAE, ra, rb, rc); break;
+	  fcompare(SETCC(opAE), ra, rb, rc); break;
      case GTF:
      case GTD:
-	  fcompare(opSETA, ra, rb, rc); break;
+	  fcompare(SETCC(opA), ra, rb, rc); break;
      case LEQF:
      case LEQD:
-	  fcompare(opSETBE, ra, rb, rc); break;
+	  fcompare(SETCC(opBE), ra, rb, rc); break;
      case LTF:
      case LTD:
-	  fcompare(opSETB, ra, rb, rc); break;
+	  fcompare(SETCC(opB), ra, rb, rc); break;
      case NEQF:
      case NEQD:
-	  fcompare(opSETNE, ra, rb, rc); break;
+	  fcompare(SETCC(opNE), ra, rb, rc); break;
 
+#ifdef M64X32
+     case ADD64:
      case ADDOFF:
-#ifndef M64X32
-	  binop3c_r(opADD, ra, rb, rc);
-#else
-          add64_r(ra, rb, rc);
+          commute64(ALUOP64(opADD), ra, rb, rc); break;
+
+     case SUB64:
+          subtract64(ra, rb, rc); break;
+
+     case MUL64:
+          commute64(opIMULq_r, ra, rb, rc); break;
 #endif
-          break;
            
      default:
 	  badop();
@@ -1279,47 +1369,61 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 
      switch (op) {
      case ADD: 
-          if (c == 1) {
-               move(ra, rb);
-#ifndef M64X32
-               instr_reg(opINC_r, ra);
-#else
-               /* The shorter form has become REX */
-               instr2_r(opINC_m, ra);
-#endif
-          } else {
-               binop3_i(opADD, ra, rb, c);
-          }
+          move(ra, rb);
+          if (c == 1)
+               inc_r(ra);
+          else
+               instr2_ri(ALUOP_i(opADD), ra, c);
           break;
-     case AND: 
-	  binop3_i(opAND, ra, rb, c); break;
-     case OR: 
-	  binop3_i(opOR, ra, rb, c); break;
+
      case SUB: 
-          if (c == 1) {
-               move(ra, rb);
-#ifndef M64X32
-               instr_reg(opDEC_r, ra);
-#else
-               instr2_r(opDEC_m, ra);
-#endif
-          } else {
-               binop3_i(opSUB, ra, rb, c);
-          }
+          move(ra, rb);
+          if (c == 1)
+               dec_r(ra);
+          else
+               instr2_ri(ALUOP_i(opSUB), ra, c);
           break;
+
+#ifdef M64X32
+     case ADD64:
+          move64(ra, rb);
+          if (c == 1)
+               instr2_r(opINCq_m, ra);
+          else
+               instr2_ri(ALUOP64_i(opADD), ra, c);
+          break;
+
+     case SUB64:
+          move64(ra, rb);
+          if (c == 1)
+               instr2_r(opDECq_m, ra);
+          else
+               instr2_ri(ALUOP64_i(opSUB), ra, c);
+          break;
+#endif
+
+     case AND: 
+	  binop3_i(ALUOP_i(opAND), ra, rb, c); break;
+     case OR: 
+	  binop3_i(ALUOP_i(opOR), ra, rb, c); break;
+
      case XOR: 
-	  binop3_i(opXOR, ra, rb, c); break;
+	  binop3_i(ALUOP_i(opXOR), ra, rb, c); break;
      case MUL:
 	  instr_rri(opIMUL_i, ra, rb, c); break;
+#ifdef M64X32
+     case MUL64:
+          instr_rri(opIMULq_i, ra, rb, c); break;
+#endif
 
      case LSH: 
-	  shift3_i(opShiftL, ra, rb, c); break;
+	  shift3_i(opSHL, ra, rb, c); break;
      case RSH: 
-	  shift3_i(opShiftR, ra, rb, c); break;
+	  shift3_i(opSAR, ra, rb, c); break;
      case RSHU: 
-	  shift3_i(opShiftRU, ra, rb, c); break;
+	  shift3_i(opSHR, ra, rb, c); break;
      case ROR:
-          shift3_i(opRotateR, ra, rb, c); break;
+          shift3_i(opROR, ra, rb, c); break;
 
      case LDW:
 	  if (isfloat(ra)) 
@@ -1345,23 +1449,46 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
           instr_st(opMOVW_m, ra, rb, c); break;
      case STC: 
 	  storec(ra, rb, c); break;
-     case LDD: 
-	  floadl(ra, rb, c); break;
-     case STD:    
-	  fstorel(ra, rb, c); break;
+     case LDQ: 
+          if (isfloat(ra))
+               floadl(ra, rb, c);
+          else
+               instr_rm(opMOVQ_r, ra, rb, c);
+          break;
+     case STQ:    
+          if (isfloat(ra))
+               fstorel(ra, rb, c);
+          else
+               instr_st(opMOVQ_m, ra, rb, c);
+          break;
 
      case EQ:
-	  compare_i(opSETE, ra, rb, c); break;
+	  compare_i(SETCC(opE), ra, rb, c); break;
      case GEQ:
-	  compare_i(opSETGE, ra, rb, c); break;
+	  compare_i(SETCC(opGE), ra, rb, c); break;
      case GT: 
-	  compare_i(opSETG, ra, rb, c); break;
+	  compare_i(SETCC(opG), ra, rb, c); break;
      case LEQ:
-	  compare_i(opSETLE, ra, rb, c); break;
+	  compare_i(SETCC(opLE), ra, rb, c); break;
      case LT: 
-	  compare_i(opSETL, ra, rb, c); break;
+	  compare_i(SETCC(opL), ra, rb, c); break;
      case NEQ:
-	  compare_i(opSETNE, ra, rb, c); break;
+	  compare_i(SETCC(opNE), ra, rb, c); break;
+
+#ifdef M64X32
+     case EQ64:
+	  compare64_i(SETCC(opE), ra, rb, c); break;
+     case GEQ64:
+	  compare64_i(SETCC(opGE), ra, rb, c); break;
+     case GT64:
+	  compare64_i(SETCC(opG), ra, rb, c); break;
+     case LEQ64:
+	  compare64_i(SETCC(opLE), ra, rb, c); break;
+     case LT64:
+	  compare64_i(SETCC(opL), ra, rb, c); break;
+     case NEQ64:
+	  compare64_i(SETCC(opNE), ra, rb, c); break;
+#endif
 
      default:
 	  badop();
@@ -1370,95 +1497,117 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 
 void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
-     code_addr loc;
 
      vm_debug1(op, 3, rega->vr_name, regb->vr_name, fmt_lab(lab));
      vm_space(0);
 
      switch (op) {
      case BEQ: 
-	  loc = branch_r(opJE, ra, rb, NULL); break;
+          branch_r(CONDJ(opE), ra, rb, lab); break;
      case BGEQ: 
-	  loc = branch_r(opJGE, ra, rb, NULL); break;
+	  branch_r(CONDJ(opGE), ra, rb, lab); break;
      case BGT: 
-	  loc = branch_r(opJG, ra, rb, NULL); break;
+	  branch_r(CONDJ(opG), ra, rb, lab); break;
      case BLEQ: 
-	  loc = branch_r(opJLE, ra, rb, NULL); break;
+	  branch_r(CONDJ(opLE), ra, rb, lab); break;
      case BLT: 
-	  loc = branch_r(opJL, ra, rb, NULL); break;
+	  branch_r(CONDJ(opL), ra, rb, lab); break;
      case BNEQ: 
-	  loc = branch_r(opJNE, ra, rb, NULL); break;
+	  branch_r(CONDJ(opNE), ra, rb, lab); break;
      case BLTU: 
-	  loc = branch_r(opJB, ra, rb, NULL); break;
+	  branch_r(CONDJ(opB), ra, rb, lab); break;
      case BGEQU:
-	  loc = branch_r(opJAE, ra, rb, NULL); break;
+	  branch_r(CONDJ(opAE), ra, rb, lab); break;
      case BGTU:
-	  loc = branch_r(opJA, ra, rb, NULL); break;
+	  branch_r(CONDJ(opA), ra, rb, lab); break;
      case BLEQU:
-	  loc = branch_r(opJBE, ra, rb, NULL); break;
+	  branch_r(CONDJ(opBE), ra, rb, lab); break;
+
+#ifdef M64X32
+     case BEQ64: 
+	  branch64_r(CONDJ(opE), ra, rb, lab); break;
+     case BGEQ64: 
+	  branch64_r(CONDJ(opGE), ra, rb, lab); break;
+     case BGT64: 
+	  branch64_r(CONDJ(opG), ra, rb, lab); break;
+     case BLEQ64: 
+	  branch64_r(CONDJ(opLE), ra, rb, lab); break;
+     case BLT64: 
+	  branch64_r(CONDJ(opL), ra, rb, lab); break;
+     case BNEQ64: 
+	  branch64_r(CONDJ(opNE), ra, rb, lab); break;
+#endif
 
      case BEQF:
      case BEQD:
-	  loc = fbranch(opJE, ra, rb, NULL); break;
+	  fbranch(CONDJ(opE), ra, rb, lab); break;
      case BGEQF:
      case BGEQD:
-	  loc = fbranch(opJAE, ra, rb, NULL); break;
+	  fbranch(CONDJ(opAE), ra, rb, lab); break;
      case BGTF:
      case BGTD:
-	  loc = fbranch(opJA, ra, rb, NULL); break;
+	  fbranch(CONDJ(opA), ra, rb, lab); break;
      case BLEQF:
      case BLEQD:
-	  loc = fbranch(opJBE, ra, rb, NULL); break;
+	  fbranch(CONDJ(opBE), ra, rb, lab); break;
      case BLTF:
      case BLTD:
-	  loc = fbranch(opJB, ra, rb, NULL); break;
+	  fbranch(CONDJ(opB), ra, rb, lab); break;
      case BNEQF:
      case BNEQD:
-	  loc = fbranch(opJNE, ra, rb, NULL); break;
+	  fbranch(CONDJ(opNE), ra, rb, lab); break;
 
      default:
 	  badop();
-          return;
      }
-
-     vm_branch(BRANCH, loc, lab);
 }
 
 void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
      int ra = rega->vr_reg;
-     code_addr loc;
 
      vm_debug1(op, 3, rega->vr_name, fmt_val(b), fmt_lab(lab));
      vm_space(0);
 
      switch (op) {
      case BEQ: 
-	  loc = branch_i(opJE, ra, b, NULL); break;
+	  branch_i(CONDJ(opE), ra, b, lab); break;
      case BGEQU: 
-	  loc = branch_i(opJAE, ra, b, NULL); break;
+	  branch_i(CONDJ(opAE), ra, b, lab); break;
      case BGEQ: 
-	  loc = branch_i(opJGE, ra, b, NULL); break;
+	  branch_i(CONDJ(opGE), ra, b, lab); break;
      case BGT: 
-	  loc = branch_i(opJG, ra, b, NULL); break;
+	  branch_i(CONDJ(opG), ra, b, lab); break;
      case BLEQ: 
-	  loc = branch_i(opJLE, ra, b, NULL); break;
+	  branch_i(CONDJ(opLE), ra, b, lab); break;
      case BLTU: 
-	  loc = branch_i(opJB, ra, b, NULL); break;
+	  branch_i(CONDJ(opB), ra, b, lab); break;
      case BLT: 
-	  loc = branch_i(opJL, ra, b, NULL); break;
+	  branch_i(CONDJ(opL), ra, b, lab); break;
      case BNEQ: 
-	  loc = branch_i(opJNE, ra, b, NULL); break;
+	  branch_i(CONDJ(opNE), ra, b, lab); break;
      case BGTU:
-	  loc = branch_i(opJA, ra, b, NULL); break;
+	  branch_i(CONDJ(opA), ra, b, lab); break;
      case BLEQU:
-	  loc = branch_i(opJBE, ra, b, NULL); break;
+	  branch_i(CONDJ(opBE), ra, b, lab); break;
+
+#ifdef M64X32
+     case BEQ64:
+          branch64_i(CONDJ(opE), ra, b, lab); break;
+     case BGEQ64:
+          branch64_i(CONDJ(opGE), ra, b, lab); break;
+     case BGT64:
+          branch64_i(CONDJ(opG), ra, b, lab); break;
+     case BLEQ64:
+          branch64_i(CONDJ(opLE), ra, b, lab); break;
+     case BLT64:
+          branch64_i(CONDJ(opL), ra, b, lab); break;
+     case BNEQ64:
+          branch64_i(CONDJ(opNE), ra, b, lab); break;
+#endif
 
      default:
 	  badop();
-          return;
      }
-
-     vm_branch(BRANCH, loc, lab);
 }
 
 void vm_patch(code_addr loc, code_addr lab) {
@@ -1470,5 +1619,5 @@ void vm_postlude(void) {
 }
 
 void vm_chain(code_addr p) {
-     instr_lab(opJMP_i, p);
+     instr_tgt(opJMP_i, p);
 }

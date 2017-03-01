@@ -128,7 +128,8 @@ void push(int op, int type, reg r, int val, int size);
 void pop(int n);
 void unlock(int n);
 ctvalue peek(int n);
-
+void ldst_item(int op, reg rs, int i);
+     
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);
 ctvalue move_from_frame(int i);
@@ -150,12 +151,19 @@ vmlabel target(int lab);
 void move_longval(ctvalue src, reg rd, int offd);
 void get_halflong(ctvalue src, int off, reg dst);
 
-#define __FUNC__(p) \
+#define __FUNC0__(p) \
      p(MEMCPY, memcpy) p(STKOFLO, stkoflo) p(MEMSET, memset) \
      p(RTERROR, rterror) p(INT_DIV, int_div) p(INT_MOD, int_mod) \
+     p(LONG_DIV, long_div) p(LONG_MOD, long_mod) p(LONG_FLO, long_flo)
+
+#ifdef M64X32
+#define __FUNC__(p) __FUNC0__(p)
+#else
+#define __FUNC__(p) __FUNC0__(p) \
      p(LONG_ADD, long_add) p(LONG_SUB, long_sub) p(LONG_MUL, long_mul) \
-     p(LONG_DIV, long_div) p(LONG_MOD, long_mod) p(LONG_NEG, long_neg) \
-     p(LONG_CMP, long_cmp) p(LONG_EXT, long_ext) p(LONG_FLO, long_flo)
+     p(LONG_NEG, long_neg) p(LONG_CMP, long_cmp) p(LONG_EXT, long_ext) \
+     p(LONG_ZCHECK, long_zcheck)
+#endif     
 
 #define __func1__(name, fun) name,
 typedef enum {

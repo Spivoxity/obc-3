@@ -609,7 +609,7 @@ inst BREAK 2 S0 {
 zinst REG 0
 zinst ADDR 0
 zinst STACKW 0
-zinst STACKD 0
+zinst STACKQ 0
 zinst CON 0
 
 

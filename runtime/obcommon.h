@@ -56,7 +56,11 @@ typedef int mybool;
 #define align_short(x) (x)
 #endif
 
+#ifdef M64X32
+typedef long int longint;
+#else
 typedef long long int longint;
+#endif
 
 typedef union {
 #ifdef WORDS_BIGENDIAN

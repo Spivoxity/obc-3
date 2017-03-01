@@ -50,6 +50,11 @@ void byte(int x) {
      *pc++ = x & 0xff;
 }
 
+/* modify -- modify previous byte */
+void modify(int bit) {
+     pc[-1] |= bit;
+}
+
 /* word -- contribute a whole word */
 void word(int x) {
      * (int *) pc = x;

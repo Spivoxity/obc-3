@@ -31,6 +31,7 @@
 #define pc vm_pc
 #define byte vm_byte
 #define word vm_word
+#define modify vm_modify
 #define fmt_val vm_fmt_val
 #define fmt_lab vm_fmt_lab
 
@@ -46,6 +47,7 @@ extern code_addr pc;
 
 void vm_space(int space);
 void byte(int x);
+void modify(int bit);
 void word(int x);
 code_addr vm_prelude(int n);
 void vm_postlude(void);

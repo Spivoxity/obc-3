@@ -105,11 +105,12 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
 }
 
 #define imonop(op) gmonop(op, INT, INT, 1)
+#define qmonop(op) gmonop(op, INT, INT, 2)
 #define fmonop(op) gmonop(op, FLO, FLO, 1)
 #define dmonop(op) gmonop(op, FLO, FLO, 2)
 
-/* ibinop -- binary integer operation */
-static void ibinop(operation op) {
+/* binop -- binary integer operation */
+static void binop(operation op, int size) {
      reg r1, r2;
      ctvalue v;
 
@@ -126,85 +127,120 @@ static void ibinop(operation op) {
 	  vm_gen3rri(op, r2->r_reg, r1->r_reg, v->v_val);
      else								
 	  vm_gen3rrr(op, r2->r_reg, r1->r_reg, v->v_reg->r_reg);
-     push(I_REG, INT, r2, 0, 1);
+     push(I_REG, INT, r2, 0, size);
 }
 
-/* fdbinop -- float or double binary operation */
-static void fdbinop(operation op, int s) {
+#define ibinop(op)  binop(op, 1)
+#define qbinop(op)  binop(op, 2)
+
+/* gbinop -- general binary operation */
+static void gbinop(operation op, int ty, int s) {
      reg r1, r2, r3;
 
-     r1 = move_to_reg(2, FLO); r2 = move_to_reg(1, FLO); pop(2);
-     r3 = ralloc_suggest(FLO, r1); unlock(2);				
+     r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); pop(2);
+     r3 = ralloc_suggest(ty, r1); unlock(2);				
      vm_gen3rrr(op, r3->r_reg, r1->r_reg, r2->r_reg);				
-     push(I_REG, FLO, r3, 0, s);
+     push(I_REG, ty, r3, 0, s);
 }
 
-#define fbinop(op) fdbinop(op, 1)
-#define dbinop(op) fdbinop(op, 2)
+#define fbinop(op) gbinop(op, FLO, 1)
+#define dbinop(op) gbinop(op, FLO, 2)
+
+static void pop_zero(void) {
+     ctvalue v = peek(1);
+     assert(v->v_op == I_CON && v->v_val == 0);
+     pop(1);
+}
 
 /* fcomp -- float or double comparison */
-static void fcomp(operation op) {
+static void fcomp(operation op, int ty) {
      reg r1, r2, r3;
-     ctvalue v;
 
-     v = peek(1);
-     assert(v->v_op == I_CON && v->v_val == 0);	
-     r1 = move_to_reg(3, FLO); 
-     r2 = move_to_reg(2, FLO); pop(3);				
-     r3 = ralloc(INT); unlock(3);				
+     r1 = move_to_reg(2, ty); 
+     r2 = move_to_reg(1, ty); pop(2);				
+     r3 = ralloc(INT); unlock(2);				
      vm_gen3rrr(op, r3->r_reg, r1->r_reg, r2->r_reg);	
      push(I_REG, INT, r3, 0, 1);						
 }
 
 /* icomp -- integer comparison */
+#ifndef M64X32
 #define icomp(op) icomp1(op, op##F, op##D)
+#else
+#define icomp(op) icomp1(op, op##F, op##D, op##64)
+#endif
 
-static void icomp1(operation op, operation opf, operation opd) {
+static void icomp1(operation op, operation opf, operation opd
+#ifdef M64X32
+                   , operation op64
+#endif
+     ) {
      switch (cmpflag) {
      case I_FCMP:
-	  fcomp(opf); break;
+          pop_zero(); fcomp(opf, FLO); break;
      case I_DCMP:
-          fcomp(opd); break;
-     default:
+          pop_zero(); fcomp(opd, FLO); break;
+#ifdef M64X32
+     case I_QCMP:
+          pop_zero(); ibinop(op64); break;
+#endif
+     case 0:
 	  ibinop(op); break;
+     default:
+          panic("*icomp");
      }
 
      cmpflag = 0;
 }
 
-/* fcondj -- float or double conditional jump */
-static void fcondj(operation op, int lab) {
-     reg r1, r2;
-     ctvalue v;
+static void condj(operation op, int lab) {
+     reg r1; ctvalue v;
 
-     v = peek(1);
-     assert(v->v_op == I_CON && v->v_val == 0);	
-     flush(3); 
-     r1 = move_to_reg(3, FLO); r2 = move_to_reg(2, FLO); 
-     pop(3); unlock(3);		
+     flush(2); 
+     v = move_to_rc(1);
+     r1 = move_to_reg(2, INT); 
+     pop(2); unlock(2);	
+     if (v->v_op == I_CON)					
+          vm_gen3rij(op, r1->r_reg, v->v_val, target(lab));
+     else						
+          vm_gen3rrj(op, r1->r_reg, v->v_reg->r_reg, target(lab));
+}
+
+/* fcondj -- float or double conditional jump */
+static void fcondj(operation op, int ty, int lab) {
+     reg r1, r2;
+
+     flush(2); 
+     r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); 
+     pop(2); unlock(2);		
      vm_gen3rrj(op, r1->r_reg, r2->r_reg, target(lab));
 }
 
 /* icondj -- integer conditional jump */
+#ifndef M64X32
 #define icondj(op, lab) icondj1(op, op##F, op##D, lab)
+#else
+#define icondj(op, lab) icondj1(op, op##F, op##D, op##64, lab)
+#endif
 
-static void icondj1(operation op, operation opf, operation opd, int lab) {
-     reg r1; ctvalue v;
-
+static void icondj1(operation op, operation opf, operation opd,
+#ifdef M64X32
+                    operation op64,
+#endif
+                    int lab) {
      switch (cmpflag) {
      case I_FCMP:
-	  fcondj(opf, lab); break;
+          pop_zero(); fcondj(opf, FLO, lab); break;
      case I_DCMP:
-          fcondj(opd, lab); break;
+          pop_zero(); fcondj(opd, FLO, lab); break;
+#ifdef M64X32
+     case I_QCMP:
+          pop_zero(); condj(op64, lab); break;
+#endif
+     case 0:
+          condj(op, lab); break;
      default:
-	  flush(2); 
-	  v = move_to_rc(1);
-          r1 = move_to_reg(2, INT); 
-          pop(2); unlock(2);	
-          if (v->v_op == I_CON)					
-               vm_gen3rij(op, r1->r_reg, v->v_val, target(lab));
-          else						
-               vm_gen3rrj(op, r1->r_reg, v->v_reg->r_reg, target(lab));
+          panic("*icondj");
      }
 
      cmpflag = 0;
@@ -253,7 +289,9 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      int j;
 
      switch (i) {
-     case I_PUSH:	push(I_CON, INT, rZERO, arg1, 1); break;
+     case I_PUSH:
+          push(I_CON, INT, rZERO, arg1, 1);
+          break;
 
      case I_LOCAL:
           if (arg1 == 0)
@@ -423,7 +461,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	     comparison, so we just set a flag and generate 
 	     the appropriate comparison instruction later */
 
-     case I_FCMP: case I_DCMP:	
+     case I_FCMP:
+     case I_DCMP:	
           cmpflag = i; break;
 
      case I_BOUND:
@@ -559,12 +598,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  store(I_LOADW, INT, 1);
 	  break;
 
-     case I_RESULTQ:
-	  move_longval(peek(1), rZERO, address(&ob_res));
-	  pop(1);
-	  break;
-
      case I_RETURN:
+          /* Elide the jump at end of procedure */
           if (pc+1 < pclimit)
                vm_gen1j(JUMP, retlab);
 	  break;
@@ -572,16 +607,38 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_LNUM:
 	  break;
 
-     case I_QPLUS:	callout(LONG_ADD, 2); pop(1); break;
+     case I_RESULTQ:
+#ifndef M64X32
+	  move_longval(peek(1), rZERO, address(&ob_res));
+	  pop(1);
+#else
+          push(I_CON, INT, rZERO, address(&ob_res), 1);
+          store(I_LOADQ, INT, 2);
+#endif
+	  break;
+
+#ifndef M64X32
+     case I_QPLUS:      callout(LONG_ADD, 2); pop(1); break;
      case I_QMINUS:	callout(LONG_SUB, 2); pop(1); break;
      case I_QTIMES:	callout(LONG_MUL, 2); pop(1); break;
+     case I_QUMINUS:    callout(LONG_NEG, 1); break;
+#else
+     case I_QPLUS:      qbinop(ADD64); break;
+     case I_QMINUS:	qbinop(SUB64); break;
+     case I_QTIMES:	qbinop(MUL64); break;
+     case I_QUMINUS:	qmonop(NEG64); break;
+#endif
+          
      case I_QDIV:	callout(LONG_DIV, 2); pop(1); break;
      case I_QMOD:	callout(LONG_MOD, 2); pop(1); break;
-     case I_QUMINUS:    callout(LONG_NEG, 1); break;
 
      case I_QCMP:
+#ifndef M64X32
 	  callout(LONG_CMP, 2); pop(2);
 	  push(I_STACKW, INT, rZERO, 0, 1);
+#else
+          cmpflag = I_QCMP;
+#endif          
 	  break;
 
      case I_CONVNQ:
@@ -590,33 +647,47 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	       pop(1);
 	       push(I_CON, INT, rZERO, v->v_val, 2);
 	  } else {
+#ifndef M64X32
 	       callout(LONG_EXT, 1); pop(1);
-	       push(I_STACKD, INT, rZERO, 0, 2);
+	       push(I_STACKQ, INT, rZERO, 0, 2);
+#else
+               r1 = move_to_reg(1, INT); pop(1);
+               vm_gen2rr(SXT64, r1->r_reg, r1->r_reg);
+               push(I_REG, INT, r1, 0, 2);
+#endif
 	  }
 	  break;
 
      case I_CONVQN:
-	  v = peek(1);
-	  r1 = ralloc(INT);
-	  get_halflong(v, 0, r1);
-	  pop(1);
-	  push(I_REG, INT, r1, 0, 1);
-	  break;
+#ifndef M64X32
+          move_to_frame(1);
+          r1 = ralloc(INT);
+          ldst_item(LDW, r1, 1);
+          pop(1);
+          push(I_REG, INT, r1, 0, 1);
+#else
+          r1 = move_to_reg(1, INT); pop(1);
+          vm_gen2rr(MOV, r1->r_reg, r1->r_reg);
+          push(I_REG, INT, r1, 0, 1);
+#endif
+          break;
 
      case I_CONVQD:
 	  callout(LONG_FLO, 1); pop(1);
-	  push(I_STACKD, FLO, rZERO, 0, 2);
+	  push(I_STACKQ, FLO, rZERO, 0, 2);
 	  break;
 
      case I_QZCHECK:
-	  lab = vm_newlab();
-	  v = peek(1);
-	  r1 = ralloc(INT);
-	  get_halflong(v, 1, r1);
-	  vm_gen3rij(BNEQ, r1->r_reg, 0, lab);
-	  get_halflong(v, 0, r1);
-	  vm_gen3rij(BEQ, r1->r_reg, 0, handler(E_DIV, arg1));
-	  vm_label(lab);
+#ifndef M64X32
+          push_reg(rBP);
+          push_con(arg1);
+          callout(LONG_ZCHECK, 3);
+          pop(2);
+#else
+          r1 = move_to_reg(1, INT); pop(1); unlock(1);
+          vm_gen3rij(BEQ64, r1->r_reg, 0, handler(E_DIV, arg1));
+          push(I_REG, INT, r1, 0, 2);
+#endif
 	  break;
 
      default:

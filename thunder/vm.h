@@ -31,21 +31,30 @@
 typedef unsigned char *code_addr;
 
 /* Expand a macro once for each VM opcode */
-#define __OP__(p) \
+#define __OP0__(p) \
      p(ADD) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)	    \
      p(BGEQU) p(BGT) p(BGTF) p(BLEQ) p(BLEQF) p(BLT) p(BLTF)	    \
      p(BLTU) p(BNEQ) p(BNEQF) p(CONVIC) p(CONVIF) p(CONVIS) p(DIVF) \
      p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF)             \
-     p(JUMP) p(LDW) p(LDCU) p(LDD) p(LDSU) p(LDC) p(LDS) p(LEQ)     \
+     p(JUMP) p(LDW) p(LDCU) p(LDQ) p(LDSU) p(LDC) p(LDS) p(LEQ)     \
      p(LEQF) p(LSH) p(LT) p(LTF) p(MOV)	p(MUL) p(MULF)		    \
      p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
-     p(RSH) p(RSHU) p(STW) p(STC) p(STD) p(STS) p(SUB)		    \
+     p(RSH) p(RSHU) p(STW) p(STC) p(STQ) p(STS) p(SUB)		    \
      p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
      p(BGTU) p(BLEQU) p(LDKW) p(IJUMP)                              \
      p(ADDD) p(SUBD) p(MULD) p(DIVD) p(NEGD) p(ZEROD)               \
      p(BEQD) p(BGEQD) p(BLEQD) p(BLTD) p(BNEQD) p(BGTD)             \
      p(EQD) p(GEQD) p(LEQD) p(LTD) p(NEQD) p(GTD)                   \
      p(CONVFD) p(CONVDF) p(CONVID) p(ROR) p(SXTOFF) p(ADDOFF)
+
+#ifndef M64X32
+#define __OP__(p)  __OP0__(p)
+#else
+#define __OP__(p)  __OP0__(p) \
+     p(MOV64) p(SXT64) p(NEG64) p(ADD64) p(SUB64) p(MUL64)          \
+     p(BEQ64) p(BGT64) p(BGEQ64) p(BLT64) p(BLEQ64) p(BNEQ64)       \
+     p(EQ64) p(GT64) p(GEQ64) p(LT64) p(LEQ64) p(NEQ64)
+#endif
 
 #define __op1__(op) op,
 
@@ -106,7 +115,7 @@ LDCU/LDSU ra, rb, imm
   -- load unsigned character or short
 STC/STS ra, rb, imm
   -- store character or short
-LDD/STD fa, rb, imm
+LDQ/STQ ra/fa, rb, imm
   -- load/store double
 ZEROF/ZEROD fa
   -- set float/double register to zero

@@ -1,4 +1,5 @@
 #!/bin/sh
+#!/bin/sh
 #
 # @configure_input@
 #
@@ -32,94 +33,41 @@
 #
 
 # Config stuff
-srcdir=@srcdir@
 top_srcdir=@top_srcdir@
-WINDOWS=@WINDOWS@
-DIFF=@DIFF@
-ENABLE_JIT=@ENABLE_JIT@
-# End of config
-
-for d in ../lib $top_srcdir/lib; do
-    if [ -r $d/lscript ]; then
-	lib=$d; break
-    fi
-done
-
-if [ -z "$lib" ]; then
-    echo Couldn\'t find library files
-    exit 2
-fi
-
+srcdir=@srcdir@
+testsrc=$top_srcdir/test
+lib=../lib
+LIBDIR=/usr/arm-linux-gnueabihf/lib
 compiler="../compiler/obc1 -I $lib"
-interp="../obx"
-if [ "$ENABLE_JIT" = 1 ]; then interp="../obxj"; fi
-OBC_LIB=../lib
-export OBC_LIB
-
-if [ "$WINDOWS" = 1 ]; then
-    fixup=d2u
-    fixexp='sed -e s/\([0-9]\)E\([+-]\)\([0-9][0-9]\)$/\1E\20\3/'
-else
-    fixup=cat
-    fixexp=cat
-fi
-
-promote=false; code=true; run=true
-
-while true; do
-    case $1 in
-	-promote)
-	    promote=true; shift;;
-	-nocode)
-	    code=false; shift;;
-	-norun)
-	    run=false; shift;;
-	-nojit)
-	    interp="../obx"; shift;;
-	-*)
-	    compiler="$compiler $1"; shift;;
-	*)
-	    break
-    esac
-done
+interp="env OBC_LIB=. qemu-arm -B 0x100000 $LIBDIR/ld-linux.so.3 \
+    --library-path $LIBDIR ./obxj-arm"
+# End of config
 
 status=0
 
-$compiler -x $srcdir/xTypes.m >xTypes.k
-$compiler -07 $srcdir/xTypes07.m >xTypes07.k
-$compiler -x $srcdir/xPrelude.m >xPrelude.k
+$compiler -x $testsrc/xTypes.m >xTypes.k
+$compiler -07 $testsrc/xTypes07.m >xTypes07.k
+$compiler -x $testsrc/xPrelude.m >xPrelude.k
 
-rm -f t; ln -s $srcdir t
-
-for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
+for f in ${*:-`cd $testsrc; echo t*.m`}; do
     echo "$f"
 
     case $f in
-        e*.m) flag=;;
         tMixIt.m) flag='-w -x';;
         *07.m) flag='-07 -x';;
         *) flag=-x ;;
     esac
 
     rm -f a.out a.k out code
-    ($compiler $flag -O t/$f >a.k \
-	&& sed -f $srcdir/stamp.sed a.k >code \
+    ($compiler $flag -O $testsrc/$f >a.k \
+	&& sed -f $testsrc/stamp.sed a.k >code \
 	&& ../runtime/oblink -L $lib \
                              xTypes.k xTypes07.k xPrelude.k a.k -o a.out \
 	&& if $run; then \
-	    $interp ./a.out dummy arguments; fi) 2>&1 | $fixup >out
-    if $promote; then
-	sed -f $srcdir/promote.sed $srcdir/$f >$f.new
-	mv $f.new $srcdir/$f
-    else
-	sed -n -e '1,/^(\*<</d' -e '/^>>\*)/q' -e p $srcdir/$f | $fixexp >out.0
-	sed -n -e '1,/^(\*\[\[/d' -e '/^]]\*)/q' -e p $srcdir/$f >code.0
-	if $run; then $DIFF out.0 out || status=1; fi
-	if $code && [ -r code ]; then $DIFF -c code.0 code; fi
-    fi
+	    $interp ./a.out dummy arguments >out 2>&1; fi)
+    sed -n -e '1,/^(\*<</d' -e '/^>>\*)/q' -e p $testsrc/$f >out.0
+    diff out.0 out || status=1
 done
-
-rm -f t
 
 if [ $status -ne 0 ]; then echo Failed!; fi
 exit $status

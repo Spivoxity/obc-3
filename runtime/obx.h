@@ -136,19 +136,16 @@ extern struct primdef {
      primitive *p_prim;
 } primtab[];
 
-#ifdef M64X32
-EXTERN value *_result;          /* Procedure result */
+#ifndef M64X32
+EXTERN value _result[2];        /* Procedure result */
+EXTERN value *statlink;		/* Static link for procedure call */
 #else
-EXTERN value _result[2];
-#endif
-#define ob_res _result[0]
-
-#ifdef M64X32
+EXTERN value *_result;
 EXTERN value **_stat;
 #define statlink (*_stat)
-#else
-EXTERN value *statlink;		/* Static link for procedure call */
 #endif
+
+#define ob_res _result[0]
 
 EXTERN int level;		/* Recursion level in bytecode interp. */
 #ifdef OBXDEB
@@ -218,6 +215,7 @@ void long_neg(value *sp);
 void long_cmp(value *sp);
 void long_flo(value *sp);
 void long_ext(value *sp);
+void long_zcheck(value *sp);
 
 word wrap_prim(primitive *prim);
 
