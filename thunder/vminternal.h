@@ -59,14 +59,17 @@ void vm_branch(int kind, code_addr loc, vmlabel lab);
 code_addr vm_jtable(int n);
 void vm_panic(const char *fmt, ...);
 void vm_unknown(const char *where, operation op);
+int vm_print(code_addr p);
 
 #ifdef DEBUG
 void vm_debug1(int op, int nrands, ...);
 void vm_debug2(const char *fmt, ...);
+void vm_done(void);
 char *fmt_val(int v);
 char *fmt_lab(vmlabel lab);
 #else
 #define vm_debug1(op, nrands, ...)
 #define vm_debug2(fmt, ...)
+#define vm_done()
 #endif
 

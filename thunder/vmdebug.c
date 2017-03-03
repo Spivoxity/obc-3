@@ -80,6 +80,8 @@ void vm_debug1(int op, int nrands, ...) {
      va_end(va);
 }
 
+static code_addr start;
+
 void vm_debug2(const char *fmt, ...) {
      va_list va;
 
@@ -88,8 +90,26 @@ void vm_debug2(const char *fmt, ...) {
      va_start(va, fmt);
      printf("---   ");
      vprintf(fmt, va);
-     printf("\n");
      va_end(va);
+
+     start = pc;
+}
+
+void vm_done(void) {
+     code_addr p;
+     int n;
+
+     if (vm_debug == 0) return;
+
+     printf(" [");
+     if (pc > start) {
+          n = vm_print(start);
+          for (p = start+n; p < pc; p += n) {
+               printf(" ");
+               n = vm_print(p);
+          }
+          printf("]\n");
+     }
 }
 
 char *fmt_val(int v) {

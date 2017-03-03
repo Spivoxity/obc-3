@@ -438,22 +438,22 @@ static void rex(int pfx) {
 
 /* packreg -- modify opcode with register */
 static void packreg(int reg) {
-     check_rex(reg, REX_B);
      modify(register(reg));
+     check_rex(reg, REX_B);
 }
 
 /* addr -- a (mode, reg, r/m) triple */
 static void addr(int mode, int reg, int rm) {
+     byte((mode<<6) | (register(reg)<<3) | register(rm));
      check_rex(reg, REX_R);
      check_rex(rm, REX_B);
-     byte((mode<<6) | (register(reg)<<3) | register(rm));
 }
 
 /* sib -- a (scale, index, base) triple */
 static void sib(int scale, int index, int base) {
+     byte((scale<<6) | (register(index)<<3) | register(base));
      check_rex(index, REX_X);
      check_rex(base, REX_B);
-     byte((scale<<6) | (register(index)<<3) | register(base));
 }
 
 #define signed8(x) ((x) >= -128 && (x) < 128)
@@ -545,12 +545,14 @@ static void memory_s(int ra, int rb, int d, int s) {
 static void instr(OPDECL) {
      vm_debug2("%s", mnem);
      opcode(op);
+     vm_done();
 }
 
 /* instr_reg -- opcode packed with register */
 static void instr_reg(OPDECL, int reg) {
      vm_debug2("%s %s", mnem, regname[reg]);
      opcode(op), packreg(reg);
+     vm_done();
 }
 
 #define x_byte 0x02
@@ -563,6 +565,7 @@ static void instr_imm(OPDECL, int imm) {
           opcode(op), modify(x_byte), byte(imm);
      else
           opcode(op), word(imm);
+     vm_done()
 }
 #endif
 
@@ -570,18 +573,21 @@ static void instr_imm(OPDECL, int imm) {
 static void instr_regi32(OPDECL, int r, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[r], fmt_val(imm));
      opcode(op), packreg(r), word(imm);
+     vm_done();
 }
 
 /* instr_rr -- opcode plus two registers */
 static void instr_rr(OPDECL, int r1, int r2) {
      vm_debug2("%s %s, %s", mnem, regname[r1], regname[r2]);
      opcode(op), addr(3, r1, r2);
+     vm_done();
 }
 
 /* General form of instr2_r for shifts and floating point ops */
 static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
      vm_debug2(fmt, mnem, regname[r]);
      opcode(op), addr(3, op2, r);
+     vm_done();
 }
 
 /* instr2_r -- two opcodes and a register */
@@ -591,6 +597,7 @@ static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
 static void instr2_ri8(OPDECL2, int rm, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
      opcode(op), addr(3, op2, rm), byte(imm);
+     vm_done();
 }
 
 /* instruction with 2 opcodes, memory operand */
@@ -600,6 +607,7 @@ static void instr2_ri8(OPDECL2, int rm, int imm) {
 static void instr2_ms(OPDECL2, int rs, int imm, int s) {
      vm_debug2("%s *%s", mnem, fmt_addr_s(rs, imm, s));
      opcode(op), memory_s(op2, rs, imm, s);
+     vm_done();
 }
 
 /* instruction with 2 opcodes and 8/32 bit immediate */
@@ -609,6 +617,7 @@ static void instr2_ri(OPDECL2, int rm, int imm) {
 	  opcode(op), modify(x_byte), addr(3, op2, rm), byte(imm);
      else
 	  opcode(op), addr(3, op2, rm), word(imm);
+     vm_done();
 }
 
 /* instruction with 2 registers and 8/32 bit immediate */
@@ -618,18 +627,21 @@ static void instr_rri(OPDECL, int reg, int rm, int imm) {
 	  opcode(op), modify(x_byte), addr(3, reg, rm), byte(imm);
      else
 	  opcode(op), addr(3, reg, rm), word(imm);
+     vm_done();
 }
 
 /* instr_rm -- register and memory operand */
 static void instr_rm(OPDECL, int rt, int rs, int imm) {
      vm_debug2("%s %s, %s", mnem, regname[rt], fmt_addr(rs, imm));
      opcode(op), memory(rt, rs, imm);
+     vm_done();
 }
 
 /* instr_st -- alternate form of instr_rm for store instruction */
 static void instr_st(OPDECL, int rt, int rs, int imm) {
      vm_debug2("%s %s, %s", mnem, fmt_addr(rs, imm), regname[rt]);
      opcode(op), memory(rt, rs, imm);
+     vm_done();
 }
 
 /* instr_tgt -- opcode plus branch target */
@@ -639,6 +651,7 @@ static void instr_tgt(OPDECL, code_addr tgt) {
      assert(tgt != NULL);
      opcode(op), r = pc, word(0);
      vm_patch(r, tgt);
+     vm_done();
 }
 
 /* instr_lab -- opcode plus label */
@@ -647,12 +660,14 @@ static void instr_lab(OPDECL, vmlabel lab) {
      vm_debug2("%s %s", mnem, fmt_lab(lab));
      opcode(op), r = pc, word(0);
      vm_branch(BRANCH, r, lab);
+     vm_done();
 }
 
 /* instr_m -- floating point load or store */
 static void instr_m(OPDECL2, int rs, int imm) {
      vm_debug2("%s %s", mnem, fmt_addr(rs, imm));
      opcode(op), memory(op2, rs, imm);
+     vm_done();
 }
 
 
@@ -1718,3 +1733,10 @@ void vm_postlude(void) {
 void vm_chain(code_addr p) {
      instr_tgt(opJMP_i, p);
 }
+
+#ifdef DEBUG
+int vm_print(code_addr p) {
+     printf("%02d", *p);
+     return 1;
+}
+#endif

@@ -342,18 +342,21 @@ extern void panic(char *msg, ...);
 static void op_rrr(OPDECL, int rd, int rn, int rm) {
      vm_debug2("%s %s, %s, %s", mnem, regname[rd], regname[rn], regname[rm]);
      instr(op, reg(rd), reg(rn), reg(rm));
+     vm_done();
 }
 
 // Multiply rn := rm * rs
 static void op_mul(OPDECL, int rn, int rm, int rs) {
      vm_debug2("%s %s, %s, %s", mnem, regname[rn], regname[rm], regname[rs]);
      instr4(op, 0, reg(rn), reg(rm), reg(rs));
+     vm_done();
 }
 
 // rd := rn op imm with 8-bit immediate
 static void op_rri(OPDECL, int rd, int rn, int imm) {
      vm_debug2("%s %s, %s, #%d", mnem, regname[rd], regname[rn], imm);
      instr(op|IMMED, reg(rd), reg(rn), immed(imm));
+     vm_done();
 }
 
 // rd := rm shift rs
@@ -361,33 +364,39 @@ static void shift_r(OPDECL, int rd, int rm, int rs) {
      vm_debug2("mov %s, %s, %s %s", 
                regname[rd], regname[rm], mnem, regname[rs]);
      instr4(op|RSHIFT, reg(rd), 0, reg(rm), reg(rs));
+     vm_done();
 }
 
 // rd := rm shift c
 static void shift_i(OPDECL, int rd, int rm, int c) {
      vm_debug2("mov %s, %s, %s #%d", regname[rd], regname[rm], mnem, c);
      instr(op, reg(rd), 0, reg(rm)|shift_imm(c));
+     vm_done();
 }
 
 // rd := op rm
 static void op_rr(OPDECL, int rd, int rm) {
      vm_debug2("%s %s, %s", mnem, regname[rd], regname[rm]);
      instr(op, reg(rd), 0, reg(rm));
+     vm_done();
 }
 
 static void cmp_r(OPDECL, int rn, int rm) {
      vm_debug2("%s %s, %s", mnem, regname[rn], regname[rm]);
      instr(op, 0, reg(rn), reg(rm));
+     vm_done();
 }
 
 static void cmp_i(OPDECL, int rn, int imm) {
      vm_debug2("%s %s, #%d", mnem, regname[rn], imm);
      instr(op|IMMED, 0, reg(rn), immed(imm));
+     vm_done();
 }
 
 static void op_ri(OPDECL, int rd, int imm) {
      vm_debug2("%s %s, #%d", mnem, regname[rd], imm);
      instr(op|IMMED, reg(rd), 0, immed(imm));
+     vm_done();
 }
 
 #define move_i(rd, imm) op_ri(opMOV, rd, imm)
@@ -397,6 +406,7 @@ static void op_ri(OPDECL, int rd, int imm) {
 static void ldst_ri(OPDECL, int rd, int rn, int off) {
      vm_debug2("%s %s, %s", mnem, regname[rd], fmt_addr(rn, off, op));
      instr(op, reg(rd), reg(rn), imm12(off));
+     vm_done();
 }
 
 #define RRBIT  (0x20<<20) // Double-reg indirect
@@ -405,6 +415,7 @@ static void ldst_ri(OPDECL, int rd, int rn, int off) {
 static void ldst_rr(OPDECL, int rd, int rn, int rm) {
      vm_debug2("%s, %s, [%s, %s]", mnem, regname[rd], regname[rn], regname[rm]);
      instr(op|RRBIT|UBIT, reg(rd), reg(rn), reg(rm));
+     vm_done();
 }
 
 // rd :=: mem[rn + rm<<s]
@@ -412,6 +423,7 @@ static void ldst_rr_s(OPDECL, int rd, int rn, int rm, int s) {
      vm_debug2("%s, %s, [%s, %s, LSL %d]", mnem, regname[rd],
                regname[rn], regname[rm], s);
      instr(op|RRBIT|UBIT, reg(rd), reg(rn), reg(rm)|(s<<7));
+     vm_done();
 }
 
 // Fancy indexed loads and stores
@@ -424,11 +436,13 @@ static void ldst_rr_s(OPDECL, int rd, int rn, int rm, int s) {
 static void ldstx_ri(OPDECL, int rd, int rn, int off) {
      vm_debug2("%s %s, %s", mnem, regname[rd], fmt_addr(rn, off, op));
      instr(op|IBIT, reg(rd), reg(rn), offx(off));
+     vm_done();
 }
 
 static void ldstx_rr(OPDECL, int rd, int rn, int rm) {
      vm_debug2("%s %s, [%s, %s]", mnem, regname[rd], regname[rn], regname[rm]);
      instr(op|UBIT, reg(rd), reg(rn), reg(rm));
+     vm_done();
 }
 
 #if 0
@@ -436,6 +450,7 @@ static void ldstx_rr(OPDECL, int rd, int rn, int rm) {
 static void ldstm(OPDECL, int rn, int bits) {
      vm_debug2("%s %s, #%#x", mnem, regname[rn], bits);
      instr(op, 0, reg(rn), (bits)&0xffff);
+     vm_done();
 }
 #endif
 
@@ -447,17 +462,20 @@ static void ldstm(OPDECL, int rn, int bits) {
 static void branch_i(OPDECL, int dest) {
      vm_debug2("%s %d", mnem, dest);
      instr(op, 0, 0, ((int) dest)&0xffffff);
+     vm_done();
 }
 
 static void jump_r(OPDECL, int rm) {
      vm_debug2("%s %s", mnem, regname[rm]);
      instr4(op, 0xf, 0xf, reg(rm), 0xf);
+     vm_done();
 }
 
 // Copy FP to int status
 static void _fmstat(OPDECL) {
      vm_debug2("%s", mnem);
      instr(op, 0xf, 0, 0);
+     vm_done();
 }
 #define fmstat() _fmstat(opFMSTAT)
 
@@ -465,6 +483,7 @@ static void _fmstat(OPDECL) {
 static void _fmsr(OPDECL, int rn, int rd) {
      vm_debug2("%s %s, %s", mnem, regname[rn], regname[rd]);
      instr(op, reg(rd), reg(rn), 0);
+     vm_done();
 }
 #define fmsr(rn, rd) _fmsr(opFMSR, rn, rd)
 
@@ -472,6 +491,7 @@ static void _fmsr(OPDECL, int rn, int rd) {
 static void _fmrs(OPDECL, int rd, int rn) {
      vm_debug2("%s %s, %s", mnem, regname[rd], regname[rn]);
      instr(op, reg(rd), reg(rn), 0);
+     vm_done();
 }
 #define fmrs(rd, rn) _fmrs(opFMRS, rd, rn)
 
@@ -480,6 +500,7 @@ static void ldst_f(OPDECL, int rd, int rn, int off) {
      vm_debug2("%s %s%s, %s", mnem, regname[rd], (op&DBIT ? "+1" : ""),
          fmt_addr(rn, off*4, op));
      instr(op, reg(rd), reg(rn), immed(off));
+     vm_done();
 }
 
 
@@ -727,7 +748,7 @@ void vm_gen0(operation op) {
 
      switch (op) {
      case RET: 
-          vm_debug2("ldmfd fp, ...");
+          vm_debug2("ldmfd fp, ...\n");
           retlink();
 	  break;
 
@@ -1234,7 +1255,7 @@ code_addr vm_prelude(int n) {
 
      entry = pc;
      move_reg(IP, SP);
-     vm_debug2("stmfd sp!, ...");
+     vm_debug2("stmfd sp!, ...\n");
      word(0);
      move_reg(FP, SP);
      
@@ -1267,7 +1288,7 @@ void vm_postlude(void) {
      regmap &= range(4, 10);
      // Must save an even number of registers overall
      if (parity(regmap) == 0) regmap |= (regmap+0x10) & ~regmap;
-     vm_debug2("regmap = %x", regmap);
+     vm_debug2("regmap = %x\n", regmap);
 
      // stmfd! sp, {r4-r10, fp, ip, lr}
      * (int *) (entry + 4) =
@@ -1284,3 +1305,10 @@ void vm_postlude(void) {
      for (i = 0; i < nlits; i++)
           word(literals[i]);
 }
+
+#ifdef DEBUG
+int vm_print(code_addr p) {
+     printf("%08x", * (unsigned *) p);
+     return 4;
+}
+#endif
