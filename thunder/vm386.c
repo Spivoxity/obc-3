@@ -426,7 +426,7 @@ static void rex(int pfx) {
 
      // Make space for a REX byte if needed
      if ((*p&0xf0) != REX) {
-          memcpy(p+1, p, pc-p);
+          memmove(p+1, p, pc-p);
           *p = REX;
           pc++;
      }
@@ -1736,7 +1736,7 @@ void vm_chain(code_addr p) {
 
 #ifdef DEBUG
 int vm_print(code_addr p) {
-     printf("%02d", *p);
+     printf("%02x", *p);
      return 1;
 }
 #endif
