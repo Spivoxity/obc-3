@@ -7,6 +7,10 @@ pipelines:
     - step:
         script:
           - autoreconf
-          - ./configure --disable-debugger --enable-debug
+          - ./configure
           - make
           - make test
+          - sh scripts/debchange
+          - fakeroot debian/rules DESTDIR=. binary
+          - curl -u $BB_AUTH_STRING https://api.bitbucket.org/2.0/repositories/Spivey/obc-3/downloads -F files=@`echo obc_*.deb`
+

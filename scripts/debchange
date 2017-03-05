@@ -1,12 +1,12 @@
 #!/bin/bash
-VERSION=`sed -n '/AC_INIT(obc, *\([0-9.]*\),.*/s//\1/p' configure.in`
+VERSION=`sed -n '/AC_INIT(obc, *\([^,]*\),.*/s//\1/p' configure.in`
 DATE=`date -R`
 cat <<! >debian/changelog
 obc ($VERSION) unstable; urgency=low
 
   * Release
 
- -- Mike Spivey <mike@comlab.ox.ac.uk>  $DATE
+ -- Mike Spivey <mike@cs.ox.ac.uk>  $DATE
 !
 
 

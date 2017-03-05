@@ -343,6 +343,7 @@ cleanhere: force
 	rm -f a.out fac tartan *.[kio] Fac.[cx] FacPrims.c config.log \
 	    $(patsubst %,%$(EXEEXT),obx obxdeb obprof obtrace oblist obxj obxjd)
 	rm -rf $(BINDIST) $(BINDIST).tgz build-stamp
+	rm -rf debian/files debian/obc.substvars debian/obc
 
 quitecleanhere: cleanhere
 	rm -f obc obb obdb obc0 obb0 obdb0 config0 revid dump
@@ -383,7 +384,8 @@ stamp-h: config.h.in config.status
 	CONFIG_FILES= CONFIG_HEADERS=config.h ./config.status
 	echo timestamp >stamp-h
 
-REVID := $(shell (hg id -i || echo unknown) 2>/dev/null)
+REVID := $(shell (hg id -i || echo $${BITBUCKET_COMMIT:-unknown}) \
+		| sed 's/(............)[0-9a-f]*/\1/' 2>/dev/null)
 
 revid: force
 	echo $(REVID) | cmp -s $@ - || echo $(REVID) >$@

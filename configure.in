@@ -33,7 +33,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 3.1alpha1, mike@cs.ox.ac.uk)
+AC_INIT(obc, 3.1alpha, mike@cs.ox.ac.uk)
 # Don't forget to update version number in debian/changelog too.
 AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
@@ -57,8 +57,8 @@ AC_SUBST(DEPEND, 1)
 # Version info
 MAGIC=OBCX
 AC_DEFINE_UNQUOTED(MAGIC, "$MAGIC", [Magic number for trailer])
-SIG=[`echo $PACKAGE_VERSION | sed -e 's/alpha/.8/' \
-        -e 's/beta/.9/' -e 's/[0-9]*/0&/g' \
+SIG=[`echo $PACKAGE_VERSION | sed -e 's/alpha/.90/' \
+        -e 's/beta\([1-9]\)/.9\1/' -e 's/[0-9]*/0&/g' \
 	-e 's/0\([0-9][0-9]\)/\1/' -e 's/\.//g' -e 's/^/0x00/'`]
 AC_DEFINE_UNQUOTED(SIG, $SIG, [Version signature for symbol tables])
 AC_SUBST(SIG)
