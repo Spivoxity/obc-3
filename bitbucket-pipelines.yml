@@ -6,9 +6,7 @@ pipelines:
   default:
     - step:
         script:
-          - autoreconf
-          - ./configure
-          - make
+          - debian/rules build
           - make test
           - sh scripts/debchange
           - fakeroot debian/rules DESTDIR=. binary
