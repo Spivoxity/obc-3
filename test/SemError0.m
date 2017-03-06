@@ -96,6 +96,15 @@ TYPE
 
 VAR xx1: tt1; xx2: tt2;
 
+TYPE M = POINTER TO RECORD END;
+  T = POINTER TO Tree;
+
+PROCEDURE E;
+  VAR a : T; m : M;
+BEGIN
+  NEW(a, m^.x);
+END E;
+
 BEGIN
   CASE x OF 3..2: | 1: | 1: | 'a': END;
   CASE 'x' OF 'a': | 'a': END;
