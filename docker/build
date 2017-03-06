@@ -1,2 +1,0 @@
-docker build -t spivoxity/obc-build . && \
-docker push spivoxity/obc-build
