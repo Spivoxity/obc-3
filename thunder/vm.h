@@ -41,7 +41,7 @@ typedef unsigned char *code_addr;
      p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
      p(RSH) p(RSHU) p(STW) p(STC) p(STQ) p(STS) p(SUB)		    \
      p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
-     p(BGTU) p(BLEQU) p(LDKW) p(IJUMP)                              \
+     p(BGTU) p(BLEQU) p(LDKW)                                       \
      p(ADDD) p(SUBD) p(MULD) p(DIVD) p(NEGD) p(ZEROD)               \
      p(BEQD) p(BGEQD) p(BLEQD) p(BLTD) p(BNEQD) p(BGTD)             \
      p(EQD) p(GEQD) p(LEQD) p(LTD) p(NEQD) p(GTD)                   \

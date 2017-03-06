@@ -69,8 +69,8 @@ code_addr vm_getpc(void) {
 
 /* vm_jtable -- allocate space for jump table */
 code_addr vm_jtable(int n) {
-     vm_space(n * sizeof(code_addr));
-     limit -= n * sizeof(code_addr);
+     vm_space(n * sizeof(unsigned));
+     limit -= n * sizeof(unsigned);
      return limit;
 }
 

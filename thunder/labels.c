@@ -122,7 +122,7 @@ static void install(int kind, code_addr loc, code_addr val) {
           vm_patch(loc, val);
           break;
      case CASELAB:
-          * (code_addr *) loc = val;
+          * (unsigned *) loc = (unsigned) (unsigned long) val;
           break;
      default:
           vm_panic("bad branch code");
@@ -174,12 +174,12 @@ void vm_reset(void) {
 
 /* Jump tables */
 
-static code_addr *caseptr;
+static unsigned *caseptr;
 
 /* vm_jumptable -- begin a jump table */
 code_addr vm_jumptable(int n) {
      code_addr table = vm_jtable(n);
-     caseptr = (code_addr *) table;
+     caseptr = (unsigned *) table;
      return table;
 }
 

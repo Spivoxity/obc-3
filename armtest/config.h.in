@@ -164,8 +164,5 @@
 /* #undef inline */
 #endif
 
-/* Shift for indexed jumps */
-#define JTABLE_SHIFT 2
-
 /* Bug tracker */
 #define PACKAGE_TRACKER "https://bitbucket.org/Spivey/obc-3/issues"

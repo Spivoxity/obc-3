@@ -920,11 +920,6 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 	       move_immed(ra, * (int *) b);
 	  break;
 
-     case IJUMP:
-          load_store_s(opLDR, IP, ra, b, 2);
-          jump_r(opBX, IP);
-          break;
-
      default:
 	  badop();
      }

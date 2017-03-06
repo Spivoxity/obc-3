@@ -94,8 +94,6 @@ const int nvreg = 4, nireg = 3;
 const vmreg vreg[] = { &reg_v0, &reg_v1, &reg_v2, &reg_v3 }; /* Callee-save */
 const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2 };      /* Caller-save */
 
-#define IJUMP_SHIFT 2
-
 #else
 
 /* This version includes a crude native amd64 port (enabled with M64X32)
@@ -138,8 +136,6 @@ const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2,  /* Caller-save */
                        &reg_i3, &reg_i4 };
 #endif
 
-#define IJUMP_SHIFT 3
-
 #endif
 
 const int nfreg = 6;
@@ -176,22 +172,18 @@ static char *_regname[] = {
 
 static char **regname = &_regname[1];
 
-static char *fmt_addr_s(int rs, int imm, int shift) {
+static char *fmt_addr(int rs, int imm) {
      static char buf[32];
 
      if (rs == NOREG)
           sprintf(buf, "%#x", imm);
-     else if (shift > 0)
-          sprintf(buf, "%s(%s<<%d)", (imm != 0 ? fmt_val(imm) : ""),
-                  regname[rs], shift);
      else
-          sprintf(buf, "%s(%s)", (imm != 0 ? fmt_val(imm) : ""),
+          sprintf(buf, "%s(%s)",
+                  (imm != 0 ? fmt_val(imm) : ""),
                   regname[rs]);
 
      return buf;
 }
-
-#define fmt_addr(rs, imm) fmt_addr_s(rs, imm, 0)
 
 /* When Thunder is compiled for debugging, numeric opcodes are accompanied
    by textual mnemonics as they are passed around, and the act of generating
@@ -459,9 +451,7 @@ static void sib(int scale, int index, int base) {
 #define signed8(x) ((x) >= -128 && (x) < 128)
 
 /* memory operand */
-#define memory(ra, rb, d)  memory_s(ra, rb, d, 0)
-
-static void memory_s(int ra, int rb, int d, int s) {
+static void memory(int ra, int rb, int d) {
      /* Encode the register ra and the memory address [rb<<s+d]
 
         Most of the time (with no indexing), we need a (mode, reg, r/m) 
@@ -513,7 +503,7 @@ static void memory_s(int ra, int rb, int d, int s) {
 	       addr(1, ra, 4), sib(0, 4, rSP), byte(d); // untested
 	  else
 	       addr(2, ra, 4), sib(0, 4, rSP), word(d); // untested
-     }  else if (s == 0) {
+     }  else {
 	  // Base + Displacement [rb+d]
 	  if (d == 0 && rb != rBP)
 	       addr(0, ra, rb);
@@ -521,10 +511,6 @@ static void memory_s(int ra, int rb, int d, int s) {
 	       addr(1, ra, rb), byte(d);
 	  else
 	       addr(2, ra, rb), word(d);
-     } else {
-          // Scaled [rb<<s + d]
-          assert(rb != rSP);
-          addr(0, ra, 4), sib(s, rb, 5), word(d);
      }
 }
 
@@ -601,12 +587,9 @@ static void instr2_ri8(OPDECL2, int rm, int imm) {
 }
 
 /* instruction with 2 opcodes, memory operand */
-#define instr2_m(op, rs, imm)  instr2_ms(op, rs, imm, 0)
-
-/* instruction with 2 opcodes, memory operand and shift */
-static void instr2_ms(OPDECL2, int rs, int imm, int s) {
-     vm_debug2("%s *%s", mnem, fmt_addr_s(rs, imm, s));
-     opcode(op), memory_s(op2, rs, imm, s);
+static void instr2_m(OPDECL2, int rs, int imm) {
+     vm_debug2("%s *%s", mnem, fmt_addr(rs, imm));
+     opcode(op), memory(op2, rs, imm);
      vm_done();
 }
 
@@ -1201,8 +1184,7 @@ void vm_gen1r(operation op, vmreg rega) {
           arg_r(ra); break;
 
      case CALL:
-          call_r(ra);
-          break;
+          call_r(ra); break;
           
      case ZEROF:
      case ZEROD:
@@ -1341,10 +1323,6 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
                floads(ra, NOREG, b);
           else
                instr_regi32(opMOVL_i, ra, * (int *) (unsigned long) b);
-          break;
-
-     case IJUMP:
-          instr2_ms(opJMP, ra, b, IJUMP_SHIFT);
           break;
 
      default:

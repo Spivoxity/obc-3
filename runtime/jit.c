@@ -415,9 +415,12 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  a = vm_jumptable(arg1);
 
 	  flush(1);
-	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
+	  r1 = move_to_reg(1, INT); pop(1);
+          r2 = ralloc_suggest(INT, r1); unlock(1);
 	  vm_gen3rij(BGEQU, r1->r_reg, arg1, lab);
-	  vm_gen2ri(IJUMP, r1->r_reg, address(a));
+          vm_gen3rri(LSH, r2->r_reg, r1->r_reg, 2);
+          vm_gen3rri(LDW, r2->r_reg, r2->r_reg, address(a));
+	  vm_gen1r(JUMP, r2->r_reg);
 	  vm_label(lab);
 
 	  pc += 2;
