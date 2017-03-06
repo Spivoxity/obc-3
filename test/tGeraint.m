@@ -28,8 +28,8 @@ END tGeraint.
 >>*)
 
 (*[[
-!! SYMFILE #tGeraint STAMP #tGeraint.%main 1
-!! END STAMP
+!! (SYMFILE #tGeraint STAMP #tGeraint.%main 1)
+!! (CHKSUM STAMP)
 !! 
 MODULE tGeraint STAMP 0
 IMPORT Out STAMP

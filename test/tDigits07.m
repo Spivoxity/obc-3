@@ -57,14 +57,14 @@ IMPORT Out STAMP
 IMPORT GC STAMP
 ENDHDR
 
-PROC tDigits07.%2.Avail 0 1 0x00100001
+PROC tDigits07.%1.Avail 0 1 0x00100001
 ! PROCEDURE (r: UniSet) Avail(x: INTEGER): BOOLEAN;
 ! BEGIN RETURN TRUE END Avail;
 CONST 1
 RETURNW
 END
 
-PROC tDigits07.%1.Avail 0 4 0x00100001
+PROC tDigits07.%2.Avail 0 4 0x00100001
 ! PROCEDURE (r: DelSet) Avail(x: INTEGER): BOOLEAN;
 ! BEGIN RETURN (x # r.del) & r.parent.Avail(x) END Avail;
 LDLW 16
@@ -146,7 +146,7 @@ JUMP L13
 LABEL L15
 LDNW 8
 LDNW 4
-GLOBAL tDigits07.%1
+GLOBAL tDigits07.%2
 JNEQ L13
 CONST 1
 JUMP L14
@@ -156,7 +156,7 @@ LABEL L14
 STLC -13
 ! 	NEW(s1); s1.del := d; s1.parent := s;
 CONST 8
-GLOBAL tDigits07.%1
+GLOBAL tDigits07.%2
 GLOBAL NEW
 CALLW 2
 STLW -12
@@ -187,7 +187,7 @@ PROC tDigits07.Main 4 4 0x00010001
 ! PROCEDURE Main;
 !   NEW(s);
 CONST 0
-GLOBAL tDigits07.%2
+GLOBAL tDigits07.%1
 GLOBAL NEW
 CALLW 2
 STLW -4
@@ -213,7 +213,7 @@ WORD 0
 
 ! Descriptor for *anon*
 DEFINE tDigits07.%1
-WORD 0x00000005
+WORD 0
 WORD 1
 WORD tDigits07.%1.%anc
 WORD tDigits07.%1.Avail
@@ -224,7 +224,7 @@ WORD tDigits07.%1
 
 ! Descriptor for *anon*
 DEFINE tDigits07.%2
-WORD 0
+WORD 0x00000005
 WORD 1
 WORD tDigits07.%2.%anc
 WORD tDigits07.%2.Avail

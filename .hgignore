@@ -214,3 +214,4 @@ doc/think
 doc/think2
 autom4te.cache
 build*
+armtest/regress

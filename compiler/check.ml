@@ -311,7 +311,7 @@ let check_used ds =
 	| ModDef _ ->
 	    sem_warn "$ is imported but never used" [fId d.d_tag] d.d_loc
 	| _ -> () in
-  List.iter check ds
+  if !Error.err_count = 0 then List.iter check ds
 
 (* bad_paramtype -- test if a type expression is a sensible formal type *)
 let rec bad_paramtype t =
@@ -793,7 +793,7 @@ and force_agenda env =
   List.iter (fun (d, tx) ->
     let t = check_typexpr false env anon tx in
     check_target t tx.tx_loc;
-    d.d_type <- t) !agenda;
+    d.d_type <- t) (List.rev !agenda);
   agenda := []
 
 and check_heading kind x (Heading (fparams, result)) doc env fsize =
@@ -861,7 +861,6 @@ and check_body env =
 	  let cxt = !err_context in
 	  incr level; err_context := env';
 
-	  let errs0 = !Error.err_count in
 	  fsize := if !level > 1 then word_size else 0;
 	  check_decls false (downward_alloc fsize) env' locals;
 	  List.iter (check_body env') locals;
@@ -887,7 +886,7 @@ and check_body env =
 
 	  check_used (top_block env');
 
-	  if !Error.err_count = errs0 then
+	  if !Error.err_count = 0 then
 	    (* Don't check for uninitialised variables if there were errors *)
 	    Inicheck.check_init !level body;
 

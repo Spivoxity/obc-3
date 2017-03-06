@@ -492,7 +492,7 @@ PROC tSudoku.ColumnLink 4 3 0x00310001
 ! PROCEDURE ColumnLink(r: Column; VAR p: Cell);
 !   NEW(q);
 CONST 20
-GLOBAL tSudoku.%8
+GLOBAL tSudoku.%7
 GLOBAL NEW
 CALLW 2
 STLW -4
@@ -610,7 +610,7 @@ LDLW -20
 JGT L22
 !       NEW(p); p.name := name; p.x := i+1; p.y := j+1; 
 CONST 32
-GLOBAL tSudoku.%7
+GLOBAL tSudoku.%8
 GLOBAL NEW
 CALLW 2
 STLW -12
@@ -640,7 +640,7 @@ CONST 16
 STIC
 !       NEW(p.head); p.head.down := p.head; p.head.up := p.head;
 CONST 20
-GLOBAL tSudoku.%8
+GLOBAL tSudoku.%7
 GLOBAL NEW
 CALLW 2
 LDLW -12
@@ -807,7 +807,7 @@ PROC tSudoku.MakePuzzle 12 7 0
 ! PROCEDURE MakePuzzle;
 !   NEW(root);
 CONST 32
-GLOBAL tSudoku.%7
+GLOBAL tSudoku.%8
 GLOBAL NEW
 CALLW 2
 STGW tSudoku.root
@@ -1621,7 +1621,7 @@ STRING 3A00
 
 ! Descriptor for *anon*
 DEFINE tSudoku.%7
-WORD 0x000001c1
+WORD 0x0000003f
 WORD 0
 WORD tSudoku.%7.%anc
 
@@ -1630,7 +1630,7 @@ WORD tSudoku.%7
 
 ! Descriptor for *anon*
 DEFINE tSudoku.%8
-WORD 0x0000003f
+WORD 0x000001c1
 WORD 0
 WORD tSudoku.%8.%anc
 
