@@ -1,14 +1,23 @@
 # Bitbucket Pipelines build script
 
-image: spivoxity/obc-build64
-
 pipelines:
   default:
     - step:
+        image: spivoxity/obc-build:debian64
         script:
           - debian/rules build
           - make test
           - sh scripts/debchange
           - fakeroot debian/rules DESTDIR=. binary
           - sh scripts/bbupload
-
+  custom:
+    debian32:
+      - step:
+          image: spivoxity/obc-build:debian32
+          script:
+            - debian/rules build
+            - make test
+            - sh scripts/debchange
+            - fakeroot debian/rules DESTDIR=. binary
+            - sh scripts/bbupload
+      
