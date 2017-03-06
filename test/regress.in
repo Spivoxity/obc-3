@@ -88,7 +88,7 @@ for f in ${*:-`cd $srcdir; echo t*.m`}; do
 	sed -n -e '1,/^(\*<</d' -e '/^>>\*)/q' -e p $srcdir/$f | $fixexp >out.0
 	sed -n -e '1,/^(\*\[\[/d' -e '/^]]\*)/q' -e p $srcdir/$f >code.0
 	if $run; then $DIFF out.0 out || status=1; fi
-	if $code; then $DIFF -c code.0 code; fi
+	if $code; then $fixup < code | $DIFF -c code.0 -; fi
     fi
 done
 
