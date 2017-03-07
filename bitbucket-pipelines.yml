@@ -11,15 +11,6 @@ pipelines:
           - sh scripts/debchange
           - fakeroot debian/rules DESTDIR=. binary
           - sh scripts/bbupload
-  tags:
-    rel-*:
-      - step:
-          script:
-            - debian/rules build
-            - make test
-            - sh scripts/debchange
-            - fakeroot debian/rules DESTDIR=. binary
-            - sh scripts/bbupload
   custom:
     debian32:
       - step:
