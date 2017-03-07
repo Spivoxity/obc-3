@@ -84,7 +84,7 @@ AC_SUBST(DEBUG)
 case $host in
     i?86-*|x86_64-*) 
         VM=vm386.o;;
-    armv6l-*|armv7l-*)
+    armv6l-*|armv7l-*|arm-*)
         VM=vmpi.o
         AC_DEFINE(USE_FLUSH, 1, [Whether to flush the cache]);;
 esac
