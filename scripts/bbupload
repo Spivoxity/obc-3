@@ -1,0 +1,2 @@
+URL=https://api.bitbucket.org/2.0/repositories/Spivey/obc-3/downloads
+curl -u $BB_AUTH_STRING $URL -F files=@`echo obc_*.deb`
