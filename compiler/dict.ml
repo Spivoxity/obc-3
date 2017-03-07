@@ -506,12 +506,15 @@ let rec equal_types t1 t2 =
     | _ -> same_types t1 t2
 
 and proc_match t1 t2 =
-  match (t1.t_guts, t2.t_guts) with
-      (ProcType p1, ProcType p2) ->
-        p1.p_kind = p2.p_kind
-        && match_args p1.p_fparams p2.p_fparams 
-        && same_types p1.p_result p2.p_result
-    | (_, _) -> false
+  if is_errtype t1 || is_errtype t2 then
+    true
+  else
+    (match (t1.t_guts, t2.t_guts) with
+        (ProcType p1, ProcType p2) ->
+          p1.p_kind = p2.p_kind
+          && match_args p1.p_fparams p2.p_fparams 
+          && same_types p1.p_result p2.p_result
+      | (_, _) -> false)
 
 and match_args fp1 fp2 = 
   begin try 

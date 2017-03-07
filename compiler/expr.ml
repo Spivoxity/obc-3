@@ -1229,32 +1229,35 @@ and check_assign1 cxt args env lt e glob =
     type_mismatch cxt args lt e
 
 and proc_assign cxt args lt e glob =
-  match e.e_guts with
-      Name x ->
-        if not (undefined x) then begin
-          let d = get_def x in
-          match d.d_kind with
-              ProcDef ->
-                if d.d_level > 0 then begin
-                  if glob then
-                    sem_error ("local procedure '$' may not be used"
-                        ^ " as a procedure value") [fId x.x_name] x.x_loc
-                  else if not !Config.extensions then
-                    sem_extend ("local procedure '$' may not be used"
-                        ^ " as an argument") [fId x.x_name] x.x_loc
-                end;
-                if not (proc_match lt e.e_type) then
-                  type_mismatch cxt args lt e
-            | PrimDef ->
-                sem_error ("built-in procedure '$' may not be used"
-                  ^ " as a procedure value") [fId x.x_name] x.x_loc
-            | _ ->
-                if not (same_types lt e.e_type) then
-                  type_mismatch cxt args lt e
-        end
-    | _ ->
-        if not (same_types lt e.e_type) then
-          type_mismatch cxt args lt e
+  let rt =
+    match e.e_guts with
+        Name x ->
+          if undefined x then
+            errtype
+          else begin
+            let d = get_def x in
+            match d.d_kind with
+                ProcDef ->
+                  if d.d_level > 0 then begin
+                    if glob then
+                      sem_error ("local procedure '$' may not be used"
+                          ^ " as a procedure value") [fId x.x_name] x.x_loc
+                    else if not !Config.extensions then
+                      sem_extend ("local procedure '$' may not be used"
+                          ^ " as an argument") [fId x.x_name] x.x_loc
+                  end;
+                  d.d_type
+              | PrimDef ->
+                  sem_error ("built-in procedure '$' may not be used"
+                    ^ " as a procedure value") [fId x.x_name] x.x_loc;
+                  errtype
+              | _ ->
+                  d.d_type
+          end
+      | _ ->
+          e.e_type in
+  if not (proc_match lt rt) then
+    type_mismatch cxt args lt e
             
 (* check_const -- check a constant expression, returning type and value *)
 and check_const env cxt e =
