@@ -41,23 +41,24 @@ REVID := $(shell cat ../revid)
 
 CC = arm-linux-gnueabihf-gcc -marm -march=armv6
 CFLAGS = -g -O2 $(INCLUDE)
-INCLUDE = -I . -I $(top_srcdir)/runtime -I $(top_srcdir)/thunder \
-	-I ../runtime
+INCLUDE = -I . -I $(top_srcdir)/runtime -I $(top_srcdir)/thunder -I ../runtime
 RTFLAGS = -rdynamic
 LIBS = -ldl
 LIBDIR = /usr/arm-linux-gnueabihf/lib
-OBXJ = jit.o jitlab.o jitregs.o jitval.o vmpi.o labels.o vmdebug.o \
-	codebuf.o xmain-j.o decode.o support.o loader.o dynlink.o gc.o
+OBXJ = jit.o jitlab.o jitregs.o jitval.o xmain-j.o \
+	decode.o support.o loader.o dynlink.o gc.o
+THUNDER = vmpi.o labels.o vmdebug.o codebuf.o 
 PRIMS = Builtin Args GC Timer DynLink Files Conv Random
 DLPRIMS = Math MathL
 TCLSH = tclsh
+AR = arm-linux-gnueabihf-ar
+RANLIB = arm-linux-gnueabihf-ranlib
 
 vpath %.c $(top_srcdir)/runtime $(top_srcdir)/thunder ../runtime ../lib
-vpath %.h $(top_srcdir)/runtime $(top_srcdir)/thunder ../runtime
 
 all: obxj-arm $(DLPRIMS:%=%.so) regress sanity
 
-obxj-arm: $(OBXJ) $(PRIMS:%=%.o)
+obxj-arm: $(OBXJ) $(PRIMS:%=%.o) libthunder.a
 	$(CC) $(RTFLAGS) -o $@ $^ $(LIBS)
 
 xmain-j.o: xmain.c
@@ -68,6 +69,9 @@ Math.so MathL.so: %.so: %.c
 
 primtab.c: $(PRIMS:%=../lib/%.m)
 	$(TCLSH) ../lib/makeprims.tcl -t $^ >$@
+
+libthunder.a: $(THUNDER)
+	$(AR) cr $@ $^; $(RANLIB) $@
 
 config.h: $(srcdir)/config.h.in
 	cd .. && ./config.status --file=$(subdir)/$@
@@ -81,6 +85,13 @@ sanity: force
 	    --library-path $(LIBDIR) ./obxj-arm ../Fac.x 19
 	@echo The factorial of 19 is 121645100408832000
 
+fact-arm: fact.o libthunder.a
+	$(CC) $(CFLAGS) -o $@ $^
+
+run-fact: fact-arm force
+	qemu-arm -B 0x100000 $(LIBDIR)/ld-linux.so.3 \
+	    --library-path $(LIBDIR) ./fact-arm 10
+
 force:
 
 .DELETE_ON_ERROR:
@@ -89,7 +100,8 @@ force:
 
 # clean: remove object files
 clean: force
-	rm -f obxj-arm *.o *.so primtab.c *.k a.out data out.0 out config.h code
+	rm -f obxj-arm *.o *.so libthunder.a primtab.c *.k \
+		a.out data out.0 out config.h code
 
 # quiteclean: remove generated files too
 quiteclean: clean
@@ -108,4 +120,7 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 ### Crude approximation
 
 $(OBXJ) $(PRIMS:%=%.o): \
-	obx.h obcommon.h config.h exec.h keiko.h decode.h ../thunder/vm.h
+	config.h \
+	$(patsubst,%,$(top_srcdir/runtime/%,\
+		obx.h obcommon.h exec.h keiko.h decode.h) \
+	$(top_srcdir)/thunder/vm.h

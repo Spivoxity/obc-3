@@ -10,7 +10,7 @@ END mopsy;
 END eLocProc.
 
 (*<<
-"t/eLocProc.m", line 7: local procedure 'pop' may not be used as a procedure
+"eLocProc.m", line 7: local procedure 'pop' may not be used as a procedure
 value
 >   p := pop
 >        ^^^

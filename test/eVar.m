@@ -7,7 +7,7 @@ BEGIN
 END eVar.
 
 (*<<
-"t/eVar.m", line 6: the LHS of an assignment must be a variable
+"eVar.m", line 6: the LHS of an assignment must be a variable
 >   N := 4
 >   ^
 >>*)

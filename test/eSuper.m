@@ -15,7 +15,7 @@ END super;
 END eSuper.
 
 (*<<
-"t/eSuper.m", line 12: in this super call, the parent record type 'rec' does
+"eSuper.m", line 12: in this super call, the parent record type 'rec' does
 not support method 'mm'
 >   r.mm^
 >   ^^^^^

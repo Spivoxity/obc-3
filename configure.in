@@ -39,13 +39,13 @@ AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
 	test/Makefile winport/Makefile debugger/Makefile \
-	lablgtk/Makefile macport/Makefile compat/Makefile armtest/Makefile)
+	lablgtk/Makefile macport/Makefile compat/Makefile armtest/Makefile \
+        yacc/Makefile thunder/Makefile)
 AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
 AC_CONFIG_FILES(test/regress, chmod +x test/regress)
 AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)
 AC_CONFIG_FILES(test/edtest, chmod +x test/edtest)
 AC_CONFIG_HEADERS(config.h)
-AC_CONFIG_SUBDIRS(yacc)
 AC_CANONICAL_HOST
 
 : ${AUTOCONF=autoconf} ${AUTOHEADER=autoheader}
@@ -136,9 +136,14 @@ case $host in
       CC='gcc -m32'; LD='ld -melf_i386'
     fi;;
 
-  x86_64-*-*)
+  x86_64-*)
     CC='gcc -m32'; LD='ld -melf_i386';;
 esac
+
+case $host in
+    *-*-darwin*|*-*-linux*) 
+        AC_DEFINE(USE_MPROTECT, 1, [Whether to call mprotect from JIT]);;
+esac		
 
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -205,20 +210,17 @@ AC_DEFINE_UNQUOTED(DLEXT, "$DLEXT", [Extension for dynamic libraries])
 AC_ARG_ENABLE(jit,
   AS_HELP_STRING([--disable-jit], [disable JIT translator]))
 if test "$enable_jit" != no; then
-    case $host in
-	i?86-*|x86_64-*) 
-	    ENABLE_JIT=1; OBJFMT=i386
-            AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive]);;
-        armv6l-*|armv7l-*|arm-*)
-            ENABLE_JIT=1;;
-    esac
+  case $host in
+    i?86-*|x86_64-*) 
+      ENABLE_JIT=1; VM=vm386.o
+      AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive]);;
+    armv6l-*|armv7l-*|arm-*)
+      ENABLE_JIT=1; VM=vmpi.o
+      AC_DEFINE(USE_FLUSH, 1, [Whether to flush the cache]);;
+  esac
 fi
-if test "$ENABLE_JIT" = 1; then
-  AC_CONFIG_SUBDIRS(thunder)
-fi
-AC_SUBST(ENABLE_JIT)
 AC_SUBST(VM)
-AC_SUBST(OBJFMT)
+AC_SUBST(ENABLE_JIT)
 
 AC_ARG_ENABLE(debugger,
   AS_HELP_STRING([--disable-debugger], [disable runtime debugger]))

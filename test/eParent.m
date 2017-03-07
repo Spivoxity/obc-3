@@ -7,7 +7,7 @@ TYPE rec2 = RECORD (ptr) END;
 END eParent.
 
 (*<<
-"t/eParent.m", line 5: a parent must be a record type
+"eParent.m", line 5: a parent must be a record type
 > TYPE rec2 = RECORD (ptr) END;
 >                     ^^^
 > This expression has type ptr = POINTER TO rec

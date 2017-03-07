@@ -7,7 +7,7 @@ BEGIN
 END eImport.
 
 (*<<
-"t/eImport.m", line 6: module 'Out' does not export 'Anything'
+"eImport.m", line 6: module 'Out' does not export 'Anything'
 >   Out.Anything
 >   ^^^^^^^^^^^^
 >>*)

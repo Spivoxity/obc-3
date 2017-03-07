@@ -12,7 +12,7 @@ END E;
 END eInit.
 
 (*<<
-"t/eInit.m", line 4: 'Tree' has not been declared
+"eInit.m", line 4: 'Tree' has not been declared
 >   T = POINTER TO Tree;
 >                  ^^^^
 >>*)

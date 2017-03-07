@@ -6,18 +6,12 @@ pipelines:
   default:
     - step:
         script:
-          - debian/rules build
-          - make test
-          - sh scripts/debchange
-          - fakeroot debian/rules DESTDIR=. binary
+          - sh -x scripts/debbuild
           - sh scripts/bbupload
   custom:
     debian32:
       - step:
           image: spivoxity/obc-build:debian32
           script:
-            - debian/rules build
-            - make test
-            - sh scripts/debchange
-            - fakeroot debian/rules DESTDIR=. binary
+            - sh -x scripts/debbuild
             - sh scripts/bbupload

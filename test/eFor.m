@@ -12,35 +12,35 @@ BEGIN
 END eFor.
 
 (*<<
-"t/eFor.m", line 7: the name after FOR must be a variable
+"eFor.m", line 7: the name after FOR must be a variable
 >   FOR N := 2 TO 3 DO END;
 >       ^
 
-"t/eFor.m", line 8: the variable after FOR must have a discrete type
+"eFor.m", line 8: the variable after FOR must have a discrete type
 >   FOR y := 2 TO 3 DO END;
 >       ^
 > This expression has type REAL
 
-"t/eFor.m", line 9: type INTEGER is needed as a starting value
+"eFor.m", line 9: type INTEGER is needed as a starting value
 >   FOR x := 2.0 TO 3.0 DO END;
 >            ^^^
 > This expression has type REAL
 
-"t/eFor.m", line 9: type INTEGER is needed as an ending value
+"eFor.m", line 9: type INTEGER is needed as an ending value
 >   FOR x := 2.0 TO 3.0 DO END;
 >                   ^^^
 > This expression has type REAL
 
-"t/eFor.m", line 10: a step value must be a constant
+"eFor.m", line 10: a step value must be a constant
 >   FOR x := 2 TO 3 BY y DO END;
 >                      ^
 
-"t/eFor.m", line 10: the step value must be an integer
+"eFor.m", line 10: the step value must be an integer
 >   FOR x := 2 TO 3 BY y DO END;
 >                      ^
 > This expression has type REAL
 
-"t/eFor.m", line 11: the step value must be non-zero
+"eFor.m", line 11: the step value must be non-zero
 >   FOR x := 2 TO 3 BY 0 DO END
 >                      ^
 >>*)

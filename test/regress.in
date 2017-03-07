@@ -39,17 +39,7 @@ DIFF=@DIFF@
 ENABLE_JIT=@ENABLE_JIT@
 # End of config
 
-for d in ../lib $top_srcdir/lib; do
-    if [ -r $d/lscript ]; then
-	lib=$d; break
-    fi
-done
-
-if [ -z "$lib" ]; then
-    echo Couldn\'t find library files
-    exit 2
-fi
-
+lib=../lib
 compiler="../compiler/obc1 -I $lib"
 interp="../obx"
 if [ "$ENABLE_JIT" = 1 ]; then interp="../obxj"; fi
@@ -89,8 +79,6 @@ $compiler -x $srcdir/xTypes.m >xTypes.k
 $compiler -07 $srcdir/xTypes07.m >xTypes07.k
 $compiler -x $srcdir/xPrelude.m >xPrelude.k
 
-rm -f t; ln -s $srcdir t
-
 for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
     echo "$f"
 
@@ -102,12 +90,14 @@ for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
     esac
 
     rm -f a.out a.k out code
-    ($compiler $flag -O t/$f >a.k \
+    if [ $srcdir != . ]; then cp $srcdir/$f $f; fi
+    ($compiler $flag -O $f >a.k \
 	&& sed -f $srcdir/stamp.sed a.k >code \
 	&& ../runtime/oblink -L $lib \
                              xTypes.k xTypes07.k xPrelude.k a.k -o a.out \
 	&& if $run; then \
 	    $interp ./a.out dummy arguments; fi) 2>&1 | $fixup >out
+    if [ $srcdir != . ]; then rm $f; fi
     if $promote; then
 	sed -f $srcdir/promote.sed $srcdir/$f >$f.new
 	mv $f.new $srcdir/$f
@@ -118,8 +108,6 @@ for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
 	if $code && [ -r code ]; then $fixup < code | $DIFF -c code.0 -; fi
     fi
 done
-
-rm -f t
 
 if [ $status -ne 0 ]; then echo Failed!; fi
 exit $status

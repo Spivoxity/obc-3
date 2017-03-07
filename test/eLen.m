@@ -8,7 +8,7 @@ END depth;
 END eLen.
 
 (*<<
-"t/eLen.m", line 5: the argument of LEN must be an array of at least 3
+"eLen.m", line 5: the argument of LEN must be an array of at least 3
 dimensions
 >   RETURN LEN(a, 2)
 >              ^

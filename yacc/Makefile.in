@@ -92,14 +92,8 @@ force:
 
 # Config and dependencies
 
-$(srcdir)/configure: configure.in
-	cd $(srcdir) && $(AUTOCONF)
-
-config.status: configure
-	./config.status --recheck
-
-Makefile: $(srcdir)/Makefile.in config.status
-	./config.status $@
+Makefile: $(srcdir)/Makefile.in ../config.status
+	cd .. && ./config.status $(subdir)/$@
 
 ###
 

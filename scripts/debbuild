@@ -1,2 +1,6 @@
 #!/bin/sh
-dpkg-buildpackage -rfakeroot -b -us -uc -tc -d
+debian/rules build \
+&& make test0 \
+&& make test \
+&& sh scripts/debchange \
+&& fakeroot debian/rules DESTDIR=. binary
