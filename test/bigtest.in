@@ -23,7 +23,7 @@ export OBC_LIB
 
 # Under MSYS/MinGW, the "sed -n p" converts CR/LF to LF in test output
 if [ "$WINDOWS" = 1 ]; then
-    fixup="sed -n p"
+    fixup=dos2unix
     fixexp='sed -e s/\([0-9]\)E\([+-]\)\([0-9][0-9]\)$/\1E\20\3/'
 else
     fixup=cat
@@ -38,12 +38,12 @@ rm -f Planner.k planner
 $compiler -pl $srcdir/Planner.m >Planner.k \
     && ../runtime/oblink -pl -L ../lib Planner.k -o planner \
     && ../obprof -g -o Plan.pro -l ./planner <$srcdir/Planner.in >Plan.out \
-    && ($fixup Plan.out | diff $srcdir/Planner.out -; \
+    && ($fixup <Plan.out | diff $srcdir/Planner.out -; \
 	sed -f $srcdir/stamp.sed Planner.k >Plan.code; \
-        diff $srcdir/Planner.code Plan.code; \
-	$fixup Plan.pro | diff $srcdir/Planner.pro -; \
+        $fixup <Plan.code | diff $srcdir/Planner.code -; \
+	$fixup <Plan.pro | diff $srcdir/Planner.pro -; \
 	../obx ../oblist $srcdir/Planner.m >Plan.dmp; \
-	$fixup Plan.dmp | diff $srcdir/Planner.dmp -)
+	$fixup <Plan.dmp | diff $srcdir/Planner.dmp -)
 
 echo Fib
 ($compiler $srcdir/FibFun.m >FibFun.k \

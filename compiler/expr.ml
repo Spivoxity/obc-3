@@ -1220,8 +1220,11 @@ and check_assign1 cxt args env lt e glob =
     promote_char e
   else if is_address lt && is_niltype rt then
     e.e_type <- lt
-  else if is_proc lt then
-    proc_assign cxt args lt e glob
+  else if is_proc lt then begin
+    proc_value e glob; 
+    if not (proc_match lt e.e_type) then
+      type_mismatch cxt args lt e
+  end
   else if not (subtype rt lt 
       || is_string lt && is_string_const e && bound lt >= bound rt
       || same_types lt ptrtype && is_address rt
@@ -1229,7 +1232,7 @@ and check_assign1 cxt args env lt e glob =
             && same_types (base_type lt) (base_type rt)) then
     type_mismatch cxt args lt e
 
-and proc_assign cxt args lt e glob =
+and proc_value e glob =
   match e.e_guts with
       Name x ->
         if not (undefined x) then begin
@@ -1243,19 +1246,14 @@ and proc_assign cxt args lt e glob =
                   else if not !Config.extensions then
                     sem_extend ("local procedure '$' may not be used"
                         ^ " as an argument") [fId x.x_name] x.x_loc
-                end;
-                if not (proc_match lt e.e_type) then
-                  type_mismatch cxt args lt e
+                end
             | PrimDef ->
                 sem_error ("built-in procedure '$' may not be used"
-                  ^ " as a procedure value") [fId x.x_name] x.x_loc
-            | _ ->
-                if not (same_types lt e.e_type) then
-                  type_mismatch cxt args lt e
-        end
-    | _ ->
-        if not (same_types lt e.e_type) then
-          type_mismatch cxt args lt e
+                  ^ " as a procedure value") [fId x.x_name] x.x_loc;
+                e.e_type <- errtype
+            | _ -> ()
+          end
+      | _ -> ()
             
 (* check_const -- check a constant expression, returning type and value *)
 and check_const env cxt e =

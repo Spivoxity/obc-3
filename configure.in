@@ -209,7 +209,7 @@ if test "$enable_jit" != no; then
 	i?86-*|x86_64-*) 
 	    ENABLE_JIT=1; OBJFMT=i386
             AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive]);;
-        armv6l-*|armv7l-*)
+        armv6l-*|armv7l-*|arm-*)
             ENABLE_JIT=1;;
     esac
 fi

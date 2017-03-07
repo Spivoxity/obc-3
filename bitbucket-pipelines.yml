@@ -21,4 +21,3 @@ pipelines:
             - sh scripts/debchange
             - fakeroot debian/rules DESTDIR=. binary
             - sh scripts/bbupload
-      
