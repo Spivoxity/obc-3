@@ -104,7 +104,7 @@ PROCEDURE E;
 BEGIN
   NEW(a, m^.x);
 END E;
-
+PROCEDURE fz(f: PROCEDURE (a, b: INTEGER): INTEGER); END fz;
 BEGIN
   CASE x OF 3..2: | 1: | 1: | 'a': END;
   CASE 'x' OF 'a': | 'a': END;
@@ -163,5 +163,6 @@ BEGIN
   f^[0] := f^[long];
   f[0] := f[undecl];
   FOR x := 0 TO 9 BY 0 DO END;
-  xx1 := xx2
+  xx1 := xx2;
+  fz(ASH)
 END SemError.

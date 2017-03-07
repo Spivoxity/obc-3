@@ -432,7 +432,12 @@ in type INTEGER
 
 "SemError.m", line 166: types do not match exactly on the RHS of this
 assignment
->   xx1 := xx2
+>   xx1 := xx2;
 >          ^^^
 > This expression has type tt2 = ARRAY 2 OF POINTER TO ARRAY 2 OF POINTER TO
 > ARRAY 2 OF ...
+
+"SemError.m", line 167: built-in procedure 'ASH' may not be used as a
+procedure value
+>   fz(ASH)
+>      ^^^
