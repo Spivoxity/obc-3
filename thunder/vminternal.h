@@ -42,6 +42,7 @@ struct _vmreg {
 
 #define BRANCH 1
 #define CASELAB 2
+#define ABS 3
 
 extern code_addr pc;
 
@@ -49,7 +50,7 @@ void vm_space(int space);
 void byte(int x);
 void modify(int bit);
 void word(int x);
-code_addr vm_prelude(int n);
+code_addr vm_prelude(int n, int locs);
 void vm_postlude(void);
 void vm_chain(code_addr p);
 void vm_reset(void);

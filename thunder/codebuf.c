@@ -28,12 +28,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "vm.h"
 #include "vminternal.h"
-#include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #ifdef USE_MPROTECT
 #include <sys/mman.h>
 #endif
@@ -81,7 +82,7 @@ static int nfrags;
 #endif
 
 /* vm_begin -- begin new procedure */
-code_addr vm_begin(const char *name, int n) {
+code_addr vm_begin_locals(const char *name, int n, int locs) {
      proc_name = name;
      vm_space(MIN);
      proc_beg = pc;
@@ -90,7 +91,7 @@ code_addr vm_begin(const char *name, int n) {
      nfrags = 0; fragbeg[0] = pc;
 #endif
 
-     return vm_prelude(n);
+     return vm_prelude(n, locs);
 }
 
 /* vm_space -- ensure space in code buffer */
@@ -131,6 +132,7 @@ static void vm_flush(void) {
 /* vm_end -- finish a procedure */
 void vm_end(void) {
      vm_postlude();
+     vm_reset();
 
      if (vm_debug > 3) {
 	  // This is broken if we switched pages in mid-stream.
@@ -150,3 +152,6 @@ void vm_end(void) {
 #endif
 }
 
+int vm_procsize(void) {
+     return pc - proc_beg;
+}

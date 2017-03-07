@@ -31,30 +31,24 @@
 typedef unsigned char *code_addr;
 
 /* Expand a macro once for each VM opcode */
-#define __OP0__(p) \
+#define __OP__(p) \
      p(ADD) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)	    \
      p(BGEQU) p(BGT) p(BGTF) p(BLEQ) p(BLEQF) p(BLT) p(BLTF)	    \
-     p(BLTU) p(BNEQ) p(BNEQF) p(CONVIC) p(CONVIF) p(CONVIS) p(DIVF) \
+     p(BLTU) p(BNEQ) p(BNEQF) p(CONVIF) p(SXT) p(DIVF)              \
      p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF)             \
      p(JUMP) p(LDW) p(LDCU) p(LDQ) p(LDSU) p(LDC) p(LDS) p(LEQ)     \
      p(LEQF) p(LSH) p(LT) p(LTF) p(MOV)	p(MUL) p(MULF)		    \
      p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
      p(RSH) p(RSHU) p(STW) p(STC) p(STQ) p(STS) p(SUB)		    \
      p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
-     p(BGTU) p(BLEQU) p(LDKW)                                       \
+     p(BGTU) p(BLEQU) p(LDKW) p(CONVFI) p(CONVDI)                   \
      p(ADDD) p(SUBD) p(MULD) p(DIVD) p(NEGD) p(ZEROD)               \
      p(BEQD) p(BGEQD) p(BLEQD) p(BLTD) p(BNEQD) p(BGTD)             \
      p(EQD) p(GEQD) p(LEQD) p(LTD) p(NEQD) p(GTD)                   \
-     p(CONVFD) p(CONVDF) p(CONVID) p(ROR) p(SXTOFF) p(ADDOFF)
-
-#ifndef M64X32
-#define __OP__(p)  __OP0__(p)
-#else
-#define __OP__(p)  __OP0__(p) \
+     p(CONVFD) p(CONVDF) p(CONVID) p(ROR) p(SXTOFF) p(ADDOFF)       \
      p(MOV64) p(SXT64) p(NEG64) p(ADD64) p(SUB64) p(MUL64)          \
      p(BEQ64) p(BGT64) p(BGEQ64) p(BLT64) p(BLEQ64) p(BNEQ64)       \
      p(EQ64) p(GT64) p(GEQ64) p(LT64) p(LEQ64) p(NEQ64)
-#endif
 
 #define __op1__(op) op,
 
@@ -97,9 +91,7 @@ EQF/NEQF/LTF/LEQF/GTF/GEQF ra, fb, fc
   -- float comparisons with boolean result
 EQD/NEQD/LTD/LEQD/GTD/GEQD ra, fb, fc                 
   -- double comparisons with boolean result
-CONVIC ra, rb
-  -- convert integer to character (AND with 0xff)
-CONVIS ra, rb
+SXT ra, rb
   -- convert integer to short (AND with 0xffff and sign extend)    
 CONVIF/CONVID fa, rb
   -- convert integer to float or double
@@ -202,8 +194,8 @@ instruction with a computed offset in the stack frame.
 */
 
 /* 
-Integer resisters vreg[0..nvreg) are callee-save.  
-Integer registers ireg[0..nireg) are caller-save.
+Integer resisters ireg[0..nvreg) are callee-save.  
+Integer registers ireg[nvreg..nireg) are caller-save.
 Floating point registers freg[0..nfreg) are caller save.
 The floating-point registers are each big enough to hold a double. 
 
@@ -215,7 +207,7 @@ Keiko assumes nvreg+nireg >= 5.
 typedef struct _vmreg *vmreg;
 
 extern const int nvreg, nireg, nfreg;
-extern const vmreg vreg[], ireg[], freg[], ret, zero;
+extern const vmreg ireg[], freg[], ret, zero, base;
 
 const char *vm_regname(vmreg r);
 
@@ -230,12 +222,16 @@ void vm_gen1i(operation op, int a);
 void vm_gen1j(operation op, vmlabel lab);
 void vm_gen2rr(operation op, vmreg a, vmreg b);
 void vm_gen2ri(operation op, vmreg a, int b);
+void vm_gen2rj(operation op, vmreg a, vmlabel b);
 void vm_gen3rrr(operation op, vmreg a, vmreg b, vmreg c);
 void vm_gen3rri(operation op, vmreg a, vmreg b, int c);
 void vm_gen3rrj(operation op, vmreg a, vmreg b, vmlabel lab);
 void vm_gen3rij(operation op, vmreg a, int b, vmlabel lab);
 
-code_addr vm_begin(const char *name, int n);
+#define vm_addr(x) ((int) (long) &(x))
+
+code_addr vm_begin_locals(const char *name, int n, int locs);
+#define vm_begin(name, n) vm_begin_locals(name, n, 0);
 void vm_end(void);
 
 code_addr vm_jumptable(int n);
@@ -243,7 +239,34 @@ void vm_caselab(vmlabel lab);
 
 void *vm_scratch(int size);
 
+/* vm_procsize -- size of last procedure */
+int vm_procsize(void);
+
 /* Callback to allocate pages of memory */
 void *vm_alloc(int size);
 
 extern int vm_debug;
+
+
+/* Fancy _Generic stuff to provide overloading of vm_gen */
+
+#define _SELECT(p, q, r, s, t, ...) t
+
+#define vm_gen(...) \
+     _SELECT(__VA_ARGS__, vm_gen3, vm_gen2, vm_gen1, vm_gen0)(__VA_ARGS__)
+
+#define intcases(r) int: r, unsigned: r, char: r
+
+#define vm_gen1(op, a)                                                  \
+     _Generic(a, default: vm_gen1r, intcases(vm_gen1i),                 \
+              vmlabel: vm_gen1j)(op, a)
+
+#define vm_gen2(op, a, b)                                               \
+     _Generic(b, default: vm_gen2rr, intcases(vm_gen2ri),               \
+              vmlabel: vm_gen2rj)(op, a, b)
+
+#define vm_gen3(op, a, b, c)                                            \
+     _Generic(c, default: vm_gen3rrr, intcases(vm_gen3rri),             \
+              vmlabel: _Generic(b, default: vm_gen3rrj,                 \
+                                intcases(vm_gen3rij)))(op, a, b, c)
+

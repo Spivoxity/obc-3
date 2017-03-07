@@ -56,25 +56,25 @@ static code_addr prolog(const char *name) {
      vmlabel lab = vm_newlab();
 
      entry = vm_begin(name, 1);
-     vm_gen2ri(GETARG, rBP->r_reg, 0);
+     vm_gen(GETARG, rBP->r_reg, 0);
 
      /* Check for stack overflow */
-     vm_gen3rij(BGEQU, rBP->r_reg, address(stack + SLIMIT + frame), lab);
+     vm_gen(BGEQU, rBP->r_reg, address(stack + SLIMIT + frame), lab);
      vm_label(stack_oflo);
      push_reg(rBP);
      gcall(STKOFLO, 1);
      vm_label(lab);
 
      if (frame > 24) {
-	  vm_gen3rri(SUB, rI0->r_reg, rBP->r_reg, frame);
+	  vm_gen(SUB, rI0->r_reg, rBP->r_reg, frame);
           push_con(frame);
           push_con(0);
           push_reg(rI0);
 	  gcall(MEMSET, 3);
      } else if (frame > 0) {
-	  vm_gen2ri(MOV, rI0->r_reg, 0);
+	  vm_gen(MOV, rI0->r_reg, 0);
 	  for (i = 4; i <= frame; i += 4)
-	       vm_gen3rri(STW, rI0->r_reg, rBP->r_reg, -i);
+	       vm_gen(STW, rI0->r_reg, rBP->r_reg, -i);
      }
 
      return entry;
@@ -100,7 +100,7 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
 
      r1 = move_to_reg(1, rclass1); pop(1); 
      r2 = ralloc_suggest(rclass2, r1); unlock(1);	
-     vm_gen2rr(op, r2->r_reg, r1->r_reg);
+     vm_gen(op, r2->r_reg, r1->r_reg);
      push(I_REG, rclass2, r2, 0, s);
 }
 
@@ -124,9 +124,9 @@ static void binop(operation op, int size) {
      r2 = ralloc_suggest(INT, r1); 
      unlock(2);				
      if (v->v_op == I_CON)						
-	  vm_gen3rri(op, r2->r_reg, r1->r_reg, v->v_val);
+	  vm_gen(op, r2->r_reg, r1->r_reg, v->v_val);
      else								
-	  vm_gen3rrr(op, r2->r_reg, r1->r_reg, v->v_reg->r_reg);
+	  vm_gen(op, r2->r_reg, r1->r_reg, v->v_reg->r_reg);
      push(I_REG, INT, r2, 0, size);
 }
 
@@ -139,7 +139,7 @@ static void gbinop(operation op, int ty, int s) {
 
      r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); pop(2);
      r3 = ralloc_suggest(ty, r1); unlock(2);				
-     vm_gen3rrr(op, r3->r_reg, r1->r_reg, r2->r_reg);				
+     vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);				
      push(I_REG, ty, r3, 0, s);
 }
 
@@ -159,7 +159,7 @@ static void fcomp(operation op, int ty) {
      r1 = move_to_reg(2, ty); 
      r2 = move_to_reg(1, ty); pop(2);				
      r3 = ralloc(INT); unlock(2);				
-     vm_gen3rrr(op, r3->r_reg, r1->r_reg, r2->r_reg);	
+     vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);	
      push(I_REG, INT, r3, 0, 1);						
 }
 
@@ -201,9 +201,9 @@ static void condj(operation op, int lab) {
      r1 = move_to_reg(2, INT); 
      pop(2); unlock(2);	
      if (v->v_op == I_CON)					
-          vm_gen3rij(op, r1->r_reg, v->v_val, target(lab));
+          vm_gen(op, r1->r_reg, v->v_val, target(lab));
      else						
-          vm_gen3rrj(op, r1->r_reg, v->v_reg->r_reg, target(lab));
+          vm_gen(op, r1->r_reg, v->v_reg->r_reg, target(lab));
 }
 
 /* fcondj -- float or double conditional jump */
@@ -213,7 +213,7 @@ static void fcondj(operation op, int ty, int lab) {
      flush(2); 
      r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); 
      pop(2); unlock(2);		
-     vm_gen3rrj(op, r1->r_reg, r2->r_reg, target(lab));
+     vm_gen(op, r1->r_reg, r2->r_reg, target(lab));
 }
 
 /* icondj -- integer conditional jump */
@@ -272,7 +272,7 @@ static void proc_call(uchar *pc, int arg) {
      flush_stack(0, nargs+3);
      killregs();
      r2 = ralloc(INT); rthaw(r1);
-     vm_gen3rri(LDW, r1->r_reg, r1->r_reg, 4*CP_PRIM);
+     vm_gen(LDW, r1->r_reg, r1->r_reg, 4*CP_PRIM);
      get_sp(r2);
      push_reg(r2);
      gcallr(r1, 1);
@@ -381,10 +381,16 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_CONVNF:	gmonop(CONVIF, INT, FLO, 1); break;
      case I_CONVND:	gmonop(CONVID, INT, FLO, 2); break;
+     case I_CONVFN:	gmonop(CONVFI, FLO, INT, 1); break;
+     case I_CONVDN:	gmonop(CONVDI, FLO, INT, 1); break;
      case I_CONVDF:	gmonop(CONVDF, FLO, FLO, 1); break;
      case I_CONVFD:	gmonop(CONVFD, FLO, FLO, 2); break;
-     case I_CONVNC:	gmonop(CONVIC, INT, INT, 1); break;
-     case I_CONVNS:	gmonop(CONVIS, INT, INT, 1); break;
+     case I_CONVNS:	gmonop(SXT, INT, INT, 1); break;
+
+     case I_CONVNC:
+          push(I_CON, INT, rZERO, 0xff, 1);
+          ibinop(AND);
+          break;
   
      case I_NOT:	
 	  push(I_CON, INT, rZERO, 1, 1); 
@@ -407,7 +413,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  
      case I_JUMP:	
 	  flush(0); 
-	  vm_gen1j(JUMP, target(arg1)); 
+	  vm_gen(JUMP, target(arg1)); 
 	  break;
 
      case I_JCASE:
@@ -417,10 +423,10 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  flush(1);
 	  r1 = move_to_reg(1, INT); pop(1);
           r2 = ralloc_suggest(INT, r1); unlock(1);
-	  vm_gen3rij(BGEQU, r1->r_reg, arg1, lab);
-          vm_gen3rri(LSH, r2->r_reg, r1->r_reg, 2);
-          vm_gen3rri(LDW, r2->r_reg, r2->r_reg, address(a));
-	  vm_gen1r(JUMP, r2->r_reg);
+	  vm_gen(BGEQU, r1->r_reg, arg1, lab);
+          vm_gen(LSH, r2->r_reg, r1->r_reg, 2);
+          vm_gen(LDW, r2->r_reg, r2->r_reg, address(a));
+	  vm_gen(JUMP, r2->r_reg);
 	  vm_label(lab);
 
 	  pc += 2;
@@ -436,8 +442,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = fix_const(2, FALSE); 
 	  v2 = fix_const(1, FALSE); 
 	  pop(3); unlock(3); killregs();
-	  vm_gen3rij(BLT, r1->r_reg, v->v_val, lab);
-	  vm_gen3rij(BLEQ, r1->r_reg, v2->v_val, target(arg1));
+	  vm_gen(BLT, r1->r_reg, v->v_val, lab);
+	  vm_gen(BLEQ, r1->r_reg, v2->v_val, target(arg1));
 	  vm_label(lab);
 	  break;
 
@@ -447,7 +453,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = fix_const(1, FALSE);
 	  pop(2); unlock(2); killregs();
 	  push(I_STACKW, INT, rZERO, 0, 1);
-	  vm_gen3rij(BGEQ, r1->r_reg, v->v_val, target(arg1));
+	  vm_gen(BGEQ, r1->r_reg, v->v_val, target(arg1));
 	  break;
 
      case I_FPLUS:	fbinop(ADDF); break;
@@ -475,46 +481,46 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = move_to_rc(1); 
 	  pop(2); unlock(2);
 	  if (v->v_op == I_CON)
-	       vm_gen3rij(BGEQU, r1->r_reg, v->v_val, handler(E_BOUND, arg1));
+	       vm_gen(BGEQU, r1->r_reg, v->v_val, handler(E_BOUND, arg1));
 	  else
-	       vm_gen3rrj(BGEQU, r1->r_reg, v->v_reg->r_reg, 
-                          handler(E_BOUND, arg1));
+	       vm_gen(BGEQU, r1->r_reg, v->v_reg->r_reg,
+                      handler(E_BOUND, arg1));
 	  push(I_REG, INT, r1, 0, 1);
 	  break;
      
      case I_NCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
-	  vm_gen3rij(BEQ, r1->r_reg, 0, handler(E_NULL, arg1));
+	  vm_gen(BEQ, r1->r_reg, 0, handler(E_NULL, arg1));
 	  push(I_REG, INT, r1, 0, 1);
 	  break;
 
      case I_ZCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
-	  vm_gen3rij(BEQ, r1->r_reg, 0, handler(E_DIV, arg1));
+	  vm_gen(BEQ, r1->r_reg, 0, handler(E_DIV, arg1));
 	  push(I_REG, INT, r1, 0, 1);
 	  break;
 
      case I_FZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
-	  vm_gen1r(ZEROF, r2->r_reg);
-	  vm_gen3rrj(BEQF, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
+	  vm_gen(ZEROF, r2->r_reg);
+	  vm_gen(BEQF, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(I_REG, FLO, r1, 0, 1);
 	  break;
 
      case I_DZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
-	  vm_gen1r(ZEROD, r2->r_reg);
-	  vm_gen3rrj(BEQD, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
+	  vm_gen(ZEROD, r2->r_reg);
+	  vm_gen(BEQD, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(I_REG, FLO, r1, 0, 2);
 	  break;
 
      case I_GCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
-	  vm_gen3rij(BNEQ, r1->r_reg, 0, handler(E_GLOB, arg1));
+	  vm_gen(BNEQ, r1->r_reg, 0, handler(E_GLOB, arg1));
 	  break;
 
      case I_ERROR:
-	  vm_gen1j(JUMP, handler(arg1, arg2));
+	  vm_gen(JUMP, handler(arg1, arg2));
 	  break;
 
      case I_ALIGNC:
@@ -539,9 +545,9 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r3 = ralloc(INT); 
 	  pop(2); unlock(2); 
 	  flex_space(r2);
-	  vm_gen3rij(BLTU, rSP->r_reg, address(stack + SLIMIT), stack_oflo);
-          vm_gen3rri(LDW, r3->r_reg, r1->r_reg, 0);
-          vm_gen3rri(STW, rSP->r_reg, r1->r_reg, 0);
+	  vm_gen(BLTU, rSP->r_reg, address(stack + SLIMIT), stack_oflo);
+          vm_gen(LDW, r3->r_reg, r1->r_reg, 0);
+          vm_gen(STW, rSP->r_reg, r1->r_reg, 0);
           push_reg(r2);
           push_reg(r3);
           push_reg(rSP);
@@ -606,7 +612,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_RETURN:
           /* Elide the jump at end of procedure */
           if (pc+1 < pclimit)
-               vm_gen1j(JUMP, retlab);
+               vm_gen(JUMP, retlab);
 	  break;
 
      case I_LNUM:
@@ -657,7 +663,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	       push(I_STACKQ, INT, rZERO, 0, 2);
 #else
                r1 = move_to_reg(1, INT); pop(1);
-               vm_gen2rr(SXT64, r1->r_reg, r1->r_reg);
+               vm_gen(SXT64, r1->r_reg, r1->r_reg);
                push(I_REG, INT, r1, 0, 2);
 #endif
 	  }
@@ -672,7 +678,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           push(I_REG, INT, r1, 0, 1);
 #else
           r1 = move_to_reg(1, INT); pop(1);
-          vm_gen2rr(MOV, r1->r_reg, r1->r_reg);
+          vm_gen(MOV, r1->r_reg, r1->r_reg);
           push(I_REG, INT, r1, 0, 1);
 #endif
           break;
@@ -690,7 +696,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           pop(2);
 #else
           r1 = move_to_reg(1, INT); pop(1); unlock(1);
-          vm_gen3rij(BEQ64, r1->r_reg, 0, handler(E_DIV, arg1));
+          vm_gen(BEQ64, r1->r_reg, 0, handler(E_DIV, arg1));
           push(I_REG, INT, r1, 0, 2);
 #endif
 	  break;
@@ -852,7 +858,7 @@ static void translate(void) {
      }
 
      vm_label(retlab);
-     vm_gen0(RET);
+     vm_gen(RET);
 }
 
 static void make_error(vmlabel lab, int code, int line) {

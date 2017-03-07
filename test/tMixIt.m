@@ -155,8 +155,7 @@ GLOBAL Out.Ln
 CALL 0
 !   x := SHORT(ENTIER(r)); Out.Int(x, 0); Out.Ln;
 LDGF tMixIt.r
-GLOBAL INTREAL
-CALLW 1
+CONVFN
 STGS tMixIt.x
 CONST 0
 LDGS tMixIt.x

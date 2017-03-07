@@ -121,6 +121,7 @@ static void install(int kind, code_addr loc, code_addr val) {
      case BRANCH:
           vm_patch(loc, val);
           break;
+     case ABS:
      case CASELAB:
           * (unsigned *) loc = (unsigned) (unsigned long) val;
           break;

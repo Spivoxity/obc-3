@@ -138,8 +138,7 @@ GLOBAL Out.Ln
 CALL 0
 !   x := FLOOR(r); Out.Int(x, 0); Out.Ln;
 LDGF tMixIt07.r
-GLOBAL INTREAL
-CALLW 1
+CONVFN
 STGS tMixIt07.x
 CONST 0
 LDGS tMixIt07.x

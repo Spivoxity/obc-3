@@ -387,9 +387,10 @@ equiv QJNEQ R		{QCMP, JNEQZ $a}
 
 # CONVERSIONS
 
-# ENTIER is now a subroutine
 inst CONVNF 0		M.f  {flo_conv($1.i)}
 inst CONVND 0		M.di {flo_conv($1.i)}
+inst CONVFN 0		M.i  {(int) $1.f}
+inst CONVDN 0		M.id {(int) $1.d}
 inst CONVFD 0		M.df {$1.f}
 inst CONVDF 0		M.fd {(float) $1.d}
 inst CONVNC 0		M.i  {$1.i & 0xff}

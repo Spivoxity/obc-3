@@ -716,8 +716,8 @@ and gen_builtin q args =
     | Entier, [e1] ->
 	let t = op_kind e1.e_type in
 	begin match t with
-	    FloatT -> SEQ [gen_expr e1; call_proc "INTREAL" 1 inttype]
-	  | DoubleT -> SEQ [gen_expr e1; call_proc "INTLONG" 2 inttype]
+	    FloatT -> SEQ [gen_expr e1; CONV (FloatT, IntT)]
+	  | DoubleT -> SEQ [gen_expr e1; CONV (DoubleT, IntT)]
 	  | _ -> failwith "ENTIER"
 	end
 

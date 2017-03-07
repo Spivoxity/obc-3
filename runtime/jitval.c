@@ -157,19 +157,19 @@ static int sp = 0;		/* Number of stack items */
 static int offset[STACK];       /* Offset of each item from stack base */
 static int pdepth = 0;		/* Total size of runtime stack */
 static reg breg;		/* Base register for runtime stack */
-static int base;		/* Offset of stack base from breg */
+static int sbase;		/* Offset of stack base from breg */
 
-/* In normal procedures, breg = rBP and base = frame size.  But some
+/* In normal procedures, breg = rBP and sbase = frame size.  But some
    procedures require a variable-sized area on the stack for copying
    open array parameters passed by value, and they set breg = rSP and
-   base = 0, after generating code to set rSP to the *base* of the
+   sbase = 0, after generating code to set rSP to the *base* of the
    working stack area.  There is no top-of-stack register, because
    the working stack size is statically known. */
 
 void init_stack(int frame) {
      sp = 0; 
      pdepth = 0;
-     base = -frame;
+     sbase = -frame;
      breg = rBP;
 }
 
@@ -192,21 +192,21 @@ void flex_space(reg nreg) {
 	  assert(rSP->r_refct == 0);
 	  rSP->r_refct = OMEGA+1;
 
-	  if (base == 0) 
+	  if (sbase == 0) 
 	       r0 = rBP;
 	  else
-	       vm_gen3rri(SUB, rSP->r_reg, rBP->r_reg, -base);
+	       vm_gen(SUB, rSP->r_reg, rBP->r_reg, -sbase);
 
-	  breg = rSP; base = 0;
+	  breg = rSP; sbase = 0;
      }
 
-     vm_gen3rrr(SUB, rSP->r_reg, r0->r_reg, nreg->r_reg);
-     vm_gen3rri(AND, rSP->r_reg, rSP->r_reg, ~0x3);
+     vm_gen(SUB, rSP->r_reg, r0->r_reg, nreg->r_reg);
+     vm_gen(AND, rSP->r_reg, rSP->r_reg, ~0x3);
 }
 
 /* get_sp -- compute value of Oberon stack pointer */
 void get_sp(reg r) {
-     vm_gen3rri(SUB, r->r_reg, breg->r_reg, pdepth-base);
+     vm_gen(SUB, r->r_reg, breg->r_reg, pdepth-sbase);
 }
 
 /* set -- assign to a stack slot */
@@ -321,7 +321,7 @@ ctvalue move_from_frame(int i) {
      ((size) == 1 ? opw : (size) == 2 ? opd : (panic("choose"), 999))
 
 void ldst_item(int op, reg r, int i) {
-     vm_gen3rri(op, r->r_reg, breg->r_reg, base+offset[sp-i]);
+     vm_gen(op, r->r_reg, breg->r_reg, sbase+offset[sp-i]);
 }
 
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
@@ -332,7 +332,7 @@ void move_to_frame(int i) {
      if (v->v_op != I_STACKW && v->v_op != I_STACKQ) {
 #ifndef M64X32
 	  if (v->v_type == INT && v->v_size == 2) {
-               move_longval(v, breg, base+offset[sp-i]);
+               move_longval(v, breg, sbase+offset[sp-i]);
                rfree(v->v_reg);
           } else
 #endif
@@ -406,14 +406,14 @@ void spill(reg r) {
                     int c = *rc;
 
                     if (!saved) {
-                         vm_gen3rri(choose(v->v_size, STW, STQ), 
+                         vm_gen(choose(v->v_size, STW, STQ), 
                                     r->r_reg, rZERO->r_reg, tmp);
                          saved = TRUE;
                     }
 
                     *rc = 1;
                     move_to_frame(i);
-                    vm_gen3rri(choose(v->v_size, LDW, LDQ), 
+                    vm_gen(choose(v->v_size, LDW, LDQ), 
                                r->r_reg, rZERO->r_reg, tmp);
                     *rc = c-1;
                }
@@ -427,7 +427,7 @@ static reg load(operation op, int cl, reg r, int val) {
      rfree(r); rlock(r);
      r1 = ralloc(cl);
      runlock(r);
-     vm_gen3rri(op, r1->r_reg, r->r_reg, val);
+     vm_gen(op, r1->r_reg, r->r_reg, val);
      return r1;
 }
 
@@ -464,42 +464,30 @@ reg move_to_reg(int i, int ty) {
 
      case I_CON:
 	  r = ralloc(INT);
-	  vm_gen2ri(MOV, r->r_reg, v->v_val);
+	  vm_gen(MOV, r->r_reg, v->v_val);
 #ifdef M64X32
           if (v->v_size == 2)
-               vm_gen2rr(SXT64, r->r_reg, r->r_reg);
+               vm_gen(SXT64, r->r_reg, r->r_reg);
 #endif
 	  break;
 
      case I_LDKW:
      case I_LDKF:
 	  r = ralloc(ty);
-
-	  switch (ty) {
-	  case INT:
-	       vm_gen2ri(MOV, r->r_reg, *ptrcast(int, v->v_val));
-	       break;
-
-	  case FLO:
-	       vm_gen2ri(LDKW, r->r_reg, v->v_val);
-	       break;
-
-	  default:
-	       panic("fixr LDKW");
-	  }
+          vm_gen(LDKW, r->r_reg, v->v_val);
 	  break;
 	  
      case I_LDKQ:
      case I_LDKD:
 	  r = ralloc(ty);
-	  vm_gen3rri(LDQ, r->r_reg, rZERO->r_reg, v->v_val);
+	  vm_gen(LDQ, r->r_reg, rZERO->r_reg, v->v_val);
 	  break;
 
      case I_ADDR:
 	  rfree(v->v_reg); rlock(v->v_reg);
           r = ralloc_suggest(INT, v->v_reg);
           runlock(v->v_reg);
-	  vm_gen3rri(ADD, r->r_reg, v->v_reg->r_reg, v->v_val);
+	  vm_gen(ADD, r->r_reg, v->v_reg->r_reg, v->v_val);
 	  break;
 
      case I_LOADW:	
@@ -521,11 +509,11 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case I_STACKW:
-	  r = load(LDW, ty, breg, base + v->v_val);
+	  r = load(LDW, ty, breg, sbase + v->v_val);
 	  break;
 
      case I_STACKQ:
-	  r = load(LDQ, ty, breg, base + v->v_val);
+	  r = load(LDQ, ty, breg, sbase + v->v_val);
 	  break;
 
      default:
@@ -539,9 +527,9 @@ reg move_to_reg(int i, int ty) {
      if (rkind(r) != ty) {
 	  r2 = ralloc(ty);
 #ifndef M64X32
-	  vm_gen2rr(MOV, r2->r_reg, r->r_reg);
+	  vm_gen(MOV, r2->r_reg, r->r_reg);
 #else
-	  vm_gen2rr(choose(v->v_size, MOV, MOV64), r2->r_reg, r->r_reg);
+	  vm_gen(choose(v->v_size, MOV, MOV64), r2->r_reg, r->r_reg);
 #endif
 	  r = r2;
      }
@@ -665,7 +653,7 @@ void store(int ldop, int ty, int s) {
 	  panic("put %s", instrs[ldop].i_name);
      }
 
-     vm_gen3rri(op, r1->r_reg, v->v_reg->r_reg, v->v_val);
+     vm_gen(op, r1->r_reg, v->v_reg->r_reg, v->v_val);
      kill_alias(v);
      if (cache && v->v_reg != r1) set_cache(r1, v);
 }
@@ -685,7 +673,7 @@ void plusa() {
 	       push(I_CON, INT, rZERO, v1->v_val + v2->v_val, 1);
 	  else {
                r2 = v2->v_reg;
-               vm_gen2rr(SXTOFF, r2->r_reg, r2->r_reg);
+               vm_gen(SXTOFF, r2->r_reg, r2->r_reg);
 	       push(I_ADDR, INT, r2, v1->v_val, 1);
           }
 	  break;
@@ -701,8 +689,8 @@ void plusa() {
 	       r1 = ralloc_suggest(INT, v1->v_reg); 
                r2 = v2->v_reg;
 	       runlock(v2->v_reg);
-               vm_gen2rr(SXTOFF, r2->r_reg, r2->r_reg);
-	       vm_gen3rrr(ADD, r1->r_reg, v1->v_reg->r_reg, r2->r_reg);
+               vm_gen(SXTOFF, r2->r_reg, r2->r_reg);
+	       vm_gen(ADD, r1->r_reg, v1->v_reg->r_reg, r2->r_reg);
 	       push(I_ADDR, INT, r1, v1->v_val, 1);
 	  }
 	  break;
@@ -719,8 +707,8 @@ void plusa() {
                // Sign extend v2 and use ADDOFF
 	       r2 = ralloc_suggest(INT, r1); 
 	       unlock(2);
-               vm_gen2rr(SXTOFF, v2->v_reg->r_reg, v2->v_reg->r_reg);
-	       vm_gen3rrr(ADDOFF, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);
+               vm_gen(SXTOFF, v2->v_reg->r_reg, v2->v_reg->r_reg);
+	       vm_gen(ADDOFF, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);
 	       push(I_REG, INT, r2, 0, 1);
 	  }
      }
@@ -733,15 +721,15 @@ void plusa() {
 static void gen_args(int n) {
      int i;
 
-     vm_gen1i(PREP, n);
+     vm_gen(PREP, n);
      for (i = n; i > 0; i--) {
           ctvalue arg = &vstack[sp-i];
           switch (arg->v_op) {
           case I_REG:
-               vm_gen1r(ARG, arg->v_reg->r_reg);
+               vm_gen(ARG, arg->v_reg->r_reg);
                break;
           case I_CON:
-               vm_gen1i(ARG, arg->v_val);
+               vm_gen(ARG, arg->v_val);
                break;
           default:
                panic("Bad arg code %d", arg->v_op);
@@ -764,19 +752,19 @@ void gcall(func f, int n) {
      gen_args(n);
 
 #ifndef M64X32
-     vm_gen1i(CALL, address(func_table[f]));
+     vm_gen(CALL, address(func_table[f]));
 #else
      if (func_wrapper[f] == 0)
           func_wrapper[f] = wrap_prim(func_table[f]);
 
-     vm_gen1i(CALL, func_wrapper[f]);
+     vm_gen(CALL, func_wrapper[f]);
 #endif
 }
 
 /* gcallr -- indirect function call */
 void gcallr(reg r, int n) {
      gen_args(n);
-     vm_gen1r(CALL, r->r_reg);
+     vm_gen(CALL, r->r_reg);
 }
 
 
@@ -792,10 +780,10 @@ static void move_long(reg rs, int offs, reg rd, int offd) {
      rlock(rs); rlock(rd);
      r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
      runlock(rs); runlock(rd);
-     vm_gen3rri(LDW, r1->r_reg, rs->r_reg, offs);
-     vm_gen3rri(LDW, r2->r_reg, rs->r_reg, offs+4);
-     vm_gen3rri(STW, r1->r_reg, rd->r_reg, offd);
-     vm_gen3rri(STW, r2->r_reg, rd->r_reg, offd+4);
+     vm_gen(LDW, r1->r_reg, rs->r_reg, offs);
+     vm_gen(LDW, r2->r_reg, rs->r_reg, offs+4);
+     vm_gen(STW, r1->r_reg, rd->r_reg, offd);
+     vm_gen(STW, r2->r_reg, rd->r_reg, offd+4);
 }
      
 /* half_const -- fetch one or other half of a 64-bit constant */
@@ -823,10 +811,10 @@ static void move_longconst(ctvalue src, reg rd, int offd) {
      r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
      runlock(rd);
 
-     vm_gen2ri(MOV, r1->r_reg, half_const(src, 0));
-     vm_gen2ri(MOV, r2->r_reg, half_const(src, 1));
-     vm_gen3rri(STW, r1->r_reg, rd->r_reg, offd);
-     vm_gen3rri(STW, r2->r_reg, rd->r_reg, offd+4);
+     vm_gen(MOV, r1->r_reg, half_const(src, 0));
+     vm_gen(MOV, r2->r_reg, half_const(src, 1));
+     vm_gen(STW, r1->r_reg, rd->r_reg, offd);
+     vm_gen(STW, r2->r_reg, rd->r_reg, offd+4);
 }
 
 /* move_longval -- move a long value into memory */
@@ -840,7 +828,7 @@ void move_longval(ctvalue src, reg rd, int offd) {
 	  move_long(src->v_reg, src->v_val, rd, offd);
 	  break;
      case I_STACKQ:
-	  move_long(breg, base + src->v_val, rd, offd);
+	  move_long(breg, sbase + src->v_val, rd, offd);
 	  break;
      case I_LDKQ:
      case I_CON:
@@ -849,7 +837,7 @@ void move_longval(ctvalue src, reg rd, int offd) {
      case I_REG:
           /* Must be result of SYSTEM.VAL(LONGINT, x) */
           assert(src->v_type == FLO);
-          vm_gen3rri(STQ, src->v_reg->r_reg, rd->r_reg, offd);
+          vm_gen(STQ, src->v_reg->r_reg, rd->r_reg, offd);
           break;
      default:
 	  panic("move_longval %s", instrs[src->v_op].i_name);

@@ -28,9 +28,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Define to use extra registers on amd64 */
-#define BIGREG 1
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -79,7 +76,8 @@ struct _vmreg
      reg_f3 = { "F3", rF3 },
      reg_f4 = { "F4", rF4 },
      reg_f5 = { "F5", rF5 },
-     reg_zz = { "ZERO", NOREG };
+     reg_zz = { "ZERO", NOREG },
+     reg_sp = { "BASE", rSP };
 
 #ifndef M64X32
 
@@ -90,10 +88,11 @@ struct _vmreg
      reg_v3 = { "V3", rBP };
 
 /* Register layout for use by JIT client */
-const int nvreg = 4, nireg = 3;
-const vmreg vreg[] = { &reg_v0, &reg_v1, &reg_v2, &reg_v3 }; /* Callee-save */
-const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2 };      /* Caller-save */
-
+const int nvreg = 4, nireg = 7;
+const vmreg ireg[] = {
+     &reg_v0, &reg_v1, &reg_v2, &reg_v3,  /* Callee-save */
+     &reg_i0, &reg_i1, &reg_i2            /* Caller-save */
+};
 #else
 
 /* This version includes a crude native amd64 port (enabled with M64X32)
@@ -123,25 +122,22 @@ struct _vmreg
      reg_v0 = { "V0", rBX },
      reg_v1 = { "V1", rBP };
 
-const int nvreg = 2;
-const vmreg vreg[] = { &reg_v0, &reg_v1 };         /* Callee-save */
-
-#ifdef BIGREG
-const int nireg = 9;
-const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2,  /* Caller-save */
-                       &reg_i3, &reg_i4, &reg_i5, &reg_i6, &reg_i7, &reg_i8 }; 
-#else
-const int nireg = 5;
-const vmreg ireg[] = { &reg_i0, &reg_i1, &reg_i2,  /* Caller-save */
-                       &reg_i3, &reg_i4 };
-#endif
+const int nvreg = 2, nireg = 11;
+const vmreg ireg[] = {
+     &reg_v0, &reg_v1,          /* Callee-save */
+     &reg_i0, &reg_i1, &reg_i2, /* Caller-save */
+     &reg_i3, &reg_i4, &reg_i5, &reg_i6, &reg_i7, &reg_i8
+}; 
 
 #endif
 
 const int nfreg = 6;
-const vmreg freg[] = { &reg_f0, &reg_f1, &reg_f2,  /* Floating point */
-                       &reg_f3, &reg_f4, &reg_f5 };
-const vmreg ret = &reg_i0, zero = &reg_zz;
+const vmreg freg[] = {
+     &reg_f0, &reg_f1, &reg_f2, /* Floating point */
+     &reg_f3, &reg_f4, &reg_f5
+};
+
+const vmreg ret = &reg_i0, zero = &reg_zz, base = &reg_sp;
 
 #define register(r) ((r)&0x7)
 
@@ -303,6 +299,7 @@ static char *fmt_addr(int rs, int imm) {
 #define opFSTPS_m	MNEM2("fstps", 0xd9, 3)
 #define opFSTPL_m	MNEM2("fstpl", 0xdd, 3)
 #define opFILDL_m 	MNEM2("fildl", 0xdb, 0)
+#define opFISTTPS_m	MNEM2("fisttps", 0xdb, 1)
 
 /* Integer moves */
 #define opMOVL_r 	MNEM("mov", 0x8b) // Move to register
@@ -315,6 +312,7 @@ static char *fmt_addr(int rs, int imm) {
 #define opMOVW_m 	MNEM("movw", pfx(0x66, 0x89))
 #define opMOVB_m 	MNEM("movb", 0x88)
 #define opMOVL_i 	MNEM("mov", 0xb8) // Load immediate into register
+#define opLEA64		MNEM("lea", pfx(REX_W, 0x8d)) // Load effective address
 
 #define opIMUL_i 	MNEM("imul", 0x69) // Integer multiply
 #define opIMUL_r	MNEM("imul", pfx(0x0f, 0xaf))
@@ -452,7 +450,7 @@ static void sib(int scale, int index, int base) {
 
 /* memory operand */
 static void memory(int ra, int rb, int d) {
-     /* Encode the register ra and the memory address [rb<<s+d]
+     /* Encode the register ra and the memory address [rb+d]
 
         Most of the time (with no indexing), we need a (mode, reg, r/m) 
         triple, where mode determines the size of displacement 
@@ -478,7 +476,7 @@ static void memory(int ra, int rb, int d) {
 	    But i = rSP and b = rBP give further special cases:
 	    
 	mode = 0, r/m = 4, b = 5:
-	    Baseless addressing [d + reg(i)<<s]
+	    Baseless addressing [d + reg(i)]
 
         mode = 0, r/m = 4, i = 4, b = 5
             Absolute addressing [d], useful on amd64
@@ -492,7 +490,7 @@ static void memory(int ra, int rb, int d) {
 	  addr(0, ra, 5), word(d);
 #else
           // Use PC-relative addressing
-          addr(0, ra, 5), word(d - (int) (long) pc - 4);
+          addr(0, ra, 5), word((code_addr) (long) d - pc - 4);
           // Was: addr(0, ra, 4), sib(0, 4, 5), word(d);
 #endif
      } else if (rb == rSP) {
@@ -551,7 +549,7 @@ static void instr_imm(OPDECL, int imm) {
           opcode(op), modify(x_byte), byte(imm);
      else
           opcode(op), word(imm);
-     vm_done()
+     vm_done();
 }
 #endif
 
@@ -586,12 +584,14 @@ static void instr2_ri8(OPDECL2, int rm, int imm) {
      vm_done();
 }
 
+#ifdef M64X32
 /* instruction with 2 opcodes, memory operand */
 static void instr2_m(OPDECL2, int rs, int imm) {
      vm_debug2("%s *%s", mnem, fmt_addr(rs, imm));
      opcode(op), memory(op2, rs, imm);
      vm_done();
 }
+#endif
 
 /* instruction with 2 opcodes and 8/32 bit immediate */
 static void instr2_ri(OPDECL2, int rm, int imm) {
@@ -645,6 +645,27 @@ static void instr_lab(OPDECL, vmlabel lab) {
      vm_branch(BRANCH, r, lab);
      vm_done();
 }
+
+#ifndef M64X32
+/* instr_abs -- opcode plus reg and absolute label */
+static void instr_abs(OPDECL, int rd, vmlabel lab) {
+     code_addr r;
+     vm_debug2("%s %s, #%s", mnem, regname[rd], fmt_lab(lab));
+     opcode(op), packreg(rd), r = pc, word(0);
+     vm_branch(ABS, r, lab);
+     vm_done();
+}
+#else
+/* instr_rel -- opcode plus reg and relative label */
+static void instr_rel(OPDECL, int rd, vmlabel lab) {
+     code_addr r;
+     vm_debug2("%s %s, #%s", mnem, regname[rd], fmt_lab(lab));
+     opcode(op), addr(0, rd, 5), r = pc, word(0);
+     vm_branch(BRANCH, r, lab);
+     vm_done();
+}
+#endif
+
 
 /* instr_m -- floating point load or store */
 static void instr_m(OPDECL2, int rs, int imm) {
@@ -752,6 +773,7 @@ static void storec(int rt, int rs, int imm) {
 #else
 	  int rx = (rs == rAX ? rDX : rAX);
 	  push_r(rx); move(rx, rt);
+          if (rs == rSP) imm += 4; // Compensate for push
 	  instr_st(opMOVB_m, rx, rs, imm);
 	  pop(rx);
 #endif
@@ -907,14 +929,14 @@ static void fmonop(OPDECL, int rd, int rs) {
 static void flop2(OPDECL, int op_r, int rd, int rs) {
      if (rd == rF0)
 	  /* 1: st0 := st0 op stX */
-	  instr2_fmt(ifdebug("%s F0, %s") MNEM2(mnem, xFLOP_0, op), rs);
+	  instr2_fmt(ifdebug("%s rF0, %s") MNEM2(mnem, xFLOP_0, op), rs);
      else if (rs == rF0)
 	  /* 4: stX := stX op st0 */
-	  instr2_fmt(ifdebug("%s %s, F0") MNEM2(mnem, xFLOP_r, op_r), rd);
+	  instr2_fmt(ifdebug("%s %s, rF0") MNEM2(mnem, xFLOP_r, op_r), rd);
      else {
 	  /* stX := stX op stY becomes push stY; 6: stX := stX op st0; pop*/
 	  fld_r(rs);
-          instr2_fmt(ifdebug("%sp %s, F0") MNEM2(mnem, xFLOPP_r, op_r), rd+1);
+          instr2_fmt(ifdebug("%sp %s, rF0") MNEM2(mnem, xFLOPP_r, op_r), rd+1);
      }
 }
 
@@ -954,6 +976,9 @@ static void storef(OPDECL2, OPDECL2_(p), int rt, int rs, int imm) {
      storef(opFSTL_m, opFSTPL_m, rt, rs, imm)
 #define fzero(rd) 		\
      instr(opFLDZ), fstp_r(rd+1)
+#define ftruncs(rt, rs, imm) \
+     fld_r(rt), instr_m(opFISTTPS_m, rs, imm)
+
 
 /* Floating point comparison, setting integer flags */
 static void fcomp(int rs1, int rs2) {
@@ -983,12 +1008,13 @@ We don't use space on the C stack for locals, and don't bother
 to keep the stack pointer always aligned. So just before a call 
 instruction, the stack layout is like this:
 
-old sp:	incoming args (at sp0+20)
+old sp:	incoming args (at sp0+locals+20)
 	return address
 	saved bp
 	saved bx
 	saved si
-sp0:	saved di
+    	saved di
+sp0:    local space
 	blank space
 sp:	outgoing args
 
@@ -996,10 +1022,11 @@ Here, sp0 denotes the sp position just after entry, used in implementing
 the GETARG instruction.
 
 On the Mac, sp must be 16-byte aligned at this point, so 
-nargs + blank + 5 must be a multiple of 4 in words.
+nargs + locals + blank + 5 must be a multiple of 4 in words.
 */
 
-static int nargs;               /* Effective number of outgoing args */
+static int locals;             /* Size of local space */
+static int nargs;              /* Effective number of outgoing args */
 
 static void prep_call(int n) {
 #ifdef MACOS
@@ -1029,9 +1056,11 @@ void call_i(int a) {
      post_call();
 }     
 
-code_addr vm_prelude(int n) {
+code_addr vm_prelude(int n, int locs) {
      code_addr entry = pc;
+     locals = (locs+3)&~3;
      push_r(rBP); push_r(rBX); push_r(rSI); push_r(rDI); 
+     if (locals > 0) sub_i(rSP, locals);
      return entry;
 }
 
@@ -1054,10 +1083,8 @@ so 8 bytes of blank space is needed unless n is odd and > 1.  The incoming
 args are addressible at sp+blank.  (Note: we only support one arg 
 at present.)
 
-Outgoing arguments are passed in rDI, rSI, rDX.  We can remember one argument
-in a register and move it into rDI directly; otherwise outgoing arguments 
-are pushed on the stack, then popped into the argument registers before 
-the call.  Messy but effective!
+Outgoing arguments are passed in rDI, rSI, rDX.  Register arguments are left
+where they are until the call, then permuted into place.
 */
 
 static int nargs;               /* Number of outgoing args */
@@ -1082,6 +1109,7 @@ static void arg_i(int a) {
      argval[argnum] = a;
 }
 
+/* Replace one register with another in argument list and return count */
 static int subst_reg(int r1, int r2) {
      int i, count = 0;
 
@@ -1138,9 +1166,10 @@ void call_i(int a) {
      instr2_m(opCALL, NOREG, a);
 }     
 
-code_addr vm_prelude(int n) {
+code_addr vm_prelude(int n, int locs) {
      code_addr entry = pc;
      push_r(rBP); push_r(rBX); sub64_i(rSP, 8);
+     if (locs > 0) vm_panic("sorry, no local variables allowed");
      if (n > 1) vm_panic("sorry, only one parameter allowed today");
      return entry;
 }
@@ -1158,6 +1187,7 @@ void vm_gen0(operation op) {
      switch (op) {
      case RET: 
 #ifndef M64X32
+          if (locals > 0) add_i(rSP, locals);
 	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
 #else
           add64_i(rSP, 8); pop(rBX); pop(rBP);
@@ -1231,6 +1261,8 @@ void vm_gen1j(operation op, vmlabel lab) {
      }
 }
 
+static void vm_load_store(operation op, int ra, int rb, int c);
+
 void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
 
@@ -1287,16 +1319,17 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      case CONVIF:
      case CONVID:
 	  push_r(rb); loadf(opFILDL_m, ra, rSP, 0); pop(rb); break;
-     case CONVIC: 
-	  binop3_i(ALUOP_i(opAND), ra, rb, 0xff); break;
-     case CONVIS: 
-	  instr_rr(opMOVSWL_r, ra, rb); break;
+     case CONVFI:
+     case CONVDI:
+          push_r(ra); ftruncs(rb, rSP, 0); pop(ra); break;
      case CONVFD:
      case CONVDF:
           movef(ra, rb); break;
+     case SXT: 
+	  instr_rr(opMOVSWL_r, ra, rb); break;
 
      default:
-	  badop();
+          vm_load_store(op, ra, rb, 0);
      }
 }
 
@@ -1312,7 +1345,7 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
      case GETARG: 
 #ifndef M64X32
-	  load(ra, rSP, 4*b+20); 
+	  load(ra, rSP, 4*b+locals+20); 
 #else
           move(ra, rDI);
 #endif
@@ -1326,7 +1359,27 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
           break;
 
      default:
-	  badop();
+          vm_load_store(op, ra, NOREG, b);
+     }
+}
+
+void vm_gen2rj(operation op, vmreg rega, vmlabel b) {
+     int ra = rega->vr_reg;
+     
+     vm_debug1(op, 2, rega->vr_name, fmt_lab(b));
+     vm_space(0);
+
+     switch (op) {
+     case MOV:
+#ifdef M64X32
+          instr_rel(opLEA64, ra, b);
+#else
+          instr_abs(opMOVL_i, ra, b);
+#endif
+          break;
+
+     default:
+          badop();
      }
 }
 
@@ -1503,6 +1556,41 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
      case ROR:
           shift3_i(opROR, ra, rb, c); break;
 
+     case EQ:
+	  compare_i(SETCC(opE), ra, rb, c); break;
+     case GEQ:
+	  compare_i(SETCC(opGE), ra, rb, c); break;
+     case GT: 
+	  compare_i(SETCC(opG), ra, rb, c); break;
+     case LEQ:
+	  compare_i(SETCC(opLE), ra, rb, c); break;
+     case LT: 
+	  compare_i(SETCC(opL), ra, rb, c); break;
+     case NEQ:
+	  compare_i(SETCC(opNE), ra, rb, c); break;
+
+#ifdef M64X32
+     case EQ64:
+	  compare64_i(SETCC(opE), ra, rb, c); break;
+     case GEQ64:
+	  compare64_i(SETCC(opGE), ra, rb, c); break;
+     case GT64:
+	  compare64_i(SETCC(opG), ra, rb, c); break;
+     case LEQ64:
+	  compare64_i(SETCC(opLE), ra, rb, c); break;
+     case LT64:
+	  compare64_i(SETCC(opL), ra, rb, c); break;
+     case NEQ64:
+	  compare64_i(SETCC(opNE), ra, rb, c); break;
+#endif
+
+     default:
+          vm_load_store(op, ra, rb, c);
+     }
+}
+
+static void vm_load_store(operation op, int ra, int rb, int c) {
+     switch (op) {
      case LDW:
 	  if (isfloat(ra)) 
                floads(ra, rb, c); 
@@ -1550,34 +1638,6 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
           else
                instr_st(REXW_(opMOVL_m), ra, rb, c);
           break;
-#endif
-
-     case EQ:
-	  compare_i(SETCC(opE), ra, rb, c); break;
-     case GEQ:
-	  compare_i(SETCC(opGE), ra, rb, c); break;
-     case GT: 
-	  compare_i(SETCC(opG), ra, rb, c); break;
-     case LEQ:
-	  compare_i(SETCC(opLE), ra, rb, c); break;
-     case LT: 
-	  compare_i(SETCC(opL), ra, rb, c); break;
-     case NEQ:
-	  compare_i(SETCC(opNE), ra, rb, c); break;
-
-#ifdef M64X32
-     case EQ64:
-	  compare64_i(SETCC(opE), ra, rb, c); break;
-     case GEQ64:
-	  compare64_i(SETCC(opGE), ra, rb, c); break;
-     case GT64:
-	  compare64_i(SETCC(opG), ra, rb, c); break;
-     case LEQ64:
-	  compare64_i(SETCC(opLE), ra, rb, c); break;
-     case LT64:
-	  compare64_i(SETCC(opL), ra, rb, c); break;
-     case NEQ64:
-	  compare64_i(SETCC(opNE), ra, rb, c); break;
 #endif
 
      default:
