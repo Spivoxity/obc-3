@@ -126,6 +126,7 @@ static void vm_flush(void) {
 /* vm_end -- finish a procedure */
 void vm_end(void) {
      vm_postlude();
+     vm_reset();
 
      if (vm_debug > 3) {
 	  // This is broken if we switched pages in mid-stream.
