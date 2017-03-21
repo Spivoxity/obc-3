@@ -62,12 +62,6 @@ void word(int x) {
      pc += 4;
 }
 
-/* vm_getpc -- fetch current pc value */
-code_addr vm_getpc(void) {
-     vm_space(0);
-     return pc;
-}
-
 /* vm_jtable -- allocate space for jump table */
 code_addr vm_jtable(int n) {
      vm_space(n * sizeof(unsigned));

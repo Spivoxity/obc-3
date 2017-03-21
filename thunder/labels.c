@@ -132,7 +132,7 @@ static void install(int kind, code_addr loc, code_addr val) {
 
 /* vm_label -- place a label */
 void vm_label(vmlabel lab) {
-     code_addr val = vm_getpc(); 
+     code_addr val = pc; 
      branch p, q = NULL;
 
 #ifdef DEBUG

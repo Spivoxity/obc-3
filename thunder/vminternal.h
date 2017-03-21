@@ -54,7 +54,6 @@ code_addr vm_prelude(int n, int locs);
 void vm_postlude(void);
 void vm_chain(code_addr p);
 void vm_reset(void);
-code_addr vm_getpc(void);
 void vm_patch(code_addr loc, code_addr lab);
 void vm_branch(int kind, code_addr loc, vmlabel lab);
 code_addr vm_jtable(int n);

@@ -71,9 +71,6 @@
 #define F12  0x16
 #define F14  0x17
 
-// Dedicate register R10 to the literal table
-#define LP R10
-
 struct _vmreg
      reg_i0 = { "I0", R3 },
      reg_v0 = { "V0", R4 },
@@ -82,6 +79,7 @@ struct _vmreg
      reg_v3 = { "V3", R7 },
      reg_v4 = { "V4", R8 },
      reg_v5 = { "V5", R9 },
+     reg_v6 = { "V6", R10 },
      reg_f0 = { "F0", F0 },
      reg_f1 = { "F1", F2 },
      reg_f2 = { "F2", F4 },
@@ -93,9 +91,9 @@ struct _vmreg
      reg_zz = { "ZERO", NOREG },
      reg_sp = { "BASE", SP };
 
-const int nvreg = 6, nireg = 7, nfreg = 7;
+const int nvreg = 7, nireg = 8, nfreg = 7;
 const vmreg ireg[] = {
-     &reg_v0, &reg_v1, &reg_v2, &reg_v3, &reg_v4, &reg_v5,
+     &reg_v0, &reg_v1, &reg_v2, &reg_v3, &reg_v4, &reg_v5, &reg_v6,
      &reg_i0
 };
 const vmreg freg[] = {
@@ -503,30 +501,34 @@ static void ldst_f(OPDECL, int rd, int rn, int off) {
 #define MAXLITS 256
 
 static int literals[MAXLITS];
+static code_addr litloc[MAXLITS];
 static int nlits;
 
-static int make_literal(int val) {
+code_addr make_literal(int val) {
+     code_addr loc;
      int i;
 
      for (i = 0; i < nlits; i++) {
           if (literals[i] == val)
-               return 4*i;
+               return litloc[i];
      }
 
      if (nlits >= MAXLITS)
           vm_panic("too many literals");
      
+     loc = vm_jtable(1);
+     * (int *) loc = val;
+
      literals[nlits] = val;
-     return 4*nlits++;
+     litloc[nlits] = loc;
+     return loc;
 }
 
-/* load_reg -- put literal into a specified register */
-static void load_reg(int reg, int val) {
-     int off = make_literal(val);
-     if (isfloat(reg))
-	  ldst_f(SETBIT(opFLDS, UBIT), reg, LP, off/4);
-     else
-	  ldst_ri(SETBIT(opLDR, UBIT), reg, LP, off);
+/* load_literal -- put literal into a specified register */
+static void load_literal(int reg, int val) {
+     code_addr loc = make_literal(val);
+     if (isfloat(reg)) vm_panic("load_literal");
+     ldst_ri(SETBIT(opLDR, UBIT), reg, PC, loc - (pc+8));
 }
 
 
@@ -556,7 +558,7 @@ static void move_immed(int r, int imm) {
      else if (immediate(~imm))
           op_ri(opMVN, r, imm_field);
      else
-          load_reg(r, imm);
+          load_literal(r, imm);
 }
 
 static int const_reg(int imm) {
@@ -793,11 +795,11 @@ void vm_gen1r(operation op, vmreg rega) {
 	  break;
 
      case ZEROF:
-	  load_reg(ra, 0);
+          fmsr(ra, const_reg(0));
           break;
 
      case ZEROD:
-	  load_reg(ra, 0);
+	  fmsr(ra, const_reg(0));
           op_rr(opFCVTSD, ra, ra);
           break;
 
@@ -821,7 +823,7 @@ void vm_gen1i(operation op, int a) {
 
      case ARG:
           argp--;
-          load_reg(R(argp), a);
+          move_immed(R(argp), a);
           break;
 
      default:
@@ -937,8 +939,10 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
      case LDKW:
           write_reg(ra);
+          // Floating-point loads only have a 1024-byte range,
+          // so we use an integer register as a staging post.
 	  if (isfloat(ra))
-	       load_reg(ra, * (int *) b);
+	       fmsr(ra, const_reg(* (int *) b));
 	  else
 	       move_immed(ra, * (int *) b);
 	  break;
@@ -1306,10 +1310,6 @@ code_addr vm_prelude(int n, int locs) {
      word(0);
      move_reg(FP, SP);
      if (locals > 0) arith_immed(opSUB, SP, SP, locals);
-     
-     // Load address of literal table into LP
-     write_reg(LP);
-     load_word(LP, PC, cploc - (pc+8));
 
      return entry;
 }
@@ -1318,6 +1318,7 @@ void vm_chain(code_addr p) {
      code_addr loc = pc;
      branch_i(opB, 0);
      vm_patch(loc, p);
+     nlits = 0;
 }
 
 int parity(short x) {
@@ -1328,7 +1329,7 @@ int parity(short x) {
      return x;
 }
 
-/* vm_postlude -- output literals */
+/* vm_postlude -- finish compiling procedure */
 void vm_postlude(void) {
      code_addr p, q;
      int i = 0;
@@ -1349,11 +1350,6 @@ void vm_postlude(void) {
    	       fmt_instr(GETOP(opLDMFD), 0, reg(FP),
 			 regmap|bit(FP)|bit(SP)|bit(PC));
      }
-
-     vm_space(nlits * sizeof(int));
-     * (code_addr *) cploc = pc;
-     for (i = 0; i < nlits; i++)
-          word(literals[i]);
 }
 
 #ifdef DEBUG
