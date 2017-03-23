@@ -133,7 +133,7 @@ static void install(int kind, code_addr loc, code_addr val) {
 /* vm_label -- place a label */
 void vm_label(vmlabel lab) {
      code_addr val = pc; 
-     branch p, q = NULL;
+     branch q = NULL;
 
 #ifdef DEBUG
      if (vm_debug > 0)
@@ -143,7 +143,7 @@ void vm_label(vmlabel lab) {
      lab->l_val = val;
 
      /* Backpatch any forward branches to this location */
-     for (p = lab->l_branches; p != NULL; q = p, p = p->b_next)
+     for (branch p = lab->l_branches; p != NULL; q = p, p = p->b_next)
           install(p->b_kind, p->b_loc, val);
 
      /* Put the branch records back on the free-list */
@@ -179,7 +179,7 @@ static unsigned *caseptr;
 
 /* vm_jumptable -- begin a jump table */
 code_addr vm_jumptable(int n) {
-     code_addr table = vm_jtable(n);
+     code_addr table = vm_literal(n * sizeof(unsigned));
      caseptr = (unsigned *) table;
      return table;
 }

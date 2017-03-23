@@ -62,10 +62,10 @@ void word(int x) {
      pc += 4;
 }
 
-/* vm_jtable -- allocate space for jump table */
-code_addr vm_jtable(int n) {
-     vm_space(n * sizeof(unsigned));
-     limit -= n * sizeof(unsigned);
+/* vm_literal -- allocate space in code buffer */
+code_addr vm_literal(int n) {
+     vm_space(n);
+     limit -= n;
      return limit;
 }
 
@@ -115,10 +115,8 @@ void vm_space(int space) {
 #ifdef USE_FLUSH
 /* vm_flush -- clear code from data cache */
 static void vm_flush(void) {
-     int i;
-
      // This is probably ARM-specific
-     for (i = 0; i < nfrags; i++)
+     for (int i = 0; i < nfrags; i++)
 	  __clear_cache(fragbeg[i], fragend[i]);
 }
 #endif

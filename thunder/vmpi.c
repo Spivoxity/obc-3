@@ -505,10 +505,7 @@ static code_addr litloc[MAXLITS];
 static int nlits;
 
 code_addr make_literal(int val) {
-     code_addr loc;
-     int i;
-
-     for (i = 0; i < nlits; i++) {
+     for (int i = 0; i < nlits; i++) {
           if (literals[i] == val)
                return litloc[i];
      }
@@ -516,7 +513,7 @@ code_addr make_literal(int val) {
      if (nlits >= MAXLITS)
           vm_panic("too many literals");
      
-     loc = vm_jtable(1);
+     code_addr loc = vm_literal(4);
      * (int *) loc = val;
 
      literals[nlits] = val;
@@ -954,7 +951,6 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
 void vm_gen2rj(operation op, vmreg rega, vmlabel b) {
      int ra = rega->vr_reg;
-     code_addr r;
 
      vm_debug1(op, 2, rega->vr_name, fmt_lab(b));
      vm_space(0);
@@ -962,7 +958,7 @@ void vm_gen2rj(operation op, vmreg rega, vmlabel b) {
      switch (op) {
      case MOV:
           write_reg(ra);
-          r = vm_jtable(1);
+          code_addr r = vm_literal(4);
           load_store(opLDR, ra, PC, r - (pc+8));
           vm_branch(ABS, r, b);
           break;
@@ -1331,9 +1327,6 @@ int parity(short x) {
 
 /* vm_postlude -- finish compiling procedure */
 void vm_postlude(void) {
-     code_addr p, q;
-     int i = 0;
-
      regmap &= range(4, 10);
      // Must save an even number of registers overall
      if (parity(regmap) == 0) regmap |= (regmap+0x10) & ~regmap;
@@ -1344,7 +1337,7 @@ void vm_postlude(void) {
           fmt_instr(GETOP(opSTMFDw), 0, reg(SP),
 		    regmap|bit(FP)|bit(IP)|bit(LR));
 
-     for (p = retchain; p != NULL; p = q) {
+     for (code_addr p = retchain, q; p != NULL; p = q) {
           q = * (code_addr *) p;
           * (int *) p =
    	       fmt_instr(GETOP(opLDMFD), 0, reg(FP),

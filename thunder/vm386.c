@@ -1111,9 +1111,9 @@ static void arg_i(int a) {
 
 /* Replace one register with another in argument list and return count */
 static int subst_reg(int r1, int r2) {
-     int i, count = 0;
+     int count = 0;
 
-     for (i = 0; i < nargs; i++) {
+     for (int i = 0; i < nargs; i++) {
           if (argreg[i] && argval[i] == r1) {
                argval[i] = r2; count++;
           }              
@@ -1129,10 +1129,9 @@ static int subst_reg(int r1, int r2) {
 /* Move args from stack into registers */
 static void move_args() {
      static int out[] = { rDI, rSI, rDX };
-     int i;
 
      // Permute the registers
-     for (i = 0; i < nargs; i++) {
+     for (int i = 0; i < nargs; i++) {
           if (argreg[i] && argval[i] != out[i]) {
                if (subst_reg(out[i], argval[i]) == 0)
                     move(out[i], argval[i]);
@@ -1143,7 +1142,7 @@ static void move_args() {
      }
 
      // Fill in constant args
-     for (i = 0; i < nargs; i++) {
+     for (int i = 0; i < nargs; i++) {
           if (!argreg[i]) {
                if (funreg == out[i]) {
                     move(rAX, funreg);

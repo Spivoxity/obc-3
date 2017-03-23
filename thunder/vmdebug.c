@@ -65,7 +65,6 @@ void vm_unknown(const char *where, operation op) {
 #ifdef DEBUG
 void vm_debug1(int op, int nrands, ...) {
      va_list va;
-     int i;
 
      if (vm_debug == 0) return;
 
@@ -73,7 +72,7 @@ void vm_debug1(int op, int nrands, ...) {
      printf("--- %s", mnemonic[op]);
      if (nrands > 0) {
           printf(" %s", va_arg(va, char *));
-          for (i = 1; i < nrands; i++)
+          for (int i = 1; i < nrands; i++)
                printf(", %s", va_arg(va, char *));
      }
      printf("\n");
@@ -96,15 +95,12 @@ void vm_debug2(const char *fmt, ...) {
 }
 
 void vm_done(void) {
-     code_addr p;
-     int n;
-
      if (vm_debug == 0) return;
 
      printf(" [");
      if (pc > start) {
-          n = vm_print(start);
-          for (p = start+n; p < pc; p += n) {
+          int n = vm_print(start);
+          for (code_addr p = start+n; p < pc; p += n) {
                printf(" ");
                n = vm_print(p);
           }

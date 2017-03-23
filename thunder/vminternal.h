@@ -56,7 +56,7 @@ void vm_chain(code_addr p);
 void vm_reset(void);
 void vm_patch(code_addr loc, code_addr lab);
 void vm_branch(int kind, code_addr loc, vmlabel lab);
-code_addr vm_jtable(int n);
+code_addr vm_literal(int n);
 void vm_panic(const char *fmt, ...);
 void vm_unknown(const char *where, operation op);
 int vm_print(code_addr p);
