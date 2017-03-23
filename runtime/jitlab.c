@@ -127,9 +127,7 @@ vmlabel handler(int code, int line) {
 
 /* do_errors -- iterate over error handlers */
 void do_errors(void (*f)(vmlabel, int, int)) {
-     error e; 
-
-     for (e = errlist; e != NULL; e = e->e_next)
+     for (error e = errlist; e != NULL; e = e->e_next)
 	  (*f)(e->e_lab, e->e_code, e->e_line);
 }
 

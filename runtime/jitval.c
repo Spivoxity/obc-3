@@ -240,9 +240,7 @@ void push(int op, int type, reg r, int val, int size) {
 
 /* pop -- pop one or more values from the eval stack */
 void pop(int n) {
-     int i;
-
-     for (i = sp - n; i < sp; i++) 
+     for (int i = sp - n; i < sp; i++) 
 	  rfree(vstack[i].v_reg);
 
      sp -= n;
@@ -256,20 +254,18 @@ ctvalue peek(int n) {
 
 /* unlock -- unlock registers used near the top of the stack */
 void unlock(int n) {
-     int i;
-
-     for (i = sp; i < sp + n; i++)
+     for (int i = sp; i < sp + n; i++)
 	  runlock(vstack[i].v_reg);
 }
 
 /* save_stack -- record stack contents at a forward branch */
 void save_stack(codepoint lab) {
-     int i, map = 0;
+     int map = 0;
 
      if (sp > 32) panic("too many items to save");
 
      /* Make a bitmap showing the size of each item */
-     for (i = 0; i < sp; i++) {
+     for (int i = 0; i < sp; i++) {
 	  if (vstack[i].v_size == 2)
 	       map |= (1 << i);
      }
@@ -280,14 +276,14 @@ void save_stack(codepoint lab) {
 
 /* restore_stack -- restore stack state at target of a forward branch */
 void restore_stack(codepoint lab) {
-     int n = lab->l_depth, map = lab->l_stack, i;
+     int n = lab->l_depth, map = lab->l_stack;
 
 #ifdef DEBUG
      if (dflag > 1 && n > 0) printf("[Restore %d]\n", n);
 #endif
 
      sp = 0; pdepth = 0;
-     for (i = 0; i < n; i++) {
+     for (int i = 0; i < n; i++) {
 	  if (map & (1 << i))
 	       push(I_STACKQ, INT, rZERO, 0, 2);
 	  else
@@ -367,22 +363,19 @@ static mybool transient(ctvalue v) {
 
 /* flush_stack -- flush values into the runtime stack */
 void flush_stack(int a, int b) {
-     int j;
-
      /* Values vstack[0..sp-b) are flushed if they use an
 	     allocable register or the result location.
 	Values vstack[sp-b..sp-a) are all flushed (perhaps to
 	     become arguments in a procedure call).
 	Values vstack[sp-a..sp) are left alone */
 
-     for (j = sp; j > a; j--)
+     for (int j = sp; j > a; j--)
 	  if (j <= b || transient(&vstack[sp-j]))
 	       move_to_frame(j);
 }
 
 /* spill -- scan stack and spill values that use a given reg */
 void spill(reg r) {
-     int i;
      int *rc = &r->r_refct;
      mybool saved = FALSE;
 
@@ -394,7 +387,7 @@ void spill(reg r) {
      if (tmp == 0) tmp = address(scratch_alloc(sizeof(double)));
 #endif
 
-     for (i = sp; i > 0 && *rc > 0; i--) {
+     for (int i = sp; i > 0 && *rc > 0; i--) {
           ctvalue v = &vstack[sp-i];
 	  if (vstack[sp-i].v_reg == r) {
                if (*rc == 1 || v->v_op == I_REG)
@@ -588,9 +581,7 @@ void deref(int op, int ty, int size) {
 
 /* unalias -- execute load operations that might alias v */
 static void unalias(int a, ctvalue v) {
-     int i;
-
-     for (i = sp; i > a; i--) {
+     for (int i = sp; i > a; i--) {
 	  ctvalue w = &vstack[sp-i];
 	  if (alias(v, w)) {
 #ifndef M64X32
@@ -719,10 +710,8 @@ void plusa() {
 
 /* gen_args -- generate ARG instructions from right to left */
 static void gen_args(int n) {
-     int i;
-
      vm_gen(PREP, n);
-     for (i = n; i > 0; i--) {
+     for (int i = n; i > 0; i--) {
           ctvalue arg = &vstack[sp-i];
           switch (arg->v_op) {
           case I_REG:

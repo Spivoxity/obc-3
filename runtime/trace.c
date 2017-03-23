@@ -36,7 +36,6 @@ char *fmt_inst(uchar *pc) {
      uchar *args = pc;
      struct _opcode *ip = &optable[*pc++];
      static char buf[80];
-     const char *p;
      char *s = buf;
 
      if (ip->i_name == NULL) {
@@ -46,7 +45,7 @@ char *fmt_inst(uchar *pc) {
 
      s += sprintf(s, "%s", ip->i_name);
 
-     for (p = ip->i_patt; *p != '\0'; p++) {
+     for (const char *p = ip->i_patt; *p != '\0'; p++) {
 	  switch (*p) {
 	  case '1': case 'K':
 	       s += sprintf(s, " %d", get1(pc)); pc++; break;
@@ -69,9 +68,7 @@ char *fmt_inst(uchar *pc) {
 }
 
 void dump(void) {
-     int i, k;
-
-     for (k = 0; k < nprocs; k++) {
+     for (int k = 0; k < nprocs; k++) {
 	  proc p = proctab[k];
 	  value *cp = p->p_addr;
 	  uchar *pc, *limit;
@@ -91,7 +88,7 @@ void dump(void) {
 
 	       if (op == K_JCASE_1) {
 		    int n = pc[-1];
-		    for (i = 0; i < n; i++) {
+		    for (int i = 0; i < n; i++) {
 			 printf("%6ld:   CASEL %-22ld %d %d\n",
                                 (long) (pc-imem), (long) (get2(pc)+(pc-imem)),
                                 pc[0], pc[1]);

@@ -124,7 +124,7 @@ static void backtrace(value *bp) {
 
      /* Chain down the stack, printing the first TOP frames,
 	and saving the last NBUF in a circular buffer. */
-     for (n = 0; ; n++) {
+     for (n = 0;; n++) {
 	  /* Each frame contains the cp and bp of its caller */
 	  fp = valptr(fp[BP]);	/* Base pointer of next frame */
 	  if (fp == NULL) break;
@@ -288,7 +288,7 @@ char *search_path(char *name) {
 #endif
 
 char *search_path(char *name) {
-     char *path, *p, *q, *r;
+     char *path;
      static char buf[256];
      struct stat stbuf;
 
@@ -297,8 +297,9 @@ char *search_path(char *name) {
      path = getenv("PATH");
      if (path == NULL) return NULL;
 
-     for (p = path; p != NULL; p = q) {
+     for (char *p = path, *q; p != NULL; p = q) {
 	  q = strchr(p, ':');
+          char *r;
 	  if (q == NULL) {
 	       strcpy(buf, p);
 	       r = buf + strlen(p);
@@ -384,17 +385,14 @@ static void read_flags(void) {
 
 #ifdef PROFILE
 static void dump_lcounts(void) {
-     int m, n;
-     FILE *fp;
-
-     fp = fopen(dumpname, "w");
+     FILE *fp = fopen(dumpname, "w");
      if (fp == NULL) {
 	  fprintf(stderr, "%s: cannot write\n", dumpname);
 	  exit(1);
      }
 
-     for (m = 0; m < nmods; m++)
-	  for (n = 1; n <= modtab[m]->m_nlines; n++)
+     for (int m = 0; m < nmods; m++)
+	  for (int n = 1; n <= modtab[m]->m_nlines; n++)
 	       if (modtab[m]->m_lcount[n-1] > 0)
 		    fprintf(fp, "%s %d %u\n", modtab[m]->m_name, n, 
 			    modtab[m]->m_lcount[n-1]);
@@ -404,7 +402,6 @@ static void dump_lcounts(void) {
 
 static void print_profile(void) {
      FILE *fp = stderr;
-     int i;
 
      if (profout != NULL) {
 	  fp = fopen(profout, "w");
@@ -415,7 +412,7 @@ static void print_profile(void) {
 
 	  fprintf(fp, "Command line:\n\n");
 	  fprintf(fp, "  %s", saved_argv[0]);
-	  for (i = 1; i < saved_argc; i++)
+	  for (int i = 1; i < saved_argc; i++)
 	       fprintf(fp, " %s", saved_argv[i]);
 	  fprintf(fp, "\n\n");
      }

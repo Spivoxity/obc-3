@@ -74,7 +74,7 @@ struct _phrase {		/* An instruction in the assembler */
 phrase abuf;
 
 #define for_phrases(q) \
-     for (q = abuf->q_next; q != abuf; q = q->q_next)	
+     for (phrase q = abuf->q_next; q != abuf; q = q->q_next)	
 
 mempool pool;
 
@@ -250,9 +250,8 @@ static mybool fits(int x, int n) {
 /* fix_labels -- compute target for jump */
 static void fix_labels(phrase q) {
      const char *p = q->q_templ->t_pattern;
-     int j;
      
-     for (j = 0; p[j] != '\0'; j++)
+     for (int j = 0; p[j] != '\0'; j++)
 	  if (p[j] == 'R' || p[j] == 'S') 
 	       q->q_target = find_label(q->q_arg[j]);
 }
@@ -296,9 +295,8 @@ static mybool match(phrase q, template t) {
 #ifdef DEBUG
 static void print_args(phrase q) {
      const char *patt = q->q_templ->t_pattern;
-     int j;
 
-     for (j = 0; patt[j] != '\0'; j++) {
+     for (int j = 0; patt[j] != '\0'; j++) {
 	  switch (patt[j]) {
 	  case '1':
 	  case '2':
@@ -322,14 +320,13 @@ static phrase do_template(template t, char *rands[], phrase buf, int cxt[]);
 static phrase expand(phrase q) {
      static char buf[128];
      char *words[10];
-     template t = q->q_templ, t1;
-     unsigned int i, n;
+     template t = q->q_templ;
      phrase r = q->q_prev, q1;
 
-     for (i = 0; t->t_macro[i] != NULL; i++) {
+     for (int i = 0; t->t_macro[i] != NULL; i++) {
           strcpy(buf, t->t_macro[i]);
-	  n = split_line(buf, words);
-	  t1 = find_template(words[0]);
+	  int n = split_line(buf, words);
+	  template t1 = find_template(words[0]);
 	  if (strlen(t1->t_pattern) != n-1 || t->t_size < 0) 
 	       panic("*macro expansion failed");
 
@@ -347,10 +344,9 @@ static phrase expand(phrase q) {
 
 /* check_matches -- revise choice of templates, return TRUE if ok already */
 static mybool check_matches(void) {
-     phrase q;
      mybool ok = TRUE;
 
-     for (q = abuf->q_next; q != abuf; ) {
+     for (phrase q = abuf->q_next; q != abuf; ) {
 	  template t = q->q_templ;
 
 	  if (t->t_macro[0] != NULL) {
@@ -377,7 +373,6 @@ static mybool check_matches(void) {
 /* assemble -- assemble instructions */
 static void assemble(void) {
      mybool ok;
-     phrase q;
      int trial = 0;
 
      for_phrases (q) fix_labels(q);
@@ -416,9 +411,6 @@ static void assemble(void) {
 
 /* make_binary -- output binary code */
 static void make_binary(void) {
-     phrase q;
-     int j;
-
      for_phrases (q) {
 	  template t = q->q_templ;
 	  const char *p = t->t_pattern;
@@ -440,7 +432,7 @@ static void make_binary(void) {
 	  else if (t->t_oplen > 0) 
 	       binwrite(&t->t_op, t->t_oplen);
 
-	  for (j = 0; p[j] != '\0'; j++) {
+	  for (int j = 0; p[j] != '\0'; j++) {
 	       switch (p[j]) {
 	       case 'N':
 		    break;
@@ -497,11 +489,10 @@ static phrase do_template(template t, char *rands[], phrase rgt, int cxt[]) {
      phrase q = alloc_phrase();
      phrase lft = rgt->q_prev;
      const char *patt = t->t_pattern;
-     int i;
 
      q->q_name = t->t_name;
      q->q_templ = t;
-     for (i = 0; patt[i] != '\0'; i++) 
+     for (int i = 0; patt[i] != '\0'; i++) 
 	  q->q_arg[i] = get_arg(patt[i], rands[i], t, cxt);
      q->q_addr = 0;
      q->q_sym = NULL;
@@ -546,15 +537,13 @@ static growdecl(smbuf);
 
 /* fix_stackmaps -- fix up the stack maps for the current procedure */
 static void fix_stackmaps(void) {
-     int i;
-
      if (smp == 0) return;
 
      /* Fill in the address of the table in the constant pool */
      put_value(proc_start + 4*CP_STKMAP, dloc, R_DATA);
 
      /* Create the table itself */
-     for (i = 0; i < smp; i++) {
+     for (int i = 0; i < smp; i++) {
 	  stackmap *sm = &smbuf[i];
 
 	  /* The return address for the call: '+1' to allow for the space
@@ -582,9 +571,9 @@ static void check_inproc(const char *opcode) {
 
 /* do_directive -- process a directive */
 static void do_directive(const char *dir, int n, char *rands[], int nrands) {
-     int i;
      union { int n; float f; } fcvt;
      dblbuf dcvt;
+     int v;
 
      switch (n) {
      case D_LABEL:
@@ -594,7 +583,7 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  break;
 
      case D_STRING:
-	  for (i = 0; rands[0][2*i] != '\0'; i++) {
+	  for (int i = 0; rands[0][2*i] != '\0'; i++) {
 	       buf_grow(dbuf);
 	       dbuf[dloc++] = hexchar(&rands[0][2*i]);
 	  }
@@ -604,8 +593,8 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
      case D_CONST:
 	  check_inproc(dir);
 	  if ((isdigit((int) rands[0][0]) || rands[0][0] == '-')
-	      && fits(i = const_value(rands[0]), 16))
-	       gen_inst("PUSH %d", i);
+	      && fits(v = const_value(rands[0]), 16))
+	       gen_inst("PUSH %d", v);
 	  else
 	       gen_inst("LDKW %d", make_const(rands[0]));
 	  break;
@@ -725,11 +714,10 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 /* put_inst -- process one instruction or directive */
 void put_inst(const char *name, char *rands[], unsigned nrands) {
      template t = find_template(name);
-     unsigned i;
 
      if (nrands != strlen(t->t_pattern)) {
 	  fprintf(stderr, "Instruction: %s", name);
-	  for (i = 0; i < nrands; i++)
+	  for (int i = 0; i < nrands; i++)
 	       fprintf(stderr, " %s", rands[i]);
 	  fprintf(stderr, ", File: %s\n", err_file);
 	  panic("*%s needs %d operands, got %d", 
@@ -841,9 +829,7 @@ void end_linking(void) {
 /* Routines for writing values in machine-independent byte order */
 
 void put_int(int n, uchar *buf, int x) {
-     int i;
-
-     for (i = 0; i < n; i++)
+     for (int i = 0; i < n; i++)
 	  buf[i] = (x >> (8*i)) & 0xff;
 }
 

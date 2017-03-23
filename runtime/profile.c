@@ -89,7 +89,7 @@ static proc find_node(value *p) {
 
 #ifdef DEBUG
 static void dump_state(state s, mybool stats) {
-     int i, n = s->s_depth, x = 3;
+     int n = s->s_depth, x = 3;
      value **hist = s->s_history;
      char buf[64];
 
@@ -98,7 +98,7 @@ static void dump_state(state s, mybool stats) {
      if (n == 0)
 	  printf("(empty)\n");
      else {
-	  for (i = 0; i < n; i++) {
+	  for (int i = 0; i < n; i++) {
 	       proc p = find_node(ptr(hist[i]));
 	       if (marked(hist[i]))
 		    sprintf(buf, "(%s)", p->p_name);
@@ -186,13 +186,11 @@ static state make_state(value *addr, int n, value **history) {
 static state next_state(state s0, value *addr) {
      state s;
      value **h0 = s0->s_history;
-     int k, n = 0, n0 = s0->s_depth;
-     unsigned h;
+     int n = 0, n0 = s0->s_depth;
      trans t;
-     static value *history[MAXDEPTH];
 
      /* First look in the hash table of transitions */
-     h = hash(s0, addr);
+     unsigned h = hash(s0, addr);
      for (t = trtable[h]; t != NULL; t = t->t_hlink)
 	  if (t->t_from == s0 && t->t_addr == addr)
 	       return t->t_to;
@@ -203,7 +201,8 @@ static state next_state(state s0, value *addr) {
 	  s = s0;
      else {
 	  /* Compute the history list for the desired state */
-	  for (k = 0; k < n0; k++)
+          static value *history[MAXDEPTH];
+	  for (int k = 0; k < n0; k++)
 	       history[k] = (ptr(h0[k]) == addr ? mark(h0[k]) : h0[k]);
 	  history[n0] = addr;
 	  
@@ -211,7 +210,7 @@ static state next_state(state s0, value *addr) {
 	     marked entries, and adjacent marked entries for the same proc */
 	  if (n0 > 0) {
 	       n = 1;
-	       for (k = 1; k < n0; k++) {
+	       for (int k = 1; k < n0; k++) {
 		    if (marked(history[n-1]) && marked(history[k])
 			&& (marked(history[k+1]) 
 			    || history[n-1] == history[k])) continue;
@@ -335,19 +334,16 @@ void prof_exit(value *addr, counter ticks)  {
 /* prof_init -- initialize profiling */
 void prof_init(void) {
      if (gflag) {
-	  state s;
-
 	  if (pstack == NULL)
 	       pstack = 
 		    (state *) scratch_alloc(PSTACKSIZE * sizeof(state));
 	  if (trtable == NULL) {
-	       int i;
 	       trtable = 
-		    (trans *) scratch_alloc(HSIZE * sizeof (trans));
-	       for (i = 0; i < HSIZE; i++) trtable[i] = NULL;
+		    (trans *) scratch_alloc(HSIZE * sizeof(trans));
+	       for (int i = 0; i < HSIZE; i++) trtable[i] = NULL;
 	  }
 	       
-	  s = make_state(NULL, 0, NULL);
+	  state s = make_state(NULL, 0, NULL);
 	  s->s_calls++;
 	  psp = 0;
 	  pstack[psp] = prof_state = s;
@@ -400,14 +396,12 @@ static arc find_arc(value *src, value *dst) {
 
 /* graph_stats -- after execution, analyse accumulated statistics */
 static void graph_stats(void) {
-     int j; state s;
-
 #ifdef DEBUG
      if (dflag) printf("\nAnalysis phase:\n");
 #endif
 
      /* Find all the states we've created */
-     for (s = s_head; s != NULL; s = s->s_chain) {
+     for (state s = s_head; s != NULL; s = s->s_chain) {
 	  int n = s->s_depth;
 	  counter t = s->s_time;
 	  value **hist = s->s_history;
@@ -424,7 +418,7 @@ static void graph_stats(void) {
 	  p->p_rec += s->s_rec;
 	  p->p_self += t;
 
-	  for (j = 0; j < n; j++) {
+	  for (int j = 0; j < n; j++) {
 	       if (marked(hist[j])) continue;
 
 	       if (j > 0) {
@@ -518,7 +512,6 @@ static int cfarcs2(arc *a, arc *b) {
 
 /* flat_profile -- print flat profile */
 static void flat_profile(FILE *fp) {
-     int i;
      counter cumul = 0;
 
      /* Finished executing, so we can sort the proc table into a
@@ -531,7 +524,7 @@ static void flat_profile(FILE *fp) {
      fprintf(fp, "     Ticks    Frac     Cumul   Calls   Procedure\n");
      fprintf(fp, " ---------------------------------------------------\n");
 
-     for (i = 0; i < nprocs; i++) {
+     for (int i = 0; i < nprocs; i++) {
 	  proc p = proctab[i];
 
 	  cumul += p->p_self;
@@ -546,7 +539,6 @@ static void flat_profile(FILE *fp) {
 }
 
 static void graph_profile(FILE *fp) {
-     int i, j, n;
      char buf1[64], buf2[64];
      arc *abuf = (arc *) scratch_alloc(256 * sizeof(arc));
 
@@ -555,27 +547,26 @@ static void graph_profile(FILE *fp) {
      qsort(proctab, nprocs, sizeof(proc),
 	   (int (*)(const void *, const void *)) cfsyms2);
 
-     for (i = 0; i < nprocs; i++) proctab[i]->p_index = i+1;
+     for (int i = 0; i < nprocs; i++) proctab[i]->p_index = i+1;
 
      fprintf(fp, "\nCall graph profile:\n\n");
 
      fprintf(fp, "index  total   self children   calls        name\n\n");
 
-     for (i = 0; i < nprocs && proctab[i]->p_calls > 0; i++) {
+     for (int i = 0; i < nprocs && proctab[i]->p_calls > 0; i++) {
 	  proc p = proctab[i]; 
-	  arc a;
 
 #define FMT1 "              %5.1f%% %5.1f%% %7u/%-7u     %s\n"
 #define FMT2 "%-6s %5.1f%% %5.1f%% %5.1f%% %-15s %s [%d]\n"
 #define DIVR "----------------------------------------------------------------"
 
-	  n = 0;
-	  for (a = p->p_parents; a != NULL; a = a->a_plink)
+	  int n = 0;
+	  for (arc a = p->p_parents; a != NULL; a = a->a_plink)
 	       if (a->a_src != p) abuf[n++] = a;
 	  qsort(abuf, n, sizeof(arc), 
 		(int (*)(const void *, const void *)) cfarcs2);
-	  for (j = 0; j < n; j++) {
-	       a = abuf[j];
+	  for (int j = 0; j < n; j++) {
+	       arc a = abuf[j];
 	       if (a->a_src->p_addr == SPONTANEOUS)
 		    sprintf(buf1, "<spontaneous>");
 	       else
@@ -598,12 +589,12 @@ static void graph_profile(FILE *fp) {
 		  buf2, p->p_name, i+1);
 
 	  n = 0;
-	  for (a = p->p_children; a != NULL; a = a->a_clink)
+	  for (arc a = p->p_children; a != NULL; a = a->a_clink)
 	       if (a->a_dst != p) abuf[n++] = a;
 	  qsort(abuf, n, sizeof(arc), 
 		(int (*)(const void *, const void *)) cfarcs1);
-	  for (j = 0; j < n; j++) {
-	       a = abuf[j];
+	  for (int j = 0; j < n; j++) {
+	       arc a = abuf[j];
 	       sprintf(buf1, "%s [%d]", a->a_dst->p_name, 
 		       a->a_dst->p_index);
 	       fprintf(fp, FMT1,
@@ -617,12 +608,10 @@ static void graph_profile(FILE *fp) {
 
 /* graph_index -- print alphabetical index for call graph profile */
 static void graph_index(FILE *fp) {
-     int i, k, r, c, n = 0, maxw = 0, ncols;
      char buf[80];
-     proc p;
 
      /* Sort the procedures yet again */
-     n = 0; maxw = 1;
+     int n = 0, maxw = 1;
      while (n < nprocs && proctab[n]->p_calls > 0) {
 	  int ww = strlen(proctab[n]->p_name);
 	  if (ww > maxw) maxw = ww;
@@ -639,14 +628,15 @@ static void graph_index(FILE *fp) {
         |ceil(r/k)| entries.  */
 
      fprintf(fp, "\nProcedure index:\n\n");
-     ncols = 70 / (maxw+8);
+     int ncols = 70 / (maxw+8);
      if (ncols == 0) ncols = 1;
 
-     for (i = 0; i*ncols < n; i++) {
-	  for (r = n, k = ncols; k > 0; r -= c, k--) {
+     for (int i = 0; i*ncols < n; i++) {
+          int c;
+	  for (int r = n, k = ncols; k > 0; r -= c, k--) {
 	       c = (r+k-1)/k;
 	       if (i >= c) break;
-	       p = proctab[n-r+i];
+               proc p = proctab[n-r+i];
 	       sprintf(buf, "%s [%d]", p->p_name, p->p_index);
 	       fprintf(fp, "  %-*s", maxw+6, buf);
 	  }

@@ -81,9 +81,7 @@ static char *libdir = NULL;
 static char *rtlibdir = NULL;
 
 static int find_module(char *name) {
-     int i;
-
-     for (i = 0; i < nmodules; i++)
+     for (int i = 0; i < nmodules; i++)
 	  if (strcmp(name, module[i].m_name) == 0)
 	       return i;
 
@@ -154,13 +152,10 @@ static void scan(char *name, mybool islib)  {
 }			       
 
 static void scan_files(void) {
-     FILE *fp;
-     int i;
-     char buf[128];
-
      if (stdlib) {
+          char buf[128];
 	  sprintf(buf, "%s%s%s", libdir, DIRSEP, lscript);
-	  fp = fopen(buf, "r");
+          FILE *fp = fopen(buf, "r");
 	  if (fp == NULL) {
 	       perror(buf);
 	       exit(2);
@@ -175,22 +170,18 @@ static void scan_files(void) {
 	  fclose(fp);
      }
 
-     for (i = 0; i < nfiles; i++)
+     for (int i = 0; i < nfiles; i++)
 	  scan(file[i], FALSE);
 }
 
 /* load_needed -- load files containing needed modules */
 static void load_needed() {
-     FILE *fp;
-     int i;
-     char *name;
-
-     for (i = 0; i < nmodules; i++) {
+     for (int i = 0; i < nmodules; i++) {
 	  if (!module[i].m_needed) continue;
 
-	  name = module[i].m_file;
+          char *name = module[i].m_file;
 	  err_file = name;
-	  fp = fopen(name, "r");
+          FILE *fp = fopen(name, "r");
 	  if (fp == NULL) {
 	       perror(name);
 	       exit(2);
@@ -208,21 +199,19 @@ static void load_needed() {
 
 /* trace_imports -- compute needed modules */
 static void trace_imports(void) {
-     int i, j;
-
-     for (i = nmodules-1; i >= 0; i--) {
+     for (int i = nmodules-1; i >= 0; i--) {
 	  if (!module[i].m_lib || strcmp(module[i].m_name, "_Builtin") == 0) 
 	       module[i].m_needed = TRUE;
 
 	  if (module[i].m_needed)
-	       for (j = module[i].m_dep; j < module[i+1].m_dep; j++)
+	       for (int j = module[i].m_dep; j < module[i+1].m_dep; j++)
 		    module[dep[j]].m_needed = TRUE;
      }
 
 #ifdef DEBUG
      if (dflag) {
 	  fprintf(stderr, "Needed:");
-	  for (i = 0; i < nmodules; i++)
+	  for (int i = 0; i < nmodules; i++)
 	       if (module[i].m_needed)
 		    fprintf(stderr, " %s", module[i].m_name);
 	  fprintf(stderr, "\n");
@@ -232,7 +221,6 @@ static void trace_imports(void) {
 
 /* gen_main -- generate the main program */
 static void gen_main(void) {
-     int i;
      char buf[128];
 
      if (known("MAIN")) return;
@@ -241,7 +229,7 @@ static void gen_main(void) {
 
      /* For completeness, generate a header listing all loaded modules. */
      gen_inst("MODULE %%Main 0 0");
-     for (i = 0; i < nmodules; i++) {
+     for (int i = 0; i < nmodules; i++) {
 	  if (strcmp(module[i].m_name, "_Builtin") == 0 
 	      || !module[i].m_needed) continue;
 	  gen_inst("IMPORT %s %#x", module[i].m_name, module[i].m_check);
@@ -250,7 +238,7 @@ static void gen_main(void) {
 
      gen_inst("PROC MAIN 0 4 0");
      /* Code to call each module body */
-     for (i = 0; i < nmodules; i++) {
+     for (int i = 0; i < nmodules; i++) {
 	  if (!module[i].m_needed) continue;
 	  sprintf(buf, "%s.%%main", module[i].m_name);
 	  if (known(buf)) {
@@ -263,7 +251,7 @@ static void gen_main(void) {
 
      /* Make global pointer map */
      gen_inst("DEFINE GCMAP");
-     for (i = 0; i < nmodules; i++) {
+     for (int i = 0; i < nmodules; i++) {
 	  if (!module[i].m_needed) continue;
 	  sprintf(buf, "%s.%%gcmap", module[i].m_name);
 	  if (known(buf)) {
@@ -340,11 +328,9 @@ static void get_options(int argc, char **argv) {
 
 /* get_options -- analyse arguments */
 static void get_options(int argc, char **argv) {
-     int i;
-
      buf_init(file, INIT_MODS, 1, char *, "files");
 
-     for (i = 1; i < argc; i++) {
+     for (int i = 1; i < argc; i++) {
 	  if (strcmp(argv[i], "-d") == 0)
 	       dflag++;
 	  else if (strcmp(argv[i], "-v") == 0) {

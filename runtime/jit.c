@@ -51,11 +51,8 @@ static vmlabel stack_oflo, retlab;
 
 /* prolog -- generate code for procedure prologue */
 static code_addr prolog(const char *name) {
-     int i;
-     code_addr entry;
      vmlabel lab = vm_newlab();
-
-     entry = vm_begin(name, 1);
+     code_addr entry = vm_begin(name, 1);
      vm_gen(GETARG, rBP->r_reg, 0);
 
      /* Check for stack overflow */
@@ -73,7 +70,7 @@ static code_addr prolog(const char *name) {
 	  gcall(MEMSET, 3);
      } else if (frame > 0) {
 	  vm_gen(MOV, rI0->r_reg, 0);
-	  for (i = 4; i <= frame; i += 4)
+	  for (int i = 4; i <= frame; i += 4)
 	       vm_gen(STW, rI0->r_reg, rBP->r_reg, -i);
      }
 
@@ -286,7 +283,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      ctvalue v, v2;
      vmlabel lab;
      code_addr a;
-     int j;
 
      switch (i) {
      case I_PUSH:
@@ -430,7 +426,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  vm_label(lab);
 
 	  pc += 2;
-	  for (j = 0; j < arg1; j++) {
+	  for (int j = 0; j < arg1; j++) {
 	       case_label(get2(pc)+(pc-pcbase));
 	       pc += 2;
 	  }
@@ -713,12 +709,11 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 /* tran_instr -- expand and translate a bytecode instruction */
 static void tran_instr(uchar *pc, int inst, int arg1, int arg2, int lev) {
      int *equiv = instrs[inst].i_equiv;
-     int i;
 
      if (equiv[0] == 0)
 	  instr(pc, inst, arg1, arg2);
      else {
-	  for (i = 0; equiv[i] != 0; i++) {
+	  for (int i = 0; equiv[i] != 0; i++) {
 	       int e = equiv[i];
 	       int arg = 0;
 
@@ -743,20 +738,16 @@ static void tran_instr(uchar *pc, int inst, int arg1, int arg2, int lev) {
 
 /* map_labels -- determine branch targets in a bytecode routine */
 static void map_labels(void) {
-     uchar *pc; 
-     int i, n; 
-     const char *s;
-
      /* We need to identify branch targets before translating,
 	because cached values must be flushed at each target,
 	even the target of a backwards branch */
 
-     for (pc = pcbase; pc < pclimit; ) {
-	  int op = *pc;
+     for (uchar *pc = pcbase; pc < pclimit; ) {
+	  int op = *pc, n;
 	  uchar *pc1 = pc+1;
 	  struct _decode *d = &decode[op];
 
-	  for (s = d->d_patt; *s != '\0'; s++) {
+	  for (const char *s = d->d_patt; *s != '\0'; s++) {
 	       switch (*s) {
 	       case '1': 
 	       case 'K':
@@ -779,7 +770,7 @@ static void map_labels(void) {
 	  switch (op) {
 	  case K_JCASE_1:
 	       n = pc[1]; pc += 2;
-	       for (i = 0; i < n; i++) {
+	       for (int i = 0; i < n; i++) {
 		    mark_label(get2(pc)+(pc-pcbase));
 		    pc += 2;
 	       }
@@ -792,11 +783,7 @@ static void map_labels(void) {
 
 /* translate -- decode a bytecode routine and translate the instructions */
 static void translate(void) {
-     uchar *pc; 
-     const char *s;
-     codepoint lab;
-
-     for (pc = pcbase; pc < pclimit; ) {
+     for (uchar *pc = pcbase; pc < pclimit; ) {
 	  int op = *pc;
 	  uchar *pc1 = pc+1;
 	  struct _decode *d = &decode[op];
@@ -804,7 +791,7 @@ static void translate(void) {
 	  int nargs = 0;
 	  args[0] = 0; args[1] = 0;
 
-	  for (s = d->d_patt; *s != '\0'; s++) {
+	  for (const char *s = d->d_patt; *s != '\0'; s++) {
 	       switch (*s) {
 	       case '1': 
 	       case 'K':
@@ -825,15 +812,13 @@ static void translate(void) {
 
 #ifdef DEBUG
 	  if (dflag > 0) {
-	       int i;
 	       printf("%ld: %s", (long) (pc-pcbase), instrs[d->d_inst].i_name);
-	       for (i = 0; i < nargs; i++) printf(" %d", args[i]);
+	       for (int i = 0; i < nargs; i++) printf(" %d", args[i]);
 	       printf("\n");
 	  }
 #endif
 
-	  lab = find_label(pc-pcbase);
-
+          codepoint lab = find_label(pc-pcbase);
 	  if (lab != NULL) {
 	       killregs();
 

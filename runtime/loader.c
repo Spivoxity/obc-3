@@ -111,16 +111,15 @@ static int read_int() {
 
 /* relocate -- read relocation data */
 static void relocate(int size) {
-     int base, i, m, n, nwords;
-     value *p;
      unsigned reloc[REL_BLOCK];
+     int n;
 
-     for (base = 0; base < size; base += n) {
+     for (int base = 0; base < size; base += n) {
 	  n = min(size - base, REL_BLOCK * CODES_PER_WORD * WORD_SIZE);
-	  nwords = (n/WORD_SIZE+CODES_PER_WORD-1)/CODES_PER_WORD;
+	  int nwords = (n/WORD_SIZE+CODES_PER_WORD-1)/CODES_PER_WORD;
 	  binread(reloc, nwords * sizeof(unsigned));
 
-	  for (i = 0; i < n; i += WORD_SIZE) {
+	  for (int i = 0; i < n; i += WORD_SIZE) {
 	       int rbits = reloc_bits(reloc, i/WORD_SIZE);
 
 #ifdef DEBUG
@@ -128,8 +127,8 @@ static void relocate(int size) {
 		    printf("Reloc %d %d\n", base+i, rbits);
 #endif
 
-	       m = get_int(&dmem[base+i]);
-	       p = (value *) &dmem[base+i];
+	       int m = get_int(&dmem[base+i]);
+	       value *p = (value *) &dmem[base+i];
 
 	       switch (rbits) {
 	       case R_WORD:
@@ -156,9 +155,9 @@ static void relocate(int size) {
 	       
 /* read_symbols -- read symbol table */
 static void read_symbols(int dseg) {
-     int kind; char *name; uchar *addr;
+     uchar *addr;
      int chksum, nlines;
-     int nm = 0, np = 0, i;
+     int nm = 0, np = 0;
 #ifdef DEBUG
      const char *kname;
 #define debug_kind(n) kname = n
@@ -169,9 +168,9 @@ static void read_symbols(int dseg) {
      modtab = (module *) scratch_alloc(nmods * sizeof(module));
      proctab = (proc *) scratch_alloc(nprocs * sizeof(proc));
 
-     for (i = 0; i < nsyms; i++) {
-	  kind = read_int();
-	  name = read_string(); 
+     for (int i = 0; i < nsyms; i++) {
+	  int kind = read_int();
+	  char *name = read_string(); 
 
 	  switch (kind) {
 	  case X_MODULE:
@@ -217,7 +216,7 @@ static void read_symbols(int dseg) {
 
      /* Calculate module lengths */
      addr = dmem + dseg;
-     for (i = nmods-1; i >= 0; i--) {
+     for (int i = nmods-1; i >= 0; i--) {
 	  modtab[i]->m_length = addr - modtab[i]->m_addr;
 	  addr = modtab[i]->m_addr;
 #ifdef DEBUG
@@ -230,15 +229,10 @@ static void read_symbols(int dseg) {
 
 /* load_file -- load a file of object code */
 void load_file(FILE *bfp) {
-     trailer t;
-     int i, nread;
-
-     int seglen[NSEGS];
-     int start;
-
      /* Get trailer */
+     trailer t;
      fseek(bfp, -sizeof(trailer), SEEK_END);
-     nread = fread(&t, 1, sizeof(trailer), bfp);
+     int nread = fread(&t, 1, sizeof(trailer), bfp);
      if (nread != sizeof(trailer)) panic("couldn't read trailer");
 
      /* Check magic numbers */
@@ -254,14 +248,16 @@ void load_file(FILE *bfp) {
 		"  it needs a different version of the runtime system]");
 
      /* Decode the other data */
-     for (i = 0; i < NSEGS; i++)
+     int seglen[NSEGS];
+     for (int i = 0; i < NSEGS; i++)
 	  seglen[i] = get_int(t.segment[i]);
 
      code_size = seglen[S_CODE];
      stack_size = seglen[S_STACK];
 
      nmods = get_int(t.nmods); nprocs = get_int(t.nprocs); 
-     nsyms = get_int(t.nsyms); start = get_int(t.start);
+     nsyms = get_int(t.nsyms);
+     int start = get_int(t.start);
 
 #ifdef DEBUG
      if (dflag) {

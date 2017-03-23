@@ -81,16 +81,14 @@ symbol make_symbol(const char *name) {
 }
 
 static symbol lookup(const char *name, mybool create) {
-     symbol s;
-     unsigned h = 0;
-     const char *p;
-
      if (dict == NULL)
 	  buf_init(dict, INIT_SMEM, 1, symbol, "symbol table");
 
-     for (p = name; *p != '\0'; p++) h = 5 * h + *p;
+     unsigned h = 0;
+     for (const char *p = name; *p != '\0'; p++) h = 5 * h + *p;
      h %= HSIZE;
 
+     symbol s;
      for (s = stable[h]; s != NULL; s = s->s_next)
 	  if (strcmp(name, s->s_name) == 0)
 	       return s;
@@ -168,16 +166,14 @@ void use_global(symbol s, uchar *base, int offset) {
 
 /* fix_data -- fix up global refs in the data segment */
 void fix_data(uchar *base, int bss) {
-     int i, u, v;
-
      /* Shift BSS symbols by offset bss */
-     for (i = 0; i < ndict; i++) {
+     for (int i = 0; i < ndict; i++) {
 	  symbol s = dict[i];
 	  if (s->s_seg == BSS) s->s_value += bss;
      }
 
      /* Fix up each symbol */
-     for (i = 0; i < ndict; i++) {
+     for (int i = 0; i < ndict; i++) {
 	  symbol s = dict[i];
 	  int val;
 
@@ -188,7 +184,7 @@ void fix_data(uchar *base, int bss) {
 	  val = sym_value(s);
 
 	  /* Run along the use chain, inserting the value */
-	  for (u = s->s_uchain; u != -1; u = v) {
+	  for (int u = s->s_uchain, v; u != -1; u = v) {
 	       v = *((int *) &base[u]);
 	       put4(&base[u], val);
 	       relocate(u, (s->s_seg == ABS ? R_WORD : R_DATA));
@@ -210,12 +206,12 @@ static int cf_syms(symbol *a, symbol *b) {
 
 /* write_symtab -- write the symbol table */
 int write_symtab(void) {
-     int i, n = 0;
+     int nwritten = 0;
 
      qsort(dict, ndict, sizeof(symbol), 
 	   (int (*)(const void *, const void *)) cf_syms);
 
-     for (i = 0; i < ndict; i++) {
+     for (int i = 0; i < ndict; i++) {
 	  symbol s = dict[i];
 
 	  if (s->s_kind == X_SYM || s->s_kind == X_NONE) continue;
@@ -229,10 +225,10 @@ int write_symtab(void) {
 	       write_int(4, s->s_nlines);
 	  }
 
-	  n++;
+	  nwritten++;
      }
 
-     return n;
+     return nwritten;
 }
 
 

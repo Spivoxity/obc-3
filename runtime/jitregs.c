@@ -47,18 +47,16 @@ static reg def_reg(vmreg r, int c) {
 
 void setup_regs(void) {
      int totregs = nireg + nfreg + 1;
-     int i;
-
      assert(nireg >= 5 && nvreg >= 2);
 
      regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg));
 
      nregs = 0;
-     for (i = nvreg; i < nireg; i++)
+     for (int i = nvreg; i < nireg; i++)
           def_reg(ireg[i], INT);
-     for (i = 0; i < nvreg; i++)
+     for (int i = 0; i < nvreg; i++)
           def_reg(ireg[i], INT);
-     for (i = 0; i < nfreg; i++)
+     for (int i = 0; i < nfreg; i++)
           def_reg(freg[i], FLO);
      rZERO = def_reg(zero, 0);
 
