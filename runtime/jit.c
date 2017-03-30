@@ -39,7 +39,6 @@
 
 static value *context;		/* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
-static int frame;		/* Size of local variable frame */
 static int cmpflag = 0;         /* Flag for FCMP or DCMP */
 
 #define konst(i) context[CP_CONST+i]
@@ -50,7 +49,7 @@ static vmlabel stack_oflo, retlab;
 #define push_reg(r) push(I_REG, INT, r, 0, 1)
 
 /* prolog -- generate code for procedure prologue */
-static code_addr prolog(const char *name) {
+static code_addr prolog(const char *name, int frame, int map) {
      vmlabel lab = vm_newlab();
      code_addr entry = vm_begin(name, 1);
      vm_gen(GETARG, rBP->r_reg, 0);
@@ -62,16 +61,22 @@ static code_addr prolog(const char *name) {
      gcall(STKOFLO, 1);
      vm_label(lab);
 
-     if (frame > 24) {
+     if (map != 0 && (map & 0x1) == 0) {
+          // A complex map -- just clear the frame
 	  vm_gen(SUB, rI0->r_reg, rBP->r_reg, frame);
           push_con(frame);
           push_con(0);
           push_reg(rI0);
 	  gcall(MEMSET, 3);
-     } else if (frame > 0) {
+     } else if (map != 0) {
+          // A bitmap -- clear specified words
+          map >>= 1;
 	  vm_gen(MOV, rI0->r_reg, 0);
-	  for (int i = 4; i <= frame; i += 4)
-	       vm_gen(STW, rI0->r_reg, rBP->r_reg, -i);
+	  for (int i = -FRAME_SHIFT; i < 0; i++) {
+               if ((map & 0x1) != 0)
+                    vm_gen(STW, rI0->r_reg, rBP->r_reg, 4*i);
+               map >>= 1;
+          }
      }
 
      return entry;
@@ -859,7 +864,6 @@ static int serial;              /* Serial number for anonymous procedures */
 /* jit_compile -- replace a bytecode routine with native code */
 void jit_compile(value *cp) {
      proc p = find_proc(cp);
-     code_addr entry;
      const char *pname;
      static char name[16];
 
@@ -876,9 +880,10 @@ void jit_compile(value *cp) {
 #endif
 
      context = cp; 
-     frame = context[CP_FRAME].i;
+     int frame = context[CP_FRAME].i;
      pcbase = pointer(context[CP_CODE]);
      pclimit = pcbase + context[CP_SIZE].i;
+     int map = context[CP_MAP].i;
 
      init_regs();
      init_labels();
@@ -888,7 +893,7 @@ void jit_compile(value *cp) {
      retlab = vm_newlab();
 
      map_labels();
-     entry = prolog(pname);
+     code_addr entry = prolog(pname, frame, map);
      translate();
      do_errors(make_error);
      vm_end();
