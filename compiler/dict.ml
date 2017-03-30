@@ -295,9 +295,10 @@ let pointer d =
   (PointerType d, addr_rep, ptr_map)
 
 let row n t = 
+  let r = t.t_rep in
   (ArrayType (n, t), 
-    { m_size = n * t.t_rep.m_size; m_align = max_align },
-    repeat n t.t_rep.m_size t.t_map)
+    { m_size = n * r.m_size; m_align = r.m_align },
+    repeat n r.m_size t.t_map)
 
 let flex t = (FlexType t, void_rep, null_map)
 

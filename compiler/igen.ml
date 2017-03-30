@@ -1001,14 +1001,12 @@ let rec gen_stmt exit_lab s =
 	  let kind = op_kind var.e_type in
 	  let inc =  int_value (value_of step) in
 	  let (prep, upb) =
-	    match hi.e_guts with 
-		Const (_, _) -> (NOP, gen_expr hi)
-	      | _ ->
-                  (match !tmp with
-                      Some d ->
-                        ( SEQ [gen_expr hi; LOCAL d.d_offset; STORE memk],
-                          SEQ [LOCAL d.d_offset; LOAD memk] ) 
-                    | None -> failwith "for bound") in
+	    match (hi.e_guts, !tmp) with 
+		(Const (_, _), _) -> (NOP, gen_expr hi)
+	      | (_, Some d) ->
+                  ( SEQ [gen_expr hi; LOCAL d.d_offset; STORE memk],
+                    SEQ [LOCAL d.d_offset; LOAD memk] ) 
+              | _ -> failwith "for bound" in
 
 	  SEQ [prep;
 	    (* var := lo *)

@@ -952,7 +952,7 @@ let annotate (Module (m, imports, body, glodefs, doc)) =
 	     for the module body *)
 	  let d = make_def m ProcDef bodytype doc in
 	  d.d_lab <- sprintf "$.%main" [fId !current];
-	  m.x_def <- Some d;
+	  m.x_def <- Some d
 
       | _ -> failwith "annotate"
   end
