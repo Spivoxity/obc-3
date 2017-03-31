@@ -144,7 +144,7 @@ PROCEDURE Open* IS "XYplane_open";
      }
 
      display = XOpenDisplay(NULL);
-     if (display == NULL) fatal("couldn't open dislay");
+     if (display == NULL) fatal("couldn't open display");
 
      screen = XDefaultScreen(display);
      parent = XRootWindow(display, screen);
