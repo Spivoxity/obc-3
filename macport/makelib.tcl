@@ -61,8 +61,12 @@ foreach x $libs {
     if {[regexp {^-l(.*)} $x _ y]} {
         lappend agenda "lib$y.dylib"
     } else {
-        puts $x
-        file copy [exec find $source -name $x] $target/$x
+        puts "$x"
+	set src [exec find $source -name $x]
+	if {$src == ""} {
+	    puts "$x not found"; exit 1
+	}
+        file copy $src $target/$x
         set deps [find_deps $target/$x $source]
         change_deps $target/$x $deps
         set agenda [union $agenda $deps]
