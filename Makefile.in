@@ -87,6 +87,7 @@ PRIMS = lib/oblib.o
 
 ifdef MACOS
   EXTRADIRS += macport
+  RTFLAGS += -pagezero_size 0x1000
 endif
 
 ifdef WINDOWS

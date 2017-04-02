@@ -1052,7 +1052,7 @@ void call_r(int ra) {
 }
 
 void call_i(int a) {
-     instr_tgt(opCALL_i, (code_addr) a);
+     instr_tgt(opCALL_i, (code_addr) (unsigned long) a);
      post_call();
 }     
 

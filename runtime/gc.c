@@ -93,8 +93,6 @@ static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
 #define round_down(x, n) ((x)/(n)*(n))
 #define round_up(x, n)   round_down((x)+(n)-1, n)
 
-typedef unsigned word;
-
 /* Most of the manipulations here are done in terms of words, and to
    save brain cells, we assume a word has 32 bits; there are lots of
    constants that need changing if that is not true.  We also assume
@@ -104,23 +102,26 @@ typedef unsigned word;
 #include <fcntl.h>
 #include <sys/mman.h>
 
-#ifdef M64X32
-#define mmap_flags MAP_PRIVATE|MAP_32BIT
-#else
-#define mmap_flags MAP_PRIVATE
-#endif
-
 #ifdef MACOS
 #define MAP_ANONYMOUS MAP_ANON
+#define HINT (void *) 0x10000000L
+#define MMAP_FLAGS MAP_PRIVATE
+#else
+#define HINT NULL
+#ifdef M64X32
+#define MMAP_FLAGS MAP_PRIVATE|MAP_32BIT
+#else
+#define MMAP_FLAGS MAP_PRIVATE
+#endif
 #endif
 
 static void *grab_chunk(unsigned size) {
      void *p;
-     static void *last_addr = NULL;
+     static void *last_addr = HINT;
 
 #ifdef MAP_ANONYMOUS
      p = mmap(last_addr, size, PROT_READ|PROT_WRITE, 
-	      mmap_flags|MAP_ANONYMOUS, -1, 0);
+	      MMAP_FLAGS|MAP_ANONYMOUS, -1, 0);
 #else
      static int zero_fd = -1;
 
@@ -130,11 +131,15 @@ static void *grab_chunk(unsigned size) {
      }
 
      p = mmap(last_addr, size, PROT_READ|PROT_WRITE,
-              mmap_flags, zero_fd, 0);
+              MMAP_FLAGS, zero_fd, 0);
 #endif
 
      if (p == MAP_FAILED) return NULL;
-     last_addr = p;
+#ifdef M64X32     
+     if ((((unsigned long) p) & ~0x7fffffff) != 0)
+          panic("inaccessible memory allocated at %p", p);
+#endif     
+     last_addr = p + size;
      return p;
 }
 #endif
