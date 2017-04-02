@@ -194,12 +194,12 @@ static void *get_memory(unsigned size) {
    and wastefully discards it if it is too small to satisfy the next
    memory request. */
 
-static uchar *scratch_free = NULL;
-static uchar *scratch_limit = NULL;
+static void *scratch_free = NULL;
+static void *scratch_limit = NULL;
 
 void *scratch_alloc(unsigned size) {
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
-     uchar *p;
+     void *p;
 
      if (scratch_free == NULL || alloc_size > scratch_limit - scratch_free) {
 	  if (alloc_size > SCRATCH_CHUNK
@@ -208,7 +208,7 @@ void *scratch_alloc(unsigned size) {
 	       /* Avoid discarding a largish piece */
 	       return get_memory(alloc_size);
 
-	  scratch_free = (uchar *) get_memory(SCRATCH_CHUNK);
+	  scratch_free = get_memory(SCRATCH_CHUNK);
 	  scratch_limit = scratch_free + SCRATCH_CHUNK;
      }
 
@@ -236,7 +236,7 @@ void *scratch_alloc(unsigned size) {
    GC which semispace they belong to. */
 
 typedef struct _header {
-     uchar *h_memory;		/* The block itself */
+     void *h_memory;		/* The block itself */
      unsigned h_size;		/* Size of block (bytes) */
      unsigned h_objsize;	/* Size of each object (bytes), or 0 if free */
      unsigned h_epoch;		/* Timestamp to identify semispace */
@@ -339,10 +339,10 @@ static page_index *empty_index;
                                page_table[top_part(p)]))[bot_part(p)])
 
 /* page_setup -- make page table entries point to a given header */
-static void page_setup(uchar *base, unsigned size, header *h) {
+static void page_setup(void *base, unsigned size, header *h) {
      ASSERT(size % PAGESIZE == 0);
 
-     for (uchar *p = base; p < base + size; p += PAGESIZE) {
+     for (void *p = base; p < base + size; p += PAGESIZE) {
 	  /* Make sure lower index exists */
 	  if (page_table[top_part(p)] == address(empty_index))
 	       page_table[top_part(p)] = 
@@ -398,7 +398,7 @@ static header *free_block(header *h, mybool mapped) {
      header *prev = left_neighbour(h), *next = right_neighbour(h);
 
      /* Base and size of area where page table needs updating */
-     uchar *pg_memory = h->h_memory;
+     void *pg_memory = h->h_memory;
      unsigned pg_size = (mapped ? 0 : h->h_size);
 
 #ifdef TRACE
@@ -472,7 +472,7 @@ static header *find_block(unsigned size, unsigned objsize) {
 	  GC_TRACE("[ex]");
 	  ASSERT(chunk % PAGESIZE == 0);
 	  h = alloc_header();
-	  h->h_memory = (uchar *) get_memory(chunk);
+	  h->h_memory = get_memory(chunk);
 	  h->h_size = chunk;
 	  /* Add to the free list for merging and page table setup */
 	  h = free_block(h, FALSE);
@@ -616,7 +616,7 @@ static header *block_pool[N_SIZES+1], *old_pool[N_SIZES+1];
 
 /* The free storage in each pool is in the upper part of one of the
    last block of the pool. */
-static uchar *free_ptr[N_SIZES+1]; /* First free object */
+static void *free_ptr[N_SIZES+1]; /* First free object */
 static int free_count[N_SIZES+1]; /* Number of free objects */
 
 /* To allocate an object of a given size, we first round up the size,
@@ -721,11 +721,11 @@ void *gc_alloc(value *desc, unsigned size, value *sp) {
 
 /* redirect -- translate pointer into new space */
 static void redirect(word *p) {
-     uchar *q, *r, *s;
+     void *q, *r, *s;
      header *h;
      int index;
 
-     q  = ptrcast(uchar, *p); /* q is the old pointer value */
+     q  = ptrcast(void, *p); /* q is the old pointer value */
      if (q == NULL) return;
      h = get_header(q);
      if (h == NULL) return;	/* Not in the managed heap */
@@ -739,7 +739,7 @@ static void redirect(word *p) {
 	  /* r is the start of the object containing q */
 
 	  if (get_word(r, 0) == BROKEN_HEART) 
-	       s = ptrcast(uchar, get_word(r, 1));
+	       s = ptrcast(void, get_word(r, 1));
 	  else {
 	       /* Evacuate object at r */
 	       if (free_count[index] == 0) add_block(index);
@@ -789,9 +789,9 @@ static int *map_next(int *p) {
 }
 
 /* redir_map -- interpret a pointer map, redirecting each pointer */
-static void redir_map(unsigned map, uchar *base, int bmshift) {
+static void redir_map(unsigned map, void *base, int bmshift) {
      int count, stride, op, ndim;
-     uchar *base2;
+     void *base2;
      int *p;
 
      if (map == 0) return;
@@ -822,7 +822,7 @@ static void redir_map(unsigned map, uchar *base, int bmshift) {
 
 	  switch (op = *p) {
 	  case GC_BASE:
-	       base = ptrcast(uchar, p[1]);
+	       base = ptrcast(void, p[1]);
 	       break;
 
 	  case GC_REPEAT:
@@ -858,7 +858,7 @@ static void redir_map(unsigned map, uchar *base, int bmshift) {
 	       for (int i = 0; i < ndim; i++) 
 		    count *= get_word(base2, i+1);
 	       
-	       base2 = ptrcast(uchar, get_word(base2, 0));
+	       base2 = ptrcast(void, get_word(base2, 0));
 	       for (int i = 0; i < count; i++)
 		    redir_map(address(p+4), base2 + i*stride, 0);
 
@@ -889,7 +889,7 @@ static void traverse_stack(value *xsp) {
 	  /* Local variables and parameters */
 	  DEBUG_PRINT('m', ("\nFrame for %s", x->p_name));
 	  if (c[CP_MAP].i != 0) 
-	       redir_map(c[CP_MAP].i, (uchar *) f, FRAME_SHIFT);
+	       redir_map(c[CP_MAP].i, f, FRAME_SHIFT);
 
 	  if (pc.i != 0) {
 	       /* Evaluation stack: look up calling PC value in
@@ -905,12 +905,12 @@ static void traverse_stack(value *xsp) {
 		    }
 		    if (pointer(r[0]) != NULL) {
 			 DEBUG_PRINT('m', ("\nEval stack (%#x)", r[1].i));
-			 redir_map(r[1].i, (uchar *) sp, 0);
+			 redir_map(r[1].i, sp, 0);
 		    }
 	       } else {
 		    /* Compiled primitive: f[PC].i is stack map */
 		    DEBUG_PRINT('m', ("\nEval stack (%#x)", pc.i));
-		    redir_map(pc.i, (uchar *) sp, 0);
+		    redir_map(pc.i, sp, 0);
 	       }
 	  }
 
@@ -921,7 +921,7 @@ static void traverse_stack(value *xsp) {
 /* migrate -- redirect within the heap, recursively copying to new space */
 static void migrate(void) {
      header *thumb[N_SIZES], *big_thumb = block_pool[n_sizes];
-     uchar *finger[N_SIZES];
+     void *finger[N_SIZES];
      mybool changed;
 
      /* For each pool, we keep a 'thumb' pointing to one of the blocks
@@ -958,7 +958,7 @@ static void migrate(void) {
 		    }
 
 		    changed = TRUE;
-		    uchar *p = finger[i];
+		    void *p = finger[i];
 		    if (desc(p) != NULL)
 			 redir_map(desc(p)[DESC_MAP], p + BYTES_PER_WORD, 0);
 		    finger[i] = p + pool_size(i);
@@ -968,7 +968,7 @@ static void migrate(void) {
 	  while (big_thumb->h_next != block_pool[n_sizes]) {
 	       changed = TRUE;
 	       big_thumb = big_thumb->h_next;
-	       uchar *p = big_thumb->h_memory;
+	       void *p = big_thumb->h_memory;
 	       if (desc(p) != NULL)
 		    redir_map(desc(p)[DESC_MAP], p + BYTES_PER_WORD, 0);
 	  }
