@@ -43,5 +43,5 @@ DefaultDirName={pf}\Oxford Oberon-2 compiler
 DefaultGroupName=Oxford Oberon-2 compiler
 DisableProgramGroupPage=yes
 InfoAfterFile=README.txt
-OutputBaseFilename=obc-win-@DOS_VERSION@
+OutputBaseFilename=@WIN_INSTALL@
 OutputDir=.

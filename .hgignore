@@ -1,4 +1,5 @@
 syntax: glob
+*~
 *.cmi
 *.cmo
 *.cma
@@ -215,3 +216,4 @@ doc/think2
 autom4te.cache
 build*
 armtest/regress
+winport/.strip

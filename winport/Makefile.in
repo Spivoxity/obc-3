@@ -38,7 +38,7 @@ MODULES = @MODULES@
 CHECKMODS = @CHECKMODS@
 PRIMMODS = @PRIMMODS@
 SHLMODS = @SHLMODS@
-DOS_VERSION = @DOS_VERSION@
+TARGET = @WIN_INSTALL@.exe
 VPATH = @srcdir@
 CC = @CC@
 CFLAGS = @CFLAGS@
@@ -52,14 +52,28 @@ all: files
 LIBSRC = Builtin.m $(MODULES:%=%.m)
 LIBOBJ = $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k) _Builtin.k 
 LIBTXT = lscript-b lscript _Builtin.k
-INSTALL1 = ../obx.exe ../obxj.exe ../obprof.exe ../oblist.exe ../obxdeb.exe \
-	../compiler/obc1.exe ../compiler/obb1.exe ../runtime/oblink.exe \
-	../debugger/obdb1.exe
-INSTALL2 = obc.exe obb.exe obdb.exe \
-	$(LIBSRC) $(LIBTXT) $(LIBOBJ) README.txt Fac.m
-INSTALL = $(INSTALL1) $(INSTALL2)
 
-files: $(INSTALL)
+# Executables needing stripping
+INSTALL1 = ../obx.exe ../obxj.exe ../obprof.exe ../obxdeb.exe \
+	../runtime/oblink.exe
+
+# Executables that don't need stripping
+INSTALL2 =  ../compiler/obc1.exe ../compiler/obb1.exe ../debugger/obdb1.exe
+
+# Files built here
+INSTALL3 = oblist.exe obc.exe obb.exe obdb.exe \
+	$(LIBSRC) $(LIBTXT) $(LIBOBJ) README.txt Fac.m
+
+INSTALL = $(INSTALL1) $(INSTALL2) $(INSTALL3)
+
+files: $(INSTALL) .strip
+
+.strip: $(INSTALL1)
+	strip $?
+	touch $@
+
+oblist.exe: ../obxj.exe ../oblist.x .strip
+	cat ../obxj.exe ../oblist.x >$@
 
 TEXT = unix2dos <$< >$@
 
@@ -76,8 +90,6 @@ $(LIBTXT): %: ../lib/%;					$(TEXT)
 
 %-b.k: %.m ../compiler/obc1.exe
 	../compiler/obc1 -O -g -x -b $< >$@
-
-TARGET = obc-win-$(DOS_VERSION).exe
 
 package: $(TARGET)
 
@@ -130,10 +142,12 @@ obc.o obb.o obdb.o wrap.o: %.o: %.c wrap.h
 
 obdb.o: ../config.h
 
+CFLAGS = -O2
+
 # Clean-up
 
 clean:
-	rm -rf $(INSTALL2) setup.iss files.iss gtk.iss $(TARGET) *.o
+	rm -rf $(INSTALL3) setup.iss files.iss gtk.iss $(TARGET) *.o .strip
 
 quiteclean: clean
 	rm -f head.iss
