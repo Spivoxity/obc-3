@@ -35,6 +35,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef LINUX
+#define USE_MPROTECT 1
+#endif
+
+#ifdef MACOS
+#define USE_MPROTECT 1
+#endif
+
 #ifdef USE_MPROTECT
 #include <sys/mman.h>
 #endif
