@@ -311,7 +311,7 @@ CAMLprim value ml_g_io_channel_unix_new(value wh)
 {
   return Val_GIOChannel_noref
     (g_io_channel_unix_new
-     (_open_osfhandle((long)*(HANDLE*)Data_custom_val(wh), O_BINARY)));
+     (_open_osfhandle((intnat)*(HANDLE*)Data_custom_val(wh), O_BINARY)));
 }
 #endif
 

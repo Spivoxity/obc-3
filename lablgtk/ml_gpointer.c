@@ -68,7 +68,7 @@ CAMLprim value ml_set_int_at_pointer (value ptr, value n)
 
 CAMLprim value ml_long_at_pointer (value ptr)
 {
-    return copy_nativeint(*(long*)Pointer_val(ptr));
+    return copy_nativeint(*(intnat*)Pointer_val(ptr));
 }
 
 CAMLprim value ml_set_long_at_pointer (value ptr, value n)
@@ -112,5 +112,5 @@ CAMLprim value ml_gpointer_blit (value region1, value region2)
 
 CAMLprim value ml_gpointer_get_addr (value region)
 {
-    return copy_nativeint ((long)ml_gpointer_base (region));
+    return copy_nativeint ((intnat)ml_gpointer_base (region));
 }

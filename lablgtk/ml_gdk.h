@@ -23,7 +23,7 @@
 /* $Id: ml_gdk.h 1402 2008-03-25 08:55:03Z garrigue $ */
 
 #define GdkAtom_val(val) ((GdkAtom)Long_val(val))
-#define Val_GdkAtom(val) (Val_long((long)val))
+#define Val_GdkAtom(val) (Val_long((intnat)val))
 
 #define GdkColormap_val(val) check_cast(GDK_COLORMAP,val)
 #define Val_GdkColormap Val_GAnyObject
