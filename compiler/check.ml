@@ -738,6 +738,8 @@ and check_decl lzy alloc env =
 		make_def x (ConstDef (IntVal (integer 0))) errtype doc in
 	add_def env d
     | VarDecl (kind, xs, tx, doc) ->
+        if kind = CParamDef && not !Config.extensions then
+	  sem_extend "CONST parameters are not allowed" [] (List.hd xs).x_loc;
         let t = check_typexpr lzy env anon tx in
 	begin match kind with
 	    ParamDef | CParamDef | VParamDef ->
