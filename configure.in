@@ -92,10 +92,10 @@ case $host in
   *-*-mingw*|*-*-cygwin) 
     AC_SUBST(WINDOWS, 1)
     AC_DEFINE(WINDOWS, 1, [Define to enable hacks for Windows])
-    AC_SUBST(ROOT, C:/cygwin)
+    AC_SUBST(ROOT, C:/msys64)
     AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304])
-    CC='i686-w64-mingw32-gcc -std=gnu99'
-    LD='i686-w64-mingw32-ld'
+    CC='gcc32 -std=gnu99'
+    LD=ld32
     WIN=win32
     DIRSEP="\\\\";;
     
@@ -245,8 +245,8 @@ $as_echo_n "checking ocaml version... "
 if ! ocamlc; then echo not found; else
   OCAML_VERSION=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
   $as_echo $OCAML_VERSION
-  TMP=`echo $OCAML_VERSION | sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
-  if test $TMP -lt 40002; then
+  XXXTMP=`echo $OCAML_VERSION | sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
+  if test $XXXTMP -lt 40002; then
       AC_SUBST(COMPAT, bytes.cmo)
   fi
 fi
