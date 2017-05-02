@@ -140,7 +140,7 @@ void obcopy(char *dst, const char *src, int n) {
      *dst = '\0';
 }
 
-#ifndef i386
+#ifndef UNALIGNED_MEM
 double get_double(value *v) {
      dblbuf dd;
      dd.n.lo = v[0].i;

@@ -94,15 +94,15 @@ proc make_proc(char *name, uchar *addr) {
      p->p_parents = p->p_children = NULL;
 #endif
 #ifdef OBXDEB
-     debug_message("proc %s %#lx %#lx %d", name, (unsigned long) addr, 
-		   (unsigned long) p->p_addr[CP_CODE].a, p->p_addr[CP_SIZE].i);
+     debug_message("proc %s %#x %#x %d", name, address(addr), 
+		   p->p_addr[CP_CODE].a, p->p_addr[CP_SIZE].i);
 #endif
      return p;
 }
 
 void make_symbol(const char *kind, char *name, uchar *addr) {
 #ifdef OBXDEB
-     debug_message("%s %s %#lx", kind, name, (unsigned long) addr);
+     debug_message("%s %s %#x", kind, name, address(addr));
 #endif
 }
 
@@ -255,7 +255,7 @@ mybool custom_file(char *name) {
 
      fp = fopen(name, "rb");
      if (fp == NULL) return FALSE;
-     fseek(fp, -sizeof(trailer), SEEK_END);
+     fseek(fp, - (long) sizeof(trailer), SEEK_END);
      nread = fread(buf, 1, 4, fp);
      if (nread < 4 || strncmp(buf, MAGIC, 4) != 0)
 	  result = FALSE;

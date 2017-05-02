@@ -51,8 +51,8 @@ typedef union value value;
 
 typedef void primitive(value *sp);
 
-typedef unsigned word;
-typedef unsigned long ptrtype;
+typedef uint32_t word;
+typedef uintptr_t ptrtype;
 
 union value {
      int i;
@@ -71,7 +71,7 @@ typedef struct _module *module;
 typedef struct _arc *arc;
 
 #ifdef PROFILE
-typedef long long unsigned counter;
+typedef uint64_t counter;
 #endif
 
 struct _proc {
@@ -249,7 +249,7 @@ void dump(void);
 const char *prim_name(value *p);
 #endif
 
-#ifdef i386
+#ifdef UNALIGNED_MEM
 #define get_double(v) (* (double *) (v))
 #define put_double(v, x) (* (double *) (v) = (x))
 #define get_long(v) (* (longint *) (v))

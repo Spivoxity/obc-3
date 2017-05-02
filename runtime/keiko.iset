@@ -303,7 +303,7 @@ equiv FJNEQ R		{FCMP, JNEQZ $a}
 # DOUBLE-PRECISION OPERATORS
 
 defs {
-#ifdef i386
+#ifdef UNALIGNED_MEM
 #define getdbl get_double
 #define putdbl put_double
 #define getlong get_long

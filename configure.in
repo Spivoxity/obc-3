@@ -89,15 +89,27 @@ case $host in
     AC_DEFINE(LINUX, 1, [Define for Linux])
     CC='gcc -std=gnu99';;
 
-  *-*-mingw*|*-*-cygwin) 
+  x86_64-*-mingw*|*-*-cygwin) 
     AC_SUBST(WINDOWS, 1)
     AC_DEFINE(WINDOWS, 1, [Define to enable hacks for Windows])
     AC_SUBST(ROOT, C:/msys64)
+    DIRSEP="\\\\"
+    WIN=win64
     AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304])
-    CC='gcc32 -std=gnu99'
-    LD=ld32
+    if test "$enable_m64x32" != no; then
+      M64X32=1; CC='gcc -std=gnu99'
+    else
+      CC='gcc32 -std=gnu99'; LD=ld32
+    fi;;
+    
+  i686-*-mingw*|*-*-cygwin) 
+    AC_SUBST(WINDOWS, 1)
+    AC_DEFINE(WINDOWS, 1, [Define to enable hacks for Windows])
+    AC_SUBST(ROOT, C:/msys32)
+    DIRSEP="\\\\"
     WIN=win32
-    DIRSEP="\\\\";;
+    AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304])
+    CC='gcc -std=gnu99';;
     
   x86_64-*-darwin*)
     AC_SUBST(MACOS, 1)
@@ -107,6 +119,11 @@ case $host in
     else
       CC='gcc -std=gnu99 -m32'
     fi;;
+esac
+
+case $host in
+  i686-*|x86_64-*)
+    AC_DEFINE(UNALIGNED_MEM, 1, [Define if unaligned loads and stores work]);;
 esac
 
 AC_DEFINE_UNQUOTED(DIRSEP, "$DIRSEP", [Directory separator in file names])

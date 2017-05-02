@@ -53,10 +53,10 @@ struct _trans {
      trans t_hlink;
 };
 
-#define MBIT 0x00000001
-#define mark(p) ((value *) ((unsigned long) (p) | MBIT))
-#define ptr(p) ((value *) ((unsigned long) (p) & ~MBIT))
-#define marked(p) ((unsigned long) (p) & MBIT)
+#define MBIT 0x1
+#define mark(p) ptrcast(value, address(p) | MBIT)
+#define ptr(p) ptrcast(value, address(p) & ~MBIT)
+#define marked(p) (address(p) & MBIT)
 
 /* format_count -- format a counter as a decimal string */
 static char *format_count(counter n) {
@@ -126,8 +126,7 @@ static state s_head = NULL, s_tail;
 #define HSIZE 32771		/* Not a power of 2! */
 static trans *trtable;
 #define hash(s0, a) \
-     ((((unsigned) (unsigned long) (s0) << 4) \
-       ^ (unsigned) (unsigned long) (addr)) % HSIZE)
+     (((address(s0) << 4) ^ address(addr)) % HSIZE)
 
 static state make_state(value *addr, int n, value **history) {
      state s;

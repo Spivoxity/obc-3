@@ -147,10 +147,33 @@ static void *grab_chunk(unsigned size) {
 #ifdef WINDOWS
 #include <windows.h>
 
+#ifdef M64X32
+/* With thanks to the LuaJIT people */
+typedef long (*ntavm_ptr)(HANDLE, void **, ULONG, size_t *, ULONG, ULONG);
+
+#define NTAVM_ZEROBITS 1
+
+static void *grab_chunk(unsigned size0) {
+     static ntavm_ptr ntavm = NULL;
+
+     if (ntavm == NULL) {
+          HANDLE module = GetModuleHandleA("ntdll.dll");
+          ntavm = (ntavm_ptr)
+               GetProcAddress(module, "NtAllocateVirtualMemory");
+     }
+
+     void *p = NULL;
+     size_t size = size0;
+     ntavm(INVALID_HANDLE_VALUE, &p, NTAVM_ZEROBITS, &size,
+           MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+     return p;
+}
+#else 
 static void *grab_chunk(unsigned size) {
      return VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE,
 			 PAGE_EXECUTE_READWRITE);
 }
+#endif
 #endif
 
 /* get_memory -- grab one or more pages from the operating system */
@@ -178,8 +201,8 @@ static void *get_memory(unsigned size) {
    lot of complexity.  We allocate whole pages (e.g. for the page
    table) on page boundaries. Scratch blocks must be aligned on an
    8-byte boundary for architectures that don't support unaligned
-   loads and stores of long long unsigned, a type that is used for
-   profiling counts. */
+   loads and stores of uint64_t, a type that is used for profiling 
+   counts. */
 
 #define SCRATCH_ALIGN 8
 

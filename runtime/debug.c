@@ -149,8 +149,8 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
      one_shot = FALSE;
 
      /* %p may print NULL as "(nil)", so use %#x instead. */
-     debug_message("regs %#lx %#lx %#lx", (unsigned long) cp,
-                   (unsigned long) bp, (unsigned long) pc);
+     debug_message("regs %#x %#x %#x",
+		   address(cp), address(bp), address(pc));
 
      va_start(va, fmt);
      debug_va_message(fmt, va);
@@ -192,7 +192,7 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
 	  }
 
 	  cmd("breakpt", 3) {
-	       uchar *addr = (uchar *) intarg(1);
+	       uchar *addr = ptrcast(uchar, intarg(1));
 	       if (*addr != K_LNUM_2 && *addr != K_BREAK_2)
 		    panic("*breakpoint not at line boundary");
 	       *addr = (intarg(2) ? K_BREAK_2 : K_LNUM_2);

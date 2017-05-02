@@ -231,7 +231,7 @@ static void read_symbols(int dseg) {
 void load_file(FILE *bfp) {
      /* Get trailer */
      trailer t;
-     fseek(bfp, -sizeof(trailer), SEEK_END);
+     fseek(bfp, - (long) sizeof(trailer), SEEK_END);
      int nread = fread(&t, 1, sizeof(trailer), bfp);
      if (nread != sizeof(trailer)) panic("couldn't read trailer");
 

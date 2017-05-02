@@ -32,10 +32,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "config.h"
 #include "vm.h"
 #include "vminternal.h"
+
+typedef intptr_t address;
+
 
 /* Register assignment */
 
@@ -490,7 +494,7 @@ static void memory(int ra, int rb, int d) {
 	  addr(0, ra, 5), word(d);
 #else
           // Use PC-relative addressing
-          addr(0, ra, 5), word((code_addr) (long) d - pc - 4);
+          addr(0, ra, 5), word((code_addr) (address) d - pc - 4);
           // Was: addr(0, ra, 4), sib(0, 4, 5), word(d);
 #endif
      } else if (rb == rSP) {
@@ -630,7 +634,7 @@ static void instr_st(OPDECL, int rt, int rs, int imm) {
 /* instr_tgt -- opcode plus branch target */
 static void instr_tgt(OPDECL, code_addr tgt) {
      code_addr r;
-     vm_debug2("%s %#lx", mnem, (unsigned long) tgt);
+     vm_debug2("%s %#x", mnem, (unsigned) (address) tgt);
      assert(tgt != NULL);
      opcode(op), r = pc, word(0);
      vm_patch(r, tgt);
@@ -1052,7 +1056,7 @@ void call_r(int ra) {
 }
 
 void call_i(int a) {
-     instr_tgt(opCALL_i, (code_addr) (unsigned long) a);
+     instr_tgt(opCALL_i, (code_addr) (address) a);
      post_call();
 }     
 
@@ -1065,7 +1069,6 @@ code_addr vm_prelude(int n, int locs) {
 }
 
 #else
-
 /*
 On AMD64, the frame layout is like this, with 8 byte slots:
 
@@ -1085,6 +1088,18 @@ at present.)
 
 Outgoing arguments are passed in rDI, rSI, rDX.  Register arguments are left
 where they are until the call, then permuted into place.
+
+On Win64, the frame layout is like this, with 8 byte slots:
+
+old sp: 32-byte shadow area
+        return address
+        saved rbp
+        saved rbx
+	saved rsi
+	saved rdi
+sp:     blank space
+
+Outgoing arguments are passed in rCX, rDX, r8.
 */
 
 static int nargs;               /* Number of outgoing args */
@@ -1095,6 +1110,9 @@ static int funreg;              /* Register containing function address */
 
 static void prep_call(int n) {
      nargs = n; argnum = n; funreg = NOREG;
+#ifdef WINDOWS
+     sub64_i(rSP, 32);
+#endif
 }
 
 static void arg_r(int r) {
@@ -1126,10 +1144,17 @@ static int subst_reg(int r1, int r2) {
      return count;
 }
 
+
+static int out[] = {
+#ifndef WINDOWS
+     rDI, rSI, rDX
+#else
+     rCX, rDX, r8
+#endif
+};
+
 /* Move args from stack into registers */
 static void move_args() {
-     static int out[] = { rDI, rSI, rDX };
-
      // Permute the registers
      for (int i = 0; i < nargs; i++) {
           if (argreg[i] && argval[i] != out[i]) {
@@ -1157,23 +1182,33 @@ void call_r(int ra) {
      funreg = ra;
      move_args();
      instr2_m(opCALL, funreg, 0);
+#ifdef WINDOWS
+     add64_i(rSP, 32);
+#endif
 }
 
 void call_i(int a) {
      /* Indirect call via trampoline */
      move_args();
      instr2_m(opCALL, NOREG, a);
+#ifdef WINDOWS
+     add64_i(rSP, 32);
+#endif
 }     
 
 code_addr vm_prelude(int n, int locs) {
      code_addr entry = pc;
-     push_r(rBP); push_r(rBX); sub64_i(rSP, 8);
+     push_r(rBP); push_r(rBX);
+#ifdef WINDOWS     
+     push_r(rSI); push_r(rDI);
+#endif
+     sub64_i(rSP, 8);
      if (locs > 0) vm_panic("sorry, no local variables allowed");
      if (n > 1) vm_panic("sorry, only one parameter allowed today");
      return entry;
 }
-
 #endif
+
 
 /* TRANSLATION ROUTINES */
 
@@ -1189,7 +1224,11 @@ void vm_gen0(operation op) {
           if (locals > 0) add_i(rSP, locals);
 	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
 #else
-          add64_i(rSP, 8); pop(rBX); pop(rBP);
+          add64_i(rSP, 8);
+#ifdef WINDOWS
+	  pop(rDI); pop(rSI);
+#endif
+	  pop(rBX); pop(rBP);
 #endif
           instr(opRET);
 	  break;
@@ -1346,7 +1385,11 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 #ifndef M64X32
 	  load(ra, rSP, 4*b+locals+20); 
 #else
+#ifndef WINDOWS
           move(ra, rDI);
+#else
+	  move(ra, rCX);
+#endif
 #endif
           break;
 
@@ -1354,7 +1397,7 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
           if (isfloat(ra))
                floads(ra, NOREG, b);
           else
-               instr_regi32(opMOVL_i, ra, * (int *) (unsigned long) b);
+               instr_regi32(opMOVL_i, ra, * (int *) (address) b);
           break;
 
      default:

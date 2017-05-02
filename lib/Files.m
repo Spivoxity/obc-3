@@ -59,13 +59,13 @@ static FILE *get_file(value *p, value *cp, value *bp) {
 
 PROCEDURE PrimOpen(name, mode: ARRAY OF CHAR): LONGINT IS "Files_PrimOpen";
 (* CODE put_long(&ob_res, 
-            (long) fopen((char * ) pointer(args[0]),
-                         (char * ) pointer(args[2]))); *)
+		 (ptrtype) fopen((char * ) pointer(args[0]),
+				 (char * ) pointer(args[2]))); *)
 
 PROCEDURE PrimFDOpen(fd: INTEGER;
 	  		mode: ARRAY OF CHAR): LONGINT IS "File_PrimFDOpen";
 (* CODE put_long(&ob_res,
-            (long) fdopen(args[0].i, (char * ) pointer(args[1]))); *)
+		 (ptrtype) fdopen(args[0].i, (char * ) pointer(args[1]))); *)
 
 (** Open -- open a file by name; return NIL if not found *)
 PROCEDURE Open*(CONST name, mode: ARRAY OF CHAR): File;
@@ -176,9 +176,9 @@ PROCEDURE Tell*(f: File): INTEGER IS "Files_Tell";
 
 PROCEDURE Init(VAR in, out, err: LONGINT) IS "Files_Init";
 (* CODE 
-     put_long(valptr(args[0]), (long) stdin); 
-     put_long(valptr(args[1]), (long) stdout);
-     put_long(valptr(args[2]), (long) stderr); *)
+     put_long(valptr(args[0]), (ptrtype) stdin); 
+     put_long(valptr(args[1]), (ptrtype) stdout);
+     put_long(valptr(args[2]), (ptrtype) stderr); *)
 
 BEGIN
   NEW(stdin); NEW(stdout); NEW(stderr);
