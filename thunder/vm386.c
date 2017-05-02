@@ -1005,12 +1005,13 @@ static void fcomp(int rs1, int rs2) {
 
 /* STACK FRAMES */
 
+static int locals;             /* Size of local space */
+static int nargs;              /* Effective number of outgoing args */
+
 #ifndef M64X32
 
 /*
-We don't use space on the C stack for locals, and don't bother 
-to keep the stack pointer always aligned. So just before a call 
-instruction, the stack layout is like this:
+Just before a call instruction, the stack layout is like this:
 
 old sp:	incoming args (at sp0+locals+20)
 	return address
@@ -1028,9 +1029,6 @@ the GETARG instruction.
 On the Mac, sp must be 16-byte aligned at this point, so 
 nargs + locals + blank + 5 must be a multiple of 4 in words.
 */
-
-static int locals;             /* Size of local space */
-static int nargs;              /* Effective number of outgoing args */
 
 static void prep_call(int n) {
 #ifdef MACOS
@@ -1097,12 +1095,12 @@ old sp: 32-byte shadow area
         saved rbx
 	saved rsi
 	saved rdi
-sp:     blank space
+        blank space
+sp:	outgoing shadow area
 
 Outgoing arguments are passed in rCX, rDX, r8.
 */
 
-static int nargs;               /* Number of outgoing args */
 static int argnum;              /* Last argument pushed */
 static int argreg[3];   	/* Whether each arg is a register */
 static int argval[3];           /* Value for each arg, or reg  */
@@ -1110,9 +1108,6 @@ static int funreg;              /* Register containing function address */
 
 static void prep_call(int n) {
      nargs = n; argnum = n; funreg = NOREG;
-#ifdef WINDOWS
-     sub64_i(rSP, 32);
-#endif
 }
 
 static void arg_r(int r) {
@@ -1154,7 +1149,7 @@ static int scratch_reg(void) {
                return scr_reg[i];
      }
 
-     vm_panic("can't find scratch register");
+     vm_panic("can't find a scratch register");
      return 0;
 }
 
@@ -1197,18 +1192,12 @@ void call_r(int ra) {
      funreg = ra;
      move_args();
      instr2_m(opCALL, funreg, 0);
-#ifdef WINDOWS
-     add64_i(rSP, 32);
-#endif
 }
 
 void call_i(int a) {
      /* Indirect call via trampoline */
      move_args();
      instr2_m(opCALL, NOREG, a);
-#ifdef WINDOWS
-     add64_i(rSP, 32);
-#endif
 }     
 
 code_addr vm_prelude(int n, int locs) {
@@ -1216,8 +1205,10 @@ code_addr vm_prelude(int n, int locs) {
      push_r(rBP); push_r(rBX);
 #ifdef WINDOWS     
      push_r(rSI); push_r(rDI);
-#endif
+     sub64_i(rSP, 40);
+#else
      sub64_i(rSP, 8);
+#endif
      if (locs > 0) vm_panic("sorry, no local variables allowed");
      if (n > 1) vm_panic("sorry, only one parameter allowed today");
      return entry;
@@ -1239,11 +1230,13 @@ void vm_gen0(operation op) {
           if (locals > 0) add_i(rSP, locals);
 	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
 #else
-          add64_i(rSP, 8);
 #ifdef WINDOWS
-	  pop(rDI); pop(rSI);
-#endif
+          add64_i(rSP, 40 + locals);
+	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
+#else
+	  add64_i(rSP, 8 + locals);
 	  pop(rBX); pop(rBP);
+#endif
 #endif
           instr(opRET);
 	  break;
