@@ -95,7 +95,7 @@ case $host in
     AC_SUBST(ROOT, C:/msys64)
     DIRSEP="\\\\"
     WIN=win64
-    AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304])
+    AC_SUBST(CFLAGS_JIT, [-Wl,--stack,16777216])
     if test "$enable_m64x32" != no; then
       M64X32=1; CC='gcc -std=gnu99'
     else

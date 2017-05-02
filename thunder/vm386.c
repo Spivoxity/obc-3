@@ -1127,23 +1127,36 @@ static void arg_i(int a) {
      argval[argnum] = a;
 }
 
-/* Replace one register with another in argument list and return count */
-static int subst_reg(int r1, int r2) {
+static int use_count(int r) {
      int count = 0;
-
      for (int i = 0; i < nargs; i++) {
-          if (argreg[i] && argval[i] == r1) {
-               argval[i] = r2; count++;
-          }              
+          if (argreg[i] && argval[i] == r)
+               count++;
      }
-
-     if (funreg == r1) {
-          funreg = r2; count++;
-     }
-
+     if (funreg == r) count++;
      return count;
 }
 
+/* Replace one register with another in argument list and return count */
+static void subst_reg(int r1, int r2) {
+     for (int i = 0; i < nargs; i++) {
+          if (argreg[i] && argval[i] == r1)
+               argval[i] = r2;
+     }
+     if (funreg == r1) funreg = r2;
+}
+
+static int scr_reg[] = { r9, r10, r11 };
+
+static int scratch_reg(void) {
+     for (int i = 0; i < 3; i++) {
+          if (use_count(scr_reg[i]) == 0)
+               return scr_reg[i];
+     }
+
+     vm_panic("can't find scratch register");
+     return 0;
+}
 
 static int out[] = {
 #ifndef WINDOWS
@@ -1158,10 +1171,12 @@ static void move_args() {
      // Permute the registers
      for (int i = 0; i < nargs; i++) {
           if (argreg[i] && argval[i] != out[i]) {
-               if (subst_reg(out[i], argval[i]) == 0)
-                    move(out[i], argval[i]);
-               else
-                    swap(out[i], argval[i]);
+               if (use_count(out[i]) > 0) {
+                    int r = scratch_reg();
+                    move(r, out[i]);
+                    subst_reg(out[i], r);
+               }
+               move(out[i], argval[i]);
                argval[i] = out[i];
           }
      }
