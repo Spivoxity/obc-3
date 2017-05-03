@@ -58,10 +58,6 @@ typedef intptr_t address;
 #define r11		11
 #define NOREG		-1
 
-/* Registers 12 and 13 are hard to encode as index registers, and registers
-   12 to 15 are callee save, so would cost us in every prelude: so we
-   don't bother with them. */
-
 /* And these are the floating point registers */
 #define rF0		0x10
 #define rF1		0x11
@@ -99,22 +95,30 @@ const vmreg ireg[] = {
 };
 #else
 
-/* This version includes a crude native amd64 port (enabled with M64X32)
-   that still uses 32-bit addresses.  
+/* This version includes a native amd64 port (enabled with M64X32) that 
+   still uses 32-bit addresses.  
 
-* We rely on the host software to supply an implementation of vm_alloc
-  that allocates storage in the bottom 4GB of the address space.  This
-  is easily achieved on Linux with the MAP_32BITS flag to mmap.
+   * We rely on the host software to supply an implementation of vm_alloc()
+     that allocates storage in the bottom 4GB of the address space.  This
+     is easily achieved on Linux with the MAP_32BITS flag to mmap, and on
+     Windows with an undocumented API call.
 
-* We still use x87 for floating point.
+   * We still use x87 for floating point.
 
-* All addresses that are passed to the code generation interface must
-  fit in 32 bits.  That means global data storage needs to be in the bottom
-  4GB of memory.  For function addresses, we use wrappers, so that the
-  CALL instruction is in effect an indirect call, receiving the 32-bit
-  address of cell that contains the 64-bit address of the function.
-  It's up to the host software to create and manage these indirection
-  cells. */
+   * All addresses that are passed to the code generation interface must
+     fit in 32 bits.  That means global data storage needs to be in the bottom
+     4GB of memory.  For function addresses, we use wrappers, so that the
+     CALL instruction is in effect an indirect call, receiving the 32-bit
+     address of cell that contains the 64-bit address of the function.
+     It's up to the host software to create and manage these indirection
+     cells. 
+
+   Registers 12 and 13 are hard to encode as index registers, and
+   registers 12 to 15 are callee save, so would cost us in every
+   prelude: so we don't bother with them.  On Windows, rSI and rDI are
+   preserved across calls, so we could have made nvreg = 4; it makes
+   no difference to the Kieko JIT.  We do, however, respect the
+   calling convention by saving those registers in the frame. */
 
 struct _vmreg
      reg_i3 = { "I3", rSI },
@@ -133,16 +137,11 @@ const vmreg ireg[] = {
      &reg_i3, &reg_i4, &reg_i5, &reg_i6, &reg_i7, &reg_i8
 }; 
 
-/* On Windows, rSI and rDI are also preserved across calls, so we
-   could have made nvreg = 4; it makes no difference to the Kieko JIT.
-   We do, however, respect the calling convention by saving those
-   registers in the frame. */
-
 #endif
 
 const int nfreg = 6;
 const vmreg freg[] = {
-     &reg_f0, &reg_f1, &reg_f2, /* Floating point */
+     &reg_f0, &reg_f1, &reg_f2, /* Floating point for all variants */
      &reg_f3, &reg_f4, &reg_f5
 };
 
@@ -290,9 +289,9 @@ static char *fmt_addr(int rs, int imm) {
 #define xFLOP_r 	0xdc		// Flop with result in ST(r)
 #define xFLOPP_r 	0xde		// Flop with result popped to ST(r)
 
-#define xSHIFT_r 0xd3
-#define xSHIFT_1 0xd1
-#define xSHIFT_i 0xc1
+#define xSHIFT_r	0xd3    	// Shift by register
+#define xSHIFT_1 	0xd1		// Shift by 1
+#define xSHIFT_i 	0xc1		// Shift by a constant
 
 /* Floating point instructions */
 #define opFCHS 		MNEM("fchs", pfx(0xd9, 0xe0))
@@ -1018,7 +1017,7 @@ static int nargs;              /* Effective number of outgoing args */
 #ifndef M64X32
 
 /*
-Just before a call instruction, the stack layout is like this:
+On X86, just before a call instruction, the stack layout is like this:
 
 old sp:	incoming args (at sp0+locals+20)
 	return address
@@ -1071,6 +1070,12 @@ code_addr vm_prelude(int n, int locs) {
      push_r(rBP); push_r(rBX); push_r(rSI); push_r(rDI); 
      if (locals > 0) sub_i(rSP, locals);
      return entry;
+}
+
+static void retn(void) {
+     if (locals > 0) add_i(rSP, locals);
+     pop(rDI); pop(rSI); pop(rBX); pop(rBP);
+     instr(opRET);
 }
 
 #else
@@ -1168,7 +1173,7 @@ static int out[] = {
 #endif
 };
 
-/* Move args from stack into registers */
+/* Move args from into correct registers */
 static void move_args() {
      // Permute the registers
      for (int i = 0; i < nargs; i++) {
@@ -1195,13 +1200,13 @@ static void move_args() {
      }
 }
 
-void call_r(int ra) {
+static void call_r(int ra) {
      funreg = ra;
      move_args();
      instr2_m(opCALL, funreg, 0);
 }
 
-void call_i(int a) {
+static void call_i(int a) {
      /* Indirect call via trampoline */
      move_args();
      instr2_m(opCALL, NOREG, a);
@@ -1220,6 +1225,17 @@ code_addr vm_prelude(int n, int locs) {
      if (n > 1) vm_panic("sorry, only one parameter allowed today");
      return entry;
 }
+
+static void retn(void) {
+#ifdef WINDOWS
+          add64_i(rSP, 40 + locals);
+	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
+#else
+	  add64_i(rSP, 8 + locals);
+	  pop(rBX); pop(rBP);
+#endif
+          instr(opRET);
+}
 #endif
 
 
@@ -1233,20 +1249,7 @@ void vm_gen0(operation op) {
 
      switch (op) {
      case RET: 
-#ifndef M64X32
-          if (locals > 0) add_i(rSP, locals);
-	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
-#else
-#ifdef WINDOWS
-          add64_i(rSP, 40 + locals);
-	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
-#else
-	  add64_i(rSP, 8 + locals);
-	  pop(rBX); pop(rBP);
-#endif
-#endif
-          instr(opRET);
-	  break;
+          retn(); break;
 
      default:
 	  badop();
@@ -1269,8 +1272,8 @@ void vm_gen1r(operation op, vmreg rega) {
      case CALL:
           call_r(ra); break;
           
-     case ZEROF:
-     case ZEROD:
+     case ZEROf:
+     case ZEROd:
 	  fzero(ra); break;
 
      default:
@@ -1340,7 +1343,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      case SXTOFF:
           move(ra, rb); break;
 #else
-     case MOV64:
+     case MOVq:
 	  if (isfloat(ra) && isfloat(rb)) {
 	       movef(ra, rb);
 	  } else if (isfloat(ra)) {
@@ -1354,10 +1357,10 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
           break;
 
      case SXTOFF:
-     case SXT64:
+     case SXTq:
           instr_rr(opMOVSXD_r, ra, rb);
           break;
-     case NEG64:
+     case NEGq:
           neg64(ra, rb); break;
 #endif
 
@@ -1365,20 +1368,20 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  monop(MONOP(opNEG), ra, rb); break;
      case NOT:    
 	  monop(MONOP(opNOT), ra, rb); break;
-     case NEGF:
-     case NEGD:
+     case NEGf:
+     case NEGd:
 	  fmonop(opFCHS, ra, rb); break;
 
-     case CONVIF:
-     case CONVID:
+     case CONVif:
+     case CONVid:
 	  push_r(rb); loadf(opFILDL_m, ra, rSP, 0); pop(rb); break;
-     case CONVFI:
-     case CONVDI:
+     case CONVfi:
+     case CONVdi:
           push_r(ra); ftruncs(rb, rSP, 0); pop(ra); break;
-     case CONVFD:
-     case CONVDF:
+     case CONVfd:
+     case CONVdf:
           movef(ra, rb); break;
-     case SXT: 
+     case CONVis: 
 	  instr_rr(opMOVSWL_r, ra, rb); break;
 
      default:
@@ -1442,6 +1445,7 @@ void vm_gen2rj(operation op, vmreg rega, vmlabel b) {
 
 void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
      int ra = rega->vr_reg, rb = regb->vr_reg, rc = regc->vr_reg;
+     vmlabel lab1;
 
      vm_debug1(op, 3, rega->vr_name, regb->vr_name, regc->vr_name);
      vm_space(0);
@@ -1467,88 +1471,92 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 	  shift3_r(opSHL, ra, rb, rc); break;
      case RSH: 
 	  shift3_r(opSAR, ra, rb, rc); break;
-     case RSHU: 
+     case RSHu: 
 	  shift3_r(opSHR, ra, rb, rc); break;
      case ROR:
           shift3_r(opROR, ra, rb, rc); break;
 
-     case ADDF:
-     case ADDD:
+     case ADDf:
+     case ADDd:
 	  flop3(opFadd, opFadd, ra, rb, rc); break;
-     case SUBF:
-     case SUBD:
+     case SUBf:
+     case SUBd:
 	  flop3(opFsub, opFsubR, ra, rb, rc); break;
-     case MULF:
-     case MULD:
+     case MULf:
+     case MULd:
 	  flop3(opFmul, opFmul, ra, rb, rc); break;
-     case DIVF:
-     case DIVD:
+     case DIVf:
+     case DIVd:
 	  flop3(opFdiv, opFdivR, ra, rb, rc); break;
 
      case EQ: 
 	  compare_r(SETCC(opE), ra, rb, rc); break;
-     case GEQ:
+     case GE:
 	  compare_r(SETCC(opGE), ra, rb, rc); break;
      case GT: 
 	  compare_r(SETCC(opG), ra, rb, rc); break;
-     case LEQ:
+     case LE:
 	  compare_r(SETCC(opLE), ra, rb, rc); break;
      case LT: 
 	  compare_r(SETCC(opL), ra, rb, rc); break;
-     case NEQ:
+     case NE:
 	  compare_r(SETCC(opNE), ra, rb, rc); break;
 
 #ifdef M64X32
-     case EQ64: 
+     case EQq: 
 	  compare64_r(SETCC(opE), ra, rb, rc); break;
-     case GEQ64:
+     case GEq:
 	  compare64_r(SETCC(opGE), ra, rb, rc); break;
-     case GT64: 
+     case GTq: 
 	  compare64_r(SETCC(opG), ra, rb, rc); break;
-     case LEQ64:
+     case LEq:
 	  compare64_r(SETCC(opLE), ra, rb, rc); break;
-     case LT64: 
+     case LTq: 
 	  compare64_r(SETCC(opL), ra, rb, rc); break;
-     case NEQ64:
+     case NEq:
 	  compare64_r(SETCC(opNE), ra, rb, rc); break;
 #endif
 
-     case EQF:
-     case EQD:
+     case EQf:
+     case EQd:
+          lab1 = vm_newlab();
           fcomp(rb, rc);
           setcc_r(SETCC(opE), ra);
-          instr_tgt(CONDJ(opNP), pc+8);
+          instr_lab(CONDJ(opNP), lab1);
           move_i(ra, 0);
+          vm_label(lab1);
           break;
-     case NEQF:
-     case NEQD:
+     case NEf:
+     case NEd:
+          lab1 = vm_newlab();
           fcomp(rb, rc);
           setcc_r(SETCC(opNE), ra);
-          instr_tgt(CONDJ(opNP), pc+8);
+          instr_lab(CONDJ(opNP), lab1);
           inc_r(ra);
+          vm_label(lab1);
           break;
-     case GEQF:
-     case GEQD:
+     case GEf:
+     case GEd:
 	  fcompare(SETCC(opAE), ra, rb, rc); break;
-     case GTF:
-     case GTD:
+     case GTf:
+     case GTd:
 	  fcompare(SETCC(opA), ra, rb, rc); break;
-     case LEQF:
-     case LEQD:
+     case LEf:
+     case LEd:
 	  fcompare(SETCC(opAE), ra, rc, rb); break;
-     case LTF:
-     case LTD:
+     case LTf:
+     case LTd:
 	  fcompare(SETCC(opA), ra, rc, rb); break;
 
 #ifdef M64X32
-     case ADD64:
+     case ADDq:
      case ADDOFF:
           commute64(ALUOP64(opADD), ra, rb, rc); break;
 
-     case SUB64:
+     case SUBq:
           subtract64(ra, rb, rc); break;
 
-     case MUL64:
+     case MULq:
           commute64(REXW_(opIMUL_r), ra, rb, rc); break;
 #endif
            
@@ -1581,7 +1589,7 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
           break;
 
 #ifdef M64X32
-     case ADD64:
+     case ADDq:
           move64(ra, rb);
           if (c == 1)
                instr2_r(REXW2_(opINC_m), ra);
@@ -1589,7 +1597,7 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
                instr2_ri(ALUOP64_i(opADD), ra, c);
           break;
 
-     case SUB64:
+     case SUBq:
           move64(ra, rb);
           if (c == 1)
                instr2_r(REXW2_(opDEC_m), ra);
@@ -1608,7 +1616,7 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
      case MUL:
 	  instr_rri(opIMUL_i, ra, rb, c); break;
 #ifdef M64X32
-     case MUL64:
+     case MULq:
           instr_rri(REXW_(opIMUL_i), ra, rb, c); break;
 #endif
 
@@ -1616,36 +1624,36 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 	  shift3_i(opSHL, ra, rb, c); break;
      case RSH: 
 	  shift3_i(opSAR, ra, rb, c); break;
-     case RSHU: 
+     case RSHu: 
 	  shift3_i(opSHR, ra, rb, c); break;
      case ROR:
           shift3_i(opROR, ra, rb, c); break;
 
      case EQ:
 	  compare_i(SETCC(opE), ra, rb, c); break;
-     case GEQ:
+     case GE:
 	  compare_i(SETCC(opGE), ra, rb, c); break;
      case GT: 
 	  compare_i(SETCC(opG), ra, rb, c); break;
-     case LEQ:
+     case LE:
 	  compare_i(SETCC(opLE), ra, rb, c); break;
      case LT: 
 	  compare_i(SETCC(opL), ra, rb, c); break;
-     case NEQ:
+     case NE:
 	  compare_i(SETCC(opNE), ra, rb, c); break;
 
 #ifdef M64X32
-     case EQ64:
+     case EQq:
 	  compare64_i(SETCC(opE), ra, rb, c); break;
-     case GEQ64:
+     case GEq:
 	  compare64_i(SETCC(opGE), ra, rb, c); break;
-     case GT64:
+     case GTq:
 	  compare64_i(SETCC(opG), ra, rb, c); break;
-     case LEQ64:
+     case LEq:
 	  compare64_i(SETCC(opLE), ra, rb, c); break;
-     case LT64:
+     case LTq:
 	  compare64_i(SETCC(opL), ra, rb, c); break;
-     case NEQ64:
+     case NEq:
 	  compare64_i(SETCC(opNE), ra, rb, c); break;
 #endif
 
@@ -1662,13 +1670,13 @@ static void vm_load_store(operation op, int ra, int rb, int c) {
           else 
                load(ra, rb, c); 
 	  break;
-     case LDSU: 
+     case LDSu: 
           instr_rm(opMOVZWL_r, ra, rb, c); break;
-     case LDCU: 
+     case LDBu: 
 	  instr_rm(opMOVZBL_r, ra, rb, c); break;
      case LDS:
 	  instr_rm(opMOVSWL_r, ra, rb, c); break;
-     case LDC:
+     case LDB:
           instr_rm(opMOVSBL_r, ra, rb, c); break;
      case STW: 
 	  if (isfloat(ra)) 
@@ -1712,6 +1720,7 @@ static void vm_load_store(operation op, int ra, int rb, int c) {
 
 void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
+     vmlabel lab1;
 
      vm_debug1(op, 3, rega->vr_name, regb->vr_name, fmt_lab(lab));
      vm_space(0);
@@ -1719,37 +1728,37 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
      switch (op) {
      case BEQ: 
           branch_r(CONDJ(opE), ra, rb, lab); break;
-     case BGEQ: 
+     case BGE: 
 	  branch_r(CONDJ(opGE), ra, rb, lab); break;
      case BGT: 
 	  branch_r(CONDJ(opG), ra, rb, lab); break;
-     case BLEQ: 
+     case BLE: 
 	  branch_r(CONDJ(opLE), ra, rb, lab); break;
      case BLT: 
 	  branch_r(CONDJ(opL), ra, rb, lab); break;
-     case BNEQ: 
+     case BNE: 
 	  branch_r(CONDJ(opNE), ra, rb, lab); break;
-     case BLTU: 
+     case BLTu: 
 	  branch_r(CONDJ(opB), ra, rb, lab); break;
-     case BGEQU:
+     case BGEu:
 	  branch_r(CONDJ(opAE), ra, rb, lab); break;
-     case BGTU:
+     case BGTu:
 	  branch_r(CONDJ(opA), ra, rb, lab); break;
-     case BLEQU:
+     case BLEu:
 	  branch_r(CONDJ(opBE), ra, rb, lab); break;
 
 #ifdef M64X32
-     case BEQ64: 
+     case BEQq: 
 	  branch64_r(CONDJ(opE), ra, rb, lab); break;
-     case BGEQ64: 
+     case BGEq: 
 	  branch64_r(CONDJ(opGE), ra, rb, lab); break;
-     case BGT64: 
+     case BGTq: 
 	  branch64_r(CONDJ(opG), ra, rb, lab); break;
-     case BLEQ64: 
+     case BLEq: 
 	  branch64_r(CONDJ(opLE), ra, rb, lab); break;
-     case BLT64: 
+     case BLTq: 
 	  branch64_r(CONDJ(opL), ra, rb, lab); break;
-     case BNEQ64: 
+     case BNEq: 
 	  branch64_r(CONDJ(opNE), ra, rb, lab); break;
 #endif
 
@@ -1757,60 +1766,62 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
         ensure the correct treatment of NaN values. */
 
 /*
-Result of UCOM
+Result of UCOMI
 	<	=	>	Unord
 ZCP     010     100     000     111     O = S = 0
 
 Keiko					x86
 -----					---     
 BEQ     F       T       F       F       not JP and JE
-BNEQ    T       F       T       T       JP or JNE
+BNE     T       F       T       T       JP or JNE
 BLT     T       F       F       F       swap JA
-BLEQ    T       T       F       F       swap JAE
+BLE     T       T       F       F       swap JAE
 BGT     F       F       T       F       JA
-BGEQ    F       T       T       F       JAE
+BGE     F       T       T       F       JAE
 BNLT    F       T       T       T       swap JBE
-BNLEQ   F       F       T       T       swap JB
+BNLE    F       F       T       T       swap JB
 BNGT    T       T       F       T       JBE
-BNGEQ   T       F       F       T       JB
+BNGE    T       F       F       T       JB
 */
 
-     case BEQF:
-     case BEQD:
+     case BEQf:
+     case BEQd:
+          lab1 = vm_newlab();
           fcomp(ra, rb);
-          instr_tgt(CONDJ(opP), pc+12);
+          instr_lab(CONDJ(opP), lab1);
           instr_lab(CONDJ(opE), lab);
+          vm_label(lab1);
           break;
-     case BNEQF:
-     case BNEQD:
+     case BNEf:
+     case BNEd:
           fcomp(ra, rb);
           instr_lab(CONDJ(opP), lab);
           instr_lab(CONDJ(opNE), lab);
 	  break;
 
-     case BGEQF:
-     case BGEQD:
+     case BGEf:
+     case BGEd:
 	  fbranch(CONDJ(opAE), ra, rb, lab); break;
-     case BGTF:
-     case BGTD:
+     case BGTf:
+     case BGTd:
 	  fbranch(CONDJ(opA), ra, rb, lab); break;
-     case BLEQF:
-     case BLEQD:
+     case BLEf:
+     case BLEd:
 	  fbranch(CONDJ(opAE), rb, ra, lab); break;
-     case BLTF:
-     case BLTD:
+     case BLTf:
+     case BLTd:
 	  fbranch(CONDJ(opA), rb, ra, lab); break;
-     case BNGEQF:
-     case BNGEQD:
+     case BNGEf:
+     case BNGEd:
           fbranch(CONDJ(opB), ra, rb, lab); break;
-     case BNGTF:
-     case BNGTD:
+     case BNGTf:
+     case BNGTd:
           fbranch(CONDJ(opBE), ra, rb, lab); break;
-     case BNLTF:
-     case BNLTD:
+     case BNLTf:
+     case BNLTd:
           fbranch(CONDJ(opBE), rb, ra, lab); break;
-     case BNLEQF:
-     case BNLEQD:
+     case BNLEf:
+     case BNLEd:
           fbranch(CONDJ(opB), ra, rb, lab); break;
      default:
 	  badop();
@@ -1826,37 +1837,37 @@ void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
      switch (op) {
      case BEQ: 
 	  branch_i(CONDJ(opE), ra, b, lab); break;
-     case BGEQU: 
+     case BGEu: 
 	  branch_i(CONDJ(opAE), ra, b, lab); break;
-     case BGEQ: 
+     case BGE: 
 	  branch_i(CONDJ(opGE), ra, b, lab); break;
      case BGT: 
 	  branch_i(CONDJ(opG), ra, b, lab); break;
-     case BLEQ: 
+     case BLE: 
 	  branch_i(CONDJ(opLE), ra, b, lab); break;
-     case BLTU: 
+     case BLTu: 
 	  branch_i(CONDJ(opB), ra, b, lab); break;
      case BLT: 
 	  branch_i(CONDJ(opL), ra, b, lab); break;
-     case BNEQ: 
+     case BNE: 
 	  branch_i(CONDJ(opNE), ra, b, lab); break;
-     case BGTU:
+     case BGTu:
 	  branch_i(CONDJ(opA), ra, b, lab); break;
-     case BLEQU:
+     case BLEu:
 	  branch_i(CONDJ(opBE), ra, b, lab); break;
 
 #ifdef M64X32
-     case BEQ64:
+     case BEQq:
           branch64_i(CONDJ(opE), ra, b, lab); break;
-     case BGEQ64:
+     case BGEq:
           branch64_i(CONDJ(opGE), ra, b, lab); break;
-     case BGT64:
+     case BGTq:
           branch64_i(CONDJ(opG), ra, b, lab); break;
-     case BLEQ64:
+     case BLEq:
           branch64_i(CONDJ(opLE), ra, b, lab); break;
-     case BLT64:
+     case BLTq:
           branch64_i(CONDJ(opL), ra, b, lab); break;
-     case BNEQ64:
+     case BNEq:
           branch64_i(CONDJ(opNE), ra, b, lab); break;
 #endif
 

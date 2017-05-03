@@ -791,11 +791,11 @@ void vm_gen1r(operation op, vmreg rega) {
 	  move_reg(R(argp), ra);
 	  break;
 
-     case ZEROF:
+     case ZEROf:
           fmsr(ra, const_reg(0));
           break;
 
-     case ZEROD:
+     case ZEROd:
 	  fmsr(ra, const_reg(0));
           op_rr(opFCVTSD, ra, ra);
           break;
@@ -876,39 +876,39 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
           write_reg(ra);
 	  op_rr(opMVN, ra, rb); break;
 
-     case NEGF:
+     case NEGf:
 	  op_rr(opFNEGS, ra, rb); break;
 
-     case NEGD:
+     case NEGd:
 	  op_rr(opFNEGD, ra, rb); break;
 
-     case CONVIF:
+     case CONVif:
 	  fmsr(ra, rb); 
 	  op_rr(opFSITOS, ra, ra); 
 	  break;
 
-     case CONVID:
+     case CONVid:
 	  fmsr(ra, rb); 
 	  op_rr(opFSITOD, ra, ra); 
 	  break;
 
-     case CONVFI:
+     case CONVfi:
           op_rr(opFTOSIZS, F14, rb);
           fmrs(ra, F14);
           break;
 
-     case CONVDI:
+     case CONVdi:
           op_rr(opFTOSIZD, F14, rb);
           fmrs(ra, F14);
           break;
 
-     case CONVFD:
+     case CONVfd:
 	  op_rr(opFCVTDS, ra, rb); break;
 
-     case CONVDF:
+     case CONVdf:
 	  op_rr(opFCVTSD, ra, rb); break;
 
-     case SXT: 
+     case CONVis: 
           write_reg(ra);
 	  op_rr(opSXTH, ra, rb); break;
 
@@ -1001,85 +1001,85 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
      case RSH: 
           write_reg(ra);
 	  shift_r(opASR, ra, rb, rc); break;
-     case RSHU: 
+     case RSHu: 
           write_reg(ra);
 	  shift_r(opLSR, ra, rb, rc); break;
      case ROR:
           write_reg(ra);
           shift_r(opROR, ra, rb, rc); break;
 
-     case ADDF:
+     case ADDf:
 	  op_rrr(opFADDS, ra, rb, rc); break;
-     case SUBF:
+     case SUBf:
 	  op_rrr(opFSUBS, ra, rb, rc); break;
-     case MULF:
+     case MULf:
 	  op_rrr(opFMULS, ra, rb, rc); break;
-     case DIVF:
+     case DIVf:
 	  op_rrr(opFDIVS, ra, rb, rc); break;
 
-     case ADDD:
+     case ADDd:
 	  op_rrr(opFADDD, ra, rb, rc); break;
-     case SUBD:
+     case SUBd:
 	  op_rrr(opFSUBD, ra, rb, rc); break;
-     case MULD:
+     case MULd:
 	  op_rrr(opFMULD, ra, rb, rc); break;
-     case DIVD:
+     case DIVd:
 	  op_rrr(opFDIVD, ra, rb, rc); break;
 
      case EQ: 
           write_reg(ra);
 	  bool_reg(opMOVEQ, ra, rb, rc); break;
-     case GEQ:
+     case GE:
           write_reg(ra);
 	  bool_reg(opMOVGE, ra, rb, rc); break;
      case GT: 
           write_reg(ra);
 	  bool_reg(opMOVGT, ra, rb, rc); break;
-     case LEQ:
+     case LE:
           write_reg(ra);
 	  bool_reg(opMOVLE, ra, rb, rc); break;
      case LT: 
           write_reg(ra);
 	  bool_reg(opMOVLT, ra, rb, rc); break;
-     case NEQ:
+     case NE:
           write_reg(ra);
 	  bool_reg(opMOVNE, ra, rb, rc); break;
 
-     case EQF:
+     case EQf:
           write_reg(ra);
 	  bool_reg_f(opMOVEQ, ra, rb, rc); break;
-     case LTF:
+     case LTf:
           write_reg(ra);
 	  bool_reg_f(opMOVLO, ra, rb, rc); break;
-     case LEQF:
+     case LEf:
           write_reg(ra);
 	  bool_reg_f(opMOVLS, ra, rb, rc); break;
-     case GTF:
+     case GTf:
           write_reg(ra);
 	  bool_reg_f(opMOVGT, ra, rb, rc); break;
-     case GEQF:
+     case GEf:
           write_reg(ra);
 	  bool_reg_f(opMOVGE, ra, rb, rc); break;
-     case NEQF:
+     case NEf:
           write_reg(ra);
 	  bool_reg_f(opMOVNE, ra, rb, rc); break;
 
-     case EQD:
+     case EQd:
           write_reg(ra);
 	  bool_reg_d(opMOVEQ, ra, rb, rc); break;
-     case GEQD:
+     case GEd:
           write_reg(ra);
 	  bool_reg_d(opMOVGE, ra, rb, rc); break;
-     case GTD:
+     case GTd:
           write_reg(ra);
 	  bool_reg_d(opMOVGT, ra, rb, rc); break;
-     case LEQD:
+     case LEd:
           write_reg(ra);
 	  bool_reg_d(opMOVLS, ra, rb, rc); break;
-     case LTD:
+     case LTd:
           write_reg(ra);
 	  bool_reg_d(opMOVLO, ra, rb, rc); break;
-     case NEQD:
+     case NEd:
           write_reg(ra);
 	  bool_reg_d(opMOVNE, ra, rb, rc); break;
 
@@ -1120,7 +1120,7 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
      case RSH: 
           write_reg(ra);
 	  shift_i(opASR, ra, rb, c); break;
-     case RSHU: 
+     case RSHu: 
           write_reg(ra);
 	  shift_i(opLSR, ra, rb, c); break;
      case ROR:
@@ -1130,19 +1130,19 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
      case EQ:
           write_reg(ra);
 	  bool_immed(opMOVEQ, ra, rb, c); break;
-     case GEQ:
+     case GE:
           write_reg(ra);
 	  bool_immed(opMOVGE, ra, rb, c); break;
      case GT: 
           write_reg(ra);
 	  bool_immed(opMOVGT, ra, rb, c); break;
-     case LEQ:
+     case LE:
           write_reg(ra);
 	  bool_immed(opMOVLE, ra, rb, c); break;
      case LT: 
           write_reg(ra);
 	  bool_immed(opMOVLT, ra, rb, c); break;
-     case NEQ:
+     case NE:
           write_reg(ra);
 	  bool_immed(opMOVNE, ra, rb, c); break;
 
@@ -1171,16 +1171,16 @@ static void vm_load_store(operation op, int ra, int rb, int c) {
      case LDS:
           write_reg(ra);
 	  load_store_x(opLDSH, ra, rb, c); break;
-     case LDSU: 
+     case LDSu: 
           write_reg(ra);
           load_store_x(opLDRH, ra, rb, c); break;
      case STS: 
 	  load_store_x(opSTRH, ra, rb, c); break;
 
-     case LDC:
+     case LDB:
           write_reg(ra);
 	  load_store_x(opLDSB, ra, rb, c); break;
-     case LDCU: 
+     case LDBu: 
           write_reg(ra);
 	  load_store(opLDRB, ra, rb, c); break;
      case STC: 
@@ -1205,23 +1205,23 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
      switch (op) {
      case BEQ: 
 	  br_reg(opBEQ, ra, rb, lab); break;
-     case BGEQ: 
+     case BGE: 
 	  br_reg(opBGE, ra, rb, lab); break;
      case BGT: 
 	  br_reg(opBGT, ra, rb, lab); break;
-     case BLEQ: 
+     case BLE: 
 	  br_reg(opBLE, ra, rb, lab); break;
      case BLT: 
 	  br_reg(opBLT, ra, rb, lab); break;
-     case BNEQ: 
+     case BNE: 
 	  br_reg(opBNE, ra, rb, lab); break;
-     case BLTU: 
+     case BLTu: 
 	  br_reg(opBLO, ra, rb, lab); break;
-     case BGEQU:
+     case BGEu:
 	  br_reg(opBHS, ra, rb, lab); break;
-     case BGTU:
+     case BGTu:
 	  br_reg(opBHI, ra, rb, lab); break;
-     case BLEQU:
+     case BLEu:
 	  br_reg(opBLS, ra, rb, lab); break;
 
 /*
@@ -1243,46 +1243,46 @@ BNGT    T       T       F       T       Z|N!=V  BLE
 BNGE    T       F       F       T       N!=V	BLT
 */
 
-     case BEQF:
+     case BEQf:
 	  br_reg_f(opBEQ, ra, rb, lab); break;
-     case BLTF:
+     case BLTf:
 	  br_reg_f(opBLO, ra, rb, lab); break;
-     case BLEQF:
+     case BLEf:
 	  br_reg_f(opBLS, ra, rb, lab); break;
-     case BGTF:
+     case BGTf:
 	  br_reg_f(opBGT, ra, rb, lab); break;
-     case BGEQF:
+     case BGEf:
 	  br_reg_f(opBGE, ra, rb, lab); break;
-     case BNEQF:
+     case BNEf:
 	  br_reg_f(opBNE, ra, rb, lab); break;
-     case BNLTF:
+     case BNLTf:
 	  br_reg_f(opBHS, ra, rb, lab); break;
-     case BNLEQF:
+     case BNLEf:
 	  br_reg_f(opBHI, ra, rb, lab); break;
-     case BNGTF:
+     case BNGTf:
 	  br_reg_f(opBLE, ra, rb, lab); break;
-     case BNGEQF:
+     case BNGEf:
 	  br_reg_f(opBLT, ra, rb, lab); break;
 
-     case BEQD:
+     case BEQd:
 	  br_reg_d(opBEQ, ra, rb, lab); break;
-     case BLTD:
+     case BLTd:
 	  br_reg_d(opBLO, ra, rb, lab); break;
-     case BLEQD:
+     case BLEd:
 	  br_reg_d(opBLS, ra, rb, lab); break;
-     case BGTD:
+     case BGTd:
 	  br_reg_d(opBGT, ra, rb, lab); break;
-     case BGEQD:
+     case BGEd:
 	  br_reg_d(opBGE, ra, rb, lab); break;
-     case BNEQD:
+     case BNEd:
 	  br_reg_d(opBNE, ra, rb, lab); break;
-     case BNLTD:
+     case BNLTd:
 	  br_reg_d(opBHS, ra, rb, lab); break;
-     case BNLEQD:
+     case BNLEd:
 	  br_reg_d(opBHI, ra, rb, lab); break;
-     case BNGTD:
+     case BNGTd:
 	  br_reg_d(opBLE, ra, rb, lab); break;
-     case BNGEQD:
+     case BNGEd:
 	  br_reg_d(opBLT, ra, rb, lab); break;
 
      default:
@@ -1299,23 +1299,23 @@ void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
      switch (op) {
      case BEQ: 
 	  br_immed(opBEQ, ra, b, lab); break;
-     case BGEQU: 
+     case BGEu: 
 	  br_immed(opBHS, ra, b, lab); break;
-     case BGEQ: 
+     case BGE: 
 	  br_immed(opBGE, ra, b, lab); break;
      case BGT: 
 	  br_immed(opBGT, ra, b, lab); break;
-     case BLEQ: 
+     case BLE: 
 	  br_immed(opBLE, ra, b, lab); break;
-     case BLTU: 
+     case BLTu: 
 	  br_immed(opBLO, ra, b, lab); break;
      case BLT: 
 	  br_immed(opBLT, ra, b, lab); break;
-     case BNEQ: 
+     case BNE: 
 	  br_immed(opBNE, ra, b, lab); break;
-     case BGTU:
+     case BGTu:
 	  br_immed(opBHI, ra, b, lab); break;
-     case BLEQU:
+     case BLEu:
 	  br_immed(opBLS, ra, b, lab); break;
 
      default:

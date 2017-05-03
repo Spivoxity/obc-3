@@ -55,7 +55,7 @@ static code_addr prolog(const char *name, int frame, int map) {
      vm_gen(GETARG, rBP->r_reg, 0);
 
      /* Check for stack overflow */
-     vm_gen(BGEQU, rBP->r_reg, address(stack + SLIMIT + frame), lab);
+     vm_gen(BGEu, rBP->r_reg, address(stack + SLIMIT + frame), lab);
      vm_label(stack_oflo);
      push_reg(rBP);
      gcall(STKOFLO, 1);
@@ -167,9 +167,9 @@ static void fcomp(operation op, int ty) {
 
 /* icomp -- integer comparison */
 #ifndef M64X32
-#define icomp(op) icomp1(op, op##F, op##D)
+#define icomp(op) icomp1(op, op##f, op##d)
 #else
-#define icomp(op) icomp1(op, op##F, op##D, op##64)
+#define icomp(op) icomp1(op, op##f, op##d, op##q)
 #endif
 
 static void icomp1(operation op, operation opf, operation opd
@@ -219,26 +219,26 @@ static void fcondj(int cmp, operation op, int ty, int lab) {
      pop(2); unlock(2);		
 
      switch (op) {
-     case BLTF:
-          if (cmp == I_FCMPL) op = BNGEQF; break;
-     case BLEQF:
-          if (cmp == I_FCMPL) op = BNGTF; break;
-     case BGTF:
-          if (cmp == I_FCMPG) op = BNLEQF; break;
-     case BGEQF:
-          if (cmp == I_FCMPG) op = BNLTF; break;
-     case BLTD:
-          if (cmp == I_DCMPL) op = BNGEQD; break;
-     case BLEQD:
-          if (cmp == I_DCMPL) op = BNGTD; break;
-     case BGTD:
-          if (cmp == I_DCMPG) op = BNLEQD; break;
-     case BGEQD:
-          if (cmp == I_DCMPG) op = BNLTD; break;
-     case BEQF:
-     case BEQD:
-     case BNEQF:
-     case BNEQD:
+     case BLTf:
+          if (cmp == I_FCMPL) op = BNGEf; break;
+     case BLEf:
+          if (cmp == I_FCMPL) op = BNGTf; break;
+     case BGTf:
+          if (cmp == I_FCMPG) op = BNLEf; break;
+     case BGEf:
+          if (cmp == I_FCMPG) op = BNLTf; break;
+     case BLTd:
+          if (cmp == I_DCMPL) op = BNGEd; break;
+     case BLEd:
+          if (cmp == I_DCMPL) op = BNGTd; break;
+     case BGTd:
+          if (cmp == I_DCMPG) op = BNLEd; break;
+     case BGEd:
+          if (cmp == I_DCMPG) op = BNLTd; break;
+     case BEQf:
+     case BEQd:
+     case BNEf:
+     case BNEd:
           break;
      default:
           panic("fcondj");
@@ -249,9 +249,9 @@ static void fcondj(int cmp, operation op, int ty, int lab) {
 
 /* icondj -- integer conditional jump */
 #ifndef M64X32
-#define icondj(op, lab) icondj1(op, op##F, op##D, lab)
+#define icondj(op, lab) icondj1(op, op##f, op##d, lab)
 #else
-#define icondj(op, lab) icondj1(op, op##F, op##D, op##64, lab)
+#define icondj(op, lab) icondj1(op, op##f, op##d, op##q, lab)
 #endif
 
 static void icondj1(operation op, operation opf, operation opd,
@@ -395,7 +395,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  		ibinop(OR); break;
      case I_BITXOR:	ibinop(XOR); break;
      case I_ASR:	ibinop(RSH); break;
-     case I_LSR:	ibinop(RSHU); break;
+     case I_LSR:	ibinop(RSHu); break;
      case I_ROR:	ibinop(ROR); break;
      case I_PLUSA:	plusa(); break;
 
@@ -411,13 +411,13 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_UMINUS:	imonop(NEG); break;
      case I_BITNOT:	imonop(NOT); break;
 
-     case I_CONVNF:	gmonop(CONVIF, INT, FLO, 1); break;
-     case I_CONVND:	gmonop(CONVID, INT, FLO, 2); break;
-     case I_CONVFN:	gmonop(CONVFI, FLO, INT, 1); break;
-     case I_CONVDN:	gmonop(CONVDI, FLO, INT, 1); break;
-     case I_CONVDF:	gmonop(CONVDF, FLO, FLO, 1); break;
-     case I_CONVFD:	gmonop(CONVFD, FLO, FLO, 2); break;
-     case I_CONVNS:	gmonop(SXT, INT, INT, 1); break;
+     case I_CONVNF:	gmonop(CONVif, INT, FLO, 1); break;
+     case I_CONVND:	gmonop(CONVid, INT, FLO, 2); break;
+     case I_CONVFN:	gmonop(CONVfi, FLO, INT, 1); break;
+     case I_CONVDN:	gmonop(CONVdi, FLO, INT, 1); break;
+     case I_CONVDF:	gmonop(CONVdf, FLO, FLO, 1); break;
+     case I_CONVFD:	gmonop(CONVfd, FLO, FLO, 2); break;
+     case I_CONVNS:	gmonop(CONVis, INT, INT, 1); break;
 
      case I_CONVNC:
           push(I_CON, INT, rZERO, 0xff, 1);
@@ -432,16 +432,16 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_EQ:		icomp(EQ); break;
      case I_LT:		icomp(LT); break;
      case I_GT:		icomp(GT); break;
-     case I_LE:		icomp(LEQ); break;
-     case I_GE:		icomp(GEQ); break;
-     case I_NE:		icomp(NEQ); break;
+     case I_LE:		icomp(LE); break;
+     case I_GE:		icomp(GE); break;
+     case I_NE:		icomp(NE); break;
 
      case I_JEQ:	icondj(BEQ, arg1); break;
      case I_JLT:	icondj(BLT, arg1); break;
      case I_JGT:	icondj(BGT, arg1); break;
-     case I_JLE:	icondj(BLEQ, arg1); break;
-     case I_JGE:	icondj(BGEQ, arg1); break;
-     case I_JNE:	icondj(BNEQ, arg1); break;
+     case I_JLE:	icondj(BLE, arg1); break;
+     case I_JGE:	icondj(BGE, arg1); break;
+     case I_JNE:	icondj(BNE, arg1); break;
 	  
      case I_JUMP:	
 	  flush(0); 
@@ -455,7 +455,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  flush(1);
 	  r1 = move_to_reg(1, INT); pop(1);
           r2 = ralloc_suggest(INT, r1); unlock(1);
-	  vm_gen(BGEQU, r1->r_reg, arg1, lab);
+	  vm_gen(BGEu, r1->r_reg, arg1, lab);
           vm_gen(LSH, r2->r_reg, r1->r_reg, 2);
           vm_gen(LDW, r2->r_reg, r2->r_reg, address(a));
 	  vm_gen(JUMP, r2->r_reg);
@@ -475,7 +475,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v2 = fix_const(1, FALSE); 
 	  pop(3); unlock(3); killregs();
 	  vm_gen(BLT, r1->r_reg, v->v_val, lab);
-	  vm_gen(BLEQ, r1->r_reg, v2->v_val, target(arg1));
+	  vm_gen(BLE, r1->r_reg, v2->v_val, target(arg1));
 	  vm_label(lab);
 	  break;
 
@@ -485,20 +485,20 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = fix_const(1, FALSE);
 	  pop(2); unlock(2); killregs();
 	  push(I_STACKW, INT, rZERO, 0, 1);
-	  vm_gen(BGEQ, r1->r_reg, v->v_val, target(arg1));
+	  vm_gen(BGE, r1->r_reg, v->v_val, target(arg1));
 	  break;
 
-     case I_FPLUS:	fbinop(ADDF); break;
-     case I_FMINUS:	fbinop(SUBF); break;
-     case I_FTIMES:	fbinop(MULF); break;
-     case I_FDIV:	fbinop(DIVF); break;
-     case I_FUMINUS:    fmonop(NEGF); break;
+     case I_FPLUS:	fbinop(ADDf); break;
+     case I_FMINUS:	fbinop(SUBf); break;
+     case I_FTIMES:	fbinop(MULf); break;
+     case I_FDIV:	fbinop(DIVf); break;
+     case I_FUMINUS:    fmonop(NEGf); break;
 	  
-     case I_DPLUS:	dbinop(ADDD); break;
-     case I_DMINUS:	dbinop(SUBD); break;
-     case I_DTIMES:	dbinop(MULD); break;
-     case I_DDIV:	dbinop(DIVD); break;
-     case I_DUMINUS:	dmonop(NEGD); break;
+     case I_DPLUS:	dbinop(ADDd); break;
+     case I_DMINUS:	dbinop(SUBd); break;
+     case I_DTIMES:	dbinop(MULd); break;
+     case I_DDIV:	dbinop(DIVd); break;
+     case I_DUMINUS:	dmonop(NEGd); break;
 
 	  /* [FD]CMP[LG] must be followed by an integer 
 	     comparison, so we just set a flag and generate 
@@ -515,10 +515,10 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = move_to_rc(1); 
 	  pop(2); unlock(2);
 	  if (v->v_op == I_CON)
-	       vm_gen(BGEQU, r1->r_reg, v->v_val,
+	       vm_gen(BGEu, r1->r_reg, v->v_val,
                       handler(E_BOUND, arg1));
 	  else
-	       vm_gen(BGEQU, r1->r_reg, v->v_reg->r_reg,
+	       vm_gen(BGEu, r1->r_reg, v->v_reg->r_reg,
                       handler(E_BOUND, arg1));
 	  push(I_REG, INT, r1, 0, 1);
 	  break;
@@ -537,21 +537,21 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_FZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
-	  vm_gen(ZEROF, r2->r_reg);
-	  vm_gen(BEQF, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
+	  vm_gen(ZEROf, r2->r_reg);
+	  vm_gen(BEQf, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(I_REG, FLO, r1, 0, 1);
 	  break;
 
      case I_DZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
-	  vm_gen(ZEROD, r2->r_reg);
-	  vm_gen(BEQD, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
+	  vm_gen(ZEROd, r2->r_reg);
+	  vm_gen(BEQd, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(I_REG, FLO, r1, 0, 2);
 	  break;
 
      case I_GCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
-	  vm_gen(BNEQ, r1->r_reg, 0, handler(E_GLOB, arg1));
+	  vm_gen(BNE, r1->r_reg, 0, handler(E_GLOB, arg1));
 	  break;
 
      case I_ERROR:
@@ -580,7 +580,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r3 = ralloc(INT); 
 	  pop(2); unlock(2); 
 	  flex_space(r2);
-	  vm_gen(BLTU, rSP->r_reg, address(stack + SLIMIT), stack_oflo);
+	  vm_gen(BLTu, rSP->r_reg, address(stack + SLIMIT), stack_oflo);
           vm_gen(LDW, r3->r_reg, r1->r_reg, 0);
           vm_gen(STW, rSP->r_reg, r1->r_reg, 0);
           push_reg(r2);
@@ -669,10 +669,10 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_QTIMES:	callout(LONG_MUL, 2); pop(1); break;
      case I_QUMINUS:    callout(LONG_NEG, 1); break;
 #else
-     case I_QPLUS:      qbinop(ADD64); break;
-     case I_QMINUS:	qbinop(SUB64); break;
-     case I_QTIMES:	qbinop(MUL64); break;
-     case I_QUMINUS:	qmonop(NEG64); break;
+     case I_QPLUS:      qbinop(ADDq); break;
+     case I_QMINUS:	qbinop(SUBq); break;
+     case I_QTIMES:	qbinop(MULq); break;
+     case I_QUMINUS:	qmonop(NEGq); break;
 #endif
           
      case I_QDIV:	callout(LONG_DIV, 2); pop(1); break;
@@ -698,7 +698,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	       push(I_STACKQ, INT, rZERO, 0, 2);
 #else
                r1 = move_to_reg(1, INT); pop(1);
-               vm_gen(SXT64, r1->r_reg, r1->r_reg);
+               vm_gen(SXTq, r1->r_reg, r1->r_reg);
                push(I_REG, INT, r1, 0, 2);
 #endif
 	  }
@@ -731,7 +731,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           pop(2);
 #else
           r1 = move_to_reg(1, INT); pop(1); unlock(1);
-          vm_gen(BEQ64, r1->r_reg, 0, handler(E_DIV, arg1));
+          vm_gen(BEQq, r1->r_reg, 0, handler(E_DIV, arg1));
           push(I_REG, INT, r1, 0, 2);
 #endif
 	  break;

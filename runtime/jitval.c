@@ -460,7 +460,7 @@ reg move_to_reg(int i, int ty) {
 	  vm_gen(MOV, r->r_reg, v->v_val);
 #ifdef M64X32
           if (v->v_size == 2)
-               vm_gen(SXT64, r->r_reg, r->r_reg);
+               vm_gen(SXTq, r->r_reg, r->r_reg);
 #endif
 	  break;
 
@@ -493,7 +493,7 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case I_LOADC:	
-	  r = load(LDCU, INT, v->v_reg, v->v_val); 
+	  r = load(LDBu, INT, v->v_reg, v->v_val); 
 	  break;
 
      case I_LOADD: 
@@ -522,7 +522,7 @@ reg move_to_reg(int i, int ty) {
 #ifndef M64X32
 	  vm_gen(MOV, r2->r_reg, r->r_reg);
 #else
-	  vm_gen(choose(v->v_size, MOV, MOV64), r2->r_reg, r->r_reg);
+	  vm_gen(choose(v->v_size, MOV, MOVq), r2->r_reg, r->r_reg);
 #endif
 	  r = r2;
      }

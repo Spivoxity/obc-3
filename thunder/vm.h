@@ -32,25 +32,37 @@ typedef unsigned char *code_addr;
 
 /* Expand a macro once for each VM opcode */
 #define __OP__(p) \
-     p(ADD) p(ADDF) p(AND) p(BEQ) p(BEQF) p(BGEQ) p(BGEQF)	    \
-     p(BGEQU) p(BGT) p(BGTF) p(BLEQ) p(BLEQF) p(BLT) p(BLTF)	    \
-     p(BLTU) p(BNEQ) p(BNEQF) p(CONVIF) p(SXT) p(DIVF)              \
-     p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF)             \
-     p(JUMP) p(LDW) p(LDCU) p(LDQ) p(LDSU) p(LDC) p(LDS) p(LEQ)     \
-     p(LEQF) p(LSH) p(LT) p(LTF) p(MOV) p(MUL) p(MULF)		    \
-     p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
-     p(RSH) p(RSHU) p(STW) p(STC) p(STQ) p(STS) p(SUB)		    \
-     p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
-     p(BGTU) p(BLEQU) p(LDKW) p(CONVFI) p(CONVDI)                   \
-     p(ADDD) p(SUBD) p(MULD) p(DIVD) p(NEGD) p(ZEROD)               \
-     p(BEQD) p(BGEQD) p(BLEQD) p(BLTD) p(BNEQD) p(BGTD)             \
-     p(EQD) p(GEQD) p(LEQD) p(LTD) p(NEQD) p(GTD)                   \
-     p(CONVFD) p(CONVDF) p(CONVID) p(ROR) p(SXTOFF) p(ADDOFF)       \
-     p(MOV64) p(SXT64) p(NEG64) p(ADD64) p(SUB64) p(MUL64)          \
-     p(BEQ64) p(BGT64) p(BGEQ64) p(BLT64) p(BLEQ64) p(BNEQ64)       \
-     p(EQ64) p(GT64) p(GEQ64) p(LT64) p(LEQ64) p(NEQ64)             \
-     p(BNGTF) p(BNGTD) p(BNGEQF) p(BNGEQD) p(BNLTF) p(BNLTD)        \
-     p(BNLEQF) p(BNLEQD)
+     /* Integer arithmetic */                                       \
+     p(MOV) p(ADD) p(SUB) p(MUL) p(NEG)                             \
+     p(AND) p(OR) p(XOR) p(NOT)                                     \
+     p(LSH) p(RSH) p(RSHu) p(ROR)                                   \
+     /* Floating point arithmetic */                                \
+     p(ADDf) p(SUBf) p(MULf) p(DIVf) p(NEGf) p(ZEROf)               \
+     p(ADDd) p(SUBd) p(MULd) p(DIVd) p(NEGd) p(ZEROd)               \
+     /* Integer comparisons */                                      \
+     p(LT) p(LE) p(EQ) p(GE) p(GT) p(NE)                            \
+     p(BLT) p(BLE) p(BEQ) p(BGE) p(BGT) p(BNE)                      \
+     p(BLTu) p(BLEu) p(BGEu) p(BGTu)                                \
+     /* Floating point comparisons */                               \
+     p(LTf) p(LEf) p(EQf) p(GEf) p(GTf) p(NEf)                      \
+     p(BLTf) p(BLEf) p(BEQf) p(BGEf) p(BGTf)                        \
+     p(BNLTf) p(BNLEf) p(BNEf) p(BNGEf) p(BNGTf)                    \
+     p(LTd) p(LEd) p(EQd) p(GEd) p(GTd) p(NEd)                      \
+     p(BLTd) p(BLEd) p(BEQd) p(BGEd) p(BGTd)                        \
+     p(BNLTd) p(BNLEd) p(BNEd) p(BNGEd) p(BNGTd)                    \
+     /* Conversions */                                              \
+     p(CONVif) p(CONVfi) p(CONVdi) p(CONVfd) p(CONVdf)              \
+     p(CONVid) p(CONVis)                                            \
+     /* Load and store */                                           \
+     p(LDB) p(LDBu) p(LDS) p(LDSu) p(LDW) p(LDQ)                    \
+     p(STW) p(STC) p(STQ) p(STS)                                    \
+     p(LDKW) p(SXTOFF) p(ADDOFF)                                    \
+     /* Call and return */                                          \
+     p(PREP) p(ARG) p(CALL) p(GETARG) p(RET) p(JUMP)                \
+     /* 64-bit arithmetic (M64X32 only) */                          \
+     p(ADDq) p(SUBq) p(MULq) p(NEGq) p(MOVq) p(SXTq)                \
+     p(LTq) p(LEq) p(EQq) p(GEq) p(GTq) p(NEq)                      \
+     p(BLTq) p(BLEq) p(BEQq) p(BGEq) p(BGTq) p(BNEq)
 
 #define __op1__(op) op,
 
@@ -65,53 +77,53 @@ NEG ra, rb
   -- unary minus
 NOT ra rb
   -- bitwise negation
-NEGF/NEGD fa, fb
+NEGf/NEGd fa, fb
   -- float or double unary minus
-ADDF/SUBF/MULF/DIVF fa, fb, fc                
+ADDf/SUBf/MULf/DIVf fa, fb, fc                
   -- floating point arithmetic
-ADDD/SUBD/MULD/DIVD fa, fb, fc                
+ADDd/SUBd/MULd/DIVd fa, fb, fc                
   -- double precision arithmetic
 AND/OR/XOR ra, rb, rc/imm                     
   -- bitwise logical operations
-LSH/RSH/RSHU ra, rb, rc/imm
+LSH/RSH/RSHu ra, rb, rc/imm
   -- left shift, arithmetic right shift, logical right shift
-BEQ/BNEQ/BLT/BLEQ/BGT/BGEQ ra, rb/imm, lab    
+BEQ/BNE/BLT/BLE/BGT/BGE ra, rb/imm, lab    
   -- conditional branches
-BEQF/BNEQF/BLTF/BLEQF/BGTF/BGEQF fa, fb, lab  
+BEQf/BNEf/BLTf/BLEf/BGTf/BGEf fa, fb, lab  
   -- floating point conditional branches
-BEQD/BNEQD/BLTD/BLEQD/BGTD/BGEQD fa, fb, lab  
+BEQd/BNEd/BLTd/BLEd/BGTd/BGEd fa, fb, lab  
   -- double precision conditional branches
-BLTU/BGEQU ra, rb/imm, lab                    
+BLTu/BGEu ra, rb/imm, lab                    
   -- unsigned conditional branches
 JUMP lab
   -- unconditional branch
 IJUMP ra, imm
   -- indexed jump with implicit multiplication
-EQ/NEQ/LT/LEQ/GT/GEQ ra, rb, rb/imm                         
+EQ/NE/LT/LE/GT/GE ra, rb, rb/imm                         
   -- comparisons with boolean result
-EQF/NEQF/LTF/LEQF/GTF/GEQF ra, fb, fc
+EQf/NEf/LTf/LEf/GTf/GEf ra, fb, fc
   -- float comparisons with boolean result
-EQD/NEQD/LTD/LEQD/GTD/GEQD ra, fb, fc                 
+EQd/NEd/LTd/LEd/GTd/GEd ra, fb, fc                 
   -- double comparisons with boolean result
 SXT ra, rb
   -- convert integer to short (AND with 0xffff and sign extend)    
-CONVIF/CONVID fa, rb
+CONVif/CONVid fa, rb
   -- convert integer to float or double
-CONVFD/CONVDF fa, fb
+CONVfd/CONVdf fa, fb
   -- convert float/double to double/float
 MOV ra/fa, rb/fb
   -- move between registers, including integer to float and vice versa
 LDW/STW ra/fa, rb, imm
   -- load/store word: ra/fa := mem4[rb+imm] or mem4[rb+imm] := ra
-LDC/LDS ra, rb, imm
-  -- load character or short with sign extension
-LDCU/LDSU ra, rb, imm
-  -- load unsigned character or short
+LDB/LDS ra, rb, imm
+  -- load byte or short with sign extension
+LDBu/LDSu ra, rb, imm
+  -- load unsigned byte or short
 STC/STS ra, rb, imm
   -- store character or short
 LDQ/STQ ra/fa, rb, imm
   -- load/store double
-ZEROF/ZEROD fa
+ZEROf/ZEROd fa
   -- set float/double register to zero
 LDKW ra/fa, imm
   -- load register with constant from specified address

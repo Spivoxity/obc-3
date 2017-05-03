@@ -122,8 +122,8 @@ $(OBX) $(JIT) decode.o gc.o trace.o profile.o debug.o fact.o: %.o : %.c
 %-j.o : %.c
 	$(CC) $(ALL_RTFLAGS) -DJIT -c $< -o $@
 
-keiko.h template.c: interp.c
-interp.c: keiko.iset iset.tcl util.tcl iparse.tcl iskel.c
+
+keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl iskel.c
 	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset $(srcdir)/iskel.c \
 		keiko.h template.c interp.c
 
