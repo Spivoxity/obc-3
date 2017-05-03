@@ -64,6 +64,8 @@ type icode =
   | ERROR of symbol * int	(* Runtime error (kind, line) *)
   | EASSERT of int		(* Assertion failed (line) *)
   | JUMP of codelab		(* Unconditional branch (dest) *)
+  | JUMPC of kind * op * codelab  (* Conditional branch *)
+  | JUMPN of kind * op * codelab  (* Negated condx branch *)
   | JCASE of codelab list       (* Case jump *)
   | JRANGE of codelab		(* Range jump *)
   | TYPETEST of int		(* Type test (level) *)
@@ -83,7 +85,6 @@ type icode =
   | STEW of int			(* LDLW -4/STNW n *)
   | INCL of int			(* LDLW n/INC/STLW n *)
   | DECL of int			(* LDLW n/DEC/STLW n *)
-  | JUMPC of kind * op * codelab  (* op/JUMPB *)
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
   | TESTGEQ of codelab		(* Case split = DUP 1/JUMPC Lt *)
 
@@ -101,7 +102,6 @@ val fOpcode : op -> Print.arg
 
 (* Inst -- printf format for instructions *)
 val fInst : icode -> Print.arg
-
 
 val put_line : int -> unit
 

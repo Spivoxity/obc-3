@@ -582,7 +582,7 @@ CALL 0
 !     ASSERT((0.0 <= r) & (r < 1.0))
 LDGF tRand07.r
 FCONST 0.0
-FJLT L37
+FJNGEQ L37
 LDGF tRand07.r
 FCONST 1.0
 FJLT L38

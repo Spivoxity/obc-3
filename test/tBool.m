@@ -30,7 +30,8 @@ STGF tBool.x
 !   b := ~ (x > 4);
 LDGF tBool.x
 FCONST 4.0
-FLEQ
+FGT
+NOT
 STGC tBool.b
 !   IF b THEN x := 5 END;
 LDGC tBool.b

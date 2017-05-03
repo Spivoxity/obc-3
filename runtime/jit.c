@@ -39,7 +39,7 @@
 
 static value *context;		/* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
-static int cmpflag = 0;         /* Flag for FCMP or DCMP */
+static int cmpflag = 0;         /* Flag for [FD]CMP[LG] */
 
 #define konst(i) context[CP_CONST+i]
 
@@ -178,9 +178,11 @@ static void icomp1(operation op, operation opf, operation opd
 #endif
      ) {
      switch (cmpflag) {
-     case I_FCMP:
+     case I_FCMPL:
+     case I_FCMPG:
           pop_zero(); fcomp(opf, FLO); break;
-     case I_DCMP:
+     case I_DCMPL:
+     case I_DCMPG:
           pop_zero(); fcomp(opd, FLO); break;
 #ifdef M64X32
      case I_QCMP:
@@ -209,12 +211,39 @@ static void condj(operation op, int lab) {
 }
 
 /* fcondj -- float or double conditional jump */
-static void fcondj(operation op, int ty, int lab) {
+static void fcondj(int cmp, operation op, int ty, int lab) {
      reg r1, r2;
 
      flush(2); 
      r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); 
      pop(2); unlock(2);		
+
+     switch (op) {
+     case BLTF:
+          if (cmp == I_FCMPL) op = BNGEQF; break;
+     case BLEQF:
+          if (cmp == I_FCMPL) op = BNGTF; break;
+     case BGTF:
+          if (cmp == I_FCMPG) op = BNLEQF; break;
+     case BGEQF:
+          if (cmp == I_FCMPG) op = BNLTF; break;
+     case BLTD:
+          if (cmp == I_DCMPL) op = BNGEQD; break;
+     case BLEQD:
+          if (cmp == I_DCMPL) op = BNGTD; break;
+     case BGTD:
+          if (cmp == I_DCMPG) op = BNLEQD; break;
+     case BGEQD:
+          if (cmp == I_DCMPG) op = BNLTD; break;
+     case BEQF:
+     case BEQD:
+     case BNEQF:
+     case BNEQD:
+          break;
+     default:
+          panic("fcondj");
+     }
+     
      vm_gen(op, r1->r_reg, r2->r_reg, target(lab));
 }
 
@@ -231,10 +260,12 @@ static void icondj1(operation op, operation opf, operation opd,
 #endif
                     int lab) {
      switch (cmpflag) {
-     case I_FCMP:
-          pop_zero(); fcondj(opf, FLO, lab); break;
-     case I_DCMP:
-          pop_zero(); fcondj(opd, FLO, lab); break;
+     case I_FCMPL:
+     case I_FCMPG:
+          pop_zero(); fcondj(cmpflag, opf, FLO, lab); break;
+     case I_DCMPL:
+     case I_DCMPG:
+          pop_zero(); fcondj(cmpflag, opd, FLO, lab); break;
 #ifdef M64X32
      case I_QCMP:
           pop_zero(); condj(op64, lab); break;
@@ -469,12 +500,14 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_DDIV:	dbinop(DIVD); break;
      case I_DUMINUS:	dmonop(NEGD); break;
 
-	  /* FCMP or DCMP must be followed by an integer 
+	  /* [FD]CMP[LG] must be followed by an integer 
 	     comparison, so we just set a flag and generate 
 	     the appropriate comparison instruction later */
 
-     case I_FCMP:
-     case I_DCMP:	
+     case I_FCMPL:
+     case I_FCMPG:
+     case I_DCMPL:	
+     case I_DCMPG:	
           cmpflag = i; break;
 
      case I_BOUND:
@@ -482,7 +515,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = move_to_rc(1); 
 	  pop(2); unlock(2);
 	  if (v->v_op == I_CON)
-	       vm_gen(BGEQU, r1->r_reg, v->v_val, handler(E_BOUND, arg1));
+	       vm_gen(BGEQU, r1->r_reg, v->v_val,
+                      handler(E_BOUND, arg1));
 	  else
 	       vm_gen(BGEQU, r1->r_reg, v->v_reg->r_reg,
                       handler(E_BOUND, arg1));

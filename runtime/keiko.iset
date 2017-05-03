@@ -227,7 +227,7 @@ equiv JGTZ R		{PUSH 0, JGT $a}
 equiv JLEQZ R		{PUSH 0, JLEQ $a}
 equiv JGEQZ R		{PUSH 0, JGEQ $a}
 
-inst JNEQZ {S R}	S1 {if ($1.i != 0) jump($a);}
+inst JNEQZ {S R}		S1 {if ($1.i != 0) jump($a);}
 inst JEQZ {S R}		S1 {if ($1.i == 0) jump($a);}
 inst JUMP {S R}		S0 {jump($a);}
 
@@ -269,9 +269,12 @@ inst FDIV 0		B.f {$1.f / $2.f}
 inst FUMINUS 0		M.f {- $1.f}
 
 defs {
-static inline int fcmp(double a, double b) {
-     /* This doesn't deal well with NaN ... */
-     return (a < b ? -1 : a > b ? 1 : 0);
+static inline int fcmpl(double a, double b) {
+     return (a > b ? 1 : a == b ? 0 : -1);
+}
+
+static inline int fcmpg(double a, double b) {
+     return (a < b ? -1 : a == b ? 0 : 1);
 }
 
 static inline int lcmp(longint a, longint b) {
@@ -279,25 +282,29 @@ static inline int lcmp(longint a, longint b) {
 }
 }
 
-inst FCMP 0		B.i {fcmp($1.f, $2.f)}
+inst FCMPL 0		B.i {fcmpl($1.f, $2.f)}
+inst FCMPG 0		B.i {fcmpg($1.f, $2.f)}
 
-equiv FEQ 0		{FCMP, PUSH 0, EQ}
-equiv FLT 0		{FCMP, PUSH 0, LT}
-equiv FGT 0		{FCMP, PUSH 0, GT}
-equiv FLEQ 0		{FCMP, PUSH 0, LEQ}
-equiv FGEQ 0		{FCMP, PUSH 0, GEQ}
-equiv FNEQ 0		{FCMP, PUSH 0, NEQ}
+equiv FEQ 0		{FCMPL, PUSH 0, EQ}
+equiv FNEQ 0		{FCMPL, PUSH 0, NEQ}
+equiv FLT 0		{FCMPG, PUSH 0, LT}
+equiv FGT 0		{FCMPL, PUSH 0, GT}
+equiv FLEQ 0		{FCMPG, PUSH 0, LEQ}
+equiv FGEQ 0		{FCMPL, PUSH 0, GEQ}
 
 # The floating-point conditional jumps are just shorthand for a
 # comparison and an integer jump.  This saves valuable opcodes for more
 # important functions.
-equiv FJEQ R		{FCMP, JEQZ $a}
-equiv FJLT R		{FCMP, JLTZ $a}
-equiv FJGT R		{FCMP, JGTZ $a}
-equiv FJLEQ R		{FCMP, JLEQZ $a}
-equiv FJGEQ R		{FCMP, JGEQZ $a}
-equiv FJNEQ R		{FCMP, JNEQZ $a}
-
+equiv FJEQ R		{FCMPL, JEQZ $a}
+equiv FJNEQ R		{FCMPL, JNEQZ $a}
+equiv FJLT R		{FCMPG, JLTZ $a}
+equiv FJGT R		{FCMPL, JGTZ $a}
+equiv FJLEQ R		{FCMPG, JLEQZ $a}
+equiv FJGEQ R		{FCMPL, JGEQZ $a}
+equiv FJNLT R           {FCMPG, JGEQZ $a}
+equiv FJNGT R		{FCMPL, JLEQZ $a}
+equiv FJNLEQ R		{FCMPG, JGTZ $a}
+equiv FJNGEQ R		{FCMPL, JLTZ $a}
 
 # DOUBLE-PRECISION OPERATORS
 
@@ -344,28 +351,26 @@ inst DTIMES 0		B.d {$1.d * $2.d}
 inst DDIV 0		B.d {$1.d / $2.d}
 inst DUMINUS 0		M.d {- $1.d}
 
-inst DCMP 0		B.idd {fcmp($1.d, $2.d)}
+inst DCMPL 0		B.idd {fcmpl($1.d, $2.d)}
+inst DCMPG 0		B.idd {fcmpg($1.d, $2.d)}
 
-equiv DEQ 0		{DCMP, PUSH 0, EQ}
-equiv DLT 0		{DCMP, PUSH 0, LT}
-equiv DGT 0		{DCMP, PUSH 0, GT}
-equiv DLEQ 0		{DCMP, PUSH 0, LEQ}
-equiv DGEQ 0		{DCMP, PUSH 0, GEQ}
-equiv DNEQ 0		{DCMP, PUSH 0, NEQ}
+equiv DEQ 0		{DCMPL, PUSH 0, EQ}
+equiv DNEQ 0		{DCMPL, PUSH 0, NEQ}
+equiv DLT 0		{DCMPG, PUSH 0, LT}
+equiv DGT 0		{DCMPL, PUSH 0, GT}
+equiv DLEQ 0		{DCMPG, PUSH 0, LEQ}
+equiv DGEQ 0		{DCMPL, PUSH 0, GEQ}
 
-equiv DJEQ S		{DCMP, JEQZ $a}
-equiv DJLT S		{DCMP, JLTZ $a}
-equiv DJGT S		{DCMP, JGTZ $a}
-equiv DJLEQ S		{DCMP, JLEQZ $a}
-equiv DJGEQ S		{DCMP, JGEQZ $a}
-equiv DJNEQ S		{DCMP, JNEQZ $a}
-
-equiv DJEQ R		{DEQ, JUMPT $a}
-equiv DJLT R		{DLT, JUMPT $a}
-equiv DJGT R		{DGT, JUMPT $a}
-equiv DJLEQ R		{DLEQ, JUMPT $a}
-equiv DJGEQ R		{DGEQ, JUMPT $a}
-equiv DJNEQ R		{DNEQ, JUMPT $a}
+equiv DJEQ R		{DCMPL, JEQZ $a}
+equiv DJNEQ R		{DCMPL, JNEQZ $a}
+equiv DJLT R		{DCMPG, JLTZ $a}
+equiv DJGT R		{DCMPL, JGTZ $a}
+equiv DJLEQ R		{DCMPG, JLEQZ $a}
+equiv DJGEQ R		{DCMPL, JGEQZ $a}
+equiv DJNLT R           {DCMPG, JGEQZ $a}
+equiv DJNGT R		{DCMPL, JLEQZ $a}
+equiv DJNLEQ R		{DCMPG, JGTZ $a}
+equiv DJNGEQ R		{DCMPL, JLTZ $a}
 
 inst QCMP 0		B.iqq {lcmp($1.q, $2.q)}
 

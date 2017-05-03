@@ -54,7 +54,7 @@ else
     fixexp=cat
 fi
 
-promote=false; code=true; run=true
+promote=false; code=true; run=true; cflags="-O"
 
 while true; do
     case $1 in
@@ -66,6 +66,8 @@ while true; do
 	    run=false; shift;;
 	-nojit)
 	    interp="../obx"; shift;;
+        -noopt)
+            cflags="-O0"; shift;;
 	-*)
 	    compiler="$compiler $1"; shift;;
 	*)
@@ -83,15 +85,16 @@ for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
     echo "$f"
 
     case $f in
-        e*.m) flag=;;
-        tMixIt.m) flag='-w -x';;
-        *07.m) flag='-07 -x';;
-        *) flag=-x ;;
+        e*.m) flag=$cflags;;
+        tMixIt.m) flag="$cflags -w -x";;
+        tNan.m) flag="$cflags -b -x";;
+        *07.m) flag="$cflags -07 -x";;
+        *) flag="$cflags -x";;
     esac
 
     rm -f a.out a.k out code
     if [ $srcdir != . ]; then cp $srcdir/$f $f; fi
-    ($compiler $flag -O $f >a.k \
+    ($compiler $flag $f >a.k \
 	&& sed -f $srcdir/stamp.sed a.k >code \
 	&& ../runtime/oblink -L $lib \
                              xTypes.k xTypes07.k xPrelude.k a.k -o a.out \

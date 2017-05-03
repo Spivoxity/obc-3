@@ -30,7 +30,8 @@ STGF tBool07.x
 !   b := ~ (x > FLT(4));
 LDGF tBool07.x
 FCONST 4.0
-FLEQ
+FGT
+NOT
 STGC tBool07.b
 !   IF b THEN x := FLT(5) END;
 LDGC tBool07.b

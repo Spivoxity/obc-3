@@ -1048,18 +1048,18 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
      case EQF:
           write_reg(ra);
 	  bool_reg_f(opMOVEQ, ra, rb, rc); break;
-     case GEQF:
-          write_reg(ra);
-	  bool_reg_f(opMOVHS, ra, rb, rc); break;
-     case GTF:
-          write_reg(ra);
-	  bool_reg_f(opMOVHI, ra, rb, rc); break;
-     case LEQF:
-          write_reg(ra);
-	  bool_reg_f(opMOVLS, ra, rb, rc); break;
      case LTF:
           write_reg(ra);
 	  bool_reg_f(opMOVLO, ra, rb, rc); break;
+     case LEQF:
+          write_reg(ra);
+	  bool_reg_f(opMOVLS, ra, rb, rc); break;
+     case GTF:
+          write_reg(ra);
+	  bool_reg_f(opMOVGT, ra, rb, rc); break;
+     case GEQF:
+          write_reg(ra);
+	  bool_reg_f(opMOVGE, ra, rb, rc); break;
      case NEQF:
           write_reg(ra);
 	  bool_reg_f(opMOVNE, ra, rb, rc); break;
@@ -1069,10 +1069,10 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 	  bool_reg_d(opMOVEQ, ra, rb, rc); break;
      case GEQD:
           write_reg(ra);
-	  bool_reg_d(opMOVHS, ra, rb, rc); break;
+	  bool_reg_d(opMOVGE, ra, rb, rc); break;
      case GTD:
           write_reg(ra);
-	  bool_reg_d(opMOVHI, ra, rb, rc); break;
+	  bool_reg_d(opMOVGT, ra, rb, rc); break;
      case LEQD:
           write_reg(ra);
 	  bool_reg_d(opMOVLS, ra, rb, rc); break;
@@ -1224,31 +1224,66 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
      case BLEQU:
 	  br_reg(opBLS, ra, rb, lab); break;
 
+/*
+Result of FCMP
+	<	=	>	Unord
+NZCV =	1000	0110	0010	0011
+
+Keiko						ARM
+-----						---
+BEQ     F       T       F       F       Z	BEQ
+BLT     T       F       F       F       !C	BLO (or BMI)
+BLE     T       T       F       F       Z|!C    BLS
+BGT     F       F       T       F       !Z&N=V  BGT
+BGE     F       T       T       F       N=V	BGE
+BNE     T       F       T       T       !Z	BNE
+BNLT    F       T       T       T       C	BHS (or BPL)
+BNLE    F       F       T       T       !Z&C    BHI
+BNGT    T       T       F       T       Z|N!=V  BLE
+BNGE    T       F       F       T       N!=V	BLT
+*/
+
      case BEQF:
 	  br_reg_f(opBEQ, ra, rb, lab); break;
-     case BGEQF:
-	  br_reg_f(opBHS, ra, rb, lab); break;
-     case BGTF:
-	  br_reg_f(opBHI, ra, rb, lab); break;
-     case BLEQF:
-	  br_reg_f(opBLS, ra, rb, lab); break;
      case BLTF:
 	  br_reg_f(opBLO, ra, rb, lab); break;
+     case BLEQF:
+	  br_reg_f(opBLS, ra, rb, lab); break;
+     case BGTF:
+	  br_reg_f(opBGT, ra, rb, lab); break;
+     case BGEQF:
+	  br_reg_f(opBGE, ra, rb, lab); break;
      case BNEQF:
 	  br_reg_f(opBNE, ra, rb, lab); break;
+     case BNLTF:
+	  br_reg_f(opBHS, ra, rb, lab); break;
+     case BNLEQF:
+	  br_reg_f(opBHI, ra, rb, lab); break;
+     case BNGTF:
+	  br_reg_f(opBLE, ra, rb, lab); break;
+     case BNGEQF:
+	  br_reg_f(opBLT, ra, rb, lab); break;
 
      case BEQD:
 	  br_reg_d(opBEQ, ra, rb, lab); break;
-     case BGEQD:
-	  br_reg_d(opBHS, ra, rb, lab); break;
-     case BGTD:
-	  br_reg_d(opBHI, ra, rb, lab); break;
-     case BLEQD:
-	  br_reg_d(opBLS, ra, rb, lab); break;
      case BLTD:
 	  br_reg_d(opBLO, ra, rb, lab); break;
+     case BLEQD:
+	  br_reg_d(opBLS, ra, rb, lab); break;
+     case BGTD:
+	  br_reg_d(opBGT, ra, rb, lab); break;
+     case BGEQD:
+	  br_reg_d(opBGE, ra, rb, lab); break;
      case BNEQD:
 	  br_reg_d(opBNE, ra, rb, lab); break;
+     case BNLTD:
+	  br_reg_d(opBHS, ra, rb, lab); break;
+     case BNLEQD:
+	  br_reg_d(opBHI, ra, rb, lab); break;
+     case BNGTD:
+	  br_reg_d(opBLE, ra, rb, lab); break;
+     case BNGEQD:
+	  br_reg_d(opBLT, ra, rb, lab); break;
 
      default:
 	  badop();

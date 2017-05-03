@@ -37,7 +37,7 @@ typedef unsigned char *code_addr;
      p(BLTU) p(BNEQ) p(BNEQF) p(CONVIF) p(SXT) p(DIVF)              \
      p(EQ) p(EQF) p(GEQ) p(GEQF) p(GETARG) p(GT) p(GTF)             \
      p(JUMP) p(LDW) p(LDCU) p(LDQ) p(LDSU) p(LDC) p(LDS) p(LEQ)     \
-     p(LEQF) p(LSH) p(LT) p(LTF) p(MOV)	p(MUL) p(MULF)		    \
+     p(LEQF) p(LSH) p(LT) p(LTF) p(MOV) p(MUL) p(MULF)		    \
      p(NEG) p(NEGF) p(NEQ) p(NEQF) p(NOT) p(OR) p(RET)              \
      p(RSH) p(RSHU) p(STW) p(STC) p(STQ) p(STS) p(SUB)		    \
      p(SUBF) p(XOR) p(PREP) p(ARG) p(CALL) p(ZEROF)		    \
@@ -48,7 +48,9 @@ typedef unsigned char *code_addr;
      p(CONVFD) p(CONVDF) p(CONVID) p(ROR) p(SXTOFF) p(ADDOFF)       \
      p(MOV64) p(SXT64) p(NEG64) p(ADD64) p(SUB64) p(MUL64)          \
      p(BEQ64) p(BGT64) p(BGEQ64) p(BLT64) p(BLEQ64) p(BNEQ64)       \
-     p(EQ64) p(GT64) p(GEQ64) p(LT64) p(LEQ64) p(NEQ64)
+     p(EQ64) p(GT64) p(GEQ64) p(LT64) p(LEQ64) p(NEQ64)             \
+     p(BNGTF) p(BNGTD) p(BNGEQF) p(BNGEQD) p(BNLTF) p(BNLTD)        \
+     p(BNLEQF) p(BNLEQD)
 
 #define __op1__(op) op,
 

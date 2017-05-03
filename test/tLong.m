@@ -47,7 +47,7 @@ STGD tLong.x
 !   IF x > 2.0 THEN Out.String("Greater"); Out.Ln END;
 LDGD tLong.x
 DCONST 2.0
-DJLEQ L4
+DJNGT L4
 CONST 8
 GLOBAL tLong.%1
 GLOBAL Out.String

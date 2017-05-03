@@ -588,7 +588,7 @@ and check_binop env w e1 e2 e =
 	  coerce t e1; coerce t e2; t
 	end
 	else if same_types t1 settype && same_types t2 settype then begin
-	  let w' = match w with  Plus -> BitOr | Minus -> BitSub 
+	  let w' = match w with Plus -> BitOr | Minus -> BitSub 
 	    | Times -> BitAnd | _ -> failwith "set op" in
 	  edit_expr e (Binop (w', e1, e2));
 	  settype

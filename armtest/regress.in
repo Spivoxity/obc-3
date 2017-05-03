@@ -54,6 +54,7 @@ for f in ${*:-`cd $testsrc; echo t*.m`}; do
 
     case $f in
         tMixIt.m) flag='-w -x';;
+        tNan.m) flag='-b -x';;
         *07.m) flag='-07 -x';;
         *) flag=-x ;;
     esac

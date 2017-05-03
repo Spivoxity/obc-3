@@ -32,11 +32,11 @@ STGF tFJump.x
 !   IF 0.0 < x THEN
 LDGF tFJump.x
 FCONST 0.0
-FJLEQ L4
+FJNGT L4
 !     IF x > 0.5 THEN
 LDGF tFJump.x
 FCONST 0.5
-FJLEQ L4
+FJNGT L4
 !       Out.String("ok"); Out.Ln
 CONST 3
 GLOBAL tFJump.%1

@@ -56,7 +56,7 @@ LDGF tReal07.r
 FCONST 2.0
 FPLUS
 FCONST 5.14
-FJLEQ L4
+FJNGT L4
 !      Out.String("yes"); Out.Ln
 CONST 4
 GLOBAL tReal07.%1

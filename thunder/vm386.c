@@ -133,6 +133,11 @@ const vmreg ireg[] = {
      &reg_i3, &reg_i4, &reg_i5, &reg_i6, &reg_i7, &reg_i8
 }; 
 
+/* On Windows, rSI and rDI are also preserved across calls, so we
+   could have made nvreg = 4; it makes no difference to the Kieko JIT.
+   We do, however, respect the calling convention by saving those
+   registers in the frame. */
+
 #endif
 
 const int nfreg = 6;
@@ -260,6 +265,8 @@ static char *fmt_addr(int rs, int imm) {
 #define opA 		MNEM("a", 7)    /* unsigned > */
 #define opS 		MNEM("s", 8)    /* negative */
 #define opNS 		MNEM("ns", 9)	/* non-negative */
+#define opP             MNEM("p", 10)	/* parity bit */
+#define opNP            MNEM("np", 11)  /* negated parity bit */
 #define opL 		MNEM("l", 12)	/* signed < */
 #define opGE 		MNEM("ge", 13)	/* signed >= */
 #define opLE 		MNEM("le", 14)	/* signed <= */
@@ -1508,7 +1515,18 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      case EQF:
      case EQD:
-	  fcompare(SETCC(opE), ra, rb, rc); break;
+          fcomp(rb, rc);
+          setcc_r(SETCC(opE), ra);
+          instr_tgt(CONDJ(opNP), pc+8);
+          move_i(ra, 0);
+          break;
+     case NEQF:
+     case NEQD:
+          fcomp(rb, rc);
+          setcc_r(SETCC(opNE), ra);
+          instr_tgt(CONDJ(opNP), pc+8);
+          inc_r(ra);
+          break;
      case GEQF:
      case GEQD:
 	  fcompare(SETCC(opAE), ra, rb, rc); break;
@@ -1517,13 +1535,10 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 	  fcompare(SETCC(opA), ra, rb, rc); break;
      case LEQF:
      case LEQD:
-	  fcompare(SETCC(opBE), ra, rb, rc); break;
+	  fcompare(SETCC(opAE), ra, rc, rb); break;
      case LTF:
      case LTD:
-	  fcompare(SETCC(opB), ra, rb, rc); break;
-     case NEQF:
-     case NEQD:
-	  fcompare(SETCC(opNE), ra, rb, rc); break;
+	  fcompare(SETCC(opA), ra, rc, rb); break;
 
 #ifdef M64X32
      case ADD64:
@@ -1738,9 +1753,41 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
 	  branch64_r(CONDJ(opNE), ra, rb, lab); break;
 #endif
 
+     /* Care is needed with floating point comparisons to
+        ensure the correct treatment of NaN values. */
+
+/*
+Result of UCOM
+	<	=	>	Unord
+ZCP     010     100     000     111     O = S = 0
+
+Keiko					x86
+-----					---     
+BEQ     F       T       F       F       not JP and JE
+BNEQ    T       F       T       T       JP or JNE
+BLT     T       F       F       F       swap JA
+BLEQ    T       T       F       F       swap JAE
+BGT     F       F       T       F       JA
+BGEQ    F       T       T       F       JAE
+BNLT    F       T       T       T       swap JBE
+BNLEQ   F       F       T       T       swap JB
+BNGT    T       T       F       T       JBE
+BNGEQ   T       F       F       T       JB
+*/
+
      case BEQF:
      case BEQD:
-	  fbranch(CONDJ(opE), ra, rb, lab); break;
+          fcomp(ra, rb);
+          instr_tgt(CONDJ(opP), pc+12);
+          instr_lab(CONDJ(opE), lab);
+          break;
+     case BNEQF:
+     case BNEQD:
+          fcomp(ra, rb);
+          instr_lab(CONDJ(opP), lab);
+          instr_lab(CONDJ(opNE), lab);
+	  break;
+
      case BGEQF:
      case BGEQD:
 	  fbranch(CONDJ(opAE), ra, rb, lab); break;
@@ -1749,14 +1796,22 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
 	  fbranch(CONDJ(opA), ra, rb, lab); break;
      case BLEQF:
      case BLEQD:
-	  fbranch(CONDJ(opBE), ra, rb, lab); break;
+	  fbranch(CONDJ(opAE), rb, ra, lab); break;
      case BLTF:
      case BLTD:
-	  fbranch(CONDJ(opB), ra, rb, lab); break;
-     case BNEQF:
-     case BNEQD:
-	  fbranch(CONDJ(opNE), ra, rb, lab); break;
-
+	  fbranch(CONDJ(opA), rb, ra, lab); break;
+     case BNGEQF:
+     case BNGEQD:
+          fbranch(CONDJ(opB), ra, rb, lab); break;
+     case BNGTF:
+     case BNGTD:
+          fbranch(CONDJ(opBE), ra, rb, lab); break;
+     case BNLTF:
+     case BNLTD:
+          fbranch(CONDJ(opBE), rb, ra, lab); break;
+     case BNLEQF:
+     case BNLEQD:
+          fbranch(CONDJ(opB), ra, rb, lab); break;
      default:
 	  badop();
      }
