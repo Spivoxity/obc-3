@@ -59,21 +59,21 @@ LOADW
 DUP 0
 LDNW 4
 CONST 1
-JGEQ L7
+JGE L7
 POP 1
 JUMP L2
 LABEL L7
 LDNW 8
 LDNW 4
 GLOBAL tTypeCase07.OpNode
-JNEQ L2
+JNE L2
 POP 1
 !         CASE ex.name OF
 LDLW 12
 NCHECK 20
 LOADC
 CONST 43
-JNEQ L4
+JNE L4
 !           "+" : val := doeval(ex.left) + doeval(ex.right)
 LDLW 12
 NCHECK 21
@@ -96,14 +96,14 @@ DUP 0
 LOADW
 DUP 0
 LDNW 4
-JGEQZ L10
+JGEZ L10
 POP 1
 JUMP L8
 LABEL L10
 LDNW 8
 LOADW
 GLOBAL tTypeCase07.Empty
-JNEQ L8
+JNE L8
 POP 1
 !     | Obj: val := 3
 CONST 3

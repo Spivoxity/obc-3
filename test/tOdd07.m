@@ -55,7 +55,7 @@ STGC tOdd07.b
 !     IF b = r THEN Out.Int(i,0) END
 LDGC tOdd07.b
 LDGC tOdd07.r
-JNEQ L8
+JNE L8
 CONST 0
 LDGW tOdd07.i
 GLOBAL Out.Int

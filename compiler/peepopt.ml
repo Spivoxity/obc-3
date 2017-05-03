@@ -81,7 +81,7 @@ let do_refs f =
     | JUMPC (t, w, x) -> f (ref_count x)
     | JUMPN (t, w, x) -> f (ref_count x)
     | JUMPCZ (w, x) -> f (ref_count x)
-    | TESTGEQ x -> f (ref_count x)
+    | TESTGE x -> f (ref_count x)
     | JCASE labs ->
 	List.iter (function x -> f (ref_count x)) labs
     | JRANGE x -> f (ref_count x)
@@ -94,7 +94,7 @@ let rename_labs =
     | JUMPC (t, w, x) -> JUMPC (t, w, rename x)
     | JUMPN (t, w, x) -> JUMPN (t, w, rename x)
     | JUMPCZ (w, x) -> JUMPCZ (w, rename x)
-    | TESTGEQ x -> TESTGEQ (rename x)
+    | TESTGE x -> TESTGE (rename x)
     | JCASE labs -> JCASE (List.map rename labs)
     | JRANGE x -> JRANGE (rename x)
     | i -> i
@@ -299,7 +299,7 @@ let ruleset2 replace =
     | CONST n :: JUMPC (IntT, w, lab) :: _ when n = integer 0 ->
 	replace 2 [JUMPCZ (w, lab)]
     | DUP 0 :: CONST n :: JUMPC (IntT, Geq, lab) :: _ ->
-	replace 3 [CONST n; TESTGEQ lab]
+	replace 3 [CONST n; TESTGE lab]
 
     | CONST s :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: _
 	  when s = integer 2 || s = integer 4 || s = integer 8 ->

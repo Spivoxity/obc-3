@@ -70,7 +70,7 @@ JGT L3
 !     IF sum = A THEN
 LDGW tSegSum07.sum
 CONST 120
-JNEQ L6
+JNE L6
 !       count := count+1;
 LDGW tSegSum07.count
 INC
@@ -98,7 +98,7 @@ LABEL L6
 !     ELSIF sum < A THEN
 LDGW tSegSum07.sum
 CONST 120
-JGEQ L8
+JGE L8
 !       sum := sum + f(v);
 LDGW tSegSum07.sum
 LDGW tSegSum07.v

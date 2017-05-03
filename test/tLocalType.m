@@ -146,7 +146,7 @@ PROC tLocalType.%3.Print 4 3 0x00100001
 SAVELINK
 !   IF NIL = t THEN
 LDLW 12
-JNEQZ L12
+JNEZ L12
 !     Out.Char('.')
 CONST 46
 ALIGNC
@@ -262,7 +262,7 @@ PROC tLocalType.%6.Print 4 3 0x00100001
 SAVELINK
 !   IF NIL = t THEN
 LDLW 12
-JNEQZ L18
+JNEZ L18
 !     Out.Char('.')
 CONST 46
 ALIGNC

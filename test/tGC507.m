@@ -114,7 +114,7 @@ PROC tGC507.Size 4 3 0x00100001
 ! PROCEDURE Size(t: tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ L5
+JNEZ L5
 ! s :=  0
 CONST 0
 STLW -4
@@ -178,7 +178,7 @@ PROC tGC507.Increment 0 5 0x00200001
 ! PROCEDURE Increment(key: INTEGER; t: tree): tree;
 !   IF t = NIL THEN
 LDLW 16
-JNEQZ L8
+JNEZ L8
 ! t := Cons(key, 1, NIL, NIL)
 CONST 0
 CONST 0
@@ -194,7 +194,7 @@ LDLW 12
 LDLW 16
 NCHECK 44
 LOADW
-JNEQ L10
+JNE L10
 ! t:= Cons(key, t.value+1, t.left, t.right)
 LDLW 16
 NCHECK 45
@@ -217,7 +217,7 @@ LDLW 12
 LDLW 16
 NCHECK 46
 LOADW
-JGEQ L12
+JGE L12
 ! t:= Cons(t.key, t.value, Increment(key, t.left), t.right)
 LDLW 16
 NCHECK 47
@@ -279,7 +279,7 @@ LDLW 12
 NCHECK 56
 LOADW
 LDLW 20
-JGEQ L15
+JGE L15
 LDLW 12
 NCHECK 57
 LOADW

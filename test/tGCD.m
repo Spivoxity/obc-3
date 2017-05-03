@@ -42,7 +42,7 @@ JEQ L3
 !     IF x > y THEN
 LDGW tGCD.x
 LDGW tGCD.y
-JLEQ L6
+JLE L6
 !       x := x - y
 LDGW tGCD.x
 LDGW tGCD.y

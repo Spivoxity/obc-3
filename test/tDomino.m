@@ -263,10 +263,10 @@ RETURNW
 LABEL L16
 !   IF j = 0 THEN
 LDLW 16
-JNEQZ L19
+JNEZ L19
 !     IF i = 0 THEN
 LDLW 12
-JNEQZ L22
+JNEZ L22
 !       z := Ind(s = {0..n-1})
 LDLW 20
 CONST 255
@@ -290,7 +290,7 @@ LABEL L19
 !   ELSIF j = 1 THEN
 LDLW 16
 CONST 1
-JNEQ L24
+JNE L24
 !     z := Compute(i, 0, s / {0})
 LDLW 20
 CONST 1
@@ -311,7 +311,7 @@ BOUND 114
 LSL
 LDLW 20
 BITAND
-JNEQZ L26
+JNEZ L26
 !     z := Compute(i, j-1, s / {j-1})
 LDLW 20
 CONST 1
@@ -339,7 +339,7 @@ BOUND 117
 LSL
 LDLW 20
 BITAND
-JNEQZ L28
+JNEZ L28
 !     z := Compute(i, j-2, s / {j-1, j-2})
 LDLW 20
 CONST 1
@@ -415,7 +415,7 @@ INC
 STGW tDomino.count
 !   IF z = 0 THEN INC(zero) END;
 LDLW -8
-JNEQZ L31
+JNEZ L31
 LDGW tDomino.zero
 INC
 STGW tDomino.zero

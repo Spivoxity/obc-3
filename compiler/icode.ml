@@ -87,7 +87,7 @@ type icode =
   | INCL of int			(* LDLW n/INC/STLW n *)
   | DECL of int			(* LDLW n/DEC/STLW n *)
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
-  | TESTGEQ of codelab		(* Case split = DUP 1/JUMPC Lt *)
+  | TESTGE of codelab		(* Case split = DUP 1/JUMPC Lt *)
 
   | XMARK			(* Mark needed here *)
   | XSTKMAP of int		(* Stack map needed here *)
@@ -114,7 +114,7 @@ let opcode =
       Plus -> "PLUS" | Minus -> "MINUS" | Times -> "TIMES" 
     | Over -> "OVER" | Div -> "DIV" | Mod -> "MOD" | Eq -> "EQ" 
     | Uminus -> "UMINUS" | Lt -> "LT" | Gt -> "GT" 
-    | Leq -> "LEQ" | Geq -> "GEQ" | Neq -> "NEQ" 
+    | Leq -> "LE" | Geq -> "GE" | Neq -> "NE" 
     | And -> "AND" | Or -> "OR" | Not -> "NOT" | PlusA -> "PLUSA"
     | BitAnd -> "BITAND" | BitOr -> "BITOR" 
     | BitNot -> "BITNOT" | BitXor -> "BITXOR" | BitSub -> "BITSUB"
@@ -197,7 +197,7 @@ let fInst =
 	fMeta "$J$ $" [fType t; fOpcode w; fLab lab]
     | JUMPN (t, w, lab) ->	
 	fMeta "$JN$ $" [fType t; fOpcode w; fLab lab]
-    | TESTGEQ lab ->	fMeta "TESTGEQ $" [fLab lab]
+    | TESTGE lab ->	fMeta "TESTGE $" [fLab lab]
     | JCASE labs ->	fMeta "JCASE $" [fNum (List.length labs)]
     | JRANGE lab ->	fMeta "JRANGE $" [fLab lab]
     | TYPETEST lev ->	fMeta "TYPETEST $" [fNum lev]

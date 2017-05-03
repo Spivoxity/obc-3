@@ -169,7 +169,7 @@ let rec gen_tree lob hib tables deflab =
 	let n = List.length tables in
 	let k = (n+1) / 2 in
 	let m = (List.nth tables k).lowest in
-	SEQ [CONST m; TESTGEQ lab;
+	SEQ [CONST m; TESTGE lab;
 	  gen_tree lob (integer_sub m (integer 1)) (Util.take k tables) deflab;
 	  LABEL lab;
 	  gen_tree m hib (Util.drop k tables) deflab]

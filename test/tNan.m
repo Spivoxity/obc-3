@@ -63,7 +63,7 @@ CALL 2
 !   b := (nan # nan); Out.Int(ORD(b), 0);
 LDGF tNan.nan
 LDGF tNan.nan
-FNEQ
+FNE
 STGC tNan.b
 CONST 0
 LDGC tNan.b

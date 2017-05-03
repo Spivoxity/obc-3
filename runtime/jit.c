@@ -432,16 +432,16 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_EQ:		icomp(EQ); break;
      case I_LT:		icomp(LT); break;
      case I_GT:		icomp(GT); break;
-     case I_LEQ:	icomp(LEQ); break;
-     case I_GEQ:	icomp(GEQ); break;
-     case I_NEQ:	icomp(NEQ); break;
+     case I_LE:		icomp(LEQ); break;
+     case I_GE:		icomp(GEQ); break;
+     case I_NE:		icomp(NEQ); break;
 
      case I_JEQ:	icondj(BEQ, arg1); break;
      case I_JLT:	icondj(BLT, arg1); break;
      case I_JGT:	icondj(BGT, arg1); break;
-     case I_JLEQ:	icondj(BLEQ, arg1); break;
-     case I_JGEQ:	icondj(BGEQ, arg1); break;
-     case I_JNEQ:	icondj(BNEQ, arg1); break;
+     case I_JLE:	icondj(BLEQ, arg1); break;
+     case I_JGE:	icondj(BGEQ, arg1); break;
+     case I_JNE:	icondj(BNEQ, arg1); break;
 	  
      case I_JUMP:	
 	  flush(0); 
@@ -479,7 +479,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  vm_label(lab);
 	  break;
 
-     case I_TESTGEQ:
+     case I_TESTGE:
 	  flush(1); 
 	  r1 = move_to_reg(2, INT);
 	  v = fix_const(1, FALSE);

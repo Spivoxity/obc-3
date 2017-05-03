@@ -106,26 +106,26 @@ LABEL L1
 !   WHILE i < j DO
 LDLW -4
 LDLW -8
-JGEQ L3
+JGE L3
 LABEL L4
 !     WHILE (i < j) & (u[i] < pivot) DO i := i+1 END;
 LDLW -4
 LDLW -8
-JGEQ L6
+JGE L6
 LDLW 12
 LDLW -4
 CONST 60
 BOUND 20
 LDIW
 LDLW -12
-JGEQ L6
+JGE L6
 INCL -4
 JUMP L4
 LABEL L6
 !     WHILE (i < j) & (u[j-1] > pivot) DO j := j-1 END;
 LDLW -4
 LDLW -8
-JGEQ L10
+JGE L10
 LDLW 12
 LDLW -8
 DEC
@@ -133,14 +133,14 @@ CONST 60
 BOUND 21
 LDIW
 LDLW -12
-JLEQ L10
+JLE L10
 DECL -8
 JUMP L6
 LABEL L10
 !     IF i < j THEN 
 LDLW -4
 LDLW -8
-JGEQ L1
+JGE L1
 !       Swap(u[i], u[j-1]); 
 LDLW 12
 LDLW -8
@@ -187,7 +187,7 @@ LDLW 20
 LDLW 16
 MINUS
 CONST 1
-JLEQ L17
+JLE L17
 !     k := Partition(u, a, b);
 LDLW 20
 LDLW 16

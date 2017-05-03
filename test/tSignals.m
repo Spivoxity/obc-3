@@ -294,7 +294,7 @@ LABEL L9
 !   WHILE sp > sp0 DO
 LDGW tSignals.sp
 LDLW 12
-JLEQ L11
+JLE L11
 !     DEC(sp);
 LDGW tSignals.sp
 DEC
@@ -457,7 +457,7 @@ LABEL L18
 !   WHILE i < sp DO
 LDLW -4
 LDGW tSignals.sp
-JGEQ L20
+JGE L20
 !     j := 0;
 CONST 0
 STLW -8
@@ -465,7 +465,7 @@ LABEL L21
 !     WHILE j < i DO
 LDLW -8
 LDLW -4
-JGEQ L23
+JGE L23
 !       Combine(stack[j], stack[i]);
 GLOBAL tSignals.stack
 LDLW -4
@@ -610,7 +610,7 @@ LDLW 12
 NCHECK 94
 LOADC
 CONST 120
-TESTGEQ L31
+TESTGE L31
 CONST 38
 JEQ L29
 JUMP L26
@@ -721,7 +721,7 @@ LDLW 12
 NCHECK 109
 CONST 20
 LDIC
-JNEQZ L34
+JNEZ L34
 !     s.marked := TRUE;
 CONST 1
 LDLW 12

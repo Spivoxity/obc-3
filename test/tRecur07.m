@@ -81,7 +81,7 @@ LDLW -16
 CONST 1000
 BOUND 13
 LDIW
-JGEQZ L8
+JGEZ L8
 !     p[r] := k; r := 10 * r;
 LDLW -12
 LOCAL -8016

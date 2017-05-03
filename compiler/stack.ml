@@ -71,7 +71,7 @@ let simulate i =
   begin match i with
       JUMP lab ->
 	Hashtbl.add labstate lab !stk
-    | TESTGEQ lab ->
+    | TESTGE lab ->
 	let s = pop_stack 1 !stk in
 	Hashtbl.add labstate lab s; stk := s
     | DUP n ->

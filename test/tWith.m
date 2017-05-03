@@ -56,20 +56,20 @@ LDNW -4
 DUP 0
 LDNW 4
 CONST 1
-JGEQ L7
+JGE L7
 POP 1
 JUMP L2
 LABEL L7
 LDNW 8
 LDNW 4
 GLOBAL tWith.OpNode
-JNEQ L2
+JNE L2
 !     CASE ex.name OF
 LDLW 12
 NCHECK 20
 LOADC
 CONST 43
-JNEQ L4
+JNE L4
 !       "+" : RETURN doeval(ex.left) + doeval(ex.right)
 LDLW 12
 NCHECK 21

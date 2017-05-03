@@ -38,7 +38,7 @@ PROC tFac07.fac 4 3 0
 ! PROCEDURE fac(n: INTEGER): INTEGER;
 !   IF n = 0 THEN 
 LDLW 12
-JNEQZ L5
+JNEZ L5
 !     f := 1
 CONST 1
 STLW -4

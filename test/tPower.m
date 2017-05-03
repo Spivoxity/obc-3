@@ -202,7 +202,7 @@ JEQ L13
 LDLW 12
 CONST 2
 MOD
-JNEQZ L16
+JNEZ L16
 !       power(n DIV 2);
 LDLW 12
 CONST 2
@@ -264,7 +264,7 @@ JUMP L20
 LABEL L22
 !       IF p = NIL THEN
 LDLW -8
-JNEQZ L26
+JNEZ L26
 !         NEW(p);
 CONST 32
 GLOBAL tPower.node
@@ -295,7 +295,7 @@ LDLW 16
 LDLW -8
 NCHECK 58
 LDNW 4
-JGEQ L19
+JGE L19
 !         p.cost := newcost;
 LDLW 16
 LDLW -8
@@ -345,7 +345,7 @@ JEQZ L32
 LDLW 12
 NCHECK 72
 LDNW 4
-JLEQZ L32
+JLEZ L32
 !         out(p.left);
 LDLW 12
 NCHECK 73
@@ -399,7 +399,7 @@ LDLW -8
 NCHECK 81
 LOADW
 BITAND
-JNEQZ L36
+JNEZ L36
 LDLW -8
 NCHECK 81
 LDNW 28
@@ -453,7 +453,7 @@ BOUND 92
 LSL
 LDLW -8
 BITAND
-JNEQZ L39
+JNEZ L39
 !     INC(cost);
 INCL -4
 !     si := ss;
@@ -528,11 +528,11 @@ NCHECK 102
 LOADW
 BITOR
 BITAND
-JNEQZ L55
+JNEZ L55
 ! 		  IF i = j THEN
 LDLW -12
 LDLW -16
-JNEQ L64
+JNE L64
 ! 		    add(si.set + {i+j}, si.cost + 1, i, j, si, NIL);
 CONST 0
 LDLW -24
@@ -586,7 +586,7 @@ LABEL L64
 ! 		    IF si = sj THEN
 LDLW -24
 LDLW -28
-JNEQ L62
+JNE L62
 ! 		      add(si.set + sj.set + {i+j},
 CONST 0
 LDLW -24

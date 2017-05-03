@@ -176,7 +176,7 @@ LABEL L9
 !   WHILE n < NS*NR DO
 LDLW -4
 CONST 52
-JGEQ L11
+JGE L11
 !     r := Random.Roll(NP*NH - n);
 CONST 52
 LDLW -4

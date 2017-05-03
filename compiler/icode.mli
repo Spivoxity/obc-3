@@ -86,7 +86,7 @@ type icode =
   | INCL of int			(* LDLW n/INC/STLW n *)
   | DECL of int			(* LDLW n/DEC/STLW n *)
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
-  | TESTGEQ of codelab		(* Case split = DUP 1/JUMPC Lt *)
+  | TESTGE of codelab		(* Case split = DUP 1/JUMPC Lt *)
 
   | XMARK			(* Mark needed here *)
   | XSTKMAP of int		(* Stack map needed here *)

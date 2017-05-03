@@ -345,7 +345,7 @@ SAVELINK
 LDLW 12
 NCHECK 59
 LOADW
-JNEQZ L21
+JNEZ L21
 !       Conv.ConvInt(e.val, cbuf);
 CONST 10
 LOCAL -26
@@ -403,7 +403,7 @@ STLW -16
 !       IF kp < p THEN Put('(') END;
 LDLW -12
 LDLW 16
-JGEQ L16
+JGE L16
 CONST 40
 ALIGNC
 LDLW -4
@@ -457,7 +457,7 @@ CALL 2
 !       IF kp < p THEN Put(')') END
 LDLW -12
 LDLW 16
-JGEQ L19
+JGE L19
 CONST 41
 ALIGNC
 LDLW -4
@@ -509,13 +509,13 @@ LABEL L25
 LDLW -8
 JEQZ L27
 LDLC -9
-JNEQZ L27
+JNEZ L27
 !     IF (r.val = val) & (Bit.And(r.used, Bit.Not(used)) = 0) THEN
 LDLW -8
 NCHECK 118
 LDNW 12
 LDLW 24
-JNEQ L30
+JNE L30
 LDLW 28
 GLOBAL Bit.Not
 CALLW 1
@@ -524,7 +524,7 @@ NCHECK 118
 LDNW 16
 GLOBAL Bit.And
 CALLW 2
-JNEQZ L30
+JNEZ L30
 !       useless := TRUE
 CONST 1
 STLC -9
@@ -538,7 +538,7 @@ JUMP L25
 LABEL L27
 ! IF ~useless THEN
 LDLC -9
-JNEQZ L35
+JNEZ L35
 !   NEW(r);
 CONST 28
 GLOBAL tCDown207.blob
@@ -631,7 +631,7 @@ CONST 80
 GLOBAL tCDown207.best
 GLOBAL Strings.Length
 CALLW 2
-JGEQ L35
+JGE L35
 LABEL L40
 !       bestval := val; bestdist := dist;
 LDLW 24
@@ -706,7 +706,7 @@ LDNW 12
 LDLW -8
 NCHECK 164
 LDNW 12
-JLEQ L54
+JLE L54
 LDLW -12
 LDLW -4
 NCHECK 164
@@ -739,7 +739,7 @@ CALL 5
 LDLW -8
 NCHECK 166
 LDNW 12
-JLEQZ L51
+JLEZ L51
 LDLW -4
 NCHECK 166
 LDNW 12
@@ -748,7 +748,7 @@ NCHECK 166
 LDNW 12
 ZCHECK 166
 MOD
-JNEQZ L51
+JNEZ L51
 ! 	  Add(Divide, p, q, p.val DIV q.val, used)
 LDLW -12
 LDLW -4
@@ -949,12 +949,12 @@ BOUND 217
 LDIW
 PLUS
 LDLW -4
-JNEQ L77
+JNE L77
 LDLW -12
 LDLW -8
 GLOBAL Bit.And
 CALLW 2
-JNEQZ L77
+JNEZ L77
 ! 	  Combine(r, s)
 LDLW -12
 LDLW -8
@@ -1071,7 +1071,7 @@ GLOBAL Out.Int
 CALL 2
 !   IF bestdist > 0 THEN 
 LDGW tCDown207.bestdist
-JLEQZ L83
+JLEZ L83
 !     Out.String(" (off by "); Out.Int(bestdist, 0); Out.Char(')')
 CONST 10
 GLOBAL tCDown207.%8

@@ -151,7 +151,7 @@ LABEL L3
 !   WHILE r < N DO
 LDLW -4
 LDLW 20
-JGEQ L5
+JGE L5
 !     j := r; t := u[r];
 LDLW -4
 STLW -8
@@ -164,7 +164,7 @@ STLW -12
 LABEL L6
 !     WHILE (j > 0) & (u[j-1] > t) DO
 LDLW -8
-JLEQZ L8
+JLEZ L8
 LDLW 12
 LDLW -8
 DEC
@@ -172,7 +172,7 @@ LDLW 16
 BOUND 23
 LDIW
 LDLW -12
-JLEQ L8
+JLE L8
 !       u[j] := u[j-1]; j := j-1
 LDLW 12
 LDLW -8
@@ -257,7 +257,7 @@ LABEL L10
 !   WHILE i < j DO
 LDLW -4
 LDLW -8
-JGEQ L12
+JGE L12
 !     IF a[i] < pivot THEN
 GLOBAL tSelect.a
 LDLW -4
@@ -265,7 +265,7 @@ CONST 100
 BOUND 45
 LDIW
 LDLW -12
-JGEQ L15
+JGE L15
 !       i := i+1
 INCL -4
 JUMP L10
@@ -317,7 +317,7 @@ LDLW 20
 LDLW 16
 MINUS
 CONST 1
-JNEQ L23
+JNE L23
 !     ASSERT(k = 0); RETURN a[m]
 LDLW 12
 JEQZ L25
@@ -342,7 +342,7 @@ LDLW -4
 LDLW 16
 LDLW 12
 PLUS
-JNEQ L19
+JNE L19
 !       RETURN a[r]
 GLOBAL tSelect.a
 LDLW -4
@@ -356,7 +356,7 @@ LDLW -4
 LDLW 16
 LDLW 12
 PLUS
-JLEQ L21
+JLE L21
 !       RETURN Select(k, m, r)
 LDLW -4
 LDLW 16
@@ -388,7 +388,7 @@ LDLW 20
 LDLW 16
 MINUS
 CONST 1
-JNEQ L35
+JNE L35
 !       RETURN a[m]
 GLOBAL tSelect.a
 LDLW 16
@@ -406,7 +406,7 @@ STLW -4
 !       IF r = k THEN
 LDLW -4
 LDLW 12
-JNEQ L31
+JNE L31
 ! 	RETURN a[r]
 GLOBAL tSelect.a
 LDLW -4
@@ -418,7 +418,7 @@ LABEL L31
 !       ELSIF r > k THEN
 LDLW -4
 LDLW 12
-JLEQ L33
+JLE L33
 ! 	n := r
 LDLW -4
 STLW 20
