@@ -404,6 +404,10 @@ and gen_expr e =
 	    BINOP (IntT, Lsl); gen_expr e2;
 	    BINOP (IntT, BitAnd); const 0; BINOP (IntT, Neq)]
 
+      | Binop (BitSub, e1, e2) ->
+          SEQ [gen_expr e1; gen_expr e2;
+            MONOP (IntT, BitNot); BINOP (IntT, BitAnd)]
+
       | Binop (w, e1, e2) ->
 	  let gen_it w' e1' e2' =
 	    SEQ [gen_expr e1'; gen_expr e2'; 

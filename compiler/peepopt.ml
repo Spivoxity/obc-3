@@ -101,14 +101,6 @@ let is_label = function LABEL _ -> true | _ -> false
 
 let ruleset1 replace =
   function
-    (* Temporarily expand abbreviations *)
-      MONOP (IntT, Inc) :: _ ->
-	replace 1 [CONST (integer 1); BINOP (IntT, Plus)]
-    | MONOP (IntT, Dec) :: _ ->
-	replace 1 [CONST (integer 1); BINOP (IntT, Minus)]
-    | BINOP (IntT, BitSub) :: _ ->
-	replace 1 [MONOP (IntT, BitNot); BINOP (IntT, BitAnd)]
-
     (* Static bounds checks *)
     | CONST n1 :: CONST n2 :: BOUND _ :: _ 
 	  when n1 >= integer 0 && n1 < n2 -> 
