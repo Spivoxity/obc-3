@@ -165,14 +165,14 @@ static void fcomp(operation op, int ty) {
      push(I_REG, INT, r3, 0, 1);						
 }
 
-/* icomp -- integer comparison */
+/* compare -- integer comparison */
 #ifndef M64X32
-#define icomp(op) icomp1(op, op##f, op##d)
+#define compare(op) compare1(op, op##f, op##d)
 #else
-#define icomp(op) icomp1(op, op##f, op##d, op##q)
+#define compare(op) compare1(op, op##f, op##d, op##q)
 #endif
 
-static void icomp1(operation op, operation opf, operation opd
+static void compare1(operation op, operation opf, operation opd
 #ifdef M64X32
                    , operation op64
 #endif
@@ -191,18 +191,16 @@ static void icomp1(operation op, operation opf, operation opd
      case 0:
 	  ibinop(op); break;
      default:
-          panic("*icomp");
+          panic("*compare");
      }
 
      cmpflag = 0;
 }
 
-static void condj(operation op, int lab) {
-     reg r1; ctvalue v;
-
+static void icondj(operation op, int lab) {
      flush(2); 
-     v = move_to_rc(1);
-     r1 = move_to_reg(2, INT); 
+     ctvalue v = move_to_rc(1);
+     reg r1 = move_to_reg(2, INT); 
      pop(2); unlock(2);	
      if (v->v_op == I_CON)					
           vm_gen(op, r1->r_reg, v->v_val, target(lab));
@@ -211,69 +209,47 @@ static void condj(operation op, int lab) {
 }
 
 /* fcondj -- float or double conditional jump */
-static void fcondj(int cmp, operation op, int ty, int lab) {
-     reg r1, r2;
-
+static void fcondj(operation op, int lab) {
      flush(2); 
-     r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); 
+     reg r1 = move_to_reg(2, FLO);
+     reg r2 = move_to_reg(1, FLO); 
      pop(2); unlock(2);		
-
-     switch (op) {
-     case BLTf:
-          if (cmp == I_FCMPL) op = BNGEf; break;
-     case BLEf:
-          if (cmp == I_FCMPL) op = BNGTf; break;
-     case BGTf:
-          if (cmp == I_FCMPG) op = BNLEf; break;
-     case BGEf:
-          if (cmp == I_FCMPG) op = BNLTf; break;
-     case BLTd:
-          if (cmp == I_DCMPL) op = BNGEd; break;
-     case BLEd:
-          if (cmp == I_DCMPL) op = BNGTd; break;
-     case BGTd:
-          if (cmp == I_DCMPG) op = BNLEd; break;
-     case BGEd:
-          if (cmp == I_DCMPG) op = BNLTd; break;
-     case BEQf:
-     case BEQd:
-     case BNEf:
-     case BNEd:
-          break;
-     default:
-          panic("fcondj");
-     }
-     
      vm_gen(op, r1->r_reg, r2->r_reg, target(lab));
 }
 
-/* icondj -- integer conditional jump */
-#ifndef M64X32
-#define icondj(op, lab) icondj1(op, op##f, op##d, lab)
-#else
-#define icondj(op, lab) icondj1(op, op##f, op##d, op##q, lab)
-#endif
+typedef struct jmptab {
+     operation op;              /* Integer */
+     operation oplf, opgf;      /* Float */
+     operation opld, opgd;      /* Double */
+     operation opq;             /* Longint */
+} *jtable;
 
-static void icondj1(operation op, operation opf, operation opd,
-#ifdef M64X32
-                    operation op64,
-#endif
-                    int lab) {
+#define jtab(op, opl, opg) \
+     { op, opl##f, opg##f, opl##d, opg##d, op##q }
+
+struct jmptab tab_jeq = jtab(BEQ, BEQ, BEQ);
+struct jmptab tab_jlt = jtab(BLT, BNGE, BLT);
+struct jmptab tab_jgt = jtab(BGT, BGT, BNLT);
+struct jmptab tab_jle = jtab(BLE, BNGT, BLE);
+struct jmptab tab_jge = jtab(BGE, BGE, BNLT);
+struct jmptab tab_jne = jtab(BNE, BNE, BNE);
+
+static void condj(jtable t, int lab) {
      switch (cmpflag) {
      case I_FCMPL:
+          pop_zero(); fcondj(t->oplf, lab); break;
      case I_FCMPG:
-          pop_zero(); fcondj(cmpflag, opf, FLO, lab); break;
+          pop_zero(); fcondj(t->opgf, lab); break;
      case I_DCMPL:
+          pop_zero(); fcondj(t->opld, lab); break;
      case I_DCMPG:
-          pop_zero(); fcondj(cmpflag, opd, FLO, lab); break;
-#ifdef M64X32
+          pop_zero(); fcondj(t->opgd, lab); break;
      case I_QCMP:
-          pop_zero(); condj(op64, lab); break;
-#endif
+          pop_zero(); icondj(t->opq, lab); break;
      case 0:
-          condj(op, lab); break;
+          icondj(t->op, lab); break;
      default:
-          panic("*icondj");
+          panic("*condj");
      }
 
      cmpflag = 0;
@@ -429,19 +405,19 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  ibinop(XOR);
 	  break;
 
-     case I_EQ:		icomp(EQ); break;
-     case I_LT:		icomp(LT); break;
-     case I_GT:		icomp(GT); break;
-     case I_LE:		icomp(LE); break;
-     case I_GE:		icomp(GE); break;
-     case I_NE:		icomp(NE); break;
+     case I_EQ:		compare(EQ); break;
+     case I_LT:		compare(LT); break;
+     case I_GT:		compare(GT); break;
+     case I_LE:		compare(LE); break;
+     case I_GE:		compare(GE); break;
+     case I_NE:		compare(NE); break;
 
-     case I_JEQ:	icondj(BEQ, arg1); break;
-     case I_JLT:	icondj(BLT, arg1); break;
-     case I_JGT:	icondj(BGT, arg1); break;
-     case I_JLE:	icondj(BLE, arg1); break;
-     case I_JGE:	icondj(BGE, arg1); break;
-     case I_JNE:	icondj(BNE, arg1); break;
+     case I_JEQ:	condj(&tab_jeq, arg1); break;
+     case I_JLT:	condj(&tab_jlt, arg1); break;
+     case I_JGT:	condj(&tab_jgt, arg1); break;
+     case I_JLE:	condj(&tab_jle, arg1); break;
+     case I_JGE:	condj(&tab_jge, arg1); break;
+     case I_JNE:	condj(&tab_jne, arg1); break;
 	  
      case I_JUMP:	
 	  flush(0); 
@@ -737,7 +713,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      default:
-	  panic("instruction %s is not implemented", instrs[i].i_name);
+	  panic("*instruction %s is not implemented", instrs[i].i_name);
      }
 
 #ifdef DEBUG
