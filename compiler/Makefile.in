@@ -50,27 +50,26 @@ COMPAT = @COMPAT@
 
 all : obc1 obb1
 
-INCLUDE = -I ../compat -I ../yacc
+INCLUDE = -I ../mllib -I ../yacc
 
-OBC1 = basis.cma compiler.cma main.cmo 
+OBC1 = ../mllib/mllib.cma ../yacc/yyparse.cmo basis.cma compiler.cma main.cmo 
 obc1: $(OBC1)
-	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -custom -o $@ $(COMPAT) yyparse.cmo $^
+	$(OCAMLC) $(MLFLAGS) -custom $^ -o $@
 
-OBB1 = basis.cma browser.cmo
+OBB1 = ../mllib/mllib.cma ../yacc/yyparse.cmo basis.cma browser.cmo
 obb1: $(OBB1)
-	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -custom -o $@ $(COMPAT) yyparse.cmo $^
+	$(OCAMLC) $(MLFLAGS) -custom $^ -o $@
 
 COMPILER = icode.cmo peepopt.cmo tree.cmo lexer.cmo \
 	parser.cmo expr.cmo inicheck.cmo check.cmo switch.cmo \
 	stack.cmo igen.cmo  
 compiler.cma: $(COMPILER)
-	$(OCAMLC) $(MLFLAGS) -a -o $@ $(COMPILER) 
+	$(OCAMLC) $(MLFLAGS) -a $^ -o $@ 
 
-BASIS = util.cmo print.cmo growvect.cmo symtab.cmo config.cmo revid.cmo \
-	eval.cmo mach.cmo error.cmo gcmap.cmo dict.cmo symlex.cmo \
-	symparse.cmo symfile.cmo
+BASIS = config.cmo symtab.cmo revid.cmo eval.cmo mach.cmo error.cmo \
+	gcmap.cmo dict.cmo symlex.cmo symparse.cmo symfile.cmo
 basis.cma: $(BASIS)
-	$(OCAMLC) $(MLFLAGS) -a -o $@ $(BASIS)
+	$(OCAMLC) $(MLFLAGS) -a -o $@ $^
 
 REVID := $(shell cat ../revid)
 
@@ -123,8 +122,7 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 config.ml: $(srcdir)/config.ml.in ../config.status
 	cd .. && ./config.status --file=$(subdir)/$@
 
-ML = growvect.ml growvect.mli print.ml print.mli \
-	util.mli util.ml check.mli dict.mli eval.mli icode.mli \
+ML = check.mli dict.mli eval.mli icode.mli \
 	igen.mli mach.mli tree.mli check.ml dict.ml eval.ml \
 	icode.ml igen.ml mach.ml main.ml tree.ml \
 	expr.mli expr.ml symtab.mli error.mli error.ml switch.mli \
@@ -138,14 +136,14 @@ EXTRAML = parser.mli parser.ml symparse.mli symparse.ml revid.ml
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
-	$(CAMLDEP) $(EXTRAML:%=-f %) $^ >$@
+	$(CAMLDEP) $(INCLUDE) $(EXTRAML:%=-f %) -x Bytes $^ >$@
 endif
  
 include $(srcdir)/Depend
 
 # Don't use dependency generation for yacc scripts -- yacc may not be built
-parser.cmo    : dict.cmi error.cmi lexer.cmo parser.cmi print.cmi
+parser.cmo    : dict.cmi error.cmi lexer.cmo parser.cmi
 parser.cmi    : eval.cmi symtab.cmi tree.cmi
-symparse.cmo  : config.cmo error.cmi eval.cmi growvect.cmi mach.cmi \
-		print.cmi symparse.cmi symtab.cmi
+symparse.cmo  : config.cmo error.cmi eval.cmi mach.cmi \
+		symparse.cmi symtab.cmi
 symparse.cmi  : dict.cmi

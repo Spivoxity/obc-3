@@ -38,6 +38,7 @@
 # -M file	name of the makefile to copy (default none)
 # -I dir 	add to list of directories to search for includes
 # -f file	treat file as known though it doesn't exist
+# -x module	exclude module from output
 
 # The variables:
 # files		is the set of files seen
@@ -51,6 +52,7 @@ set infiles {}
 set incl {}
 set makefile ""
 set files {};			# Root names of files
+set exclude {}
 
 set i 0
 while {$i < [llength $argv]} {
@@ -58,6 +60,7 @@ while {$i < [llength $argv]} {
 	-M {incr i; set makefile [lindex $argv $i]}
 	-I {incr i; lappend incl [lindex $argv $i]}
 	-f {incr i; lappend files [lindex $argv $i]}
+        -x {incr i; lappend exclude [lindex $argv $i]}
 	-d {incr debug}
 	default {lappend infiles [lindex $argv $i]}
     }
@@ -87,7 +90,11 @@ foreach ifn $infiles {
     close $f
 
     set deps2 {}
-    foreach d $deps {lappend deps2 [string tolower $d 0 0]}
+    foreach d $deps {
+        if {[lsearch -exact $exclude $d] < 0} {
+            lappend deps2 [string tolower $d 0 0]
+        }
+    }
     set depend($fn) $deps2
 }
 

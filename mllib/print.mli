@@ -1,5 +1,5 @@
 (*
- * growvect.mli
+ * print.mli
  * 
  * This file is part of the Oxford Oberon-2 compiler
  * Copyright (c) 2006--2016 J. M. Spivey
@@ -28,28 +28,42 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-(* This module provides an alternative implementation of arrays that
-grow by appending new elements to the end. *)
+type arg
 
-type 'a t
+(* Basic formats *)
+val fNum: int -> arg		(* Decimal number *)
+val fFixNum: int * int -> arg	(* Fixed-width number (val, width) *)
+val fHex: int -> arg		(* Hexadecimal number *)
+val fFlo: float -> arg		(* Floating-point number *)
+val fStr: string -> arg		(* String *)
+val fChr: char -> arg		(* Character *)
+val fBool: bool -> arg		(* Boolean *)
 
-(* create -- make an empty vector with a specified initial capacity *)
-val create : int -> 'a t
+(* |fMeta| -- insert output of recursive call to |printf| *)
+val fMeta: string -> arg list -> arg
 
-(* make -- make a vector of specified size *)
-val make : int -> 'a -> 'a t
+(* |fExt| -- higher-order extension *)
+val fExt: ((string -> arg list -> unit) -> unit) -> arg
 
-(* get -- fetch element at given index *)
-val get : 'a t -> int -> 'a
+val fNum32: int32 -> arg
+val fHex32: int32 -> arg
 
-(* size -- get current number of elements *)
-val size : 'a t -> int
+val fSeq : ('a -> arg) * string -> 'a list -> arg
 
-(* set -- change existing element at given index *)  
-val set : 'a t -> int -> 'a -> unit
+(* |fList| -- format a comma-separated list *)
+val fList : ('a -> arg) -> 'a list -> arg
 
-(* append -- add new element at the end *)
-val append : 'a t -> 'a -> unit
+(* |printf| -- print on standard output *)
+val printf : string -> arg list -> unit
 
-(* iter -- apply function to each element *)
-val iter : ('a -> unit) -> 'a t -> unit
+(* |fprintf| -- print to a file *)
+val fprintf : out_channel -> string -> arg list -> unit
+
+(* |sprintf| -- print to a string *)
+val sprintf : string -> arg list -> string
+
+(* |fgrindf| -- pretty-printer *)
+val fgrindf : out_channel -> string -> arg list -> unit
+
+(* For the symfile output routine *)
+val do_print : (char -> unit) -> string -> arg list -> unit

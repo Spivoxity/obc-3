@@ -73,7 +73,7 @@ MLOBJS = gaux.cmo gpointer.cmo glib.cmo gobject.cmo gdkEnums.cmo	\
 	gWindow.cmo gBin.cmo gMain.cmo gToolbox.cmo		\
 	gSourceView2.cmo
 
-INCLUDE = -I ../compat
+INCLUDE = -I ../mllib
 
 all: $(ALL)
 

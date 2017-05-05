@@ -39,8 +39,8 @@ AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
 	test/Makefile winport/Makefile debugger/Makefile \
-	lablgtk/Makefile macport/Makefile compat/Makefile armtest/Makefile \
-        yacc/Makefile thunder/Makefile)
+	lablgtk/Makefile macport/Makefile mllib/Makefile \
+        armtest/Makefile yacc/Makefile thunder/Makefile)
 AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
 AC_CONFIG_FILES(test/regress, chmod +x test/regress)
 AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)

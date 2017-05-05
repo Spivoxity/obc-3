@@ -90,7 +90,7 @@ let put_table name do_things valfun =
     if v = Compile.yyerr then
       xprintf " yyerr;" []
     else
-      xprintf "$;" [fFix (v, 6)];
+      xprintf "$;" [fFixNum (v, 6)];
     incr k);
   xprintf "\n|]\n\n" []
 

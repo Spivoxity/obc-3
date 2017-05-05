@@ -28,6 +28,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
+val copy : int -> 'a -> 'a list
+
 (* take -- first n elements of list *)
 val take : int -> 'a list -> 'a list
 
@@ -52,3 +54,24 @@ val commonest : ('a -> 'a -> int) -> 'a list -> 'a
 (* flat_map -- map function over list and concatenate results *)
 val flat_map : ('a -> 'b list) -> 'a list -> 'b list
 
+val range : int -> int -> int list
+
+val split_at : char -> string -> string * string
+val split_string : string -> string list
+
+val hex_of_int : int -> string
+val hex_of_int32 : int32 -> string
+val float_as_string : float -> string
+
+val make_hash : int -> ('a * 'b) list -> ('a, 'b) Hashtbl.t
+
+val search_path : string -> string list -> string
+
+val can : ('a -> 'b) -> 'a -> bool
+
+(* offset -- add base address and offset *)
+val offset : int32 -> int -> int32
+
+val toupper : char -> char
+
+val strlower : string -> string

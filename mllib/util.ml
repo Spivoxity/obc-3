@@ -44,6 +44,14 @@ let rec drop n xs =
   if n = 0 || xs = [] then xs
   else drop (n-1) (tl xs)
 
+(* split -- cleave initial segment that satisfies a test *)
+let split p xs =
+  let rec loop us vs =
+    match vs with
+	[] -> (List.rev us, [])
+      | y::ys -> if p y then loop (y::us) ys else (List.rev us, vs) in
+  loop [] xs 
+
 let rec range a b =
   if a > b then [] else a :: range (a+1) b
 
@@ -101,3 +109,40 @@ let tolower ch =
   if ch >= 'A' && ch <= 'Z' then Char.chr (Char.code ch + 32) else ch
 
 let strlower str = String.map tolower str
+
+(* lexico -- lexical product of orderings, represented as 'compare' functions *)
+let lexico a b = if a <> 0 then a else b
+
+(* group_sort -- sort a list of pairs and group by first component *)
+let group_sort cmp xs =
+  let rec group =
+    function
+	[] -> []
+      | (x, y) :: zs -> 
+	  let (us, vs) = split (fun (u, v) -> cmp u x = 0) zs in
+	  (x, y :: List.map snd us) :: group vs in
+  group (List.sort (fun z1 z2 -> cmp (fst z1) (fst z2)) xs)
+
+(* ungroup -- flatten a grouped list of pairs *)
+let rec ungroup =
+  function
+	[] -> []
+      | (x, ys) :: zs ->
+	  List.map (fun y -> (x, y)) ys @ ungroup zs
+
+(* commonest -- find commonest element of list with comparison function *)
+let commonest cmp xs0 =
+  let rec vote n a =
+    function
+	[] -> a
+      | x :: xs ->
+	  let (us, vs) = split (fun y -> cmp x y = 0) xs in
+	  let k = List.length us + 1 in
+	  if k > n then vote k x vs else vote n a vs in
+  if xs0 = [] then
+    raise Not_found
+  else
+    vote 0 (List.hd xs0) (List.sort cmp xs0)
+
+let flat_map f xs =
+  let rec h = function [] -> [] | y::ys -> f y @ h ys in h xs

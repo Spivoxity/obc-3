@@ -1,7 +1,7 @@
 #
 # @configure_input@
 #
-# compat/Makefile.in
+# util/Makefile.in
 # 
 # This file is part of the Oxford Oberon-2 compiler
 # Copyright (c) 2006--2016 J. M. Spivey
@@ -36,7 +36,7 @@ OCAMLLEX = ocamllex
 MLFLAGS = @MLFLAGS@
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
-subdir = compat
+subdir = mllib
 COMPAT = @COMPAT@
 SHELL = /bin/sh
 VPATH = @srcdir@
@@ -44,7 +44,12 @@ DEPEND = @DEPEND@
 CAMLDEP = @top_srcdir@/camldep
 # End
 
-all : $(COMPAT)
+MODULES = util.cmo growvect.cmo vector.cmo print.cmo
+
+all : mllib.cma
+
+mllib.cma: $(COMPAT) $(MODULES)
+	$(OCAMLC) $(MLFLAGS) -a -o $@ $^
 
 ## Rules
 
@@ -60,7 +65,7 @@ all : $(COMPAT)
 
 # clean: remove object files
 clean:
-	rm -f *.cmi *.cmo
+	rm -f *.cmi *.cmo mllib.cma
 
 # quiteclean: remove generated files too
 quiteclean: clean
@@ -76,7 +81,8 @@ realclean: distclean
 Makefile: $(srcdir)/Makefile.in ../config.status
 	cd .. && ./config.status $(subdir)/$@
 
-ML = bytes.ml
+ML = growvect.mli growvect.ml print.mli print.ml util.mli util.ml \
+	vector.mli vector.ml
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)

@@ -1,5 +1,5 @@
 (*
- * util.mli
+ * growvect.ml
  * 
  * This file is part of the Oxford Oberon-2 compiler
  * Copyright (c) 2006--2016 J. M. Spivey
@@ -28,27 +28,43 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-val copy : int -> 'a -> 'a list
-val take : int -> 'a list -> 'a list
-val drop : int -> 'a list -> 'a list
-val range : int -> int -> int list
+type 'a t = 
+  { mutable size: int; 
+    mutable elements: 'a array }
 
-val split_at : char -> string -> string * string
-val split_string : string -> string list
+let create n = 
+  { size = 0; elements = Array.make n (Obj.magic ()) }
 
-val hex_of_int : int -> string
-val hex_of_int32 : int32 -> string
-val float_as_string : float -> string
+let make n v =
+  { size = n; elements = Array.make n v }
 
-val make_hash : int -> ('a * 'b) list -> ('a, 'b) Hashtbl.t
+let clear v =
+  v.size <- 0
 
-val search_path : string -> string list -> string
+let size v = v.size
 
-val can : ('a -> 'b) -> 'a -> bool
+let get v i = 
+  if i >= v.size then raise (Invalid_argument "index out of bounds");
+  Array.get v.elements i
 
-(* offset -- add base address and offset *)
-val offset : int32 -> int -> int32
+let set v i x =
+  if i >= v.size then raise (Invalid_argument "index out of bounds");
+  Array.set v.elements i x
 
-val toupper : char -> char
+let append v x =
+  let n = Array.length v.elements in
+  if v.size >= n then begin
+    let newv = Array.make (2*n) (Obj.magic ()) in
+    Array.blit v.elements 0 newv 0 n;
+    v.elements <- newv
+  end;
+  Array.set v.elements v.size x;
+  v.size <- v.size+1
 
-val strlower : string -> string
+let iter f v =
+  for i = 0 to v.size-1 do f v.elements.(i) done
+
+let to_list v =
+  let rec loop n xs =
+    if n = 0 then xs else loop (n-1) (v.elements.(n-1)::xs) in
+  loop v.size []

@@ -34,8 +34,6 @@
 OCAMLC = ocamlc
 OCAMLLEX = ocamllex
 MYACC = ../yacc/myacc
-YYPARSE = ../yacc/yyparse.cmo
-YYLIB = -I ../yacc
 CAMLDEP = @top_srcdir@/camldep
 MLFLAGS = @MLFLAGS@
 MLLINKFLAGS = @MLLINKFLAGS@
@@ -49,7 +47,6 @@ DEPEND = @DEPEND@
 EXEEXT = @EXEEXT@
 VPATH = @srcdir@
 OCAMLDIR = @OCAMLDIR@
-COMPAT = @COMPAT@
 PKG_CONFIG = @PKG_CONFIG@
 GTKPKGS = @GTKPKGS@
 WINDOWS = @WINDOWS@
@@ -58,7 +55,7 @@ MACOS = @MACOS@
 
 all: obdb1
 
-INCLUDE = -I ../compat -I ../compiler -I ../lablgtk
+INCLUDE = -I ../mllib -I ../compiler -I ../yacc -I ../lablgtk
 
 PKGCONF = $(PKG_ENV) $(PKG_CONFIG) $(PKG_FLAGS)
 
@@ -76,12 +73,14 @@ else
 	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
 endif
 
-LIBS = unix.cma threads.cma lablgtk.cma str.cma gtkThread.cmo $(YYPARSE) 
-OBDB1 = ../compiler/basis.cma debugger.cma debmain.cmo
+LIBS = unix.cma threads.cma str.cma
+OBDB1 = ../mllib/mllib.cma ../yacc/yyparse.cmo ../lablgtk/lablgtk.cma \
+	../lablgtk/gtkThread.cmo ../compiler/basis.cma \
+	debugger.cma debmain.cmo debprims.o
 obdb1: $(OBDB1) debprims.o ../lablgtk/lablgtk.cma ../lablgtk/liblablgtk.a
-	$(OCAMLC) $(MLFLAGS) -custom -thread $(INCLUDE) -o $@ \
-		$(COMPAT) $(LIBS) $(OBDB1) debprims.o $(MLLINKFLAGS) \
-		-cclib "-llablgtk $(GTKLIBS)"
+	$(OCAMLC) $(MLFLAGS) -custom -thread \
+		$(LIBS) $(OBDB1) $(MLLINKFLAGS) \
+		-cclib "-L../lablgtk -llablgtk $(GTKLIBS)" -o $@
 
 DEBUGGER = debconf.cmo binary.cmo info.cmo procio.cmo data.cmo \
 	control.cmo sourcebook.cmo varsview.cmo stackview.cmo
@@ -143,7 +142,7 @@ ML = procio.mli procio.ml binary.mli binary.ml \
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
-	$(CAMLDEP) -I ../compiler -I ../lablgtk $^ >$@
+	$(CAMLDEP) $(INCLUDE) -x Bytes $^ >$@
 endif
 
 include $(srcdir)/Depend

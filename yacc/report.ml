@@ -50,7 +50,7 @@ let start name =
 
 let show_rules () =
   lprintf "Rules:\n" [];
-  do_rules (fun r -> lprintf "$:  $\n" [fFix (r.r_id, 4); fRule r]);
+  do_rules (fun r -> lprintf "$:  $\n" [fFixNum (r.r_id, 4); fRule r]);
   lprintf "\n" [];
   do_nonterms (fun x ->			(* Undefined nonterminals *)
     if x.x_genuine && x.x_rules = [] then
