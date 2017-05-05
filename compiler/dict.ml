@@ -138,7 +138,7 @@ and builtin =
 
 let add_def m d = IdMap.add d.d_tag d m
 
-let add_block (Env vs) b = 
+let add_block b (Env vs) = 
   let m = List.fold_left add_def IdMap.empty b in
   Env ((ref (List.rev b), ref m) :: vs)
 
@@ -154,7 +154,7 @@ let pop_block =
 
 let new_block (Env vs) = Env ((ref [], ref IdMap.empty) :: vs)
 
-let find_def ds x = 
+let find_def x ds = 
   let visible d = (d.d_module = !current || d.d_export <> Private) in
   List.find (fun d -> d.d_tag = x && visible d) ds
 
@@ -178,7 +178,7 @@ let rec try_all f xs =
     | y::ys ->
         try f y with Not_found -> try_all f ys
 
-let lookup (Env vs) x = 
+let lookup x (Env vs) = 
   try_all (fun (b, m) -> IdMap.find x !m) vs
 
 let empty_env = Env []
@@ -581,11 +581,10 @@ let align alignment offset =
 (* Initial environment *)
 
 let make_def1 s x k lab t =
-  { d_tag = intern (if !Config.lcflag then Util.strlower s else s); 
-    d_module = anon; d_export = x; d_kind = k; d_used = true; 
-    d_loc = no_loc; d_line = 0; d_type = t; d_lab = lab; d_level = 0; 
-    d_offset = 0; d_param = 0; d_comment = None; d_env = empty_env; 
-    d_map = null_map }
+  { d_tag = intern_sys s; d_module = anon; d_export = x; d_kind = k;
+    d_used = true; d_loc = no_loc; d_line = 0; d_type = t;
+    d_lab = lab; d_level = 0; d_offset = 0; d_param = 0;
+    d_comment = None; d_env = empty_env; d_map = null_map }
 
 let make_def s k t =
   make_def1 s Visible k nosym t

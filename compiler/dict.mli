@@ -150,7 +150,7 @@ val basic_types: otype list
 val new_block : environment -> environment
 
 (* add_block -- add an existing def list as top block *)
-val add_block : environment -> def list -> environment
+val add_block : def list -> environment -> environment
 
 (* top_block -- return top block as a def list *)
 val top_block : environment -> def list
@@ -162,10 +162,10 @@ val pop_block : environment -> environment
 val define : environment -> def -> unit
 
 (* find_def -- search a def list or raise Not_found *)
-val find_def : def list -> ident -> def
+val find_def : ident -> def list -> def
 
 (* lookup -- search an environment or raise Not_found *)
-val lookup : environment -> ident -> def
+val lookup : ident -> environment -> def
 
 (* empty_env -- empty environment *)
 val empty_env : environment

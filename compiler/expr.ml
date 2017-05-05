@@ -60,10 +60,10 @@ let fake_def x =
   define !err_context d; d
 
 (* lookup_def -- find definition of a name, give error if none *)
-let lookup_def env x =
+let lookup_def x env =
   let d =
     if x.x_module = anon then begin
-      try lookup env x.x_name with 
+      try lookup x.x_name env with 
         Not_found -> 
 	  sem_error "'$' has not been declared" [fId x.x_name] x.x_loc;
 	  x.x_def <- Some (fake_def x.x_name); 
@@ -71,7 +71,7 @@ let lookup_def env x =
     end
     else begin
       let m = 
-	try lookup env x.x_module       
+	try lookup x.x_module env
 	with Not_found -> 
 	  sem_error "module '$' has not been imported" 
 	    [fId x.x_module] x.x_loc;
@@ -80,7 +80,7 @@ let lookup_def env x =
       match m.d_kind with
 	  ModDef (y, env') ->
 	    begin try 
-	      let d = lookup env' x.x_name in
+	      let d = lookup x.x_name env' in
 	      if d.d_export = Private then raise Not_found;
 	      d
 	    with Not_found -> 
@@ -95,8 +95,8 @@ let lookup_def env x =
   d.d_used <- true; x.x_def <- Some d; d
 
 (* lookup_typename -- look up a type name *)
-let lookup_typename env x =
-  let d = lookup_def env x in
+let lookup_typename x env =
+  let d = lookup_def x env in
   if d.d_kind <> TypeDef then begin
     if not (is_errtype d.d_type) then 
       sem_error "'$' is not a type" [fQualId x] x.x_loc;
@@ -105,31 +105,30 @@ let lookup_typename env x =
   d
 
 (* convert -- force conversion of numeric type *)
-let convert t e =
-  begin
-    match e.e_guts with
-	Const (v, _) ->
-	  if (kind_of t >= FloatT) then
-	    edit_expr e (Const (widen v, t))
-	  else begin
-	    let vn = int_value v in
-	    if same_types t shortint then begin
-	      if int_value v < minshort || int_value v > maxshort then
-		sem_warn "the integer value $ does not fit in type SHORTINT"
-		  [fInteger vn] e.e_loc;
-	      edit_expr e (Const (IntVal (signext 16 vn), t))
-	    end
-	    else if same_types t inttype then begin
-	      if (int_value v < minint || int_value v > maxint) then
-		sem_warn "the integer value $ does not fit in type INTEGER"
-		  [fInteger vn] e.e_loc;
-	      edit_expr e (Const (IntVal (signext 32 vn), t))
-	    end
-	    else
-	      edit_expr e (Const (IntVal vn, t))
-	  end
-      | _ ->
-	  edit_expr e (Convert (copy_expr e))
+let convert e t =
+  begin match e.e_guts with
+      Const (v, _) ->
+        if (kind_of t >= FloatT) then
+          edit_expr e (Const (widen v, t))
+        else begin
+          let vn = int_value v in
+          if same_types t shortint then begin
+            if int_value v < minshort || int_value v > maxshort then
+              sem_warn "the integer value $ does not fit in type SHORTINT"
+                [fInteger vn] e.e_loc;
+            edit_expr e (Const (IntVal (signext 16 vn), t))
+          end
+          else if same_types t inttype then begin
+            if (int_value v < minint || int_value v > maxint) then
+              sem_warn "the integer value $ does not fit in type INTEGER"
+                [fInteger vn] e.e_loc;
+            edit_expr e (Const (IntVal (signext 32 vn), t))
+          end
+          else
+            edit_expr e (Const (IntVal vn, t))
+        end
+    | _ ->
+        edit_expr e (Convert (copy_expr e))
   end;
   e.e_type <- t
 
@@ -157,8 +156,8 @@ let coerceable t1 t2 =
     numeric t1 && numeric t2 && kind_of t1 <= kind_of t2
 
 (* coerce -- convert expression to a given numeric type *)
-let coerce t e =
-  if kind_of e.e_type <> kind_of t then convert t e
+let coerce e t =
+  if kind_of e.e_type <> kind_of t then convert e t
 
 (* is_var -- check that expression denotes a variable *)
 let rec is_var e =
@@ -217,7 +216,7 @@ let rec find_method t x =
   match t.t_guts with
       RecordType r ->
 	begin 
-	  try find_def r.r_methods x with
+	  try find_def x r.r_methods with
 	    Not_found ->
 	      if r.r_depth > 0 then
 	        find_method r.r_parent x
@@ -227,11 +226,11 @@ let rec find_method t x =
     | _ -> raise Not_found
 
 (* find_field -- look up field or method *)
-let rec find_field t x =
+let rec find_field x t =
   match t.t_guts with
       RecordType r ->
-	begin try find_def r.r_fields x
-	  with Not_found -> find_def r.r_methods x end
+	begin try find_def x r.r_fields
+	  with Not_found -> find_def x r.r_methods end
     | _ -> raise Not_found
 
 (* get_module_ref -- find if an expr is actually a module name *)
@@ -241,7 +240,7 @@ let get_module_ref env e =
 	if x.x_module <> anon then
 	  raise Not_found
 	else begin
-	  let d = lookup env x.x_name in
+	  let d = lookup x.x_name env in
 	  match d.d_kind with
 	      ModDef (y, m) -> x.x_name
 	    | _ -> raise Not_found
@@ -301,7 +300,7 @@ let check_super e p loc =
 	Select (e1, x) ->
 	  let r = get_record e1.e_type in
 	  begin try
-	    let d = find_field r.r_parent x.x_name in
+	    let d = find_field x.x_name r.r_parent in
 	    if d.d_kind = FieldDef then raise Not_found;
  	    let pp = get_proc d.d_type in
  	    if pp.p_kind = AbsMeth then
@@ -346,115 +345,115 @@ let type_mismatch cxt args lt e =
   sem_type e.e_type
 
 (* check_desig -- check and annotate a designator, return its type *)
-let rec check_desig env e =
-  let t = check_desig1 env e in
+let rec check_desig e env =
+  let t = check_desig1 e env in
     e.e_type <- t; t
 
-and check_desig1 env e =
-      match e.e_guts with
-	  Name x -> 
-	    begin try
-	      let d = lookup_def env x in 
-	      begin match d.d_kind with
-		  ConstDef v ->
-		    edit_expr e (Const (v, d.d_type))
-		| EnumDef n ->
-		    edit_expr e (Const (IntVal (integer n), d.d_type))
-		| StringDef ->
-		    let n = bound d.d_type in
-		    edit_expr e (String (d.d_lab, n-1))
-		| (VarDef | ParamDef | CParamDef | VParamDef | 
-		    ProcDef | PrimDef) -> ()
-		| _ ->
-		    sem_error "'$' is not a variable" [fQualId x] x.x_loc;
-		    raise Not_found
-	      end;
-	      d.d_type
-	    with Not_found -> errtype
-	    end
-	| Deref e1 ->
-	    let t1 = check_desig env e1 in
-	    begin match t1.t_guts with
-		PointerType d -> d.d_type
-	      | ProcType p1 -> check_super e1 p1 e.e_loc
-	      | _ -> 
-		  if not (is_errtype t1) then begin
-		    sem_error "a pointer is needed here" [] e1.e_loc;
-		    sem_type t1
-		  end;
-		  errtype
-	    end
-	| Sub (e1, e2) ->
-	    let t1r = check_desig env e1 in
-	    let t1 = check_deref e1 in
-	    let t2 = check_expr env e2 in
-	    let t0 = 
-	      match t1.t_guts with
-		  ArrayType (upb, u1) -> u1
-		| FlexType u1 -> u1
-		| _ -> 
-		    if not (is_errtype t1) then begin
-		      sem_error "an array is needed here" [] e1.e_loc;
-		      sem_type t1r
-		    end;
-		    errtype in
-	    if not (integral t2) then begin
-	      sem_error "a subscript must be an integer" [] e2.e_loc;
-	      sem_type t2
-	    end;
-	    if same_types t2 longint && not (is_errtype t2) then
-	      sem_error "sorry, LONGINT subscripts are not implemented" 
-		[] e2.e_loc;
-	    t0
-        | Select (e1, x) ->
-	    begin try 
-	      let m = get_module_ref env e1 in
-	      edit_expr e (Name (makeName (m, x.x_name, e.e_loc)));
-	      check_desig env e
-	    with Not_found ->
-	      let t1r = check_desig env e1 in
-              let t1 = check_deref e1 in
-	      if not (is_record t1) then begin
-		if not (is_errtype t1) then begin
-		  sem_error "a record or record pointer is needed here" 
-		    [] e1.e_loc;
-		  sem_type t1r
-		end;
-		errtype
-              end
-	      else begin
-		try
-		  let d = find_field t1 x.x_name in
-		  x.x_def <- Some d; d.d_type
-		with Not_found ->
-		  sem_error
-                    "this record does not have a visible field called '$'" 
-		    [fId x.x_name] e1.e_loc;
-		  sem_type t1r;
-		  errtype
-	      end
-	    end
-	| FuncCall _ ->
-	    let t = check_expr env e in
-	    begin match e.e_guts with
-		(FuncCall _ | MethodCall _) -> 
-	          sem_error "a function call is not allowed here" 
-		    [] e.e_loc;
-		  errtype
-	      | Cast _ -> t
-	      | _ -> failwith "desig call"
-	    end
-	| _ -> failwith "desig"
+and check_desig1 e env =
+  match e.e_guts with
+      Name x -> 
+        begin try
+          let d = lookup_def x env in 
+          begin match d.d_kind with
+              ConstDef v ->
+                edit_expr e (Const (v, d.d_type))
+            | EnumDef n ->
+                edit_expr e (Const (IntVal (integer n), d.d_type))
+            | StringDef ->
+                let n = bound d.d_type in
+                edit_expr e (String (d.d_lab, n-1))
+            | (VarDef | ParamDef | CParamDef | VParamDef | 
+                ProcDef | PrimDef) -> ()
+            | _ ->
+                sem_error "'$' is not a variable" [fQualId x] x.x_loc;
+                raise Not_found
+          end;
+          d.d_type
+        with Not_found -> errtype
+        end
+    | Deref e1 ->
+        let t1 = check_desig e1 env in
+        begin match t1.t_guts with
+            PointerType d -> d.d_type
+          | ProcType p1 -> check_super e1 p1 e.e_loc
+          | _ -> 
+              if not (is_errtype t1) then begin
+                sem_error "a pointer is needed here" [] e1.e_loc;
+                sem_type t1
+              end;
+              errtype
+        end
+    | Sub (e1, e2) ->
+        let t1r = check_desig e1 env in
+        let t1 = check_deref e1 in
+        let t2 = check_expr e2 env in
+        let t0 = 
+          match t1.t_guts with
+              ArrayType (upb, u1) -> u1
+            | FlexType u1 -> u1
+            | _ -> 
+                if not (is_errtype t1) then begin
+                  sem_error "an array is needed here" [] e1.e_loc;
+                  sem_type t1r
+                end;
+                errtype in
+        if not (integral t2) then begin
+          sem_error "a subscript must be an integer" [] e2.e_loc;
+          sem_type t2
+        end;
+        if same_types t2 longint && not (is_errtype t2) then
+          sem_error "sorry, LONGINT subscripts are not implemented" 
+            [] e2.e_loc;
+        t0
+    | Select (e1, x) ->
+        begin try 
+          let m = get_module_ref env e1 in
+          edit_expr e (Name (makeName (m, x.x_name, e.e_loc)));
+          check_desig e env
+        with Not_found ->
+          let t1r = check_desig e1 env in
+          let t1 = check_deref e1 in
+          if not (is_record t1) then begin
+            if not (is_errtype t1) then begin
+              sem_error "a record or record pointer is needed here" 
+                [] e1.e_loc;
+              sem_type t1r
+            end;
+            errtype
+          end
+          else begin
+            try
+              let d = find_field x.x_name t1 in
+              x.x_def <- Some d; d.d_type
+            with Not_found ->
+              sem_error
+                "this record does not have a visible field called '$'" 
+                [fId x.x_name] e1.e_loc;
+              sem_type t1r;
+              errtype
+          end
+        end
+    | FuncCall _ ->
+        let t = check_expr e env in
+        begin match e.e_guts with
+            (FuncCall _ | MethodCall _) -> 
+              sem_error "a function call is not allowed here" 
+                [] e.e_loc;
+              errtype
+          | Cast _ -> t
+          | _ -> failwith "desig call"
+        end
+    | _ -> failwith "desig"
 
 (* check_expr -- check and annotate an expression, return its type *)
-and check_expr env e =
-  let t = check_subexp env e in
+and check_expr e env =
+  let t = check_subexp e env in
   e.e_type <- t; t
 
-and check_subexp env e =
+and check_subexp e env =
   match e.e_guts with
       Name _ | Deref _ | Sub _ | Select _ ->
-	check_desig env e
+	check_desig e env
     | Const (v, t) -> t
     | Decimal d ->
 	(* OCaml wrongly allows 2^31 as a valid integer *)
@@ -469,7 +468,7 @@ and check_subexp env e =
     | String (lab, n) -> new_type 0 (row (n+1) character)
     | Nil -> niltype
     | FuncCall (p, args) -> 
-	let t = check_call env p args e true in
+	let t = check_call p args e env true in
 	if not (same_types t voidtype) then
 	  t
 	else begin
@@ -518,8 +517,8 @@ and check_subexp env e =
 
     | TypeTest (e1, tn) ->
 	begin try
-	  let _ = check_expr env e1 in
-	  let d = lookup_typename env tn in
+	  let _ = check_expr e1 env in
+	  let d = lookup_typename tn env in
 	  check_typetest e1 d.d_type e1.e_loc
 	with Not_found -> ()
 	end;
@@ -528,10 +527,10 @@ and check_subexp env e =
         let check_elem =
           function
               Single x ->
-                check_assign "in this set element" [] env inttype x
+                check_assign x inttype env "in this set element" []
             | Range (x, y) ->
-                check_assign "in this set element" [] env inttype x;
-                check_assign "in this set element" [] env inttype y
+                check_assign x inttype env "in this set element" [];
+                check_assign y inttype env "in this set element" []
 
         and set_const els = 
           let set_val =
@@ -554,7 +553,7 @@ and check_subexp env e =
 
 (* check_monop -- check application of unary operator *)
 and check_monop env w e1 e =
-  let t1 = check_expr env e1 in
+  let t1 = check_expr e1 env in
   match w with
       Uminus | Uplus ->
 	if numeric t1 then
@@ -580,12 +579,12 @@ and check_monop env w e1 e =
 
 (* check_binop -- check application of binary operator *)
 and check_binop env w e1 e2 e =
-  let t1 = check_expr env e1 and t2 = check_expr env e2 in
+  let t1 = check_expr e1 env and t2 = check_expr e2 env in
   match w with
       Plus | Minus | Times ->
 	if joinable t1 t2 then begin
 	  let t = join_type t1 t2 in
-	  coerce t e1; coerce t e2; t
+	  coerce e1 t; coerce e2 t; t
 	end
 	else if same_types t1 settype && same_types t2 settype then begin
 	  let w' = match w with Plus -> BitOr | Minus -> BitSub 
@@ -605,7 +604,7 @@ and check_binop env w e1 e2 e =
     | Over ->
 	if coerceable t1 longreal && coerceable t2 longreal then begin
 	  let t = join_type realtype (join_type t1 t2) in
-	  coerce t e1; coerce t e2; t
+	  coerce e1 t; coerce e2 t; t
 	end
 	else if same_types t1 settype && same_types t2 settype then begin
 	  edit_expr e (Binop (BitXor, e1, e2));
@@ -622,7 +621,7 @@ and check_binop env w e1 e2 e =
     | Div | Mod ->
 	if integral t1 && integral t2 then begin
 	  let t = join_type t1 t2 in
-	  coerce t e1; coerce t e2; t
+	  coerce e1 t; coerce e2 t; t
 	end
 	else begin
 	  if not (is_errtype t1) && not (is_errtype t2) then begin
@@ -634,7 +633,7 @@ and check_binop env w e1 e2 e =
     | Eq | Neq | Lt | Gt | Leq | Geq ->
 	if joinable t1 t2 then begin
 	  let t = join_type t1 t2 in
-	  coerce t e1; coerce t e2
+	  coerce e1 t; coerce e2 t
 	end
 	else if is_string t1 && is_char_const e2 then
 	  promote_char e2
@@ -674,8 +673,8 @@ and check_binop env w e1 e2 e =
 	boolean
     | _ -> failwith "bad binop"
 
-and check_call env f args e cast_ok =
-  let t = check_desig env f in
+and check_call f args e env cast_ok =
+  let t = check_desig f env in
   match t.t_guts with
       ProcType p ->
 	begin match p.p_kind with
@@ -697,7 +696,7 @@ and check_call env f args e cast_ok =
 	  check_qual env tn;
 	  match tn.e_guts with
 	      Name x ->
-		let d = lookup_def env x in
+		let d = lookup_def x env in
 		if d.d_kind <> TypeDef then raise Non_proc;
 		edit_expr e (Cast (f, x));
 		check_typetest f d.d_type f.e_loc;
@@ -781,7 +780,7 @@ and check_arg env (formal, arg) =
     sem_error "VAR parameter '$' should be a variable" 
       [fId formal.d_tag] arg.e_loc;
   if is_flex formal.d_type then begin
-    let t1 = check_expr env arg in
+    let t1 = check_expr arg env in
     if is_string formal.d_type && is_char_const arg then
       promote_char arg
     else if not (array_match t1 formal.d_type) 
@@ -794,10 +793,10 @@ and check_arg env (formal, arg) =
   else begin
     match formal.d_kind with
 	(ParamDef | CParamDef) ->
-          check_assign1 "as argument '$' of this procedure call" 
-	    [fId formal.d_tag] env formal.d_type arg false
+          check_assign1 arg formal.d_type env false
+            "as argument '$' of this procedure call" [fId formal.d_tag]
       | VParamDef ->
-	  let t1 = check_expr env arg in
+	  let t1 = check_expr arg env in
  	  if not (same_types t1 formal.d_type || is_record formal.d_type 
  				&& subtype t1 formal.d_type) then begin
 	    if approx_same t1 formal.d_type then
@@ -822,7 +821,7 @@ and check_builtin env p args e loc =
   else begin
     if p.b_argtypes <> [] then begin
       let check (e, t) =
-	check_assign "as an argument of $" [fStr p.b_name] env t e in
+	check_assign e t env "as an argument of $" [fStr p.b_name] in
       List.iter check (List.combine args p.b_argtypes)
     end;
 
@@ -834,10 +833,10 @@ and check_builtin env p args e loc =
       t1 in
 
     let typeconv t1 e1 =
-      convert t1 e1; edit_expr e e1.e_guts; t1 in
+      convert e1 t1; edit_expr e e1.e_guts; t1 in
 
     let check_var test reqd e =
-      let t = check_expr env e in
+      let t = check_expr e env in
       if not (test t) then begin
         sem_error "the argument of $ must be $ variable"
 	  [fStr p.b_name; fStr reqd] e.e_loc;
@@ -856,7 +855,7 @@ and check_builtin env p args e loc =
 	  propagate chr e1 character
 
       | OrdFun, [e1] ->
-	  let t1 = check_expr env e1 in
+	  let t1 = check_expr e1 env in
 	  if not (is_discrete t1) && not (same_types t1 settype)
               || same_types t1 longint then begin
 	    let reqd = if !Config.extensions then 
@@ -879,7 +878,7 @@ and check_builtin env p args e loc =
 	  propagate odd e1 boolean
 
       | Entier, [e1] ->
-	  let t1 = check_expr env e1 in
+	  let t1 = check_expr e1 env in
 	  if not (floating t1) then begin
 	    sem_error "the argument of $ must be have a real type" 
 	      [fStr p.b_name] e1.e_loc;
@@ -888,7 +887,7 @@ and check_builtin env p args e loc =
 	  inttype
 
       | Short, [e1] ->
-	  let t1 = check_expr env e1 in
+	  let t1 = check_expr e1 env in
 	  if same_types t1 inttype || same_types t1 numtype then 
 	    typeconv shortint e1
 	  else if same_types t1 longint then
@@ -903,7 +902,7 @@ and check_builtin env p args e loc =
 	  end
 
       | Long, [e1] ->
-	  let t1 = check_expr env e1 in
+	  let t1 = check_expr e1 env in
 	  if subtype t1 shortint then
 	    typeconv inttype e1
 	  else if same_types t1 inttype then
@@ -930,7 +929,7 @@ and check_builtin env p args e loc =
   	  shift f e1 e2 e
 
       | AbsFun, [e1] ->
-	  let t1 = check_expr env e1 in
+	  let t1 = check_expr e1 env in
 	  if not (numeric t1) then begin
 	    sem_error "ABS needs a numeric argument" [] 
 	      (List.nth args 0).e_loc;
@@ -956,7 +955,7 @@ and check_builtin env p args e loc =
 	  begin match e1.e_guts with
 	      Name x ->
 		begin try 
-		  let d = lookup_typename env x in
+		  let d = lookup_typename x env in
 		  let (y, z, t) =
 		    match d.d_type.t_guts with
 		        BasicType CharT ->
@@ -996,7 +995,7 @@ and check_builtin env p args e loc =
 	  begin match e1.e_guts with
 	      Name x ->
 		begin try
-		  let d = lookup_typename env x in
+		  let d = lookup_typename x env in
 		  edit_expr e
 		    (Const (IntVal (integer d.d_type.t_rep.m_size), 
 		      inttype))
@@ -1035,7 +1034,7 @@ and check_builtin env p args e loc =
 		    else begin
 		      for i = 0 to dim-1 do
 			let e2 = List.nth args (i+1) in
-			check_assign "as bound of NEW" [] env inttype e2
+			check_assign e2 inttype env "as bound of NEW" []
 		      done
 		    end;
 		| _ -> 
@@ -1052,7 +1051,7 @@ and check_builtin env p args e loc =
 	  end
 	  else begin
 	    let e1 = List.nth args 0 in
-	    let t1 = check_expr env e1 in
+	    let t1 = check_expr e1 env in
 	    let check n t =
 	      let rec loop i t =
 	        match t.t_guts with
@@ -1084,8 +1083,8 @@ and check_builtin env p args e loc =
 	    if List.length args = 1 then
 	      check 0 t1
 	    else begin
-	      let v = check_tconst env inttype 
-			"this argument of LEN" (List.nth args 1) in
+	      let v = check_tconst (List.nth args 1) inttype env
+			"this argument of LEN" in
 	      let n = int_of_integer (int_value v) in
 	      if n >= 0 then
 		check n t1
@@ -1105,14 +1104,14 @@ and check_builtin env p args e loc =
 	  let t1 = check_var integral "an integer" e1 in
 	  if List.length args = 2 && integral t1 then begin
 	    let e2 = List.nth args 1 in
-	    check_assign "as the second argument of $" [fStr p.b_name]
-	      env t1 e2
+	    check_assign e2 t1 env
+              "as the second argument of $" [fStr p.b_name]
 	  end;
 	  voidtype
 
       | PackProc, [e1; e2] ->
           ignore (check_var floating "a real" e1);
-          check_assign "as argument of PACK" [] env inttype e2;
+          check_assign e2 inttype env "as argument of PACK" [];
           voidtype
 
       | UnpkProc, [e1; e2] ->
@@ -1129,15 +1128,15 @@ and check_builtin env p args e loc =
       | Assert, e1::_ ->
 	  if List.length args < 1 || List.length args > 2 then
 	    sem_error "ASSERT expects 1 or 2 arguments" [] e.e_loc;
-	  check_assign "as argument of ASSERT" [] env boolean e1;
+	  check_assign e1 boolean env "as argument of ASSERT" [];
 	  if List.length args = 2 then begin
 	    let e2 = List.nth args 1 in
-	    check_assign "as argument of ASSERT" [] env inttype e2
+	    check_assign e2 inttype env "as argument of ASSERT" []
 	  end;
 	  voidtype
 
       | AdrFun, [e1] ->
-	  let _ = check_expr env e1 in
+	  let _ = check_expr e1 env in
 	  if not (is_var e1) then
 	    sem_error "the argument of SYSTEM.ADR must be a variable"
 	      [] e1.e_loc;
@@ -1147,11 +1146,11 @@ and check_builtin env p args e loc =
 	  (* Don't edit the expression, since this can result in constants
 	     that are labelled with the wrong type. *)
 	  check_qual env e1;
-	  let t2 = check_expr env e2 in
+	  let t2 = check_expr e2 env in
 	  begin match e1.e_guts with
 	      Name x ->
 		begin try
-		  let d = lookup_typename env x in 
+		  let d = lookup_typename x env in 
                   let t1 = d.d_type in
                   if not (scalar t1) then
                     sem_error
@@ -1179,8 +1178,8 @@ and check_builtin env p args e loc =
 	  boolean
 
       | (GetProc|PutProc), [e1; e2] ->
-	  let t1 = check_expr env e1 in
-	  let t2 = check_expr env e2 in
+	  let t1 = check_expr e1 env in
+	  let t2 = check_expr e2 env in
 	  if not (same_types t1 inttype) then
 	    sem_error "the first argument of SYSTEM.$ must have type INTEGER"
 	      [fStr p.b_name] e1.e_loc;
@@ -1195,7 +1194,7 @@ and check_builtin env p args e loc =
 		    [] e2.e_loc
             | PutProc ->
 		if same_types t2 numtype then
-		  convert inttype e2
+		  convert e2 inttype
             | _ -> failwith "get/put"
 	  end;
 	  voidtype
@@ -1205,17 +1204,17 @@ and check_builtin env p args e loc =
 	    [fStr p.b_name; fNum (List.length args)])
   end
 
-and check_assign cxt args env lt e =
-  check_assign1 cxt args env lt e true
+and check_assign e lt env cxt args =
+  check_assign1 e lt env true cxt args 
   
-and check_assign1 cxt args env lt e glob =
-  let rt = check_expr env e in
+and check_assign1 e lt env glob cxt args =
+  let rt = check_expr e env in
   if not !Config.ob07flag
       && numeric lt && numeric rt && kind_of lt >= kind_of rt then
-    coerce lt e
+    coerce e lt
   else if !Config.ob07flag
       && (integral lt && integral rt || floating lt && floating rt) then
-    coerce lt e
+    coerce e lt
   else if is_string lt && is_char_const e && bound lt >= 2 then
     promote_char e
   else if is_address lt && is_niltype rt then
@@ -1256,8 +1255,8 @@ and proc_value e glob =
       | _ -> ()
             
 (* check_const -- check a constant expression, returning type and value *)
-and check_const env cxt e =
-  let t = check_expr env e in
+and check_const e env cxt =
+  let t = check_expr e env in
   match e.e_guts with
       Const (v, _) -> (t, v)
     | _ -> 
@@ -1265,12 +1264,12 @@ and check_const env cxt e =
 	(t, IntVal (integer 0))
 
 (* check_tconst -- check for a constant of specified type *)
-and check_tconst env t cxt e =
-  let (t1, v) = check_const env cxt e in
+and check_tconst e t env cxt =
+  let (t1, v) = check_const e env cxt in
   if same_types t1 t then
     v
   else if coerceable t1 t then begin
-    coerce t e;
+    coerce e t;
     const_value e
   end
   else begin

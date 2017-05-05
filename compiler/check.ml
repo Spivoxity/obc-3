@@ -50,10 +50,10 @@ let agenda = ref ([] : (def * typexpr) list)
 				(* List of type decls awaiting checking *)
 
 (* add_def -- add definition to environment, give error if already declared *)
-let add_def env d =
+let add_def d env =
   try define env d with 
     Exit -> 
-      let d0 = lookup env d.d_tag in
+      let d0 = lookup d.d_tag env in
       if not (is_errtype d0.d_type) then
 	sem_error "'$' has already been declared" [fId d.d_tag] d.d_loc
 
@@ -190,7 +190,7 @@ let add_method kind binder d =
   if kind = AbsMeth && not bindrec.r_abstract then
     sem_error "only abstract records can have abstract methods" [] d.d_loc;
   begin try 
-    let prev = find_field binder d.d_tag in
+    let prev = find_field d.d_tag binder in
     match prev.d_kind with
 	FieldDef -> 
 	  sem_error "method '$' has the same name as a field" 
@@ -242,9 +242,9 @@ let check_override md0 md =
 	  clash "more restrictive export status"
     | _ -> failwith "check_override"
 
-let check_method ms0 table vsize md =
+let check_method md ms0 table vsize =
   begin try
-    let md0 = find_def ms0 md.d_tag in
+    let md0 = find_def md.d_tag ms0 in
     check_override md0 md;
     md.d_offset <- md0.d_offset;
   with Not_found ->
@@ -263,7 +263,7 @@ let check_methods t =
     let vsize = ref (List.length ms0) in
     let table = Growvect.create 10 in
     List.iter (make_method table) ms0;
-    List.iter (check_method ms0 table vsize) r.r_methods;
+    List.iter (fun md -> check_method md ms0 table vsize) r.r_methods;
     let h = function Some d -> d | None -> failwith "check_methods" in
     r.r_methods <- List.map h (Growvect.to_list table);
     if !Config.debug > 0 then 
@@ -330,8 +330,8 @@ let rec bad_paramtype t =
   end
 
 (* check_caselab -- check case label *)
-let check_caselab env t lab =
-  let check_lab e = check_tconst env t "a case label" e in 
+let check_caselab lab t env =
+  let check_lab e = check_tconst e t env "a case label" in 
   match lab with
       Single e -> 
 	let v = check_lab e in
@@ -360,11 +360,11 @@ let check_dupcases vs t =
     if x1 <> x2 then compare x1 x2 else compare loc1 loc2 in
   chk (List.sort ord vs)
 
-let check_forvar env e =
+let check_forvar e env =
   let t = match e.e_guts with
       Name x ->
 	begin try
-	  let d = lookup_def env x in
+	  let d = lookup_def x env in
 	  begin match d.d_kind with
 	      (VarDef | ParamDef | CParamDef | VParamDef) -> d.d_type
 	    | _ ->
@@ -391,7 +391,6 @@ let element_loc =
     | Range (e1, e2) -> Error.join_locs e1.e_loc e2.e_loc
 
 let make_typecase (switch, arms, default) =
-
   let fix (labs, body) =
     if List.length labs > 1 then
       sem_error "Only one case label allowed in type CASE" 
@@ -408,7 +407,6 @@ let make_typecase (switch, arms, default) =
           sem_error "range pattern not allowed here" 
             [] (Error.join_locs e1.e_loc e2.e_loc);
           raise Not_found in
-
   match switch.e_guts with
       Name x -> 
         TypeCase (switch, List.map fix arms, default)
@@ -416,19 +414,19 @@ let make_typecase (switch, arms, default) =
         sem_error "name expected in type CASE" [] switch.e_loc;
         raise Not_found
 
-let rec check_stmt env s =
+let rec check_stmt s env =
   match s.s_guts with
       Assign (lhs, rhs) ->
-        let lt = check_desig env lhs in
+        let lt = check_desig lhs env in
 	if not (is_var lhs) then
 	  sem_error "the LHS of an assignment must be a variable" [] lhs.e_loc;
-	check_assign "on the RHS of this assignment" [] env lt rhs
+	check_assign rhs lt env "on the RHS of this assignment" []
 
     | SimAssign pairs ->
 	if not !Config.extensions then
 	  sem_extend "simultaneous assignment is not allowed" [] s.s_loc;
 	List.iter (fun (e1, e2) ->
-	    let lt = check_desig env e1 in
+	    let lt = check_desig e1 env in
 	    if not (is_var e1) then
 	      sem_error "the LHS of an assignment must be a variable" 
 		[] e1.e_loc;
@@ -438,13 +436,13 @@ let rec check_stmt env s =
 		[] e1.e_loc;
 	      sem_type lt
 	    end;
-	    check_assign "on the RHS of this assignment" [] env lt e2)
+	    check_assign e2 lt env "on the RHS of this assignment" [])
 	  pairs
 
-      | ProcCall e ->
+    | ProcCall e ->
 	begin match e.e_guts with
 	    FuncCall (p, args) ->
-	      let t = check_call env p args e false in
+	      let t = check_call p args e env false in
 	      e.e_type <- t;
 	      if not (same_types t voidtype) && not !Config.extensions then
 		sem_extend ("a call that returns a result "
@@ -463,8 +461,8 @@ let rec check_stmt env s =
 	        sem_error "this RETURN statement should not specify a result" 
 		  [] s.s_loc
 	      else
-		check_assign "in this RETURN statement" []
-		  env !return_type e
+		check_assign e !return_type env
+                  "in this RETURN statement" []
           | None ->
 	      if not (same_types !return_type voidtype) then
 	        sem_error "this RETURN statement should specify a result" 
@@ -473,22 +471,22 @@ let rec check_stmt env s =
 
     | IfStmt (arms, elsept) ->
 	List.iter (fun (cond, thenpt) ->
-	    let ct = check_expr env cond in
+	    let ct = check_expr cond env in
 	    if not (same_types ct boolean) then begin
 	      sem_error "the test in an IF statement must have type BOOLEAN" 
 		[] cond.e_loc; 
 	      sem_type ct
 	    end;   
-	    check_stmt env thenpt)
+	    check_stmt thenpt env)
 	  arms;
-	check_stmt env elsept;
+	check_stmt elsept env;
 
     | CaseStmt (switch, arms, default) ->
-	let st = check_expr env switch in
+	let st = check_expr switch env in
         if is_record st || is_pointer st && is_record (base_type st) then begin
           try
             let tc = make_typecase (switch, arms, default) in
-            s.s_guts <- tc; check_typecase env s
+            s.s_guts <- tc; check_typecase s env
           with Not_found -> ()
         end
         else begin
@@ -512,30 +510,30 @@ let rec check_stmt env s =
 
             let nerrs = !Error.err_count in
             let check_labs (labs, body) = 
-              List.map (check_caselab env st) labs in
+              List.map (fun lab -> check_caselab lab st env) labs in
             let vs = List.concat (List.map check_labs arms) in
             (* Check for duplicate only if there were no errors while
                 checking the labels *)
             if !Error.err_count = nerrs then check_dupcases vs st
           end;
-          List.iter (function (labs, body) -> check_stmt env body) arms;
+          List.iter (function (labs, body) -> check_stmt body env) arms;
           check_else env default
         end
 
     | WhileStmt arms ->
 	List.iter (fun (cond, body) ->
-	    let ct = check_expr env cond in
+	    let ct = check_expr cond env in
 	    if not (same_types ct boolean) then begin
 	      sem_error "the test in a WHILE statement must have type BOOLEAN" 
 		[] cond.e_loc;
 	      sem_type ct
 	    end;
-	    check_stmt env body)
+	    check_stmt body env)
 	  arms
 
     | RepeatStmt (body, cond) ->
-	check_stmt env body;
-	let ct = check_expr env cond in
+	check_stmt body env;
+	let ct = check_expr cond env in
 	if not (same_types ct boolean) then begin
 	  sem_error "the test after UNTIL must have type BOOLEAN"
 	    [] cond.e_loc;
@@ -544,7 +542,7 @@ let rec check_stmt env s =
 
     | LoopStmt body ->
 	incr loop_level;
-	check_stmt env body;
+	check_stmt body env;
 	decr loop_level
 
     | ExitStmt ->
@@ -553,7 +551,7 @@ let rec check_stmt env s =
 	    [] s.s_loc
 
     | ForStmt (var, lo, hi, step, body, tmp) ->
- 	let vt = check_forvar env var in
+ 	let vt = check_forvar var env in
 	if not (is_discrete vt) then begin
 	  sem_error "the variable after FOR must have a discrete type" 
 	    [] var.e_loc;
@@ -565,9 +563,9 @@ let rec check_stmt env s =
 	    sem_type vt
 	  end;
 
-	  check_assign "as a starting value" [] env vt lo;
-	  check_assign "as an ending value" [] env vt hi;
-	  let (bt, inc) = check_const env "a step value" step in
+	  check_assign lo vt env "as a starting value" [];
+	  check_assign hi vt env "as an ending value" [];
+	  let (bt, inc) = check_const step env "a step value" in
 	  if not (integral bt) then begin
 	    sem_error "the step value must be an integer" [] step.e_loc;
 	    sem_type bt
@@ -584,29 +582,32 @@ let rec check_stmt env s =
 		let d = make_def x VarDef vt None in 
 		!allocate d; tmp := Some d
 	end;
- 	check_stmt env body
+ 	check_stmt body env
+
     | WithStmt (branches, else_part) ->
 	let check_branch (e1, tn, body) =
 	  try
-	    let dx = lookup_def env (get_name e1) in
-	    let dt = lookup_typename env tn in
+	    let dx = lookup_def (get_name e1) env in
+	    let dt = lookup_typename tn env in
 	    e1.e_type <- dx.d_type;
 	    check_typetest e1 dt.d_type e1.e_loc;
 	    let dx' = { dx with d_loc = e1.e_loc; d_type = dt.d_type } in
 	    let env' = new_block env in
-	    add_def env' dx';
-	    check_stmt env' body
+	    add_def dx' env';
+	    check_stmt body env'
 	  with Not_found -> () in
 	List.iter check_branch branches;
 	check_else env else_part
-    | Seq ss -> List.iter (check_stmt env) ss
-    | Skip -> ()
-    | ErrStmt ->
-	failwith "check ErrStmt"
-    | TypeCase _ ->
-        failwith "check TypeCase"
 
-and check_typecase env s =
+    | Seq ss -> List.iter (fun s -> check_stmt s env) ss
+
+    | Skip -> ()
+
+    | ErrStmt -> failwith "check ErrStmt"
+
+    | TypeCase _ -> failwith "check TypeCase"
+
+and check_typecase s env =
   match s.s_guts with
       TypeCase (switch, arms, default) ->
         let st = switch.e_type in
@@ -619,14 +620,14 @@ and check_typecase env s =
           let dx = get_def (get_name switch) in
           let check_arm (tn, body) =
             try
-              let dt = lookup_typename env tn in
+              let dt = lookup_typename tn env in
               if not (subtype dt.d_type st) then begin
                 sem_error "a subtype of $ is needed here" [fOType st] tn.x_loc;
                 sem_type dt.d_type
               end;
               let dx' = { dx with d_loc = tn.x_loc; d_type = dt.d_type } in
               let env' = new_block env in
-              add_def env' dx'; check_stmt env' body
+              add_def dx' env'; check_stmt body env'
             with Not_found -> () in
           List.iter check_arm arms;
           check_else env default
@@ -635,25 +636,25 @@ and check_typecase env s =
 
 and check_else env =
   function
-      Some ss -> not_07 "ELSE part" ss.s_loc; check_stmt env ss
+      Some ss -> not_07 "ELSE part" ss.s_loc; check_stmt ss env
     | None -> ()
 
 (* check_typexpr -- check a type expression, returning the otype *)
-and check_typexpr lzy env name tx = 
+and check_typexpr tx name env lzy = 
   match tx.tx_guts with
       TypeName x ->
 	begin try
-	  let d = lookup_typename env x in d.d_type
+	  let d = lookup_typename x env in d.d_type
 	with 
 	  Not_found -> errtype
 	end
     | _ ->
-	let t = check_typecons lzy env name tx in
+	let t = check_typecons tx name env lzy in
 	t.t_name <- name; 
 	if is_record t then make_desc t;
 	t
 	
-and check_typecons lzy env name tx =
+and check_typecons tx name env lzy =
   match tx.tx_guts with
       Enum xs ->
 	if not !Config.extensions then
@@ -662,21 +663,21 @@ and check_typecons lzy env name tx =
 	  (EnumType (List.length xs), int_rep, null_map) in
 	let j = ref 0 in
 	let dcl x = 
-	  add_def env (make_def x (EnumDef !j) t None); incr j in
+	  add_def (make_def x (EnumDef !j) t None) env; incr j in
 	List.iter dcl xs; t
     | Pointer tx1 ->
 	let d = typedef () in
 	if lzy && (is_typename tx1 || !Config.extensions) then
 	  agenda := (d, tx1) :: !agenda
 	else begin
-	  let t = check_typexpr lzy env anon tx1 in
+	  let t = check_typexpr tx1 anon env lzy in
 	  check_target t tx1.tx_loc;
 	  d.d_type <- t
 	end;
 	new_type !level (pointer d)
     | Array (upb, tx1) ->
-	let v1 = check_tconst env inttype "an array bound" upb
- 	and t2 = check_typexpr lzy env anon tx1 in
+	let v1 = check_tconst upb inttype env "an array bound"
+ 	and t2 = check_typexpr tx1 anon env lzy in
  	if is_flex t2 then
  	  sem_error "arrays cannot have open arrays as elements" [] tx1.tx_loc;
  	if is_abstract t2 then
@@ -686,7 +687,7 @@ and check_typecons lzy env name tx =
 	  sem_error "upper bound of array must be >= 0" [] upb.e_loc;
 	new_type !level (row (int_of_integer (int_value v1)) t2)
     | Flex tx1 ->
-	let t1 = check_typexpr lzy env anon tx1 in
+	let t1 = check_typexpr tx1 anon env lzy in
  	if is_abstract t1 then
  	  sem_error "open arrays cannot have abstract record types as elements"
  	    [] tx1.tx_loc;
@@ -696,7 +697,7 @@ and check_typecons lzy env name tx =
 	let (pt, fields0) = 
 	  match parent with 
 	      Some x -> 
-		let t1 = check_typexpr false env anon x in
+		let t1 = check_typexpr x anon env false in
 		if is_record t1 then begin
 		  let r = get_record t1 in
 		  offset := t1.t_rep.m_size; (t1, r.r_fields)
@@ -709,8 +710,8 @@ and check_typecons lzy env name tx =
 		  (voidtype, [])
 		end
 	    | None -> (voidtype, []) in
-	let env' = add_block env fields0 in
-	check_decls lzy (upward_alloc offset) env' fields;
+	let env' = add_block fields0 env in
+	check_decls fields env' (upward_alloc offset) lzy;
 	align max_align offset;
 	new_type !level (record abs pt !offset (top_block env'))
     | Proc heading ->
@@ -722,10 +723,10 @@ and check_typecons lzy env name tx =
 	failwith "check_typecons"
 
 (* check_decl -- check a declaration and add it to the environment *)
-and check_decl lzy alloc env = 
-  function
+and check_decl d env alloc lzy = 
+  match d with
       ConstDecl (x, e, doc) ->
-	let t = check_expr env e in
+	let t = check_expr e env in
 	let d =
 	  match e.e_guts with
 	      Const (v, _) -> make_def x (ConstDef v) t doc
@@ -736,11 +737,11 @@ and check_decl lzy alloc env =
 		sem_error "a CONST declaration must contain a constant" 
 		  [] e.e_loc;
 		make_def x (ConstDef (IntVal (integer 0))) errtype doc in
-	add_def env d
+	add_def d env
     | VarDecl (kind, xs, tx, doc) ->
         if kind = CParamDef && not !Config.extensions then
 	  sem_extend "CONST parameters are not allowed" [] (List.hd xs).x_loc;
-        let t = check_typexpr lzy env anon tx in
+        let t = check_typexpr tx anon env lzy in
 	begin match kind with
 	    ParamDef | CParamDef | VParamDef ->
 	      if bad_paramtype t then
@@ -768,32 +769,32 @@ and check_decl lzy alloc env =
             (* In Oberon07, aggregate value parameters are implicitly CONST *)
             if !Config.ob07flag && kind = ParamDef 
               && not (scalar t) then CParamDef else kind in
-	  let d = make_def x kind' t doc in alloc d; add_def env d in
+	  let d = make_def x kind' t doc in alloc d; add_def d env in
 	List.iter def xs
     | TypeDecl decls ->
 	List.iter (fun (x, te, doc) ->
-	  let t = check_typexpr true env x.x_name te in
+	  let t = check_typexpr te x.x_name env true in
 	  let d = make_def x TypeDef t doc in
-	  x.x_def <- Some d; add_def env d) decls;
+	  x.x_def <- Some d; add_def d env) decls;
 	force_agenda env
     | ProcDecl (kind, x, heading, body, doc) ->
 	let fsize = 
 	  match body with Block (_, _, _, fs) -> fs | NoBlock -> ref 0 in
-	check_proc env kind x heading fsize doc
+	check_proc kind x heading doc env fsize
     | PrimDecl (x, heading, name, doc) ->
 	if !level > 0 then
 	  sem_error "primitives must be declared at the outermost level"
 	    [] x.x_loc;
-	check_proc env Procedure x heading (ref 0) doc
+	check_proc Procedure x heading doc env (ref 0)
     | ForwardDecl (kind, x, heading, doc) -> ()
     | DummyDecl -> ()
 
-and check_decls lzy alloc env ds = 
-  List.iter (check_decl lzy alloc env) ds
+and check_decls ds env alloc lzy = 
+  List.iter (fun d -> check_decl d env alloc lzy) ds
 
 and force_agenda env =
   List.iter (fun (d, tx) ->
-    let t = check_typexpr false env anon tx in
+    let t = check_typexpr tx anon env false in
     check_target t tx.tx_loc;
     d.d_type <- t) (List.rev !agenda);
   agenda := []
@@ -803,7 +804,7 @@ and check_heading kind x (Heading (fparams, result)) doc env fsize =
   let psize = ref 0 in
   let alloc = param_alloc frame_head psize in
   let env' = new_block env in
-  check_decls false alloc env' fparams;
+  check_decls fparams env' alloc false;
   decr level;
   let loc = ref no_loc in
   let rt = 
@@ -811,7 +812,7 @@ and check_heading kind x (Heading (fparams, result)) doc env fsize =
 	Some t -> 
 	  begin try
 	    loc := t.x_loc; 
-	    let d = lookup_typename env t in
+	    let d = lookup_typename t env in
 	    d.d_type
           with Not_found -> errtype
 	  end
@@ -827,12 +828,12 @@ and check_heading kind x (Heading (fparams, result)) doc env fsize =
   d.d_env <- env'; d
 
 (* check_proc -- check a procedure declaration *)
-and check_proc env kind x heading fsize doc =
+and check_proc kind x heading doc env fsize =
   let d = check_heading kind x heading doc env fsize in
   match kind with
       Procedure ->
 	d.d_lab <- proc_name !current !level x.x_name;
-	x.x_def <- Some d; add_def env d
+	x.x_def <- Some d; add_def d env
     | Method | AbsMeth ->
         not_07 "method aka type-bound procedure" x.x_loc;
 	if !level > 0 then
@@ -853,8 +854,8 @@ and check_proc env kind x heading fsize doc =
     | _ -> failwith "check_proc"
 
 (* check_body -- check body of a procedure declaration *)
-and check_body env =
-  function
+and check_body d env =
+  match d with
       ProcDecl (_, x, _, Block (locals, body, ret, fsize), _) ->
 	if not (undefined x) then begin
 	  let d = get_def x in
@@ -864,11 +865,11 @@ and check_body env =
 	  incr level; err_context := env';
 
 	  fsize := if !level > 1 then word_size else 0;
-	  check_decls false (downward_alloc fsize) env' locals;
-	  List.iter (check_body env') locals;
+	  check_decls locals env' (downward_alloc fsize) false;
+	  List.iter (fun d -> check_body d env') locals;
 	  return_type := p.p_result;
 	  allocate := downward_alloc fsize;
-	  check_stmt env' body;
+	  check_stmt body env';
           
           begin match ret with
               Some e ->
@@ -877,8 +878,8 @@ and check_body env =
                   sem_error "this procedure should not have a RETURN clause" 
                     [] e.e_loc
                 else
-                  check_assign "in this RETURN clause" []
-		    env' !return_type e
+                  check_assign e !return_type env'
+                    "in this RETURN clause" []
             | None ->
                 if not (same_types p.p_result voidtype) 
                     && not (check_return body) then
@@ -904,22 +905,23 @@ and check_body env =
 	  let p = get_proc d.d_type in
 	  d.d_map <- local_map p.p_fparams
 	end
+
     | _ -> ()
 
-let check_import env (int, ext, stamp) =
+let check_import (int, ext, stamp) env =
   if ext = !current then
     sem_error "a module must not import itself (boy, are you inept!)" 
       [] int.x_loc
   else begin
     try
       let (env', st, doc) = 
-	if ext = intern (if !Config.lcflag then "system" else "SYSTEM") then 
+	if ext = intern_sys "SYSTEM" then
 	  (sysenv (), 0, None)
 	else 
 	  Symfile.import
 	    (Util.search_path (extern ext ^ ".k") !Config.libpath) in
       stamp := st;
-      add_def env (make_def int (ModDef (ext, env')) voidtype None)
+      add_def (make_def int (ModDef (ext, env')) voidtype None) env
     with Not_found ->
       sem_error "the interface file for '$' cannot be found" 
 	[fId ext] int.x_loc;
@@ -929,20 +931,20 @@ let annotate (Module (m, imports, body, glodefs, doc)) =
   level := 0;
   let glo_env = new_block (init_env ()) in
   err_context := glo_env;
-  List.iter (check_import glo_env) imports;
+  List.iter (fun imp -> check_import imp glo_env) imports;
   if !Error.err_count = 0 then begin	
     (* No point going on if imports failed *)
     match body with
 	Block (globals, body, None, fsize) ->
-	  check_decls false (global_alloc fsize) glo_env globals;
+	  check_decls globals glo_env (global_alloc fsize) false;
 	  List.iter check_methods (desc_table ());
 	  is_module := false;
-	  List.iter (check_body glo_env) globals;
+	  List.iter (fun d -> check_body d glo_env) globals;
 	  return_type := voidtype;
 	  allocate := downward_alloc fsize;
 	  is_module := true;
 	  level := 1;
-	  check_stmt glo_env body;
+	  check_stmt body glo_env;
 	  level := 0;
 	  align max_align fsize;
 

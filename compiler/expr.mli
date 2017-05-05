@@ -35,26 +35,26 @@ open Eval
 open Error
 
 (* lookup_def -- find definition of a name, give error if none *)
-val lookup_def : environment -> name -> def
+val lookup_def : name -> environment -> def
 
 (* lookup_typename -- look up a type name *)
-val lookup_typename : environment -> name -> def
+val lookup_typename : name -> environment -> def
 
 (* is_var -- check that expression denotes a variable *)
 val is_var : expr -> bool
 
 (* find_field -- search for field or method, or raise Not_found *)
-val find_field : otype -> ident -> def
+val find_field : ident -> otype -> def
 
 (* check_desig -- check and annotate a designator, return its type *)
-val check_desig : environment -> expr -> otype
+val check_desig : expr -> environment -> otype
 
 (* check_expr -- check and annotate an expression, return its type *)
-val check_expr : environment -> expr -> otype
+val check_expr : expr -> environment -> otype
 
 (* check_assign -- check for assignment compatibility *)
 val check_assign : 
-  string -> Print.arg list -> environment -> otype -> expr -> unit
+  expr -> otype -> environment -> string -> Print.arg list -> unit
 
 (* dynamic -- check if an expression has dynamic type *)
 val dynamic : expr -> bool
@@ -64,13 +64,13 @@ val check_typetest : expr -> otype -> location -> unit
 
 (* check_call -- check a procedure call *)
 val check_call : 
-  environment -> expr -> expr list -> expr -> bool -> otype
+  expr -> expr list -> expr -> environment -> bool -> otype
 
 (* check_const -- check a constant expression, returning type and val *)
-val check_const : environment -> string -> expr -> otype * value
+val check_const : expr -> environment -> string -> otype * value
 
 (* check_tconst -- check for a constant of specified type *)
-val check_tconst : environment -> otype -> string -> expr -> value
+val check_tconst : expr -> otype -> environment -> string -> value
 
 val err_context : environment ref
 

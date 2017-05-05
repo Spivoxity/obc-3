@@ -67,7 +67,7 @@ let install d =
 
 let unpack t =
   let p = get_proc t in
-  incr level; env := add_block !env p.p_fparams
+  incr level; env := add_block p.p_fparams !env 
 
 let debug d = !Dict.debugger d
 

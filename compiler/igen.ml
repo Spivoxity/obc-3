@@ -1180,7 +1180,7 @@ let translate stamp
   put "MODULE $ $ $" [fId m.x_name; fHex stamp; fNum lcount];
   List.iter 
     (function (x, x', st) -> 
-      if x' <> intern "SYSTEM" then put "IMPORT $ $" [fId x'; fHex !st]) 
+      if x' <> intern_sys "SYSTEM" then put "IMPORT $ $" [fId x'; fHex !st]) 
     imports;
   put "ENDHDR\n" [];
 

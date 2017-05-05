@@ -32,6 +32,7 @@
 type ident
 
 val intern : string -> ident
+val intern_sys : string -> ident
 val extern : ident -> string
 val anon : ident
 

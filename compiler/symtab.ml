@@ -45,6 +45,9 @@ let intern x =
       Growvect.append atom_vec x;
       y
 
+let intern_sys x =
+   intern (if !Config.lcflag then Util.strlower x else x)
+
 let anon = intern "*anon*"
 
 let current = ref anon
