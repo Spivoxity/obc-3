@@ -108,9 +108,9 @@ let rec put_map m =
     (* Don't use a bitmap for a single item *)
     (match m with [GC_Offset o] -> raise Not_found | _ -> ());
     let bm = make_bitmap 0 m in 
-    put_sym "GC_MAP"; put_sym (Util.hex_of_int32 bm)
+    put_sym (Util.hex_of_int32 bm)
   with 
-    Not_found -> List.iter put_item m
+    Not_found -> List.iter put_item m; put_sym "GC_END"
 
 and put_item =
   function
@@ -118,17 +118,24 @@ and put_item =
 	put_int o
     | GC_Repeat (base, count, stride, m) ->
 	put_sym "GC_REPEAT"; put_int base; put_int count; put_int stride;
-	put_map m;
-	put_sym "GC_END"
+	put_map m
     | GC_Block (base, count) ->
 	put_sym "GC_BLOCK"; put_int base; put_int count
     | GC_Flex (offset, ndim, stride, m) ->
 	put_sym "GC_FLEX"; put_int offset; put_int ndim; put_int stride;
-	put_map m;
-	put_sym "GC_END"
+	put_map m
+
+let put_submap m =
+  try
+    (* Don't use a bitmap for a single item *)
+    (match m with [GC_Offset o] -> raise Not_found | _ -> ());
+    let bm = make_bitmap 0 m in 
+    put_sym "GC_MAP"; put_sym (Util.hex_of_int32 bm)
+  with 
+    Not_found -> List.iter put_item m
 
 let put_varmap lab m =
-  put_sym "GC_BASE"; put_sym lab; put_map m
+  put_sym "GC_BASE"; put_sym lab; put_submap m
 
 
 let maps = ref []

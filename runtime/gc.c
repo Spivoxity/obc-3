@@ -784,9 +784,9 @@ static void redirect(word *p) {
 }
 
 /* map_next -- skip over a map item */
-static int *map_next(int *p) {
-     if (*p % 4 == 0)
-	  return p+1;		/* A pointer offset */
+static unsigned *map_next(unsigned *p) {
+     if (*p % 4 != 2)
+	  return p+1;		/* A pointer offset or bitmap */
      
      switch (*p >> 2) {
      case GC_BASE >> 2:
@@ -796,7 +796,7 @@ static int *map_next(int *p) {
      case GC_REPEAT >> 2:
      case GC_FLEX >> 2:
 	  p += 4;
-	  while (*p != GC_END) p = map_next(p);
+	  while (*p % 2 == 0 && *p != GC_END) p = map_next(p);
 	  return p+1;
 
      case GC_BLOCK >> 2:
@@ -815,7 +815,7 @@ static int *map_next(int *p) {
 static void redir_map(unsigned map, void *base, int bmshift) {
      int count, stride, op, ndim;
      void *base2;
-     int *p;
+     unsigned *p;
 
      if (map == 0) return;
 
@@ -833,22 +833,30 @@ static void redir_map(unsigned map, void *base, int bmshift) {
 	  return;
      }
 
-     p = ptrcast(int, map);
+     p = ptrcast(unsigned, map);
+
+     if (*p % 2 == 1) {
+          /* A bitmap */
+          redir_map(*p, base, 0);
+          return;
+     }
 
      for (;;) {
-	  if (*p % 4 == 0) {
+          op = *p;
+
+	  if (op % 4 == 0) {
 	       /* A pointer offset */
-	       redirect((word *) (base + *p));
+	       redirect((word *) (base + (int) op));
 	       p++;
 	       continue;
 	  }
 
-	  switch (op = *p) {
-	  case GC_BASE:
+	  switch (op >> 2) {
+	  case GC_BASE >> 2:
 	       base = ptrcast(void, p[1]);
 	       break;
 
-	  case GC_REPEAT:
+	  case GC_REPEAT >> 2:
 	       base2 = base + p[1];
 	       count = p[2];
 	       stride = p[3];
@@ -860,7 +868,7 @@ static void redir_map(unsigned map, void *base, int bmshift) {
 
 	       break;
 
-	  case GC_BLOCK:
+	  case GC_BLOCK >> 2:
 	       base2 = base + p[1];
 	       count = p[2];
 
@@ -868,11 +876,11 @@ static void redir_map(unsigned map, void *base, int bmshift) {
 		    redirect((word *) &get_word(base2, i));
 	       break;
 			 
-	  case GC_MAP:
+	  case GC_MAP >> 2:
 	       redir_map((unsigned) p[1], base, 0);
 	       break;
 
-	  case GC_FLEX:
+	  case GC_FLEX >> 2:
 	       base2 = base + p[1];
 	       ndim = p[2];
 	       stride = p[3];
@@ -887,7 +895,7 @@ static void redir_map(unsigned map, void *base, int bmshift) {
 
 	       break;
 
-	  case GC_END:
+	  case GC_END >> 2:
 	       return;
 
 	  default:
