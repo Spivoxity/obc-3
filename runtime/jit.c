@@ -39,7 +39,6 @@
 
 static value *context;		/* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
-static int cmpflag = 0;         /* Flag for [FD]CMP[LG] */
 
 #define konst(i) context[CP_CONST+i]
 
@@ -148,10 +147,8 @@ static void gbinop(operation op, int ty, int s) {
 #define fbinop(op) gbinop(op, FLO, 1)
 #define dbinop(op) gbinop(op, FLO, 2)
 
-static void pop_zero(void) {
-     ctvalue v = peek(1);
-     assert(v->v_op == I_CON && v->v_val == 0);
-     pop(1);
+static mybool is_zero(ctvalue v) {
+     return (v->v_op == I_CON && v->v_val == 0);
 }
 
 /* fcomp -- float or double comparison */
@@ -172,29 +169,22 @@ static void fcomp(operation op, int ty) {
 #define compare(op) compare1(op, op##f, op##d, op##q)
 #endif
 
-static void compare1(operation op, operation opf, operation opd
-#ifdef M64X32
-                   , operation op64
-#endif
-     ) {
-     switch (cmpflag) {
-     case I_FCMPL:
-     case I_FCMPG:
-          pop_zero(); fcomp(opf, FLO); break;
-     case I_DCMPL:
-     case I_DCMPG:
-          pop_zero(); fcomp(opd, FLO); break;
-#ifdef M64X32
-     case I_QCMP:
-          pop_zero(); ibinop(op64); break;
-#endif
-     case 0:
-	  ibinop(op); break;
-     default:
-          panic("*compare");
+static void compare1(operation op, operation opf, operation opd,
+                     operation op64) {
+     if (is_zero(peek(1))) {
+          switch (peek(2)->v_op) {
+          case I_FCMPL:
+          case I_FCMPG:
+               pop(2); fcomp(opf, FLO); return;
+          case I_DCMPL:
+          case I_DCMPG:
+               pop(2); fcomp(opd, FLO); return;
+          case I_QCMP:
+               pop(2); ibinop(op64); return;
+          }
      }
 
-     cmpflag = 0;
+     ibinop(op);
 }
 
 static void icondj(operation op, int lab) {
@@ -235,24 +225,22 @@ struct jmptab tab_jge = jtab(BGE, BGE, BNLT);
 struct jmptab tab_jne = jtab(BNE, BNE, BNE);
 
 static void condj(jtable t, int lab) {
-     switch (cmpflag) {
-     case I_FCMPL:
-          pop_zero(); fcondj(t->oplf, lab); break;
-     case I_FCMPG:
-          pop_zero(); fcondj(t->opgf, lab); break;
-     case I_DCMPL:
-          pop_zero(); fcondj(t->opld, lab); break;
-     case I_DCMPG:
-          pop_zero(); fcondj(t->opgd, lab); break;
-     case I_QCMP:
-          pop_zero(); icondj(t->opq, lab); break;
-     case 0:
-          icondj(t->op, lab); break;
-     default:
-          panic("*condj");
+     if (is_zero(peek(1))) {
+          switch (peek(2)->v_op) {
+          case I_FCMPL:
+               pop(2); fcondj(t->oplf, lab); return;
+          case I_FCMPG:
+               pop(2); fcondj(t->opgf, lab); return;
+          case I_DCMPL:
+               pop(2); fcondj(t->opld, lab); return;
+          case I_DCMPG:
+               pop(2); fcondj(t->opgd, lab); return;
+          case I_QCMP:
+               pop(2); icondj(t->opq, lab); return;
+          }
      }
 
-     cmpflag = 0;
+     icondj(t->op, lab);
 }
 
 static void callout(func op, int nargs) {
@@ -484,7 +472,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_FCMPG:
      case I_DCMPL:	
      case I_DCMPG:	
-          cmpflag = i; break;
+          push(i, INT, rZERO, 0, 0); break;
 
      case I_BOUND:
 	  r1 = move_to_reg(2, INT); 
@@ -659,7 +647,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  callout(LONG_CMP, 2); pop(2);
 	  push(I_STACKW, INT, rZERO, 0, 1);
 #else
-          cmpflag = I_QCMP;
+          push(I_QCMP, INT, rZERO, 0, 0);
 #endif          
 	  break;
 
@@ -898,7 +886,6 @@ void jit_compile(value *cp) {
      init_regs();
      init_labels();
      init_stack(frame);
-     cmpflag = 0;
      stack_oflo = vm_newlab();
      retlab = vm_newlab();
 

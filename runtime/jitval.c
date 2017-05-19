@@ -41,11 +41,12 @@
      REG           reg         reg
      CON               val     val
      STACKW            val     mem_4[BP + val]
-     STACKD            val     mem_8[BP + val]
+     STACKQ            val     mem_8[BP + val]
      ADDR          reg val     reg + val
      LDKW, LDKF        val     konst_4[val]
      LDKD, LDKQ        val     konst_8[val]
      LOADs         reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
+     [FD]CMP[LG], QCMP         comparison of two previous values
 
 LDKW and LDKD refer to the pool of constants for the procedure
 being compiled.  */
@@ -65,6 +66,14 @@ static void show(ctvalue v) {
 
      case I_STACKQ: 
 	  printf("stackq %d", v->v_val); break;
+
+     case I_FCMPL:
+     case I_FCMPG:
+     case I_DCMPL:
+     case I_DCMPG:
+     case I_QCMP:
+          printf("compare %s", instrs[v->v_op].i_name);
+          break;
 
      default:
 	  printf("[%s %d", instrs[v->v_op].i_name, v->v_val);
@@ -510,7 +519,7 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      default:
-	  panic("fixr %s\n", instrs[v->v_op].i_name);
+	  panic("move_to_reg %s\n", instrs[v->v_op].i_name);
 	  r = rZERO;
      }
 
