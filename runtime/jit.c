@@ -163,11 +163,7 @@ static void fcomp(operation op, int ty) {
 }
 
 /* compare -- integer comparison */
-#ifndef M64X32
-#define compare(op) compare1(op, op##f, op##d)
-#else
 #define compare(op) compare1(op, op##f, op##d, op##q)
-#endif
 
 static void compare1(operation op, operation opf, operation opd,
                      operation op64) {
