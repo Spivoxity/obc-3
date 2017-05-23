@@ -140,7 +140,7 @@ thunder/libthunder.a: thunder; $(SKIP)
 
 $(PRIMS) lib/Files.k: lib; $(SKIP)
 
-compiler lablgtk debugger: mllib
+yacc compiler lablgtk debugger: mllib
 compiler: yacc
 lib: compiler
 debugger: compiler lablgtk

@@ -127,6 +127,9 @@ keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl iskel.c
 	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset $(srcdir)/iskel.c \
 		keiko.h template.c interp.c
 
+template.c interp.c: keiko.h
+	touch $@
+
 decode.c : keiko.iset jitgen.tcl util.tcl iparse.tcl 
 	$(TCLSH) $(srcdir)/jitgen.tcl $(srcdir)/keiko.iset decode.c
 
