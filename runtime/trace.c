@@ -32,6 +32,16 @@
 #include "obx.h"
 #include "keiko.h"
 
+struct _opcode { 
+     const char *i_name;	/* Name */
+     const char *i_patt;	/* Argument template */
+     int i_arg;			/* Argument packed in opcode */
+     int i_len;			/* Total length in bytes */
+};
+
+#define __o1__(op, inst, patt, arg, len) { #inst, patt, arg, len },
+struct _opcode optable[256] = { __OPCODES__(__o1__) };
+
 char *fmt_inst(uchar *pc) {
      uchar *args = pc;
      struct _opcode *ip = &optable[*pc++];

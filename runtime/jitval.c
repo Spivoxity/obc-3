@@ -31,7 +31,6 @@
 #include "obx.h"
 #include "keiko.h"
 #include "jit.h"
-#include "decode.h"
 #include <assert.h>
 
 /* Possible compile-time values

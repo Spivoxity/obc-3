@@ -140,4 +140,10 @@ for {set i 1} {$i < 128} {incr i} {
 proc trim {s} { regexp {^ *(.*[^ ]) *$} $s dummy s; return $s }
 
 # csym -- make C symbol
-proc csym {k s} { return ${k}_[regsub "\\." $s ""] }
+proc csym {k s} {
+    if {$k == ""} {
+        return [regsub "\\." $s ""]
+    } else {
+        return ${k}_[regsub "\\." $s ""]
+    }
+}

@@ -232,7 +232,7 @@ static template find_template(const char *name) {
      do {
 	  ch = *s++ & 0x7f;
 
-	  if (q+ch < 0 || q+ch >= NTRIE || templ_check[q+ch] != ch) 
+	  if (templ_check[q+ch] != ch) 
 	       panic("*no template found for %s", name);
 
 	  q = templ_trie[q+ch];
@@ -314,7 +314,54 @@ static void print_args(phrase q) {
 }
 #endif
 
-static phrase do_template(template t, char *rands[], phrase buf, int cxt[]);
+static int get_arg(char tmpl, char *rand, template t, int cxt[]) {
+     if (rand[0] == '$' && cxt != NULL)
+          return cxt[rand[1] - 'a'];
+
+     switch (tmpl) {
+     case '1':
+     case '2':
+     case 'N':
+	  if (isdigit((int) rand[0]) || rand[0] == '-')
+	       return const_value(rand);
+	  else
+	       return sym_value(find_symbol(rand));
+
+     case 'R':
+     case 'S':
+	  return make_label(find_symbol(rand));
+
+     case 'K':
+     case 'L':
+	  return make_const(rand);
+
+     default:
+	  panic("*bad template %c for %s", tmpl, t->t_name);
+	  return 0;
+     }
+}
+
+/* do_template -- enter an instruction */
+static phrase do_template(template t, char *rands[], phrase rgt, int cxt[]) { 
+     /* Template t determines the number and kinds of operands for the
+	instruction; depending on the values of the operands, it may or
+	may not end up actually matching the instruction. */
+
+     phrase q = alloc_phrase();
+     phrase lft = rgt->q_prev;
+     const char *patt = t->t_pattern;
+
+     q->q_name = t->t_name;
+     q->q_templ = t;
+     for (int i = 0; patt[i] != '\0'; i++) 
+	  q->q_arg[i] = get_arg(patt[i], rands[i], t, cxt);
+     q->q_addr = 0;
+     q->q_sym = NULL;
+     q->q_target = NULL;
+     q->q_prev = lft; q->q_next = rgt;
+     lft->q_next = rgt->q_prev = q;
+     return q;
+}
 
 /* expand -- replace macro by its expansion */
 static phrase expand(phrase q) {
@@ -451,55 +498,6 @@ static void make_binary(void) {
 	       }
 	  }
      }
-}
-
-static int get_arg(char tmpl, char *rand, template t, int cxt[]) {
-     if (rand[0] == '$' && cxt != NULL)
-          return cxt[rand[1] - 'a'];
-
-     switch (tmpl) {
-     case '1':
-     case '2':
-     case 'N':
-	  if (isdigit((int) rand[0]) || rand[0] == '-')
-	       return const_value(rand);
-	  else
-	       return sym_value(find_symbol(rand));
-
-     case 'R':
-     case 'S':
-	  return make_label(find_symbol(rand));
-
-     case 'K':
-     case 'L':
-	  return make_const(rand);
-
-     default:
-	  panic("*bad template %c for %s", tmpl, t->t_name);
-	  return 0;
-     }
-}
-
-/* do_template -- enter an instruction */
-static phrase do_template(template t, char *rands[], phrase rgt, int cxt[]) { 
-     /* Template t determines the number and kinds of operands for the
-	instruction; depending on the values of the operands, it may or
-	may not end up actually matching the instruction. */
-
-     phrase q = alloc_phrase();
-     phrase lft = rgt->q_prev;
-     const char *patt = t->t_pattern;
-
-     q->q_name = t->t_name;
-     q->q_templ = t;
-     for (int i = 0; patt[i] != '\0'; i++) 
-	  q->q_arg[i] = get_arg(patt[i], rands[i], t, cxt);
-     q->q_addr = 0;
-     q->q_sym = NULL;
-     q->q_target = NULL;
-     q->q_prev = lft; q->q_next = rgt;
-     lft->q_next = rgt->q_prev = q;
-     return q;
 }
 
 /* MARK pseudo-instructions generate no code, and are used to place labels,

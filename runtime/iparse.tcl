@@ -97,7 +97,6 @@ proc make_dir {dir} {
 
 proc make_template {inst patt bounds op argbytes} {
     global templates ntempl maxargs
-
     if {$argbytes > 0} {set maxargs [max $maxargs [string length $patt]]}
     lappend templates($inst) [list $patt $bounds $op $argbytes] 
     incr ntempl

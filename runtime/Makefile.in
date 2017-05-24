@@ -90,8 +90,8 @@ obx.a :   $(OBX) gc.o;						$(PACK)
 obx-t.a : interp-t.o xmain-t.o trace.o $(COMMON) gc-t.o;	$(PACK)
 obx-p.a : interp-p.o xmain-p.o profile.o $(COMMON) gc.o;	$(PACK)
 obx-d.a : interp-d.o xmain-d.o debug.o $(COMMON) gc.o;		$(PACK)
-obx-j.a : $(JIT) xmain-j.o decode.o $(COMMON) gc.o;		$(PACK)
-obx-jd.a : $(OBX) $(JIT) xmain.o decode.o $(COMMON) gc.o; 	$(PACK)
+obx-j.a : $(JIT) xmain-j.o $(COMMON) gc.o;			$(PACK)
+obx-jd.a : $(OBX) $(JIT) xmain.o $(COMMON) gc.o;	 	$(PACK)
 
 REVID := $(shell cat ../revid)
 REVDEP = xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o oblink.o
@@ -104,7 +104,7 @@ $(REVDEP): CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
 interp.o interp-d.o interp-p.o interp-t.o support.o: \
 	RTFLAGS += -Wno-maybe-uninitialized -Wno-uninitialized
 
-$(OBX) $(JIT) decode.o gc.o trace.o profile.o debug.o fact.o: %.o : %.c
+$(OBX) $(JIT) gc.o trace.o profile.o debug.o fact.o: %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
 %-n.o : %.c
@@ -124,14 +124,12 @@ $(OBX) $(JIT) decode.o gc.o trace.o profile.o debug.o fact.o: %.o : %.c
 
 
 keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl iskel.c
-	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset $(srcdir)/iskel.c \
+	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset \
 		keiko.h template.c interp.c
 
 template.c interp.c: keiko.h
 	touch $@
 
-decode.c : keiko.iset jitgen.tcl util.tcl iparse.tcl 
-	$(TCLSH) $(srcdir)/jitgen.tcl $(srcdir)/keiko.iset decode.c
 
 ## Cleanup
 
@@ -140,7 +138,7 @@ clean:
 	rm -f oblink *.[ao]
 
 quiteclean: clean
-	rm -f interp.c keiko.h template.c decode.c .gen
+	rm -f interp.c keiko.h template.c .gen
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean
@@ -168,6 +166,4 @@ loader.o trace.o xmain-j.o: \
 linker.o oblink.o symtab.o template.o util.o: \
 	oblink.h obcommon.h ../config.h exec.h util.h keiko.h
 
-$(JIT) decode.o: decode.h 
-jit.o jitval.o decode.o: keiko.h
-$(JIT): jit.h ../thunder/vm.h
+$(JIT): jit.h keiko.h ../thunder/vm.h

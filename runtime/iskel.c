@@ -30,18 +30,15 @@
 
 /* This file is the skeleton of the bytecode interpreter; the parts
    specific to each instruction are inserted from the file
-   'keiko.iset' by the script 'iset.tcl'.  There are four places that
+   'keiko.iset' by the script 'iset.tcl'.  There are three places that
    code is inserted, each marked by two dollar signs.  In order of
    appearance, they are:
 
-   1. A list of instructions used for disassembling the byte code
-     (used if TRACE is defined).
+   1. A jump table for quick dispatching (used if JTABLE is defined).
 
-   2. A jump table for quick dispatching (used if JTABLE is defined).
+   2. Macro definitions used in the action routines.
 
-   3. Macro definitions used in the action routines.
-
-   4. Action routines for each instruction, forming the cases in a big
+   3. Action routines for each instruction, forming the cases in a big
       switch. */
 
 #include <math.h>
@@ -62,16 +59,6 @@
 
 #ifdef PROFILE
 #undef JTABLE
-#endif
-
-#ifdef OBXDEB
-#define DISASS 1
-#endif
-
-#ifdef DISASS
-struct _opcode optable[256] = {
-$$ instruction formats
-};
 #endif
 
 $$ macro definitions

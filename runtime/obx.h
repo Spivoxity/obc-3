@@ -98,13 +98,6 @@ struct _module {
 #endif
 };
 
-struct _opcode { 
-     const char *i_name;	/* Name */
-     const char *i_patt;	/* Argument template */
-     int i_arg;			/* Argument packed in opcode */
-     int i_len;			/* Total length in bytes */
-};
-
 
 /* Global variables */
 EXTERN uchar *imem, *dmem;	/* Instruction and data memory arrays */
@@ -189,7 +182,6 @@ void profile(FILE *fp);
 
 /* interp.c */
 primitive interp, dltrap;
-extern struct _opcode optable[];
 
 /* xmain.c */
 EXTERN int saved_argc;

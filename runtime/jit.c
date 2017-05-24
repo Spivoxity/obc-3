@@ -31,9 +31,17 @@
 #include "obx.h"
 #include "keiko.h"
 #include "jit.h"
-#include "decode.h"
 #include <stdarg.h>
 #include <assert.h>
+
+/* Decoding table */
+
+#define __i2__(sym, ...) { #sym, { __VA_ARGS__ } },
+struct _inst instrs[] = { __INSTRS__(__i2__) };
+
+#define __o2__(op, inst, patt, arg, len) { I_##inst, patt, arg, len },
+struct _decode decode[] = { __OPCODES__(__o2__) };
+
 
 /* Translator */
 
