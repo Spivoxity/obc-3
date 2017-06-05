@@ -541,6 +541,8 @@ let approx_same u1 u2 =
             compare (n-1) d1.d_type d2.d_type
         | (ArrayType (b1, u1), ArrayType (b2, u2)) ->
             b1 = b2 && compare n u1 u2
+        | (FlexType u1, FlexType u2) ->
+            compare n u1 u2
         | (RecordType _, RecordType _) ->
             t1.t_name = anon && t2.t_name = anon
         | (ProcType p1, ProcType p2) ->
