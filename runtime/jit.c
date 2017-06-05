@@ -479,6 +479,16 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           push(i, INT, rZERO, 0, 0); break;
 
      case I_BOUND:
+          v = peek(2);
+          if (v->v_op == I_CON && peek(1)->v_op != I_CON) {
+               // Handle a[2] when a has dynamic bound
+               r1 = move_to_reg(1, INT);
+               pop(1); unlock(1);
+               vm_gen(BLEu, r1->r_reg, v->v_val,
+                      handler(E_BOUND, arg1));
+               break;
+          }
+
 	  r1 = move_to_reg(2, INT); 
 	  v = move_to_rc(1); 
 	  pop(2); unlock(2);
