@@ -123,7 +123,7 @@ static void relocate(int size) {
 	       int rbits = reloc_bits(reloc, i/WORD_SIZE);
 
 #ifdef DEBUG
-	       if (dflag > 2)
+	       if (dflag >= 2)
 		    printf("Reloc %d %d\n", base+i, rbits);
 #endif
 
@@ -206,7 +206,7 @@ static void read_symbols(int dseg) {
 	  }
 
 #ifdef DEBUG
-	  if (dflag) printf("%s %s = %p\n", kname, name, addr);
+	  if (dflag >= 1) printf("%s %s = %p\n", kname, name, addr);
 #endif
      }
 
@@ -220,7 +220,7 @@ static void read_symbols(int dseg) {
 	  modtab[i]->m_length = addr - modtab[i]->m_addr;
 	  addr = modtab[i]->m_addr;
 #ifdef DEBUG
-	  if (dflag)
+	  if (dflag >= 1)
 	       printf("Module %s has size %d\n", 
 		      modtab[i]->m_name, modtab[i]->m_length);
 #endif
@@ -260,7 +260,7 @@ void load_file(FILE *bfp) {
      int start = get_int(t.start);
 
 #ifdef DEBUG
-     if (dflag) {
+     if (dflag >= 1) {
 	  printf("csize = %d, dsize = %d, bss = %d, stk = %d\n", 
 		 seglen[S_CODE], seglen[S_DATA], 
 		 seglen[S_BSS], seglen[S_STACK]);

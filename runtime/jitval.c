@@ -108,7 +108,7 @@ static mybool same(ctvalue v, ctvalue w) {
 
 void set_cache(reg r, ctvalue v) {
 #ifdef DEBUG
-     if (dflag > 2) {
+     if (dflag >= 4) {
 	  printf("\tCache %s = ", vm_regname(r->r_reg));
 	  show(v);
 	  printf("\n");
@@ -141,7 +141,7 @@ static void kill_alias(ctvalue v) {
      reg r;
 
 #ifdef DEBUG
-     if (dflag > 2) {
+     if (dflag >= 4) {
 	  printf("Unalias(");
 	  show(v);
 	  printf(")\n");
@@ -231,7 +231,7 @@ static void set(int i, int op, int type, int val, reg r, int s) {
      v->v_reg = r; v->v_size = s;
 
 #ifdef DEBUG
-     if (dflag > 1) {
+     if (dflag >= 2) {
 	  printf("<%d> = ", i);
 	  show(v);
 	  printf(" (%d/%d)\n", offset[i], s);
@@ -287,7 +287,7 @@ void restore_stack(codepoint lab) {
      int n = lab->l_depth, map = lab->l_stack;
 
 #ifdef DEBUG
-     if (dflag > 1 && n > 0) printf("[Restore %d]\n", n);
+     if (dflag >= 2 && n > 0) printf("[Restore %d]\n", n);
 #endif
 
      sp = 0; pdepth = 0;
@@ -438,7 +438,7 @@ reg move_to_reg(int i, int ty) {
      reg r, r2;
 
 #ifdef DEBUG
-     if (dflag > 1) {
+     if (dflag >= 3) {
           printf("move_to_reg(%d: ", sp-i);
           show(v);
           printf(")\n");
@@ -449,7 +449,7 @@ reg move_to_reg(int i, int ty) {
 	  for_regs (r) {
 	       if (cached(r) && same(&r->r_value, v) && member(r, ty)) {
 #ifdef DEBUG
-		    if (dflag > 2) printf("Hit %s\n", vm_regname(r->r_reg));
+		    if (dflag >= 4) printf("Hit %s\n", vm_regname(r->r_reg));
 #endif
 		    rfree(v->v_reg);
 		    set(sp-i, I_REG, ty, 0, r, v->v_size);

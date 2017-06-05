@@ -80,11 +80,11 @@ void panic(const char *msg, ...) {
 void *must_alloc(int n, const char *why) {
      void *p;
 #ifdef DEBUG
-     if (dflag > 1) printf("Allocating %s as %d", why, n);
+     if (dflag >= 2) printf("Allocating %s as %d", why, n);
 #endif
      p = malloc(n);
 #ifdef DEBUG
-     if (dflag > 1) printf(" at %p\n", p);
+     if (dflag >= 2) printf(" at %p\n", p);
 #endif
      if (p == NULL) panic("couldn't allocate space for %s", why);
      memset(p, 0, n);
@@ -101,7 +101,7 @@ char *must_strdup(const char *s) {
 /* must_realloc -- realloc or (you guessed it) */
 void *must_realloc(void *p, int n0, int n, const char *msg) {
 #ifdef DEBUG
-     if (dflag) {
+     if (dflag >= 2) {
 	  printf("Growing %s at %p from %d to %d\n", msg, p, n0, n);
 	  fflush(stdout);
      }

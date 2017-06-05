@@ -61,7 +61,7 @@ static codepoint lookup(int addr, mybool create) {
 /* mark_label -- mark location as a branch target during preprocessing */
 void mark_label(int addr) {
 #ifdef DEBUG
-     if (dflag > 2) printf("Mark %d\n", addr);
+     if (dflag >= 3) printf("Mark %d\n", addr);
 #endif
      (void) lookup(addr, TRUE);
 }
@@ -75,7 +75,7 @@ void case_label(int addr) {
      codepoint lab = lookup(addr, FALSE);
 
 #ifdef DEBUG
-     if (dflag > 1) printf("\tCASEL [%#x]\n", addr);
+     if (dflag >= 1) printf("\tCASEL [%#x]\n", addr);
 #endif
 
      if (lab == NULL) panic("undefined case label");

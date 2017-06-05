@@ -34,6 +34,14 @@
 #include <stdarg.h>
 #include <assert.h>
 
+/* Debug levels:
+    1: VM instructions
+    2: VM instructions + native instructions
+    3: ... + stack values
+    4: ... + register state
+    5: All the above + dump code into files */
+
+
 /* Decoding table */
 
 #define __i2__(sym, ...) { #sym, { __VA_ARGS__ } },
@@ -719,7 +727,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      }
 
 #ifdef DEBUG
-     if (dflag > 2) dumpregs();
+     if (dflag >= 4) dumpregs();
 #endif
 }
 
@@ -740,7 +748,7 @@ static void tran_instr(uchar *pc, int inst, int arg1, int arg2, int lev) {
 		    arg = equiv[++i];
 
 #ifdef DEBUG
-	       if (dflag > 0) {
+	       if (dflag >= 1) {
 		    printf("%.*s %s", lev, "++++++++++", 
                            instrs[e&IMASK].i_name);
                     if (e&(IARG|ICON)) printf(" %d", arg);
@@ -828,7 +836,7 @@ static void translate(void) {
 	  }
 
 #ifdef DEBUG
-	  if (dflag > 0) {
+	  if (dflag >= 1) {
 	       printf("%ld: %s", (long) (pc-pcbase), instrs[d->d_inst].i_name);
 	       for (int i = 0; i < nargs; i++) printf(" %d", args[i]);
 	       printf("\n");
@@ -887,7 +895,7 @@ void jit_compile(value *cp) {
      }
 
 #ifdef DEBUG
-     if (dflag > 0)
+     if (dflag >= 1)
 	  printf("JIT: %s\n", (p != NULL ? p->p_name : "???"));
 #endif
 

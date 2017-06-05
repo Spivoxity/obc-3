@@ -144,13 +144,13 @@ reg ralloc_avoid(int s, reg r2) {
 
 	  if (best != rZERO) {
 #ifdef DEBUG
-	       if (dflag > 1) 
+	       if (dflag >= 4) 
 		    printf("Spilling %s (refct=%d)\n", 
 			   vm_regname(best->r_reg), best->r_refct);
 #endif
 	       spill(best);
 #ifdef DEBUG
-	       if (dflag > 1)
+	       if (dflag >= 4)
 		    printf("Refct now %d\n", best->r_refct);
 #endif
 
@@ -177,7 +177,7 @@ void killregs(void) {
      reg r;
 
 #ifdef DEBUG
-     if (dflag > 2) printf("\tKillregs\n");
+     if (dflag >= 4) printf("\tKillregs\n");
 #endif
 
      for_regs (r)
@@ -189,7 +189,7 @@ reg kill(reg r) {
      reg r1;
 
 #ifdef DEBUG
-     if (dflag > 2) printf("\tKill %s\n", vm_regname(r->r_reg));
+     if (dflag >= 4) printf("\tKill %s\n", vm_regname(r->r_reg));
 #endif
 
      uncache(r);

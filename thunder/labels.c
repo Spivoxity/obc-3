@@ -136,7 +136,7 @@ void vm_label(vmlabel lab) {
      branch q = NULL;
 
 #ifdef DEBUG
-     if (vm_debug > 0)
+     if (vm_debug >= 1)
           printf("--- %s:\n", fmt_lab(lab));
 #endif
 

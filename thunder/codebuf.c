@@ -134,7 +134,7 @@ void vm_end(void) {
      vm_postlude();
      vm_reset();
 
-     if (vm_debug > 3) {
+     if (vm_debug >= 5) {
 	  // This is broken if we switched pages in mid-stream.
           char buf[128];
           strcpy(buf, proc_name);
