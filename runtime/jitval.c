@@ -524,12 +524,12 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case I_STACKW:
-	  r = load(LDW, ty, breg, base + v->v_val);
+	  r = load(LDW, ty, reserve(breg), base + v->v_val);
 	  break;
 
      case I_STACKD:
 	  assert(ty == FLO);
-	  r = load(LDD, FLO, breg, base + v->v_val);
+	  r = load(LDD, FLO, reserve(breg), base + v->v_val);
 	  break;
 
      default:
