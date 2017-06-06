@@ -82,8 +82,6 @@ type icode =
   | STI of kind			(* INDEX s/STORE s *)
   | LDNW of int			(* CONST n/LDI 4 *)
   | STNW of int			(* CONST n/STI 4 *)
-  | LDEW of int			(* LDLW -4/LDNW n *)
-  | STEW of int			(* LDLW -4/STNW n *)
   | INCL of int			(* LDLW n/INC/STLW n *)
   | DECL of int			(* LDLW n/DEC/STLW n *)
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
@@ -216,8 +214,6 @@ let fInst =
     | STI s ->		fMeta "STI$" [fKind s]
     | LDNW n ->		fMeta "LDNW $" [fNum n]
     | STNW n ->		fMeta "STNW $" [fNum n]
-    | LDEW n ->		fMeta "LDEW $" [fNum n]
-    | STEW n ->		fMeta "STEW $" [fNum n]
 
     | XMARK ->		fStr "XMARK"
     | XSTKMAP n ->	fMeta "XSTKMAP $" [fNum n]

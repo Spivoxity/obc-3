@@ -118,12 +118,6 @@ inst STIF 0		S3  {subs(pointer($2), $3.i, float) = $1.f;}
 inst STIS 0		S3  {subs(pointer($2), $3.i, short) = $1.i;}
 inst STIC 0		S3  {subs(pointer($2), $3.i, uchar) = $1.i;}
 
-# Load/store in enclosing frame
-# LDEs n :: --> mem_s[mem_4[bp-4]+n]
-# STEs n :: a --> []; mem_s[mem_4[bp-4]+n] := a
-inst LDEW {1 2}		V.i {parent($a, int)}
-inst STEW {1 2}		S1  {parent($a, int) = $1.i;}
-
 # If the argument of any of the above instructions is so large that it
 # does not fit in two bytes, then it's the job of the compiler to find
 # an equivalent sequence using LDKW that achieves the same effect:
@@ -682,9 +676,6 @@ expand STIS 0		{INDEXS, STORES}
 expand STIW 0		{INDEXW, STOREW}
 expand STIF 0		{INDEXW, STOREF}
 expand STID 0		{INDEXD, STORED}
-
-expand LDEW 1		{LDLW -4, LDNW $a}
-expand STEW 1		{LDLW -4, STNW $a}
 
 expand INC 0 		{PUSH 1, PLUS}
 expand DEC 0		{PUSH 1, MINUS}

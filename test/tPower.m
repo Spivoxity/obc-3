@@ -242,10 +242,12 @@ PROC tPower.%5.add 8 4 0x03008001
 SAVELINK
 !     IF newcost <= cost THEN
 LDLW 16
-LDEW -4
+LDLW -4
+LDNW -4
 JGT L19
 !       p := ss;
-LDEW -20
+LDLW -4
+LDNW -20
 STLW -8
 LABEL L20
 !       WHILE (p # NIL) & (p.set # newset) DO p := p.next END;
@@ -282,13 +284,15 @@ LDLW -8
 NCHECK 54
 STNW 4
 !         p.next := ss;
-LDEW -20
+LDLW -4
+LDNW -20
 LDLW -8
 NCHECK 55
 STNW 28
 !         ss := p
 LDLW -8
-STEW -20
+LDLW -4
+STNW -20
 LABEL L26
 !       IF newcost < p.cost THEN
 LDLW 16
@@ -322,7 +326,8 @@ LDLW -8
 NCHECK 63
 STNW 24
 !         s := s + {i+j}
-LDEW -8
+LDLW -4
+LDNW -8
 CONST 1
 LDLW 20
 LDLW 24
@@ -331,7 +336,8 @@ CONST 32
 BOUND 64
 LSL
 BITOR
-STEW -8
+LDLW -4
+STNW -8
 LABEL L19
 RETURN
 END
@@ -386,12 +392,14 @@ PROC tPower.%6.print 8 5 0x00008001
 !   PROCEDURE print;
 SAVELINK
 !     p := ss;
-LDEW -20
+LDLW -4
+LDNW -20
 STLW -8
 LABEL L34
 !     WHILE ~(n IN p.set) DO p := p.next END;
 CONST 1
-LDEW 12
+LDLW -4
+LDNW 12
 CONST 32
 BOUND 81
 LSL

@@ -333,11 +333,6 @@ let ruleset2 replace =
     | CONST n :: STI IntT :: _ -> 
 	replace 2 [STNW (4 * int_of_integer n)]
 
-    | LDL (IntT, -4) :: LDNW n :: _ ->
-	replace 2 [LDEW n]
-    | LDL (IntT, -4) :: STNW n :: _ ->
-	replace 2 [STEW n]
-
     (* Eliminate simple pops and swaps *)
     | i1 :: POP 1 :: _ when simple i1 -> 
 	replace 2 []
@@ -381,10 +376,6 @@ let ruleset3 replace =
 	replace 1 [CONST (integer n); BINOP (PtrT, PlusA); LOAD IntT]
     | STNW n :: _ when not (fits 16 n) ->
 	replace 1 [CONST (integer n); BINOP (PtrT, PlusA); STORE IntT]
-    | LDEW n :: _ when not (fits 16 n) ->
-	replace 1 [LDL (IntT, -4); LDNW n]
-    | STEW n :: _ when not (fits 16 n) ->
-	replace 1 [LDL (IntT, -4); STNW n]
 
       (* Delete NOP *)
     | NOP :: _ -> replace 1 []
