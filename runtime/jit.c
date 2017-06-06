@@ -255,7 +255,7 @@ static void condj(jtable t, int lab) {
      icondj(t->op, lab);
 }
 
-static void callout(func op, int nargs) {
+static void callout(func op, int nargs, int ty, int size) {
      reg r;
      flush_stack(0, nargs);
      killregs();
@@ -263,6 +263,8 @@ static void callout(func op, int nargs) {
      get_sp(r);
      push_reg(r);
      gcall(op, 1);
+     pop(nargs);
+     push((size == 1 ? I_STACKW : I_STACKQ), ty, rZERO, 0, size);
 }
 
 /* proc_call -- procedure call */
@@ -363,8 +365,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_PLUS:	ibinop(ADD); break;
      case I_MINUS: 	ibinop(SUB); break;
      case I_TIMES:	ibinop(MUL); break;
-     case I_DIV:	callout(INT_DIV, 2); pop(1); break;
-     case I_MOD:	callout(INT_MOD, 2); pop(1); break; 
+     case I_DIV:	callout(INT_DIV, 2, INT, 1); break;
+     case I_MOD:	callout(INT_MOD, 2, INT, 1); break;
      case I_AND: case I_BITAND:
 			ibinop(AND); break;
      case I_OR: case I_BITOR:	
@@ -650,10 +652,10 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
 #ifndef M64X32
-     case I_QPLUS:      callout(LONG_ADD, 2); pop(1); break;
-     case I_QMINUS:	callout(LONG_SUB, 2); pop(1); break;
-     case I_QTIMES:	callout(LONG_MUL, 2); pop(1); break;
-     case I_QUMINUS:    callout(LONG_NEG, 1); break;
+     case I_QPLUS:      callout(LONG_ADD, 2, INT, 2); break;
+     case I_QMINUS:	callout(LONG_SUB, 2, INT, 2); break;
+     case I_QTIMES:	callout(LONG_MUL, 2, INT, 2); break;
+     case I_QUMINUS:    callout(LONG_NEG, 1, INT, 2); break;
 #else
      case I_QPLUS:      qbinop(ADDq); break;
      case I_QMINUS:	qbinop(SUBq); break;
@@ -661,13 +663,12 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_QUMINUS:	qmonop(NEGq); break;
 #endif
           
-     case I_QDIV:	callout(LONG_DIV, 2); pop(1); break;
-     case I_QMOD:	callout(LONG_MOD, 2); pop(1); break;
+     case I_QDIV:	callout(LONG_DIV, 2, INT, 2); break;
+     case I_QMOD:	callout(LONG_MOD, 2, INT, 2); break;
 
      case I_QCMP:
 #ifndef M64X32
-	  callout(LONG_CMP, 2); pop(2);
-	  push(I_STACKW, INT, rZERO, 0, 1);
+	  callout(LONG_CMP, 2, INT, 1);
 #else
           push(I_QCMP, INT, rZERO, 0, 0);
 #endif          
@@ -680,8 +681,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	       push(I_CON, INT, rZERO, v->v_val, 2);
 	  } else {
 #ifndef M64X32
-	       callout(LONG_EXT, 1); pop(1);
-	       push(I_STACKQ, INT, rZERO, 0, 2);
+	       callout(LONG_EXT, 1, INT, 2);
 #else
                r1 = move_to_reg(1, INT); pop(1);
                vm_gen(SXTq, r1->r_reg, r1->r_reg);
@@ -705,16 +705,14 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           break;
 
      case I_CONVQD:
-	  callout(LONG_FLO, 1); pop(1);
-	  push(I_STACKQ, FLO, rZERO, 0, 2);
+	  callout(LONG_FLO, 1, FLO, 2);
 	  break;
 
      case I_QZCHECK:
 #ifndef M64X32
           push_reg(rBP);
           push_con(arg1);
-          callout(LONG_ZCHECK, 3);
-          pop(2);
+          callout(LONG_ZCHECK, 3, INT, 2);
 #else
           r1 = move_to_reg(1, INT); pop(1); unlock(1);
           vm_gen(BEQq, r1->r_reg, 0, handler(E_DIV, arg1));

@@ -224,9 +224,6 @@ static void set(int i, int op, int type, int val, reg r, int s) {
 
      if (op == I_STACKW || op == I_STACKQ) val = offset[i];
 
-     if (v->v_op == op && v->v_type == type && v->v_val == val
-         && v->v_reg == r && v->v_size == s) return;
-
      v->v_op = op; v->v_type = type; v->v_val = val; 
      v->v_reg = r; v->v_size = s;
 
