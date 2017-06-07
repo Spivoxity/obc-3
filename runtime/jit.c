@@ -122,9 +122,14 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
 }
 
 #define imonop(op) gmonop(op, INT, INT, 1)
-#define qmonop(op) gmonop(op, INT, INT, 2)
 #define fmonop(op) gmonop(op, FLO, FLO, 1)
 #define dmonop(op) gmonop(op, FLO, FLO, 2)
+
+#ifdef M64X32
+#define qmonop(op, fn) gmonop(op, INT, INT, 2)
+#else
+#define qmonop(op, fn) callout(fn, 1, INT, 2)
+#endif
 
 /* binop -- binary integer operation */
 static void binop(operation op, int size) {
@@ -148,7 +153,12 @@ static void binop(operation op, int size) {
 }
 
 #define ibinop(op)  binop(op, 1)
-#define qbinop(op)  binop(op, 2)
+
+#ifdef M64X32
+#define qbinop(op, fn)  binop(op, 2)
+#else
+#define qbinop(op, fn)  callout(fn, 2, INT, 2)
+#endif
 
 /* gbinop -- general binary operation */
 static void gbinop(operation op, int ty, int s) {
@@ -642,27 +652,14 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_RESULTQ:
-#ifndef M64X32
-	  move_longval(peek(1), rZERO, address(&ob_res));
-	  pop(1);
-#else
           push(I_CON, INT, rZERO, address(&ob_res), 1);
           store(I_LOADQ, INT, 2);
-#endif
 	  break;
 
-#ifndef M64X32
-     case I_QPLUS:      callout(LONG_ADD, 2, INT, 2); break;
-     case I_QMINUS:	callout(LONG_SUB, 2, INT, 2); break;
-     case I_QTIMES:	callout(LONG_MUL, 2, INT, 2); break;
-     case I_QUMINUS:    callout(LONG_NEG, 1, INT, 2); break;
-#else
-     case I_QPLUS:      qbinop(ADDq); break;
-     case I_QMINUS:	qbinop(SUBq); break;
-     case I_QTIMES:	qbinop(MULq); break;
-     case I_QUMINUS:	qmonop(NEGq); break;
-#endif
-          
+     case I_QPLUS:      qbinop(ADDq, LONG_ADD); break;
+     case I_QMINUS:	qbinop(SUBq, LONG_SUB); break;
+     case I_QTIMES:	qbinop(MULq, LONG_MUL); break;
+     case I_QUMINUS:	qmonop(NEGq, LONG_NEG); break;
      case I_QDIV:	callout(LONG_DIV, 2, INT, 2); break;
      case I_QMOD:	callout(LONG_MOD, 2, INT, 2); break;
 
@@ -679,15 +676,9 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  if (v->v_op == I_CON) {
 	       pop(1);
 	       push(I_CON, INT, rZERO, v->v_val, 2);
-	  } else {
-#ifndef M64X32
-	       callout(LONG_EXT, 1, INT, 2);
-#else
-               r1 = move_to_reg(1, INT); pop(1);
-               vm_gen(SXTq, r1->r_reg, r1->r_reg);
-               push(I_REG, INT, r1, 0, 2);
-#endif
+               break;
 	  }
+          qmonop(SXTq, LONG_EXT);
 	  break;
 
      case I_CONVQN:
@@ -698,9 +689,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           pop(1);
           push(I_REG, INT, r1, 0, 1);
 #else
-          r1 = move_to_reg(1, INT); pop(1);
-          vm_gen(MOV, r1->r_reg, r1->r_reg);
-          push(I_REG, INT, r1, 0, 1);
+          gmonop(MOV, INT, INT, 1);
 #endif
           break;
 

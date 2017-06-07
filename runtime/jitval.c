@@ -384,13 +384,8 @@ void spill(reg r) {
      int *rc = &r->r_refct;
      mybool saved = FALSE;
 
-#ifndef M64X32
-     static double _tmp;
-     unsigned tmp = address(&_tmp);
-#else
      static unsigned tmp;
      if (tmp == 0) tmp = address(scratch_alloc(sizeof(double)));
-#endif
 
      for (int i = sp; i > 0 && *rc > 0; i--) {
           ctvalue v = &vstack[sp-i];
@@ -524,11 +519,7 @@ reg move_to_reg(int i, int ty) {
         See test tValReal.m */
      if (rkind(r) != ty) {
 	  r2 = ralloc(ty);
-#ifndef M64X32
-	  vm_gen(MOV, r2->r_reg, r->r_reg);
-#else
 	  vm_gen(choose(v->v_size, MOV, MOVq), r2->r_reg, r->r_reg);
-#endif
 	  r = r2;
      }
 
