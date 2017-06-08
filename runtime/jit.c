@@ -278,18 +278,16 @@ static void callout(func op, int nargs, int ty, int size) {
 }
 
 /* proc_call -- procedure call */
-static void proc_call(uchar *pc, int arg) {
+static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
      /* arg is the argument size in words, but we want the
 	count of stack items */
      int nargs = count_args(arg);
      reg r1, r2;
 
      r1 = move_to_reg(1, INT); 
-     pop(1); unlock(1); 
-     rfreeze(r1);
-     push(I_REG, INT, r1, 0, 1);	       /* CP */
      push(I_CON, INT, rZERO, stack_map(pc), 1); /* PC = stack map */
      push(I_REG, INT, rBP, 0, 1);	       /* BP */
+     reserve(r1);
      flush_stack(0, nargs+3);
      killregs();
      r2 = ralloc(INT); rthaw(r1);
@@ -298,8 +296,14 @@ static void proc_call(uchar *pc, int arg) {
      push_reg(r2);
      gcallr(r1, 1);
      pop(nargs+3);
+     if (ty != 0)
+          push(ldop, ty, rZERO, address(&ob_res), size);
 }
 
+static void result(int ty, int ldop, int size) {
+     push(I_CON, INT, rZERO, address(&ob_res), 1);
+     store(ldop, ty, size);
+}
 
 /* instr -- translate one bytecode instruction */
 static void instr(uchar *pc, int i, int arg1, int arg2) {
@@ -603,44 +607,16 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  /* Let the SLIDEs instruction do the work */
 	  break;
 
-     case I_SLIDE:
-	  proc_call(pc, arg1);
-	  break;
+     case I_SLIDE:	proc_call(pc, arg1, 0, 0, 0); break;
+     case I_SLIDEW:	proc_call(pc, arg1, INT, I_LOADW, 1); break;
+     case I_SLIDEQ:	proc_call(pc, arg1, INT, I_LOADQ, 2); break;
+     case I_SLIDEF:	proc_call(pc, arg1, FLO, I_LOADF, 1); break;
+     case I_SLIDED:	proc_call(pc, arg1, FLO, I_LOADD, 2); break;
 
-     case I_SLIDEW:
-	  proc_call(pc, arg1);
-	  push(I_LOADW, INT, rZERO, address(&ob_res), 1);
-	  break;
-
-     case I_SLIDEQ:
-	  proc_call(pc, arg1);
-	  push(I_LOADQ, INT, rZERO, address(&ob_res), 2);
-	  break;
-
-     case I_SLIDEF:
-	  proc_call(pc, arg1);
-	  push(I_LOADF, FLO, rZERO, address(&ob_res), 1);
-	  break;
-
-     case I_SLIDED:
-	  proc_call(pc, arg1);
-	  push(I_LOADD, FLO, rZERO, address(&ob_res), 2);
-	  break;
-
-     case I_RESULTF:
-	  push(I_CON, INT, rZERO, address(&ob_res), 1);
-	  store(I_LOADF, FLO, 1);
-	  break;
-
-     case I_RESULTD:
-	  push(I_CON, INT, rZERO, address(&ob_res), 1);
-	  store(I_LOADD, FLO, 2);
-	  break;
-
-     case I_RESULTW:
-	  push(I_CON, INT, rZERO, address(&ob_res), 1);
-	  store(I_LOADW, INT, 1);
-	  break;
+     case I_RESULTW:	result(INT, I_LOADW, 1); break;
+     case I_RESULTQ:	result(INT, I_LOADQ, 2); break;
+     case I_RESULTF:	result(FLO, I_LOADF, 1); break;
+     case I_RESULTD:    result(FLO, I_LOADD, 2); break;
 
      case I_RETURN:
           /* Elide the jump at end of procedure */
@@ -649,11 +625,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_LNUM:
-	  break;
-
-     case I_RESULTQ:
-          push(I_CON, INT, rZERO, address(&ob_res), 1);
-          store(I_LOADQ, INT, 2);
 	  break;
 
      case I_QPLUS:      qbinop(ADDq, LONG_ADD); break;
