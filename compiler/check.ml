@@ -894,7 +894,7 @@ and check_body d env =
 
 	  if !Error.err_count = 0 then
 	    (* Don't check for uninitialised variables if there were errors *)
-	    Inicheck.check_init !level body;
+	    Inicheck.check_init body !level;
 
 	  decr level; err_context := cxt;
 	  List.iter (param_copy fsize) p.p_fparams;

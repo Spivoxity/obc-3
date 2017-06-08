@@ -30,4 +30,4 @@
 
 open Tree
 
-val check_init : int -> stmt -> unit
+val check_init : stmt -> int -> unit
