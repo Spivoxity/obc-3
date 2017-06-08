@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-int vm_debug;
+int vm_debug, vm_aflag;
 
 const char *vm_regname(vmreg r) {
      return r->vr_name;
@@ -97,15 +97,16 @@ void vm_debug2(const char *fmt, ...) {
 void vm_done(void) {
      if (vm_debug < 2) return;
 
-     printf(" [");
-     if (pc > start) {
+     if (pc > start && !vm_aflag) {
+          printf(" [");
           int n = vm_print(start);
           for (code_addr p = start+n; p < pc; p += n) {
                printf(" ");
                n = vm_print(p);
           }
-          printf("]\n");
+          printf("]");
      }
+     printf("\n");
 }
 
 char *fmt_val(int v) {
@@ -115,6 +116,8 @@ char *fmt_val(int v) {
      
      if (v > -2048 && v < 2048)
           sprintf(buf, "%d", v);
+     else if (vm_aflag)
+          sprintf(buf, "<addr>");
      else
           sprintf(buf, "%#x", v);
 

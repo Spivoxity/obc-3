@@ -259,7 +259,11 @@ int vm_procsize(void);
 /* Callback to allocate pages of memory */
 void *vm_alloc(int size);
 
+/* Level of debug printing, if compiled for debugging */
 extern int vm_debug;
+
+/* Whether to suppress addresses in output */
+extern int vm_aflag;
 
 
 /* Fancy _Generic stuff to provide overloading of vm_gen */

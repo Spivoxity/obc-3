@@ -180,7 +180,7 @@ static char *fmt_addr(int rs, int imm) {
      static char buf[32];
 
      if (rs == NOREG)
-          sprintf(buf, "%#x", imm);
+          sprintf(buf, "%s", fmt_val(imm));
      else
           sprintf(buf, "%s(%s)",
                   (imm != 0 ? fmt_val(imm) : ""),
@@ -640,7 +640,7 @@ static void instr_st(OPDECL, int rt, int rs, int imm) {
 /* instr_tgt -- opcode plus branch target */
 static void instr_tgt(OPDECL, code_addr tgt) {
      code_addr r;
-     vm_debug2("%s %#x", mnem, (unsigned) (address) tgt);
+     vm_debug2("%s %s", mnem, fmt_val((unsigned) (address) tgt));
      assert(tgt != NULL);
      opcode(op), r = pc, word(0);
      vm_patch(r, tgt);

@@ -228,7 +228,7 @@ static void set(int i, int op, int type, int val, reg r, int s) {
      v->v_reg = r; v->v_size = s;
 
 #ifdef DEBUG
-     if (dflag >= 2) {
+     if (dflag >= 3) {
 	  printf("<%d> = ", i);
 	  show(v);
 	  printf(" (%d/%d)\n", offset[i], s);

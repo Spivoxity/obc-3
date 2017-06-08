@@ -35,6 +35,9 @@
 
 #ifdef JIT
 #include "vm.h"
+#ifdef DEBUG
+#define JTEST 1
+#endif
 #endif
 
 #ifdef PROFILE
@@ -340,6 +343,10 @@ static void usage(void) {
      _exit(1);
 }
 
+#ifdef JTEST
+static mybool tflag = 0;
+#endif
+
 /* read_flags -- interpret flags */
 static void read_flags(void) {
      for (;;) {
@@ -376,6 +383,11 @@ static void read_flags(void) {
 	       debug_socket = argv[1];
 	       argc--; argv++;
 	  }
+#endif
+#ifdef JTEST
+          else if (strcmp(argv[0], "-t") == 0) {
+               tflag++;
+          }
 #endif
 	  else {
 	       usage();
@@ -420,6 +432,20 @@ static void print_profile(void) {
      profile(fp);
 
      if (fp != stderr) fclose(fp);
+}
+#endif
+
+#ifdef JTEST
+static void jit_test(void) {
+     dflag = vm_debug = 2; vm_aflag = 1;
+     if (nmods < 2) panic("Can't find main module");
+     module m = modtab[nmods-2];
+     for (int i = 0; i < nprocs; i++) {
+          proc p = proctab[i];
+          if ((uchar *) p->p_addr >= m->m_addr
+              && (uchar *) p->p_addr < m->m_addr + m->m_length)
+               jit_compile(p->p_addr);
+     }
 }
 #endif
 
@@ -515,6 +541,13 @@ int main(int ac, char *av[]) {
 #ifdef TRACE
      if (dflag) dump();
      if (qflag) exit(0);
+#endif
+
+#ifdef JTEST
+     if (tflag) {
+          jit_test();
+          exit(0);
+     }
 #endif
 
 #ifdef PROFILE
