@@ -221,7 +221,7 @@ Keiko assumes nvreg+nireg >= 5.
 typedef struct _vmreg *vmreg;
 
 extern const int nvreg, nireg, nfreg;
-extern const vmreg ireg[], freg[], ret, zero, base;
+extern const vmreg ireg[], freg[], ret, base;
 
 const char *vm_regname(vmreg r);
 

@@ -76,7 +76,6 @@ struct _vmreg
      reg_f3 = { "F3", rF3 },
      reg_f4 = { "F4", rF4 },
      reg_f5 = { "F5", rF5 },
-     reg_zz = { "ZERO", NOREG },
      reg_sp = { "BASE", rSP };
 
 #ifndef M64X32
@@ -145,7 +144,7 @@ const vmreg freg[] = {
      &reg_f3, &reg_f4, &reg_f5
 };
 
-const vmreg ret = &reg_i0, zero = &reg_zz, base = &reg_sp;
+const vmreg ret = &reg_i0, base = &reg_sp;
 
 #define register(r) ((r)&0x7)
 

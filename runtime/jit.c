@@ -60,7 +60,7 @@ static uchar *pcbase, *pclimit;	/* Code addresses */
 
 static vmlabel stack_oflo, retlab;
 
-#define push_con(k) push(I_CON, INT, rZERO, k, 1)
+#define push_con(k) push(I_CON, INT, NULL, k, 1)
 #define push_reg(r) push(I_REG, INT, r, 0, 1)
 
 /* prolog -- generate code for procedure prologue */
@@ -274,7 +274,7 @@ static void callout(func op, int nargs, int ty, int size) {
      push_reg(r);
      gcall(op, 1);
      pop(nargs);
-     push((size == 1 ? I_STACKW : I_STACKQ), ty, rZERO, 0, size);
+     push((size == 1 ? I_STACKW : I_STACKQ), ty, NULL, 0, size);
 }
 
 /* proc_call -- procedure call */
@@ -285,7 +285,7 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
      reg r1, r2;
 
      r1 = move_to_reg(1, INT); 
-     push(I_CON, INT, rZERO, stack_map(pc), 1); /* PC = stack map */
+     push(I_CON, INT, NULL, stack_map(pc), 1); /* PC = stack map */
      push(I_REG, INT, rBP, 0, 1);	       /* BP */
      reserve(r1);
      flush_stack(0, nargs+3);
@@ -297,11 +297,11 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
      gcallr(r1, 1);
      pop(nargs+3);
      if (ty != 0)
-          push(ldop, ty, rZERO, address(&ob_res), size);
+          push(ldop, ty, NULL, address(&ob_res), size);
 }
 
 static void result(int ty, int ldop, int size) {
-     push(I_CON, INT, rZERO, address(&ob_res), 1);
+     push(I_CON, INT, NULL, address(&ob_res), 1);
      store(ldop, ty, size);
 }
 
@@ -314,7 +314,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      switch (i) {
      case I_PUSH:
-          push(I_CON, INT, rZERO, arg1, 1);
+          push(I_CON, INT, NULL, arg1, 1);
           break;
 
      case I_LOCAL:
@@ -325,16 +325,16 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           break;
 
      case I_LDKW:	
-	  push(I_LDKW, INT, rZERO, address(&konst(arg1)), 1); 
+	  push(I_LDKW, INT, NULL, address(&konst(arg1)), 1); 
 	  break;
      case I_LDKQ:
-	  push(I_LDKQ, INT, rZERO, address(&konst(arg1)), 2); 
+	  push(I_LDKQ, INT, NULL, address(&konst(arg1)), 2); 
 	  break;
      case I_LDKF:
-	  push(I_LDKF, FLO, rZERO, address(&konst(arg1)), 1); 
+	  push(I_LDKF, FLO, NULL, address(&konst(arg1)), 1); 
 	  break;
      case I_LDKD:	
-	  push(I_LDKD, FLO, rZERO, address(&konst(arg1)), 2); 
+	  push(I_LDKD, FLO, NULL, address(&konst(arg1)), 2); 
 	  break;
 
      case I_LOADS:	deref(I_LOADS, INT, 1); break;
@@ -351,7 +351,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  deref(I_LOADQ, INT, 2); 
 #ifndef M64X32
 	  v = peek(1);
-	  if (member(v->v_reg, INT) && n_reserved() > 3) 
+	  if (v->v_reg != NULL && member(v->v_reg, INT) && n_reserved() > 3) 
 	       move_to_frame(1); 
 #endif
 	  break;
@@ -394,7 +394,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_LSL:        
 	  v = peek(2); v2 = peek(1);
 	  if (v->v_op == I_CON && v2->v_op == I_CON) {
-	       pop(2); push(I_CON, INT, rZERO, v->v_val << v2->v_val, 1);
+	       pop(2); push(I_CON, INT, NULL, v->v_val << v2->v_val, 1);
 	  } else {
 	       ibinop(LSH); 
 	  }
@@ -412,12 +412,12 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_CONVNS:	gmonop(CONVis, INT, INT, 1); break;
 
      case I_CONVNC:
-          push(I_CON, INT, rZERO, 0xff, 1);
+          push(I_CON, INT, NULL, 0xff, 1);
           ibinop(AND);
           break;
   
      case I_NOT:	
-	  push(I_CON, INT, rZERO, 1, 1); 
+	  push(I_CON, INT, NULL, 1, 1); 
 	  ibinop(XOR);
 	  break;
 
@@ -476,7 +476,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(2, INT);
 	  v = fix_const(1, FALSE);
 	  pop(2); unlock(2); killregs();
-	  push(I_STACKW, INT, rZERO, 0, 1);
+	  push(I_STACKW, INT, NULL, 0, 1);
 	  vm_gen(BGE, r1->r_reg, v->v_val, target(arg1));
 	  break;
 
@@ -500,7 +500,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_FCMPG:
      case I_DCMPL:	
      case I_DCMPG:	
-          push(i, INT, rZERO, 0, 0); break;
+          push(i, INT, NULL, 0, 0); break;
 
      case I_BOUND:
           v = peek(2);
@@ -593,12 +593,12 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           break;
 
      case I_LINK:
-	  push(I_CON, INT, rZERO, address(&statlink), 1);
+	  push(I_CON, INT, NULL, address(&statlink), 1);
 	  store(I_LOADW, INT, 1);
 	  break;
 
      case I_SAVELINK:
-	  push(I_LOADW, INT, rZERO, address(&statlink), 1);
+	  push(I_LOADW, INT, NULL, address(&statlink), 1);
 	  push(I_ADDR, INT, rBP, 4*SL, 1);
 	  store(I_LOADW, INT, 1);
 	  break;
@@ -638,7 +638,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #ifndef M64X32
 	  callout(LONG_CMP, 2, INT, 1);
 #else
-          push(I_QCMP, INT, rZERO, 0, 0);
+          push(I_QCMP, INT, NULL, 0, 0);
 #endif          
 	  break;
 
@@ -646,7 +646,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = peek(1);
 	  if (v->v_op == I_CON) {
 	       pop(1);
-	       push(I_CON, INT, rZERO, v->v_val, 2);
+	       push(I_CON, INT, NULL, v->v_val, 2);
                break;
 	  }
           qmonop(SXTq, LONG_EXT);

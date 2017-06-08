@@ -64,7 +64,7 @@ vmlabel handler(int code, int line);
 typedef struct _reg *reg;
 
 extern int nregs;
-extern reg rBP, rSP, rI0, rI1, rI2, rZERO;
+extern reg rBP, rSP, rI0, rI1, rI2;
 
 typedef struct _ctvalue {
      int v_op;			/* Operation to fetch value */
@@ -99,7 +99,7 @@ reg incref(reg r, int inc);
 #define rfreeze(r) incref(r, OMEGA+1)
 #define rthaw(r) incref(r, -OMEGA-1)
 
-#define ralloc(s) ralloc_avoid(s, rZERO)
+#define ralloc(s) ralloc_avoid(s, NULL)
 
 reg ralloc_suggest(int s, reg r);
 reg ralloc_avoid(int s, reg r2);

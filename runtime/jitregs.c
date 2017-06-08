@@ -34,7 +34,7 @@
 
 struct _reg *regs = NULL;
 int nregs;
-reg rBP, rSP, rI0, rI1, rI2, rZERO;
+reg rBP, rSP, rI0, rI1, rI2;
 
 static reg def_reg(vmreg r, int c) {
      reg p = &regs[nregs++];
@@ -58,7 +58,6 @@ void setup_regs(void) {
           def_reg(ireg[i], INT);
      for (int i = 0; i < nfreg; i++)
           def_reg(freg[i], FLO);
-     rZERO = def_reg(zero, 0);
 
      rI0 = &regs[0]; rI1 = &regs[1]; rI2 = &regs[2];
      rSP = &regs[nireg-2]; rBP = &regs[nireg-1]; 
@@ -105,13 +104,14 @@ int n_reserved(void) {
 
 /* incref -- increment or decrement reference count */
 reg incref(reg r, int inc) {
-     if (r->r_class != 0) r->r_refct += inc;
+     if (r != NULL && r->r_class != 0)
+          r->r_refct += inc;
      return r;
 }
 
 /* ralloc_avoid -- allocate register, avoiding one previously allocated */
 reg ralloc_avoid(int s, reg r2) {
-     reg r, best = rZERO;
+     reg r, best = NULL;
      int min = 2, cost;
 
      static mybool spilling = FALSE;
@@ -128,7 +128,7 @@ reg ralloc_avoid(int s, reg r2) {
 	  }
      }
 
-     if (best != rZERO)
+     if (best != NULL)
 	  return kill(best);
 
      /* Now try spilling: ignore locked registers */
@@ -142,7 +142,7 @@ reg ralloc_avoid(int s, reg r2) {
 	       }
 	  }
 
-	  if (best != rZERO) {
+	  if (best != NULL) {
 #ifdef DEBUG
 	       if (dflag >= 4) 
 		    printf("Spilling %s (refct=%d)\n", 
@@ -161,12 +161,12 @@ reg ralloc_avoid(int s, reg r2) {
      }
 
      panic("out of registers");
-     return rZERO;
+     return NULL;
 }
 
 /* ralloc_suggest -- allocate a preferred register, or choose another */
 reg ralloc_suggest(int s, reg r) {
-     if (r != rZERO && member(r, s) && r->r_refct % OMEGA == 0)
+     if (r != NULL && member(r, s) && r->r_refct % OMEGA == 0)
 	  return kill(r);
      else
 	  return ralloc(s);

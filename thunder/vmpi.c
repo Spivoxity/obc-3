@@ -88,7 +88,6 @@ struct _vmreg
      reg_f5 = { "F5", F10 },
      reg_f6 = { "F6", F12 },
      reg_rr = { "RET", R0 },
-     reg_zz = { "ZERO", NOREG },
      reg_sp = { "BASE", SP };
 
 const int nvreg = 7, nireg = 8, nfreg = 7;
@@ -100,7 +99,7 @@ const vmreg freg[] = {
      &reg_f0, &reg_f1, &reg_f2, &reg_f3,
      &reg_f4, &reg_f5, &reg_f6
 };
-const vmreg ret = &reg_rr, zero = &reg_zz, base = &reg_sp;
+const vmreg ret = &reg_rr, base = &reg_sp;
 
 #define isfloat(r) (((r)&0x10) != 0)
 

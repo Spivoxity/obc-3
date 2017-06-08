@@ -46,7 +46,7 @@ RTFLAGS = -rdynamic
 LIBS = -ldl
 LIBDIR = /usr/arm-linux-gnueabihf/lib
 OBXJ = jit.o jitlab.o jitregs.o jitval.o xmain-j.o \
-	decode.o support.o loader.o dynlink.o gc.o
+	support.o loader.o dynlink.o gc.o
 THUNDER = vmpi.o labels.o vmdebug.o codebuf.o 
 PRIMS = Builtin Args GC Timer DynLink Files Conv Random
 DLPRIMS = Math MathL

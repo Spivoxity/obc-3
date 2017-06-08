@@ -55,7 +55,9 @@ being compiled.  */
 static void show(ctvalue v) {
      switch (v->v_op) {
      case I_REG: 
-	  printf("reg %s", vm_regname(v->v_reg->r_reg)); break;
+	  printf("reg %s", (v->v_reg == NULL ? "*null*"
+                            : vm_regname(v->v_reg->r_reg)));
+          break;
 
      case I_CON:
 	  printf("const %d", v->v_val); break;
@@ -76,7 +78,7 @@ static void show(ctvalue v) {
 
      default:
 	  printf("[%s %d", instrs[v->v_op].i_name, v->v_val);
-	  if (v->v_reg != rZERO) printf("(%s)", vm_regname(v->v_reg->r_reg));
+	  if (v->v_reg != NULL) printf("(%s)", vm_regname(v->v_reg->r_reg));
 	  printf("]");
      }
 }
@@ -129,7 +131,7 @@ static mybool alias(ctvalue v, ctvalue w) {
      case I_LOADD:
      case I_LOADF:
      case I_LOADQ:
-	  return (v->v_reg != rZERO || w->v_reg != rZERO || same(v, w));
+	  return (v->v_reg != NULL || w->v_reg != NULL || same(v, w));
 
      default:
 	  return FALSE;
@@ -290,9 +292,9 @@ void restore_stack(codepoint lab) {
      sp = 0; pdepth = 0;
      for (int i = 0; i < n; i++) {
 	  if (map & (1 << i))
-	       push(I_STACKQ, INT, rZERO, 0, 2);
+	       push(I_STACKQ, INT, NULL, 0, 2);
 	  else
-	       push(I_STACKW, INT, rZERO, 0, 1);	       
+	       push(I_STACKW, INT, NULL, 0, 1);	       
      }
 }
 
@@ -328,7 +330,15 @@ void ldst_item(int op, reg r, int i) {
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
      ctvalue v = &vstack[sp-i];
-     reg r = rZERO;
+     reg r;
+
+#ifdef DEBUG
+     if (dflag >= 3) {
+          printf("move_to_frame(%d: ", sp-i);
+          show(v);
+          printf(")\n");
+     }
+#endif
 
      if (v->v_op != I_STACKW && v->v_op != I_STACKQ) {
 #ifndef M64X32
@@ -340,19 +350,18 @@ void move_to_frame(int i) {
           {
                r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
                ldst_item(choose(v->v_size, STW, STQ), r, i);
-
-               if (r != rZERO && v->v_op != I_REG && v->v_reg != r) 
+               if (v->v_op != I_REG && v->v_reg != r) 
                     set_cache(r, v);
           }
 
 	  set(sp-i, choose(v->v_size, I_STACKW, I_STACKQ), 
-	      v->v_type, 0, rZERO, v->v_size);
+	      v->v_type, 0, NULL, v->v_size);
      }
 }
 
 /* transient -- check if a value is not preserved across a procedure call */
 static mybool transient(ctvalue v) {
-     if (v->v_reg->r_class != 0)
+     if (v->v_reg != NULL && v->v_reg->r_class != 0)
 	  return TRUE;
 
      switch (v->v_op) {
@@ -399,19 +408,24 @@ void spill(reg r) {
                     int c = *rc;
 
                     if (!saved) {
-                         vm_gen(choose(v->v_size, STW, STQ), 
-                                    r->r_reg, rZERO->r_reg, tmp);
+                         vm_gen(choose(v->v_size, STW, STQ), r->r_reg, tmp);
                          saved = TRUE;
                     }
 
                     *rc = 1;
                     move_to_frame(i);
-                    vm_gen(choose(v->v_size, LDW, LDQ), 
-                               r->r_reg, rZERO->r_reg, tmp);
+                    vm_gen(choose(v->v_size, LDW, LDQ), r->r_reg, tmp);
                     *rc = c-1;
                }
           }
      }
+}
+
+static void ldst(int op, reg rs, reg rd, int off) {
+     if (rd == NULL)
+          vm_gen(op, rs->r_reg, off);
+     else
+          vm_gen(op, rs->r_reg, rd->r_reg, off);
 }
 
 /* load -- load from memory into register */
@@ -420,14 +434,14 @@ static reg load(operation op, int cl, reg r, int val) {
      rfree(r); rlock(r);
      r1 = ralloc(cl);
      runlock(r);
-     vm_gen(op, r1->r_reg, r->r_reg, val);
+     ldst(op, r1, r, val);
      return r1;
 }
 
 /* move_to_reg -- move stack item to a register */
 reg move_to_reg(int i, int ty) {
      ctvalue v = &vstack[sp-i];
-     reg r, r2;
+     reg r = NULL, r2;
 
 #ifdef DEBUG
      if (dflag >= 3) {
@@ -459,7 +473,7 @@ reg move_to_reg(int i, int ty) {
 	  r = ralloc(INT);
 	  vm_gen(MOV, r->r_reg, v->v_val);
 #ifdef M64X32
-          if (v->v_size == 2)
+          if (v->v_size == 2 && v->v_val < 0)
                vm_gen(SXTq, r->r_reg, r->r_reg);
 #endif
 	  break;
@@ -473,7 +487,7 @@ reg move_to_reg(int i, int ty) {
      case I_LDKQ:
      case I_LDKD:
 	  r = ralloc(ty);
-	  vm_gen(LDQ, r->r_reg, rZERO->r_reg, v->v_val);
+	  vm_gen(LDQ, r->r_reg, v->v_val);
 	  break;
 
      case I_ADDR:
@@ -511,7 +525,6 @@ reg move_to_reg(int i, int ty) {
 
      default:
 	  panic("move_to_reg %s\n", instrs[v->v_op].i_name);
-	  r = rZERO;
      }
 
      /* Unusually, e.g. in SYSTEM.VAL(REAL, n+1), a floating point
@@ -539,7 +552,7 @@ ctvalue fix_const(int i, mybool rflag) {
 	  break;
 
      case I_LDKW:
-	  set(sp-i, I_CON, INT, *ptrcast(int, v->v_val), rZERO, 1);
+	  set(sp-i, I_CON, INT, *ptrcast(int, v->v_val), NULL, 1);
 	  break;
 
      default:
@@ -565,7 +578,7 @@ void deref(int op, int ty, int size) {
      case I_CON:
      case I_LDKW:
 	  fix_const(1, FALSE); pop(1); unlock(1);
-	  push(op, ty, rZERO, v->v_val, size);
+	  push(op, ty, NULL, v->v_val, size);
 	  break;
 
      default:
@@ -640,7 +653,7 @@ void store(int ldop, int ty, int s) {
 	  panic("put %s", instrs[ldop].i_name);
      }
 
-     vm_gen(op, r1->r_reg, v->v_reg->r_reg, v->v_val);
+     ldst(op, r1, v->v_reg, v->v_val);
      kill_alias(v);
      if (cache && v->v_reg != r1) set_cache(r1, v);
 }
@@ -657,7 +670,7 @@ void plusa() {
 	  v2 = move_to_rc(1); 
 	  pop(2); unlock(2);
 	  if (v2->v_op == I_CON)
-	       push(I_CON, INT, rZERO, v1->v_val + v2->v_val, 1);
+	       push(I_CON, INT, NULL, v1->v_val + v2->v_val, 1);
 	  else {
                r2 = v2->v_reg;
                vm_gen(SXTOFF, r2->r_reg, r2->r_reg);
@@ -765,10 +778,10 @@ static void move_long(reg rs, int offs, reg rd, int offd) {
      rlock(rs); rlock(rd);
      r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
      runlock(rs); runlock(rd);
-     vm_gen(LDW, r1->r_reg, rs->r_reg, offs);
-     vm_gen(LDW, r2->r_reg, rs->r_reg, offs+4);
-     vm_gen(STW, r1->r_reg, rd->r_reg, offd);
-     vm_gen(STW, r2->r_reg, rd->r_reg, offd+4);
+     ldst(LDW, r1, rs, offs);
+     ldst(LDW, r2, rs, offs+4);
+     ldst(STW, r1, rd, offd);
+     ldst(STW, r2, rd, offd+4);
 }
      
 /* half_const -- fetch one or other half of a 64-bit constant */
@@ -798,8 +811,8 @@ static void move_longconst(ctvalue src, reg rd, int offd) {
 
      vm_gen(MOV, r1->r_reg, half_const(src, 0));
      vm_gen(MOV, r2->r_reg, half_const(src, 1));
-     vm_gen(STW, r1->r_reg, rd->r_reg, offd);
-     vm_gen(STW, r2->r_reg, rd->r_reg, offd+4);
+     ldst(STW, r1, rd, offd);
+     ldst(STW, r2, rd, offd+4);
 }
 
 /* move_longval -- move a long value into memory */
@@ -822,7 +835,7 @@ void move_longval(ctvalue src, reg rd, int offd) {
      case I_REG:
           /* Must be result of SYSTEM.VAL(LONGINT, x) */
           assert(src->v_type == FLO);
-          vm_gen(STQ, src->v_reg->r_reg, rd->r_reg, offd);
+          ldst(STQ, src->v_reg, rd, offd);
           break;
      default:
 	  panic("move_longval %s", instrs[src->v_op].i_name);
