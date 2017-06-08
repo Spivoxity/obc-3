@@ -390,28 +390,31 @@ let element_loc =
       Single e -> e.e_loc
     | Range (e1, e2) -> Error.join_locs e1.e_loc e2.e_loc
 
-let make_typecase (switch, arms, default) =
+let make_typecase (switch, arms, default) env =
   let fix (labs, body) =
     if List.length labs > 1 then
-      sem_error "Only one case label allowed in type CASE" 
+      sem_error "Only one case label allowed in type CASE statement" 
         [] (element_loc (List.nth labs 1));
     match List.hd labs with
         Single e ->
-          begin match e.e_guts with
-              Name x -> (x, body)
-            | _ -> 
-                sem_error "type name expected in type CASE" [] e.e_loc;
-                raise Not_found
+          begin
+            check_qual e env;
+            match e.e_guts with
+                Name x -> (x, body)
+              | _ -> 
+                  sem_error "type name expected in type CASE statement"
+                    [] e.e_loc;
+                  raise Not_found
           end
       | Range (e1, e2) ->
-          sem_error "range pattern not allowed here" 
+          sem_error "range pattern not allowed in type CASE statement" 
             [] (Error.join_locs e1.e_loc e2.e_loc);
           raise Not_found in
   match switch.e_guts with
       Name x -> 
         TypeCase (switch, List.map fix arms, default)
     | _ ->
-        sem_error "name expected in type CASE" [] switch.e_loc;
+        sem_error "name expected in type CASE statement" [] switch.e_loc;
         raise Not_found
 
 let rec check_stmt s env =
@@ -485,7 +488,7 @@ let rec check_stmt s env =
 	let st = check_expr switch env in
         if is_record st || is_pointer st && is_record (base_type st) then begin
           try
-            let tc = make_typecase (switch, arms, default) in
+            let tc = make_typecase (switch, arms, default) env in
             s.s_guts <- tc; check_typecase s env
           with Not_found -> ()
         end

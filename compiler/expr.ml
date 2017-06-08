@@ -248,7 +248,7 @@ let get_module_ref env e =
     | _ -> raise Not_found
 
 (* check_qual -- convert Select to qualified name *)
-let check_qual env e =
+let check_qual e env =
   match e.e_guts with
       Select (e1, x) ->
 	begin try
@@ -693,7 +693,7 @@ and check_call f args e env cast_ok =
 	  (* raise Non_proc if it isn't a cast after after all *)
 	  if not cast_ok || List.length args <> 1 then raise Non_proc;
           let tn = List.hd args in
-	  check_qual env tn;
+	  check_qual tn env;
 	  match tn.e_guts with
 	      Name x ->
 		let d = lookup_def x env in
@@ -951,7 +951,7 @@ and check_builtin env p args e loc =
 				"basic or enumerated" else "basic" in
 	      sem_error "the argument of $ must be a $ type"
 		[fStr p.b_name; fStr reqd] e1.e_loc in
-	  check_qual env e1;
+	  check_qual e1 env;
 	  begin match e1.e_guts with
 	      Name x ->
 		begin try 
@@ -991,7 +991,7 @@ and check_builtin env p args e loc =
 	  end
 
       | SizeFun, [e1] ->
-	  check_qual env e1;
+	  check_qual e1 env;
 	  begin match e1.e_guts with
 	      Name x ->
 		begin try
@@ -1145,7 +1145,7 @@ and check_builtin env p args e loc =
       | ValFun, [e1; e2] ->
 	  (* Don't edit the expression, since this can result in constants
 	     that are labelled with the wrong type. *)
-	  check_qual env e1;
+	  check_qual e1 env;
 	  let t2 = check_expr e2 env in
 	  begin match e1.e_guts with
 	      Name x ->

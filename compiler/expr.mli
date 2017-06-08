@@ -72,6 +72,9 @@ val check_const : expr -> environment -> string -> otype * value
 (* check_tconst -- check for a constant of specified type *)
 val check_tconst : expr -> otype -> environment -> string -> value
 
+(* check_qual -- convert expression to qualified name if possible *)
+val check_qual : expr -> environment -> unit
+
 val err_context : environment ref
 
 val sem_type : otype -> unit
