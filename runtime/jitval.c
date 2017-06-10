@@ -323,10 +323,6 @@ ctvalue move_from_frame(int i) {
 #define choose(size, opw, opd) \
      ((size) == 1 ? opw : (size) == 2 ? opd : (panic("choose"), 999))
 
-void ldst_item(int op, reg r, int i) {
-     vm_gen(op, r->r_reg, breg->r_reg, sbase+offset[sp-i]);
-}
-
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
      ctvalue v = &vstack[sp-i];
@@ -349,7 +345,8 @@ void move_to_frame(int i) {
 #endif
           {
                r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
-               ldst_item(choose(v->v_size, STW, STQ), r, i);
+               vm_gen(choose(v->v_size, STW, STQ),
+                      r->r_reg, breg->r_reg, sbase+offset[sp-i]);
                if (v->v_op != I_REG && v->v_reg != r) 
                     set_cache(r, v);
           }
@@ -421,6 +418,7 @@ void spill(reg r) {
      }
 }
 
+/* ldst -- load or store, with optional index register */
 static void ldst(int op, reg rs, reg rd, int off) {
      if (rd == NULL)
           vm_gen(op, rs->r_reg, off);
@@ -802,6 +800,7 @@ static int half_const(ctvalue v, int off) {
      }
 }     
 
+/* move_longconst -- move 64-bit constant */
 static void move_longconst(ctvalue src, reg rd, int offd) {
      reg r1, r2;
 

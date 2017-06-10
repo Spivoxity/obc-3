@@ -209,6 +209,7 @@ static void compare1(operation op, operation opf, operation opd,
      ibinop(op);
 }
 
+/* icondj -- integer conditional jump */
 static void icondj(operation op, int lab) {
      flush(2); 
      ctvalue v = move_to_rc(1);
@@ -246,8 +247,10 @@ struct jmptab tab_jle = jtab(BLE, BNGT, BLE);
 struct jmptab tab_jge = jtab(BGE, BGE, BNLT);
 struct jmptab tab_jne = jtab(BNE, BNE, BNE);
 
+/* condj -- conditional jump */
 static void condj(jtable t, int lab) {
      if (is_zero(peek(1))) {
+          /* Check stack for comparison operator */
           switch (peek(2)->v_op) {
           case I_FCMPL:
                pop(2); fcondj(t->oplf, lab); return;
@@ -265,6 +268,7 @@ static void condj(jtable t, int lab) {
      icondj(t->op, lab);
 }
 
+/* callout -- call out-of-line stack operation */
 static void callout(func op, int nargs, int ty, int size) {
      reg r;
      flush_stack(0, nargs);
@@ -300,6 +304,7 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
           push(ldop, ty, NULL, address(&ob_res), size);
 }
 
+/* result -- store procedure result */
 static void result(int ty, int ldop, int size) {
      push(I_CON, INT, NULL, address(&ob_res), 1);
      store(ldop, ty, size);

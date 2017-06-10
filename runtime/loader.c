@@ -219,11 +219,6 @@ static void read_symbols(int dseg) {
      for (int i = nmods-1; i >= 0; i--) {
 	  modtab[i]->m_length = addr - modtab[i]->m_addr;
 	  addr = modtab[i]->m_addr;
-#ifdef DEBUG
-	  if (dflag >= 1)
-	       printf("Module %s has size %d\n", 
-		      modtab[i]->m_name, modtab[i]->m_length);
-#endif
      }
 }
 
