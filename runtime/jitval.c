@@ -323,6 +323,10 @@ ctvalue move_from_frame(int i) {
 #define choose(size, opw, opd) \
      ((size) == 1 ? opw : (size) == 2 ? opd : (panic("choose"), 999))
 
+void ldst_item(int op, reg r, int i) {
+     vm_gen(op, r->r_reg, breg->r_reg, sbase+offset[sp-i]);
+}
+
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
      ctvalue v = &vstack[sp-i];
@@ -345,8 +349,7 @@ void move_to_frame(int i) {
 #endif
           {
                r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
-               vm_gen(choose(v->v_size, STW, STQ),
-                      r->r_reg, breg->r_reg, sbase+offset[sp-i]);
+               ldst_item(choose(v->v_size, STW, STQ), r, i);
                if (v->v_op != I_REG && v->v_reg != r) 
                     set_cache(r, v);
           }
@@ -671,7 +674,6 @@ void plusa() {
 	       push(I_CON, INT, NULL, v1->v_val + v2->v_val, 1);
 	  else {
                r2 = v2->v_reg;
-               vm_gen(SXTOFF, r2->r_reg, r2->r_reg);
 	       push(I_ADDR, INT, r2, v1->v_val, 1);
           }
 	  break;
@@ -683,11 +685,9 @@ void plusa() {
 	  if (v2->v_op == I_CON)
 	       push(I_ADDR, INT, v1->v_reg, v1->v_val + v2->v_val, 1);
 	  else {
-               // Sign extend v2, then use ADDOFF
 	       r1 = ralloc_suggest(INT, v1->v_reg); 
                r2 = v2->v_reg;
 	       runlock(v2->v_reg);
-               vm_gen(SXTOFF, r2->r_reg, r2->r_reg);
 	       vm_gen(ADD, r1->r_reg, v1->v_reg->r_reg, r2->r_reg);
 	       push(I_ADDR, INT, r1, v1->v_val, 1);
 	  }
@@ -702,11 +702,9 @@ void plusa() {
 	       unlock(2);
 	       push(I_ADDR, INT, r1, v2->v_val, 1);
 	  } else {
-               // Sign extend v2 and use ADDOFF
 	       r2 = ralloc_suggest(INT, r1); 
 	       unlock(2);
-               vm_gen(SXTOFF, v2->v_reg->r_reg, v2->v_reg->r_reg);
-	       vm_gen(ADDOFF, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);
+	       vm_gen(ADD, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);
 	       push(I_REG, INT, r2, 0, 1);
 	  }
      }

@@ -414,7 +414,16 @@ static void opcode(unsigned op) {
 #else
 #define check_rex(r, pfx) if (isrex(r)) rex(pfx)
 
-#define isprefix(x) ((x) == 0x66)
+#define isprefix(x) ((x) == 0x66 || (x) == 0x67)
+
+#define ADDR32 0x67
+
+/* prefix -- insert prefix byte */
+static void prefix(int pfx) {
+     memmove(ibeg+1, ibeg, pc-ibeg);
+     *ibeg = pfx;
+     pc++;
+}
 
 /* rex -- insert REX prefix */
 static void rex(int pfx) {
@@ -491,7 +500,17 @@ static void memory(int ra, int rb, int d) {
             Absolute addressing [d], useful on amd64
 
 	mode = 0, r/m = 4, i = 4, b != 5:
-  	    Based addressing [d+reg(b)].     */
+            Based addressing [d+reg(b)].
+
+     Where it's possible that a negative offset is taken from a
+     register, we use an addr32 prefix to ensure the top 32 bits
+     of the address are zero on amd64. */
+
+#ifdef M64X32
+#define SXTOFF prefix(ADDR32)
+#else
+#define SXTOFF (void) 0
+#endif
 
      if (rb == NOREG) {
 	  // Absolute [d]
@@ -517,7 +536,7 @@ static void memory(int ra, int rb, int d) {
 	  else if (signed8(d))
 	       addr(1, ra, rb), byte(d);
 	  else
-	       addr(2, ra, rb), word(d);
+	       SXTOFF, addr(2, ra, rb), word(d);
      }
 }
 
@@ -1338,10 +1357,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  }
 	  break;
 
-#ifndef M64X32
-     case SXTOFF:
-          move(ra, rb); break;
-#else
+#ifdef M64X32
      case MOVq:
 	  if (isfloat(ra) && isfloat(rb)) {
 	       movef(ra, rb);
@@ -1355,7 +1371,6 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  }
           break;
 
-     case SXTOFF:
      case SXTq:
           instr_rr(opMOVSXD_r, ra, rb);
           break;
@@ -1451,9 +1466,6 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      switch (op) {
      case ADD: 
-#ifndef M64X32
-     case ADDOFF:
-#endif
           commute(ALUOP(opADD), ra, rb, rc); break;
      case AND: 
 	  commute(ALUOP(opAND), ra, rb, rc); break;
@@ -1549,12 +1561,9 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
 #ifdef M64X32
      case ADDq:
-     case ADDOFF:
           commute64(ALUOP64(opADD), ra, rb, rc); break;
-
      case SUBq:
           subtract64(ra, rb, rc); break;
-
      case MULq:
           commute64(REXW_(opIMUL_r), ra, rb, rc); break;
 #endif

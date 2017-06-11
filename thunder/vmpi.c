@@ -862,11 +862,6 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
                move_reg(ra, rb); 
 	  break;
 
-     case SXTOFF:
-          write_reg(ra);
-          move_reg(ra, rb);
-          break;
-          
      case NEG:    
           write_reg(ra);
 	  arith_immed(opRSB, ra, rb, 0); break;
@@ -975,7 +970,6 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      switch (op) {
      case ADD: 
-     case ADDOFF:
           write_reg(ra);
 	  op_rrr(opADD, ra, rb, rc); break;
      case AND: 
