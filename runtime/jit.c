@@ -44,8 +44,23 @@
 
 /* Decoding table */
 
+/* Instructions: this table is indexed by instructions codes like I_LDLW.
+   Each complex instruction can be defined as equal to a sequence of simpler
+   ones: for example, LDLW n = LOCAL n / LOADW.  This is encoded by having
+   the i_equiv array contain I_LOCAL|IARG, I_LOADW.  Similarly INC = 
+   CONST 1 / PLUS, and this is encoded as I_CONST|ICON, 1, I_PLUS in the
+   i_equiv array for I_INC.  The i_equiv array is terminated by a zero,
+   and if the first element is zero then there is no expansion for the
+   instruction.  Expansions may be recursive. */
+
 #define __i2__(sym, ...) { #sym, { __VA_ARGS__ } },
 struct _inst instrs[] = { __INSTRS__(__i2__) };
+
+/* Opcodes: this table is indexed by opcodes such as K_LDLW_1 (meaning
+   the LDLW instruction with a 1-byte offset). The entry for this opcode
+   will have d_inst = I_LDLW, d_patt = "1" and d_len = 2.  For opcodes
+   that use a pattern of "N" (opcode contains argument), the d_arg field
+   contains the integer value of the argument. */
 
 #define __o2__(op, inst, patt, arg, len) { I_##inst, patt, arg, len },
 struct _decode decode[] = { __OPCODES__(__o2__) };
@@ -64,9 +79,9 @@ static vmlabel stack_oflo, retlab;
 #define push_reg(r) push(I_REG, INT, r, 0, 1)
 
 /* prolog -- generate code for procedure prologue */
-static code_addr prolog(const char *name, int frame, int map) {
+static word prolog(const char *name, int frame, int map) {
      vmlabel lab = vm_newlab();
-     code_addr entry = vm_begin(name, 1);
+     word entry = vm_begin(name, 1);
      vm_gen(GETARG, rBP->r_reg, 0);
 
      /* Check for stack overflow */
@@ -315,7 +330,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      reg r1, r2, r3;
      ctvalue v, v2;
      vmlabel lab;
-     code_addr a;
+     int a;
 
      switch (i) {
      case I_PUSH:
@@ -394,7 +409,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_ASR:	ibinop(RSH); break;
      case I_LSR:	ibinop(RSHu); break;
      case I_ROR:	ibinop(ROR); break;
-     case I_PLUSA:	plusa(); break;
+     case I_OFFSET:	plusa(); break;
 
      case I_LSL:        
 	  v = peek(2); v2 = peek(1);
@@ -875,11 +890,11 @@ void jit_compile(value *cp) {
      retlab = vm_newlab();
 
      map_labels();
-     code_addr entry = prolog(pname, frame, map);
+     word entry = prolog(pname, frame, map);
      translate();
      do_errors(make_error);
      vm_end();
-     cp[CP_PRIM].a = wrap_prim((primitive *) entry);
+     cp[CP_PRIM].a = entry;
 
 #ifdef DEBUG
      if (dflag > 0) fflush(stdout);
@@ -906,5 +921,6 @@ void jit_debug(value *bp) {
 
 /* vm_alloc -- upcall from vm to allocate code buffer */
 void *vm_alloc(int size) {
+     /* scratch_alloc will allocate whole pages */
      return scratch_alloc(size);
 }

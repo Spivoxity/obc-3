@@ -53,7 +53,7 @@ inst LOCAL {1 2}	V.x {local($a)}
 
 # Compute indexed address
 # INDEXs :: a, b --> a + s * b
-equiv PLUSA 0  	       	{INDEXC}
+equiv OFFSET 0 	       	{INDEXC}
 inst INDEXC 0		B.x {pointer($1) + $2.i}
 inst INDEXS 0		B.x {pointer($1) + ($2.i<<1)}
 inst INDEXW 0		B.x {pointer($1) + ($2.i<<2)}
@@ -658,13 +658,13 @@ expand STGC 1		{LDKW $a, STOREC}
 expand STGF 1		{LDKW $a, STOREF}
 expand STGD 1		{LDKW $a, STORED}
 
-expand LDNW 1		{PUSH $a, PLUSA, LOADW}
-expand STNW 1		{PUSH $a, PLUSA, STOREW}
+expand LDNW 1		{PUSH $a, OFFSET, LOADW}
+expand STNW 1		{PUSH $a, OFFSET, STOREW}
 
-expand INDEXC 0		{PLUSA}
-expand INDEXS 0		{PUSH 1, LSL, PLUSA}
-expand INDEXW 0		{PUSH 2, LSL, PLUSA}
-expand INDEXD 0		{PUSH 3, LSL, PLUSA}
+expand INDEXC 0		{OFFSET}
+expand INDEXS 0		{PUSH 1, LSL, OFFSET}
+expand INDEXW 0		{PUSH 2, LSL, OFFSET}
+expand INDEXD 0		{PUSH 3, LSL, OFFSET}
 
 expand LDIC 0		{INDEXC, LOADC}
 expand LDIS 0		{INDEXS, LOADS}

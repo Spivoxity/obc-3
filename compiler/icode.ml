@@ -58,6 +58,7 @@ type icode =
   | RETURN of kind		(* Return from procedure (rsize) *)
   | MONOP of kind * op		(* Unary operation (type, op) *)
   | BINOP of kind * op		(* Binary operation *)
+  | OFFSET			(* Add address and offset *)
   | CONV of kind * kind		(* Type conversion *)
   | ALIGN of kind		(* Align parameter (size) *)
   | BOUND of int		(* Array bound check (line) *)
@@ -113,7 +114,7 @@ let opcode =
     | Over -> "OVER" | Div -> "DIV" | Mod -> "MOD" | Eq -> "EQ" 
     | Uminus -> "UMINUS" | Lt -> "LT" | Gt -> "GT" 
     | Leq -> "LE" | Geq -> "GE" | Neq -> "NE" 
-    | And -> "AND" | Or -> "OR" | Not -> "NOT" | PlusA -> "PLUSA"
+    | And -> "AND" | Or -> "OR" | Not -> "NOT"
     | BitAnd -> "BITAND" | BitOr -> "BITOR" 
     | BitNot -> "BITNOT" | BitXor -> "BITXOR" | BitSub -> "BITSUB"
     | Inc -> "INC" | Dec -> "DEC"
@@ -179,6 +180,7 @@ let fInst =
     | RETURN s -> 	fMeta "RETURN$" [fKind s]
     | MONOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
     | BINOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
+    | OFFSET ->		fStr "OFFSET"
     | CONV (k1, k2) ->	fMeta "CONV$$" [fType1 k1; fType1 k2]
     | ALIGN s ->      	fMeta "ALIGN$" [fKind s]
     | BOUND ln ->	fMeta "BOUND $" [fNum ln]

@@ -45,7 +45,7 @@ PROC tLouis07.b 0 4 0x00100001
 LDLW 12
 NCHECK 9
 CONST -4
-PLUSA
+OFFSET
 DUP 0
 LOADW
 DUP 0
@@ -219,13 +219,13 @@ JIT: tLouis07.b
 [Restore 2]
 --- L3:
 + PUSH 8
-+ PLUSA
++ OFFSET
 --- LDW I0, V1, -8
 ---   mov rAX, -8(rBP)
 + LOADW
 19: LDNW 4
 + PUSH 4
-+ PLUSA
++ OFFSET
 --- LDW I0, I0, 8
 ---   mov rAX, 8(rAX)
 + LOADW
@@ -345,7 +345,7 @@ JIT: tLouis07.b
 53: DUP 0
 54: LDNW 4
 + PUSH 4
-+ PLUSA
++ OFFSET
 --- LDW I1, I0, 0
 ---   mov rCX, (rAX)
 + LOADW
@@ -368,13 +368,13 @@ JIT: tLouis07.b
 [Restore 2]
 --- L5:
 + PUSH 8
-+ PLUSA
++ OFFSET
 --- LDW I0, V1, -8
 ---   mov rAX, -8(rBP)
 + LOADW
 63: LDNW 4
 + PUSH 4
-+ PLUSA
++ OFFSET
 --- LDW I0, I0, 8
 ---   mov rAX, 8(rAX)
 + LOADW

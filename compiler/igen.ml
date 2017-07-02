@@ -109,13 +109,13 @@ let op_kind t =
 let mem_kind t =
   let k = kind_of t in
   match k with
-      (BoolT|SysByteT) -> CharT
-    | (PtrT|SetT) -> IntT
+      (BoolT | SysByteT) -> CharT
+    | (PtrT | SetT) -> IntT
     | _ -> k
 
 let load_addr = SEQ [LOAD IntT; XMARK]
 
-let offset n = SEQ [const n; BINOP (PtrT, PlusA)]
+let offset n = SEQ [const n; OFFSET]
 
 let rec schain n =
   if n = 0 then
@@ -256,7 +256,7 @@ let rec gen_addr v =
     | Sub (_, _) ->
 	let e0 = sub_base v in
 	let es = subscripts v in
-	SEQ [gen_addr e0; gen_subscript e0 es; BINOP (PtrT, PlusA)]
+	SEQ [gen_addr e0; gen_subscript e0 es; OFFSET]
 
     | Select (r, x) ->
 	let d = get_def x in
@@ -281,7 +281,7 @@ let rec gen_addr v =
           | Deref p ->
               SEQ [gen_expr p;
                 check (SEQ [DUP 0; null_check p;
-                  CONST (integer (-word_size)); BINOP (PtrT, PlusA);
+                  CONST (integer (-word_size)); OFFSET;
                   typecheck (base_type d.d_type) v])]
 
 	  | _ -> failwith "addr of cast 2"
@@ -596,7 +596,7 @@ and gen_flexarg t a =
       SEQ (List.map
 	(fun i -> SEQ [DUP 0; gen_bound (List.length us + i) e0; SWAP])
 	(List.rev (Util.range 0 (flexity t - 1))));
-      gen_subscript e0 us; BINOP (PtrT, PlusA)]
+      gen_subscript e0 us; OFFSET]
   end
 
 (* gen_builtin -- generate code to call a built-in procedure *)

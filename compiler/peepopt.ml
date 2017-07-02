@@ -123,7 +123,7 @@ let ruleset1 replace =
     (* A little constant folding *)
     | CONST a :: CONST b :: BINOP (IntT, w) :: _ ->
 	replace 3 [CONST (int_binop w a b)]
-    | LOCAL o :: CONST n :: BINOP (PtrT, PlusA) :: _ ->
+    | LOCAL o :: CONST n :: OFFSET :: _ ->
 	replace 3 [LOCAL (o + int_of_integer n)]
     | CONST a :: MONOP (IntT, w) :: _ ->
 	replace 2 [CONST (int_monop w a)]
@@ -137,11 +137,11 @@ let ruleset1 replace =
 	replace 2 [CONST (integer_neg a); BINOP (IntT, Plus)]
     | CONST a :: BINOP (IntT, Plus) :: CONST b :: BINOP (k, Plus) :: _ ->
 	replace 4 [CONST (integer_add a b); BINOP (IntT, Plus)]
-    | CONST a :: BINOP (PtrT, PlusA) :: CONST b :: BINOP (PtrT, PlusA) :: _ ->
-	replace 4 [CONST (integer_add a b); BINOP (PtrT, PlusA)]
+    | CONST a :: OFFSET :: CONST b :: OFFSET :: _ ->
+	replace 4 [CONST (integer_add a b); OFFSET]
     | CONST n :: BINOP (IntT, Plus) :: _ when n = integer 0 ->
 	replace 2 []
-    | CONST n :: BINOP (PtrT, PlusA) :: _ when n = integer 0 ->
+    | CONST n :: OFFSET :: _ when n = integer 0 ->
 	replace 2 []
     | CONST n :: BINOP (IntT, BitAnd) :: _ when n = integer (-1) ->
 	replace 2 []
@@ -182,12 +182,11 @@ let ruleset1 replace =
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
 	replace 7 [GLOBAL x; LOAD s; CONST n; 
 	      		BINOP (IntT, Plus); GLOBAL x; STORE s]
-    | CONST a :: BINOP (PtrT, PlusA) :: DUP 0 :: LOAD s :: CONST n 
+    | CONST a :: OFFSET :: DUP 0 :: LOAD s :: CONST n 
 	  :: BINOP (IntT, Plus) :: SWAP :: STORE s1 :: _ when s = s1 ->
 	(* Allow use of LDN instruction *)
-	replace 8 [DUP 0; CONST a; BINOP (PtrT, PlusA); LOAD s;
-	  CONST n; BINOP (IntT, Plus); SWAP; 
-	  CONST a; BINOP (PtrT, PlusA); STORE s]
+	replace 8 [DUP 0; CONST a; OFFSET; LOAD s;
+	  CONST n; BINOP (IntT, Plus); SWAP; CONST a; OFFSET; STORE s]
 
     (* For simultaneous assignment *)
     | (LOCAL _ | GLOBAL _ | CONST _ as i1) :: CONST b :: 
@@ -301,27 +300,27 @@ let ruleset2 replace =
     | DUP 0 :: CONST n :: JUMPC (IntT, Geq, lab) :: _ ->
 	replace 3 [CONST n; TESTGE lab]
 
-    | CONST s :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: _
+    | CONST s :: BINOP (IntT, Times) :: OFFSET :: _
 	  when s = integer 2 || s = integer 4 || s = integer 8 ->
 	replace 3 [INDEX (int_of_integer s)]
 
-    | CONST n :: BINOP (PtrT, PlusA) :: LOAD s :: _
+    | CONST n :: OFFSET :: LOAD s :: _
           when divisible n s ->
         replace 3 [CONST (divide n s); LDI s]
-    | CONST n :: BINOP (PtrT, PlusA) :: STORE s :: _
+    | CONST n :: OFFSET :: STORE s :: _
           when divisible n s ->
 	replace 3 [CONST (divide n s); STI s] 
 
-    | CONST n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: LOAD s :: _
+    | CONST n :: BINOP (IntT, Times) :: OFFSET :: LOAD s :: _
           when divisible n s ->
 	replace 4 [CONST (divide n s); BINOP (IntT, Times); LDI s]
-    | CONST n :: BINOP (IntT, Times) :: BINOP (PtrT, PlusA) :: STORE s :: _
+    | CONST n :: BINOP (IntT, Times) :: OFFSET :: STORE s :: _
           when divisible n s ->
 	replace 4 [CONST (divide n s); BINOP (IntT, Times); STI s]
 
-    | BINOP (PtrT, PlusA) :: LOAD CharT :: _ ->
+    | OFFSET :: LOAD CharT :: _ ->
 	replace 2 [LDI CharT]
-    | BINOP (PtrT, PlusA) :: STORE CharT :: _ ->
+    | OFFSET :: STORE CharT :: _ ->
 	replace 2 [STI CharT]
     | INDEX n :: LOAD s :: _ when n = width s ->
 	replace 2 [LDI s]
@@ -363,7 +362,7 @@ let ruleset3 replace =
 
       (* Eliminate operands that don't fit in 16 bits *)
     | LOCAL n :: _ when not (fits 16 n) ->
-	replace 1 [LOCAL 0; CONST (integer n); BINOP (PtrT, PlusA)]
+	replace 1 [LOCAL 0; CONST (integer n); OFFSET]
     | LDL (s, n) :: _ when not (fits 16 n) ->
 	replace 1 [LOCAL n; LOAD s]
     | INCL n :: _ when not (fits 16 n) ->
@@ -373,9 +372,9 @@ let ruleset3 replace =
     | STL (s, n) :: _ when not (fits 16 n) ->
 	replace 1 [LOCAL n; STORE s]
     | LDNW n :: _ when not (fits 16 n) ->
-	replace 1 [CONST (integer n); BINOP (PtrT, PlusA); LOAD IntT]
+	replace 1 [CONST (integer n); OFFSET; LOAD IntT]
     | STNW n :: _ when not (fits 16 n) ->
-	replace 1 [CONST (integer n); BINOP (PtrT, PlusA); STORE IntT]
+	replace 1 [CONST (integer n); OFFSET; STORE IntT]
 
       (* Delete NOP *)
     | NOP :: _ -> replace 1 []

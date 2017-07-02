@@ -1082,12 +1082,12 @@ void call_i(int a) {
      post_call();
 }     
 
-code_addr vm_prelude(int n, int locs) {
+int vm_prelude(int n, int locs) {
      code_addr entry = pc;
      locals = (locs+3)&~3;
      push_r(rBP); push_r(rBX); push_r(rSI); push_r(rDI); 
      if (locals > 0) sub_i(rSP, locals);
-     return entry;
+     return (int) entry;
 }
 
 static void retn(void) {
@@ -1098,20 +1098,21 @@ static void retn(void) {
 
 #else
 /*
-On AMD64, the frame layout is like this, with 8 byte slots:
+On Linux/amd64, the frame layout is like this, with 8 byte slots:
 
 old sp:
         return address
         saved rbp
         saved rbx
         saved args if n > 1
-sp:     blank space
+        blank space
+sp:     locals
 
 If there is only one incoming arg (the most common case) we don't bother 
 to save it in the stack, as the GETARG instruction will save it immediately.
 The ABI requires sp to be a multiple of 16 when another routine is called, 
 so 8 bytes of blank space is needed unless n is odd and > 1.  The incoming 
-args are addressible at sp+blank.  (Note: we only support one arg 
+args are addressible at sp+locs+blank.  (Note: we only support one arg 
 at present.)
 
 Outgoing arguments are passed in rDI, rSI, rDX.  Register arguments are left
@@ -1130,6 +1131,8 @@ sp:	outgoing shadow area
 
 Outgoing arguments are passed in rCX, rDX, r8.
 */
+
+static int inargs;
 
 static int argnum;              /* Last argument pushed */
 static int argreg[3];   	/* Whether each arg is a register */
@@ -1191,7 +1194,7 @@ static int out[] = {
 #endif
 };
 
-/* Move args from into correct registers */
+/* Move args into correct registers */
 static void move_args() {
      // Permute the registers
      for (int i = 0; i < nargs; i++) {
@@ -1230,26 +1233,37 @@ static void call_i(int a) {
      instr2_m(opCALL, NOREG, a);
 }     
 
-code_addr vm_prelude(int n, int locs) {
+int vm_prelude(int n, int locs) {
      code_addr entry = pc;
+     inargs = n;
      push_r(rBP); push_r(rBX);
 #ifdef WINDOWS     
+     if (n > 1) vm_panic("sorry, only one parameter allowed today");
+     if (locs > 0) vm_panic("sorry, no local variables allowed");
      push_r(rSI); push_r(rDI);
      sub64_i(rSP, 40);
 #else
-     sub64_i(rSP, 8);
+     int argsp = 0;
+     if (n > 1) {
+          argsp = 8*n;
+          if (n > 2) push_r(rDX);
+          push_r(rSI); push_r(rDI);
+     }
+     int space = locs + argsp + 24;
+     space = (space + 15) & ~0xf;
+     locals = space - 24;
+     if (locals > argsp)
+          sub64_i(rSP, locals - argsp);
 #endif
-     if (locs > 0) vm_panic("sorry, no local variables allowed");
-     if (n > 1) vm_panic("sorry, only one parameter allowed today");
-     return entry;
+     return vm_wrap((funptr) entry);
 }
 
 static void retn(void) {
 #ifdef WINDOWS
-          add64_i(rSP, 40 + locals);
+          add64_i(rSP, 40);
 	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
 #else
-	  add64_i(rSP, 8 + locals);
+	  add64_i(rSP, locals);
 	  pop(rBX); pop(rBP);
 #endif
           instr(opRET);
@@ -1418,7 +1432,10 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 	  load(ra, rSP, 4*b+locals+20); 
 #else
 #ifndef WINDOWS
-          move(ra, rDI);
+          if (inargs == 1)
+               move(ra, rDI);
+          else
+               load(ra, rSP, locals - 8*(inargs-b));
 #else
 	  move(ra, rCX);
 #endif
@@ -1694,7 +1711,7 @@ static void vm_load_store(operation op, int ra, int rb, int c) {
 	  break;
      case STS: 
           instr_st(opMOVW_m, ra, rb, c); break;
-     case STC: 
+     case STB: 
 	  storec(ra, rb, c); break;
 
 #ifndef M64X32

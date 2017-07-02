@@ -599,3 +599,18 @@ int obgetc(FILE *fp) {
      return getc(fp);
 #endif
 }
+
+word wrap_prim(primitive *prim) {
+#ifdef JIT
+     return vm_wrap((funptr) prim);
+#else
+#ifndef M64X32
+     return (word) prim;
+#else
+     primitive **wrapper =
+          (primitive **) scratch_alloc(sizeof(primitive *));
+     *wrapper = prim;
+     return address(wrapper);
+#endif
+#endif
+}

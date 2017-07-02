@@ -643,7 +643,7 @@ void store(int ldop, int ty, int s) {
      case I_LOADF:
           op = STW; break;
      case I_LOADC:
-          op = STC; cache = FALSE; break;
+          op = STB; cache = FALSE; break;
      case I_LOADS:
           op = STS; cache = FALSE; break;
      case I_LOADD:
@@ -737,22 +737,14 @@ static void *func_table[] = {
      __FUNC__(__func2__)
 };
 
-#ifdef M64X32
 static word func_wrapper[NFUNC];
-#endif
 
 /* gcall -- call with arguments on stack */
 void gcall(func f, int n) {
      gen_args(n);
-
-#ifndef M64X32
-     vm_gen(CALL, address(func_table[f]));
-#else
      if (func_wrapper[f] == 0)
-          func_wrapper[f] = wrap_prim(func_table[f]);
-
+          func_wrapper[f] = vm_wrap(func_table[f]);
      vm_gen(CALL, func_wrapper[f]);
-#endif
 }
 
 /* gcallr -- indirect function call */

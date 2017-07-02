@@ -178,10 +178,10 @@ void vm_reset(void) {
 static unsigned *caseptr;
 
 /* vm_jumptable -- begin a jump table */
-code_addr vm_jumptable(int n) {
+int vm_jumptable(int n) {
      code_addr table = vm_literal(n * sizeof(unsigned));
      caseptr = (unsigned *) table;
-     return table;
+     return vm_addr(*table);
 }
 
 /* vm_caselab -- add an address to the current jump table */

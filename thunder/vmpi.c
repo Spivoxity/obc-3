@@ -1176,7 +1176,7 @@ static void vm_load_store(operation op, int ra, int rb, int c) {
      case LDBu: 
           write_reg(ra);
 	  load_store(opLDRB, ra, rb, c); break;
-     case STC: 
+     case STB: 
 	  load_store(opSTRB, ra, rb, c); break;
 
      case LDQ: 

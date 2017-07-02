@@ -57,6 +57,7 @@ type icode =
   | RETURN of kind		(* Return from procedure (rsize) *)
   | MONOP of kind * op		(* Unary operation (type, op) *)
   | BINOP of kind * op		(* Binary operation *)
+  | OFFSET			(* Add address and offset *)
   | CONV of kind * kind		(* Type conversion *)
   | ALIGN of kind		(* Align parameter (size) *)
   | BOUND of int		(* Array bound check (line) *)

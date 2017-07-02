@@ -77,6 +77,33 @@ code_addr vm_literal(int n) {
      return limit;
 }
 
+int _vm_addr(void *p) {
+     int r = (int) (long) p;
+     if (p != (void *) (long) r)
+          vm_panic("address overflow");
+     return r;
+}
+
+int vm_wrap(funptr fun) {
+#ifndef M64X32     
+     return (int) fun;
+#else
+     /* Use a trampoline */
+     vm_space(12);
+     limit = (code_addr) (((unsigned long) limit - 8) & ~0x7);
+     * (funptr *) limit = fun;
+     return vm_addr(*limit);
+#endif
+}
+
+funptr vm_func(int fun) {
+#ifndef M64X32
+     return (funptr) fun;
+#else
+     return * (funptr *) (long) fun;
+#endif
+}
+
 #ifdef USE_FLUSH
 #define FRAGS 16
 static code_addr fragbeg[FRAGS], fragend[FRAGS];
@@ -84,7 +111,7 @@ static int nfrags;
 #endif
 
 /* vm_begin -- begin new procedure */
-code_addr vm_begin_locals(const char *name, int n, int locs) {
+unsigned vm_begin_locals(const char *name, int n, int locs) {
      proc_name = name;
      vm_space(MIN);
      proc_beg = pc;

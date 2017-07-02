@@ -50,7 +50,7 @@ type kind =
 (* op -- type of operators *)
 type op = 
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
-  | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA
+  | Lt | Gt | Leq | Geq | Neq | And | Or | Not
   | In | BitAnd | BitOr | BitNot | BitXor | BitSub 
   | Inc | Dec | Lsl | Lsr | Asr | Ror
 

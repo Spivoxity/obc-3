@@ -178,15 +178,6 @@ void gcallr(reg r, int n);
 
 #define MAXEQ 6
 
-/* Instructions: this table is indexed by instructions codes like I_LDLW.
-   Each complex instruction can be defined as equal to a sequence of simpler
-   ones: for example, LDLW n = LOCAL n / LOADW.  This is encoded by having
-   the i_equiv array contain I_LOCAL|IARG, I_LOADW.  Similarly INC = 
-   CONST 1 / PLUS, and this is encoded as I_CONST|ICON, 1, I_PLUS in the
-   i_equiv array for I_INC.  The i_equiv array is terminated by a zero,
-   and if the first element is zero then there is no expansion for the
-   instruction.  Expansions may be recursive. */
-
 struct _inst {
      const char *i_name;	/* Name of the instruction */
      int i_equiv[MAXEQ];	/* Expansion into simpler instructions */
@@ -197,12 +188,6 @@ struct _inst {
 #define ICON 0x20000
 
 extern struct _inst instrs[];
-
-/* Opcodes: this table is indexed by opcodes such as K_LDLW_1 (meaning
-   the LDLW instruction with a 1-byte offset). The entry for this opcode
-   will have d_inst = I_LDLW, d_patt = "1" and d_len = 2.  For opcodes
-   that use a pattern of "N" (opcode contains argument), the d_arg field
-   contains the integer value of the argument. */
 
 struct _decode {
      int d_inst;

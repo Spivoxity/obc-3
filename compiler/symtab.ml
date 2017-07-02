@@ -151,7 +151,7 @@ type kind =
 (* op -- type of Oberon operators *)
 type op = 
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
-  | Lt | Gt | Leq | Geq | Neq | And | Or | Not | PlusA
+  | Lt | Gt | Leq | Geq | Neq | And | Or | Not
   | In | BitAnd | BitOr | BitNot | BitXor | BitSub
   | Inc | Dec | Lsl | Lsr | Asr | Ror
 
@@ -173,8 +173,7 @@ let op_name =
     | Over -> "/" | Div -> "DIV" | Mod -> "MOD" | Eq -> "=" 
     | Uminus -> "unary -" | Uplus -> "unary +" | Lt -> "<" | Gt -> ">" 
     | Leq -> "<=" | Geq -> ">=" | Neq -> "#" | And -> "&" | Or -> "OR" 
-    | Not -> "~" | PlusA -> "*PLUSA*"
-    | BitAnd -> "*BITAND*" | BitOr -> "*BITOR*"
+    | Not -> "~" | BitAnd -> "*BITAND*" | BitOr -> "*BITOR*"
     | BitNot -> "*BITNOT*" | BitXor -> "*BITXOR*" | BitSub -> "*BITSUB*"
     | In -> "IN" | Inc -> "INC" | Dec -> "DEC" 
     | Asr -> "ASR" | Lsr -> "LSR" | Lsl -> "LSL" | Ror -> "ROR"

@@ -104,7 +104,7 @@ $(REVDEP): CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
 interp.o interp-d.o interp-p.o interp-t.o support.o: \
 	RTFLAGS += -Wno-maybe-uninitialized -Wno-uninitialized
 
-$(OBX) $(JIT) gc.o trace.o profile.o debug.o fact.o: %.o : %.c
+$(OBX) $(JIT) gc.o trace.o profile.o debug.o : %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
 %-n.o : %.c

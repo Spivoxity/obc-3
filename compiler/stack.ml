@@ -54,8 +54,8 @@ let arity =
 
     | BINOP ((DoubleT|LongT), (Eq|Lt|Gt|Leq|Geq|Neq)) -> (4, [f])
     | BINOP ((DoubleT|LongT), _) -> (4, [f; f])
-    | BINOP (PtrT, _) -> (2, [t])
     | BINOP (_, _) -> (2, [f])
+    | OFFSET -> (2, [t])
 
     | CONV ((DoubleT|LongT), (DoubleT|LongT)) -> (2, [f; f])
     | CONV ((DoubleT|LongT), _) -> (2, [f])

@@ -6,7 +6,7 @@
 typedef int (*funcp)(int);
 
 funcp compile(void) {
-     code_addr entry;
+     int entry;
      vmlabel lab1 = vm_newlab(), lab2 = vm_newlab();
      vmreg r0 = ireg[0], r1 = ireg[1];
 
@@ -26,11 +26,11 @@ funcp compile(void) {
 
      vm_end();
 
-     return (funcp) entry;
+     return (funcp) vm_func(entry);
 }
 
 funcp compile2(void) {
-     code_addr entry;
+     int entry;
 
      vmlabel lab1 = vm_newlab(), lab2 = vm_newlab();
      vmreg r0 = ireg[0], r1 = ireg[1];
@@ -39,7 +39,7 @@ funcp compile2(void) {
      entry = vm_begin_locals("fact", 1, 4);
      vm_gen(GETARG, r0, 0);
 
-     vm_gen(BNEQ, r0, 0, lab1);
+     vm_gen(BNE, r0, 0, lab1);
      vm_gen(MOV, ret, 1);
      vm_gen(JUMP, lab2);
 
@@ -56,28 +56,36 @@ funcp compile2(void) {
      vm_gen(RET);
 
      vm_end();
-     return (funcp) entry;
+     return (funcp) vm_func(entry);
 }
 
 static float a[] = { 3.0, 1.0, 4.0, 1.0, 5.0, 9.0 };
 
+#include <string.h>
+
+void *vm_literal(int n);
+
 void (*compile3(void))(int, float *) {
-     code_addr entry;
+     /* On amd64, we need to put the array in addressible storage */
+     float *aa = (float *) vm_literal(sizeof(a));
+     memcpy(aa, a, sizeof(a));
+
+     int entry;
      vmlabel lab1 = vm_newlab(), lab2 = vm_newlab();
      vmreg n = ireg[0], i = ireg[1], t = ireg[2], y = ireg[3];
      vmreg s = freg[0], x = freg[1];
 
-     entry = vm_begin("sum", 3);
+     entry = vm_begin("sum", 2);
      vm_gen(GETARG, n, 0);
      vm_gen(GETARG, y, 1);
 
      vm_gen(MOV, i, 0);
-     vm_gen(ZEROF, s);
+     vm_gen(ZEROf, s);
      vm_label(lab1);
-     vm_gen(BGEQ, i, n, lab2);
+     vm_gen(BGE, i, n, lab2);
      vm_gen(LSH, t, i, 2);
-     vm_gen(LDW, x, t, vm_addr(a));
-     vm_gen(ADDF, s, s, x);
+     vm_gen(LDW, x, t, vm_addr(*aa));
+     vm_gen(ADDf, s, s, x);
      vm_gen(ADD, i, i, 1);
      vm_gen(JUMP, lab1);
      vm_label(lab2);
@@ -85,20 +93,20 @@ void (*compile3(void))(int, float *) {
      vm_gen(RET);
 
      vm_end();
-     return (void (*)(int, float *)) entry;
+     return (void (*)(int, float *)) vm_func(entry);
 }
  
 int (*compile4(void))(void) {
-     code_addr entry;
+     int entry;
      vmreg x = ireg[2], y = ireg[0];
 
      entry = vm_begin_locals("foo", 0, 4);
      vm_gen(MOV, x, (int) 'A');
-     vm_gen(STC, x, base, 0);
-     vm_gen(LDC, y, base, 0);
+     vm_gen(STB, x, base, 0);
+     vm_gen(LDB, y, base, 0);
      vm_gen(MOV, ret, y);
      vm_gen(RET);
-     return (int (*)(void)) entry;
+     return (int (*)(void)) vm_func(entry);
 }
 
 int main(int argc, char *argv[]) {
@@ -106,7 +114,7 @@ int main(int argc, char *argv[]) {
      void (*fp3)(int, float *);
      int (*fp4)(void);
      int n;
-     float y;
+     float *y = vm_literal(sizeof(float));
 
      vm_debug = 2;
      printf("Compiling fac1:\n");
@@ -121,11 +129,13 @@ int main(int argc, char *argv[]) {
      n = (argc > 1 ? atoi(argv[1]) : 10);
      printf("The factorial of %d is %d\n", n, fp(n));
      printf("The factorial of %d is %d\n", n, fp2(n));
-     fp3(6, &y);
-     printf("The sum of that array is %f\n", y);
+     fp3(6, y);
+     printf("The sum of that array is %f\n", *y);
      printf("The character is %c\n", (char) fp4());
      return 0;
 }
+
+#if 0
 
 void *vm_alloc(int size) {
      void *mem = NULL;
@@ -135,3 +145,25 @@ void *vm_alloc(int size) {
      }
      return mem;
 }
+
+#else
+
+#include <sys/mman.h>
+
+void *vm_alloc(int size) {
+     void *p;
+     static void *last_addr = NULL;
+
+     p = mmap(last_addr, size, PROT_READ|PROT_WRITE, 
+	      MAP_PRIVATE|MAP_32BIT|MAP_ANONYMOUS, -1, 0);
+
+     if (p == MAP_FAILED) return NULL;
+     if ((((unsigned long) p) & ~0x7fffffff) != 0) {
+          fprintf(stderr, "inaccessible memory allocated at %p", p);
+          exit(2);
+     }
+     last_addr = p + size;
+     return p;
+}
+
+#endif
