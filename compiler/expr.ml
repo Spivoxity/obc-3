@@ -905,7 +905,7 @@ and check_builtin env p args e loc =
 	  let t1 = check_expr e1 env in
 	  if subtype t1 shortint then
 	    typeconv inttype e1
-	  else if same_types t1 inttype then
+	  else if same_types t1 inttype || same_types t1 numtype then
 	    typeconv longint e1
 	  else if same_types t1 realtype then
 	    typeconv longreal e1
