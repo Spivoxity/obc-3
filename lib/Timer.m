@@ -31,15 +31,20 @@
 (** An execution timer *)
 MODULE Timer;
 
-(* COPY #include <time.h> *)
-
 (** Now -- elapsed time in milliseconds since the program started *)
-PROCEDURE Now*(): INTEGER IS "Timer_Now";
-(* CODE 
-     /* Care needed: CLOCKS_PER_SEC might be 50 or it might (on a
-	POSIX system) be 1000000.  So we represent 1000t as a three-digit
-	number in base 1000, and use high-school division. */
+PROCEDURE Now*(): INTEGER IS "Now";
 
+END Timer.
+
+--CODE--
+
+/* Care needed: CLOCKS_PER_SEC might be 50 or it might (on a
+   POSIX system) be 1000000.  So we represent 1000t as a three-digit
+   number in base 1000, and use high-school division. */
+
+#include <time.h>
+
+int Now(void) {
 #define B 1000
 #define M CLOCKS_PER_SEC
 
@@ -47,7 +52,8 @@ PROCEDURE Now*(): INTEGER IS "Timer_Now";
      unsigned t1 = t/B;
      unsigned t2 = (t1%M)*B + t%B;
      unsigned t3 = (t2%M)*B;
-     ob_res.i = ((t1/M)*B + (t2/M))*B + t3/M; 
+     return ((t1/M)*B + (t2/M))*B + t3/M; 
+}
 
 /* Using y(x/y) + x%y = x repeatedly:
 
@@ -60,6 +66,4 @@ PROCEDURE Now*(): INTEGER IS "Timer_Now";
      = Bt 
 
    But 0 <= t3%M < M, so r = floor(Bt/M) */
-*)
 
-END Timer.

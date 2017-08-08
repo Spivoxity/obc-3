@@ -238,8 +238,8 @@ proc :
   | doc ABSTRACT PROCEDURE rcvr procid params semi
       { let (Heading (ps, r)) = $params in
         ProcDecl (AbsMeth, $procid, Heading ($rcvr::ps, r), NoBlock, $doc) }
-  | doc PROCEDURE procid params IS STRING semi
-      { PrimDecl ($procid, $params, $STRING, $doc) } 
+  | doc PROCEDURE procid params IS flag STRING semi
+      { PrimDecl ($procid, $params, $flag, $STRING, $doc) }
   | doc PROCEDURE error { end_name := anon } pblock semi
       { DummyDecl } 
   | doc PROCEDURE UPARROW procid params semi
@@ -247,6 +247,10 @@ proc :
   | doc PROCEDURE UPARROW rcvr procid params semi
       { let (Heading (ps, r)) = $params in
         ForwardDecl (Method, $procid, Heading ($rcvr::ps, r), $doc) } ;
+
+flag :
+    /* empty */			{ '*' }
+  | PLUS			{ '+' } ;
 
 procid :
     defid			{ end_name := $defid.x_name; $defid } ;

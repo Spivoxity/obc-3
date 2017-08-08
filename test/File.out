@@ -20,13 +20,13 @@ PROCEDURE Open(name, mode: ARRAY OF CHAR): File;
 PROCEDURE FDOpen(fd: INTEGER; mode: ARRAY OF CHAR): File;
 
 (** Close -- close a file *)
-PROCEDURE Close(fp: File);
+PROCEDURE Close(f: File);
 
 (** Eof -- test of end of file *)
-PROCEDURE Eof(fp: File): BOOLEAN;
+PROCEDURE Eof(f: File): BOOLEAN;
 
 (** Flush -- ensure buffered output has been written out *)
-PROCEDURE Flush(fp: File);
+PROCEDURE Flush(f: File);
 
 (** ReadChar -- read a character *)
 PROCEDURE ReadChar(f: File; VAR c: CHAR);

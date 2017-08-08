@@ -49,13 +49,12 @@ SHELL = /bin/sh
 TCLSH = @TCLSH@
 DEBUG = @DEBUG@
 VPATH = @srcdir@
-MODULES = @MODULES@
-MODULES_B = @MODULES_B@
+STDMODS = @STDMODS@
+STDMODS_B = @STDMODS_B@
 PRIMMODS = @PRIMMODS@
 SHLMODS = @SHLMODS@
 CHECKMODS = @CHECKMODS@
 LIBS = @LIBS@
-MATHLIB = @MATHLIB@
 XLIB = @XLIB@
 DYNLINK = @DYNLINK@
 DLEXT= @DLEXT@
@@ -69,19 +68,8 @@ ifdef DEBUG
   LIBDEP = ../compiler/obc1
 endif
 
-all:: _Builtin.k $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k) oblib.o \
-	lscript lscript-b
-
-STDMODS = Builtin $(PRIMMODS)
-ALLMODS := $(STDMODS) $(SHLMODS)
-
-ifdef DYNLINK
-all:: $(SHLMODS:%=%$(DLEXT))
-else
-all:: primtab.o
-STDMODS += $(SHLMODS)
-endif
-
+all:: _Builtin.k $(STDMODS:%=%.k) $(CHECKMODS:%=%-b.k) $(SHLMODS:%=%.k) \
+	oblib.o lscript lscript-b
 
 ### Bytecode files
 
@@ -90,15 +78,14 @@ OBC1 = ../compiler/obc1
 REVID := $(shell cat ../revid)
 
 Builtin.m: Builtin.m.in ../revid
-	sed -e 's/@VERSION@/$(PACKAGE_VERSION)/' \
-		-e 's/@REVID@/$(REVID)/' $< >$@
+	sed -e 's/@VERSION@/$(PACKAGE_VERSION)/' -e 's/@REVID@/$(REVID)/' $< >$@
 
 _Builtin.k: Builtin.m ../revid
-	$(OBC1) -w -b $< | \
+	$(OBC1) -w -b -x $< | \
 	    sed -e 's/Builtin\.\([^%]\)/\1/g' -e 's/Builtin/_Builtin/' >$@
 
 _Builtin.k: $(LIBDEP)
-$(MODULES:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP) _Builtin.k
+$(STDMODS:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP) _Builtin.k
 In.k Out.k Err.k In-b.k : Files.k
 In.k In-b.k : Conv.k
 $(SHLMODS:%=%.k) : DynLink.k
@@ -112,22 +99,27 @@ $(SHLMODS:%=%.k) : DynLink.k
 
 ### C and object code for primitives
 
+OBLIB := Builtin $(PRIMMODS)
+CSRC = Builtin $(PRIMMODS) $(SHLMODS)
+
+ifdef DYNLINK
+all:: $(SHLMODS:%=%$(DLEXT))
+else
+OBLIB += $(SHLMODS)
+endif
+
 ALL_RTFLAGS = $(RTFLAGS) -Wall $(INCLUDE)
 INCLUDE = -I .. -I $(top_srcdir)/runtime -I ../runtime
 
-oblib.o: $(STDMODS:%=%.o)
+oblib.o: $(OBLIB:%=%.o) primtab.o
 	$(LD) -r $^ -o $@
 
-$(ALLMODS:%=%.c): %.c: %.m makeprims.tcl
-	$(TCLSH) $(srcdir)/makeprims.tcl $< >$@
+$(CSRC:%=%.c): %.c: %.m
+	sed -e '1,/^--CODE--/d' $< >$@
 
 XYplane$(DLEXT): XYplane.c
 	$(CC) $(ALL_RTFLAGS) $(X_CFLAGS) $(SHL_CFLAGS) \
 		$(SHL_LFLAGS) $< $(LIBS) $(XLIB) -o $@
-
-Math$(DLEXT) MathL$(DLEXT): %$(DLEXT): %.c
-	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) \
-		$(SHL_LFLAGS) $< $(LIBS) $(MATHLIB) -o $@
 
 %$(DLEXT): %.c
 	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $(SHL_LFLAGS) $< $(LIBS) -o $@
@@ -135,21 +127,21 @@ Math$(DLEXT) MathL$(DLEXT): %$(DLEXT): %.c
 %.o: %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
-$(ALLMODS:%=%.o) $(SHLMODS:%=%$(DLEXT)) primtab.o: \
+$(OBLIB:%=%.o) $(SHLMODS:%=%$(DLEXT)) primtab.o: \
 	../config.h $(top_srcdir)/runtime/obx.h \
 	$(top_srcdir)/runtime/obcommon.h
 
-primtab.c: $(STDMODS:%=%.m)
-	$(TCLSH) $(srcdir)/makeprims.tcl -t $^ >$@
+primtab.c: _Builtin.k $(STDMODS:%=%.k) $(srcdir)/makeprims.tcl
+	$(TCLSH) $(srcdir)/makeprims.tcl _Builtin.k $(STDMODS:%=%.k) >$@
 
 
 ### Library scripts
 
 lscript: ../config.status
-	for m in _Builtin $(MODULES); do echo $$m.k; done >$@
+	for m in _Builtin $(STDMODS) $(SHLMODS); do echo $$m.k; done >$@
 
 lscript-b : ../config.status
-	for m in _Builtin $(MODULES_B); do echo $$m.k; done >$@
+	for m in _Builtin $(STDMODS_B) $(SHLMODS); do echo $$m.k; done >$@
 
 
 ## Cleanup

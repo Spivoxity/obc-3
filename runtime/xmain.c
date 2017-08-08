@@ -526,6 +526,7 @@ int main(int ac, char *av[]) {
      interpreter = wrap_prim(interp);
 #endif
      dyntrap = wrap_prim(dltrap);
+     dynstub = wrap_prim(dlstub);
 
 #ifdef M64X32
      /* Allocate ob_res and statlink in 32-bit addressible storage */
@@ -574,31 +575,6 @@ void interp(value *bp) {
      panic("dummy interp called");
 }
 #endif
-
-#ifdef WINDOWS
-#ifdef OBXDEB
-#define OBGETC 1
-#endif
-#endif
-
-/* obgetc -- version of getc that compensates for Windows quirks */
-int obgetc(FILE *fp) {
-#ifdef OBGETC
-     /* Even if Ctrl-C is trapped, it causes a getc() call on the console
-	to return EOF. */
-     for (;;) {
-	  int c = getc(fp);
-	  if (c == EOF && intflag && prim_bp != NULL) {
-	       value *cp = valptr(prim_bp[CP]);
-	       debug_break(cp , prim_bp, NULL, "interrupt");
-	       continue;
-	  }
-	  return c;
-     }
-#else
-     return getc(fp);
-#endif
-}
 
 word wrap_prim(primitive *prim) {
 #ifdef JIT

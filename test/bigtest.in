@@ -54,4 +54,4 @@ echo Fib
     && ./fib | $fixup | cmp $srcdir/Fib.out -)
 
 echo Browser
-($browser Files | $fixup| cmp $srcdir/File.out -)
+($browser Files | $fixup| diff $srcdir/File.out -)

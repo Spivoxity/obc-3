@@ -190,3 +190,28 @@ proc find_symbol(value *p, proc *table, int nelem) {
 
      return table[a];
 }
+
+#ifdef WINDOWS
+#ifdef OBXDEB
+#define OBGETC 1
+#endif
+#endif
+
+/* obgetc -- version of getc that compensates for Windows quirks */
+int obgetc(FILE *fp) {
+#ifdef OBGETC
+     /* Even if Ctrl-C is trapped, it causes a getc() call on the console
+	to return EOF. */
+     for (;;) {
+	  int c = getc(fp);
+	  if (c == EOF && intflag && prim_bp != NULL) {
+	       value *cp = valptr(prim_bp[CP]);
+	       debug_break(cp , prim_bp, NULL, "interrupt");
+	       continue;
+	  }
+	  return c;
+     }
+#else
+     return getc(fp);
+#endif
+}

@@ -116,7 +116,8 @@ $$ jump table
 #ifdef TRACE
 	  if (dflag > 1) {
 	       printf("pc=%s+%ld(%p) sp=%p bp=%p cp=%p",
-		      thisproc->p_name, (long) (pc - pointer(cp[CP_CODE])),
+		      thisproc->p_name,
+                      (long) (pc - (uchar *) pointer(cp[CP_CODE])),
                       pc, sp, bp, cp);
 	       fflush(stdout);
 	       for (int i = 0; i < 8; i++) printf(" %x", sp[i].i);

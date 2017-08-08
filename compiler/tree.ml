@@ -55,7 +55,7 @@ and decl =
   | VarDecl of def_kind * name list * typexpr * docstring
   | TypeDecl of (name * typexpr * docstring) list
   | ProcDecl of proc_kind * name * proc_heading * block * docstring
-  | PrimDecl of name * proc_heading * string * docstring
+  | PrimDecl of name * proc_heading * char * string * docstring
   | ForwardDecl of proc_kind * name * proc_heading * docstring
   | DummyDecl
 
@@ -360,8 +360,9 @@ and ppDecl d =
       | ProcDecl (k, x, hdg, body, _) ->
 	  prf "($ $ $ $)" 
 	    [ppPKind k; ppDefId x; ppHeading hdg; ppBlock body]
-      | PrimDecl (x, hdg, name, _) ->
-	  prf "(LIBPROC $ $ = \"$\")" [ppDefId x; ppHeading hdg; fStr name]
+      | PrimDecl (x, hdg, flag, name, _) ->
+	  prf "(FFIPROC $ $$ = \"$\")"
+            [ppDefId x; ppHeading hdg; fChr flag; fStr name]
       | ForwardDecl (k, x, hdg, _) ->
 	  prf "($ $ $)" [ppPKind k; ppDefId x; ppHeading hdg]
       | DummyDecl -> prf "(DUMMY)" [])

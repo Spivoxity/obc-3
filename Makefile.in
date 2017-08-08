@@ -63,7 +63,6 @@ DYNLINK = @DYNLINK@
 DLEXT = @DLEXT@
 DLFLAGS = @DLFLAGS@
 LIBS = @LIBS@
-MATHLIB = @MATHLIB@
 HAVE_X = @HAVE_X@
 XLIB = @XLIB@
 DEB_LIBS = @DEB_LIBS@
@@ -96,7 +95,7 @@ endif
 
 ifndef DYNLINK
   PRIMS += lib/primtab.o
-  EXTRA_LIBS = $(MATHLIB) $(XLIB)
+  EXTRA_LIBS = $(XLIB)
 endif
 
 ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
@@ -159,7 +158,7 @@ PRIMS = lib/oblib.o
 
 ifndef DYNLINK
   PRIMS += lib/primtab.o
-  EXTRA_LIBS = $(MATHLIB) $(XLIB)
+  EXTRA_LIBS = $(XLIB)
 endif
 
 ALL_LIBS = $(EXTRA_LIBS) $(LIBS)

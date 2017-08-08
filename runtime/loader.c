@@ -143,7 +143,7 @@ static void relocate(int size) {
 	       case R_SUBR:
 		    switch (m) {
 		    case INTERP: (*p).a = interpreter; break;
-		    case DLTRAP: (*p).a = dyntrap; break;
+                    case DLTRAP: (*p).a = dyntrap; break;
 		    default:
 			 panic("bad subr code");
 		    }

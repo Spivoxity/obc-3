@@ -34,9 +34,11 @@ MODULE Files;
 IMPORT SYSTEM;
 
 TYPE 
+  RawFile = SYSTEM.LONGPTR;
+
   (** File -- type of open files *)
   File* = POINTER TO FileDesc;
-  FileDesc = RECORD file*: SYSTEM.LONGPTR END;
+  FileDesc = RECORD file*: RawFile END;
 
 VAR
   (** stdin -- standard input file *)
@@ -48,120 +50,98 @@ VAR
   (** stderr -- standard error file *)
   stderr*: File;
 
-(* COPY
-static FILE *get_file(value *p, value *cp, value *bp) {
-     if (p == NULL || get_long(p) == 0) liberror("file is not open");
-     return ptrcast(FILE, get_long(p));
-}
-
-#define file_arg(a) get_file(valptr(a), cp, bp)
-*)
-
-PROCEDURE PrimOpen(name, mode:
-                        ARRAY OF CHAR): SYSTEM.LONGPTR IS "Files_PrimOpen";
-(* CODE put_long(&ob_res, 
-		 (ptrtype) fopen((char * ) pointer(args[0]),
-				 (char * ) pointer(args[2]))); *)
-
-PROCEDURE PrimFDOpen(fd: INTEGER;
-  		mode: ARRAY OF CHAR): SYSTEM.LONGPTR IS "File_PrimFDOpen";
-(* CODE put_long(&ob_res,
-		 (ptrtype) fdopen(args[0].i, (char * ) pointer(args[1]))); *)
+(* Interface routines *)
 
 (** Open -- open a file by name; return NIL if not found *)
 PROCEDURE Open*(CONST name, mode: ARRAY OF CHAR): File;
-  VAR fp: SYSTEM.LONGPTR; f: File;
+  VAR fp: RawFile; f: File;
 BEGIN
-  fp := PrimOpen(name, mode);
-  IF fp = SYSTEM.VAL(SYSTEM.LONGPTR, LONG(0)) THEN RETURN NIL END;
+  fp := fopen(name, mode);
+  IF fp = SYSTEM.VAL(RawFile, LONG(0)) THEN RETURN NIL END;
   NEW(f); f.file := fp; RETURN f
 END Open;
 
 (** FDOpen -- open a file given a file descriptor, or return NIL *)
 PROCEDURE FDOpen*(fd: INTEGER; CONST mode: ARRAY OF CHAR): File;
-  VAR fp: SYSTEM.LONGPTR; f: File;
+  VAR fp: RawFile; f: File;
 BEGIN
-  fp := PrimFDOpen(fd, mode);
-  IF fp = SYSTEM.VAL(SYSTEM.LONGPTR, LONG(0)) THEN RETURN NIL END;
+  fp := fdopen(fd, mode);
+  IF fp = SYSTEM.VAL(RawFile, LONG(0)) THEN RETURN NIL END;
   NEW(f); f.file := fp; RETURN f
 END FDOpen;
 
 (** Close -- close a file *)
-PROCEDURE Close*(fp: File) IS "Files_Close";
-(* CODE fclose(file_arg(args[0])); valptr(args[0])[0].a = address(NULL); *)
+PROCEDURE Close*(f: File);
+BEGIN
+  fclose(raw(f));
+  f.file := SYSTEM.VAL(RawFile, LONG(0))
+END Close;
 
 (** Eof -- test of end of file *)
-PROCEDURE Eof*(fp: File): BOOLEAN IS "Files_Eof";
-(* CODE 
-     FILE *fp = file_arg(args[0]);
-     int c = obgetc(fp); 
-     mybool r = (c == EOF);
-     if (!r) ungetc(c, fp); 
-     ob_res.i = r; *)
+PROCEDURE Eof*(f: File): BOOLEAN;
+  CONST EOF = -1;
+  VAR c: INTEGER; fp: RawFile;
+BEGIN
+  fp := raw(f);
+  c := obgetc(fp);
+  IF c = EOF THEN
+    RETURN TRUE
+  ELSE
+    ungetc(CHR(c), fp);
+    RETURN FALSE
+  END
+END Eof;
 
 (** Flush -- ensure buffered output has been written out *)
-PROCEDURE Flush*(fp: File) IS "Files_Flush";
-(* CODE fflush(file_arg(args[0])); *)
+PROCEDURE Flush*(f: File); BEGIN fflush(raw(f)) END Flush;
 
 (** ReadChar -- read a character *)
-PROCEDURE ReadChar*(f: File; VAR c: CHAR) IS "Files_ReadChar";
-(* CODE *pointer(args[1]) = obgetc(file_arg(args[0])); *)
+PROCEDURE ReadChar*(f: File; VAR c: CHAR);
+BEGIN c := CHR(obgetc(raw(f))) END ReadChar;
 
 (** WriteInt -- output an integer with a specified width *)
-PROCEDURE WriteInt*(f: File; n: INTEGER; width: INTEGER) IS "Files_WriteInt";
-(* CODE fprintf(file_arg(args[0]), "%*d", args[2].i, args[1].i); *)
+PROCEDURE WriteInt*(f: File; n: INTEGER; width: INTEGER);
+BEGIN FmtInt(raw(f), n, width) END WriteInt;
 
 (** WriteLongInt -- output a long integer with specified width *)
-PROCEDURE WriteLongInt*(f: File; n: LONGINT; 
-				width: INTEGER) IS "Files_WriteLongInt";
-(* CODE 
-#ifdef __MINGW32__
-     const char *fmt = "%*I64d";
-#else
-     const char *fmt = "%*lld";
-#endif
-     fprintf(file_arg(args[0]), fmt, args[3].i, get_long(&args[1]));
-*)
+PROCEDURE WriteLongInt*(f: File; n: LONGINT; width: INTEGER);
+BEGIN FmtLong(raw(f), n, width) END WriteLongInt;
 
 (** WriteReal -- output a real in scientific notation *)
-PROCEDURE WriteReal*(f: File; x: REAL) IS "Files_WriteReal";
-(* CODE fprintf(file_arg(args[0]), "%#G", args[1].f); *)
+PROCEDURE WriteReal*(f: File; x: REAL);
+BEGIN FmtReal(raw(f), x) END WriteReal;
 
 (** WriteLongReal -- output a long real in scientific notation *)
-PROCEDURE WriteLongReal*(f: File; x: LONGREAL) IS "Files_WriteLongReal";
-(* CODE fprintf(file_arg(args[0]), "%#.12G", get_double(&args[1])); *)
+PROCEDURE WriteLongReal*(f: File; x: LONGREAL);
+BEGIN FmtLongReal(raw(f), x) END WriteLongReal;
 
 (** WriteFixed -- output a long real in fixed decimal notation *)
-PROCEDURE WriteFixed*(f: File; x: LONGREAL; 
-				width, dec: INTEGER) IS "Files_WriteFixed";
-(* CODE fprintf(file_arg(args[0]), "%*.*f", 
-	        args[3].i, args[4].i, get_double(&args[1])); *)
+PROCEDURE WriteFixed*(f: File; x: LONGREAL; width, dec: INTEGER);
+BEGIN FmtFixed(raw(f), x, width, dec) END WriteFixed;
 
 (** WriteChar -- output a character *)
-PROCEDURE WriteChar*(f: File; c: CHAR) IS "Files_WriteChar";
-(* CODE fprintf(file_arg(args[0]), "%c", align_byte(args[1].i)); *)
+PROCEDURE WriteChar*(f: File; c: CHAR);
+BEGIN fputc(c, raw(f)) END WriteChar;
 
 (** WriteString -- output a null-terminated string *)
-PROCEDURE WriteString*(f: File; CONST s: ARRAY OF CHAR) IS "Files_WriteString";
-(* CODE fprintf(file_arg(args[0]), "%.*s", args[2].i, pointer(args[1])); *)
+PROCEDURE WriteString*(f: File; CONST s: ARRAY OF CHAR);
+BEGIN FmtString(raw(f), s, LEN(s)) END WriteString;
 
 (** WriteLn -- output a newline *)
-PROCEDURE WriteLn*(f: File) IS "Files_WriteLn";
-(* CODE putc('\n', file_arg(args[0])); *)
+PROCEDURE WriteLn*(f: File);
+BEGIN WriteChar(f, CHR(10)) END WriteLn;
 
 (** Read -- read an arbitary binary object *)
-PROCEDURE Read*(f: File; VAR buf: ARRAY OF SYSTEM.BYTE) IS "Files_Read";
-(* CODE int UNUSED nread =
-     fread(pointer(args[1]), args[2].i, 1, file_arg(args[0])); *)
+PROCEDURE Read*(f: File; VAR buf: ARRAY OF SYSTEM.BYTE);
+BEGIN fread(buf, LEN(buf), 1, raw(f)) END Read;
 
 (** Write -- write an arbitary binary object *)
-PROCEDURE Write*(f: File; VAR buf: ARRAY OF SYSTEM.BYTE) IS "Files_Write";
-(* CODE int UNUSED nwritten = 
-     fwrite(pointer(args[1]), args[2].i, 1, file_arg(args[0])); *)
+PROCEDURE Write*(f: File; VAR buf: ARRAY OF SYSTEM.BYTE);
+BEGIN fwrite(buf, LEN(buf), 1, raw(f)) END Write;
 
 (** Seek -- set the file pointer to a specified offset *)
-PROCEDURE Seek*(f: File; offset, whence: INTEGER) IS "Files_Seek";
-(* CODE fseek(file_arg(args[0]), args[1].i, args[2].i); *)
+PROCEDURE Seek*(f: File; offset, whence: INTEGER);
+BEGIN fseek(raw(f), offset, whence) END Seek;
 
 CONST 
   (** SeekSet -- "whence" argument for Seek to set absolute postition *)
@@ -172,16 +152,88 @@ CONST
   SeekEnd* = 2;
 
 (** Tell -- return current file postion *)
-PROCEDURE Tell*(f: File): INTEGER IS "Files_Tell";
-(* CODE ob_res.i = ftell(file_arg(args[0])); *)
+PROCEDURE Tell*(f: File): INTEGER;
+BEGIN RETURN ftell(raw(f)) END Tell;
 
-PROCEDURE Init(VAR in, out, err: SYSTEM.LONGPTR) IS "Files_Init";
-(* CODE 
-     put_long(valptr(args[0]), (ptrtype) stdin); 
-     put_long(valptr(args[1]), (ptrtype) stdout);
-     put_long(valptr(args[2]), (ptrtype) stderr); *)
+
+(* The implementation *)
+
+PROCEDURE raw(f: File): RawFile;
+BEGIN
+  IF (f = NIL) OR (f.file = SYSTEM.VAL(RawFile, LONG(0))) THEN
+    SYSTEM.LIBERROR("file is not open")
+  END;
+  RETURN f.file
+END raw;
+
+(* Wrappers around functions from stdio *)
+PROCEDURE fopen(name, mode: ARRAY OF CHAR): RawFile IS "fopen";
+PROCEDURE fdopen(fd: INTEGER; mode: ARRAY OF CHAR): RawFile IS "fdopen";
+PROCEDURE fclose(fp: RawFile) IS "fclose";
+PROCEDURE fflush(fp: RawFile) IS "fflush";
+PROCEDURE obgetc(fp: RawFile): INTEGER IS "obgetc";
+PROCEDURE ungetc(c: CHAR; fp: RawFile) IS "ungetc";
+PROCEDURE fputc(c: CHAR; fp: RawFile) IS "fputc";
+PROCEDURE fseek(fp: RawFile; offset, whence: INTEGER) IS "fseek";
+PROCEDURE ftell(fp: RawFile): INTEGER IS "ftell";
+PROCEDURE fread(VAR buf: ARRAY OF SYSTEM.BYTE; n, s: INTEGER;
+  fp: RawFile): INTEGER IS "fread";
+PROCEDURE fwrite(VAR buf: ARRAY OF SYSTEM.BYTE; n, s: INTEGER; fp: RawFile)
+  IS "fwrite";
+
+(* Wrappers around printf calls *)
+PROCEDURE FmtInt(fp: RawFile; n, w: INTEGER) IS "FmtInt";
+PROCEDURE FmtLong(fp: RawFile; n: LONGINT; w: INTEGER) IS "FmtLong";
+PROCEDURE FmtReal(fp: RawFile; x: REAL) IS "FmtReal";
+PROCEDURE FmtLongReal(fp: RawFile; x: LONGREAL) IS "FmtLongReal";
+PROCEDURE FmtFixed(f: RawFile; x: LONGREAL; width, dec: INTEGER)
+  IS "FmtFixed";
+PROCEDURE FmtString(fp: RawFile; CONST s: ARRAY OF CHAR; len: INTEGER)
+  IS "FmtString";
+
+PROCEDURE Init(VAR in, out, err: RawFile) IS "InitFiles";
 
 BEGIN
   NEW(stdin); NEW(stdout); NEW(stderr);
   Init(stdin.file, stdout.file, stderr.file)
 END Files.
+
+--CODE--
+
+#include "obx.h"
+
+void FmtInt(FILE *fp, int n, int w) {
+     fprintf(fp, "%*d", w, n);
+}
+
+void FmtLong(FILE *fp, longint n, int w) {
+#ifdef __MINGW32__
+     const char *fmt = "%*I64d";
+#else
+     const char *fmt = "%*lld";
+#endif
+     fprintf(fp, fmt, w, n);
+}
+
+void FmtReal(FILE *fp, float x) {
+     fprintf(fp, "%#G", x);
+}
+
+void FmtLongReal(FILE *fp, double x) {
+     fprintf(fp, "%#.12G", x);
+}
+
+void FmtFixed(FILE *fp, double x, int width, int dec) {
+     fprintf(fp, "%*.*f", width, dec, x);
+}
+
+void FmtString(FILE *fp, char *s, int len) {
+     fprintf(fp, "%.*s", len, s);
+}
+
+void InitFiles(value *in, value *out, value *err) {
+     put_long(in, (ptrtype) stdin); 
+     put_long(out, (ptrtype) stdout);
+     put_long(err, (ptrtype) stderr);
+}
+

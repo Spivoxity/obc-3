@@ -80,22 +80,7 @@ BEGIN
   RETURN ENTIER(n * (Random() / (MAXRAND + LONG(1.0))))
 END Roll;
 
-(* COPY #include <time.h> 
-#ifdef HAVE_GETTIMEOFDAY
-#include <sys/time.h>
-#endif
-*)
-
-PROCEDURE GetSeed(): INTEGER IS "Random_GetSeed";
-(* CODE 
-#ifdef HAVE_GETTIMEOFDAY
-     struct timeval tv;
-     gettimeofday(&tv, NULL);
-     ob_res.i = 13 * tv.tv_sec + tv.tv_usec;
-#else	
-     ob_res.i = time(NULL); 
-#endif
-*)
+PROCEDURE GetSeed(): INTEGER IS "GetSeed";
 
 (** Randomize -- seed the random generator for different results each run *)
 PROCEDURE Randomize*;
@@ -111,3 +96,21 @@ BEGIN
   ASSERT(r <= q);
   seed := 31415926
 END Random.
+
+--CODE--
+
+#include <time.h> 
+#ifdef HAVE_GETTIMEOFDAY
+#include <sys/time.h>
+#endif
+
+int GetSeed(void) {
+#ifdef HAVE_GETTIMEOFDAY
+     struct timeval tv;
+     gettimeofday(&tv, NULL);
+     return 13 * tv.tv_sec + tv.tv_usec;
+#else	
+     return time(NULL); 
+#endif
+}
+

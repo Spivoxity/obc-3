@@ -21,5 +21,5 @@ rundir=$BINDIR/runtime
 thundir=$BINDIR/thunder
 libdir=$BINDIR/lib
 DLFLAGS=@DLFLAGS@
-LIBS=@LIBS@
+LIBS="@LIBS@"
 # End of config

@@ -1,5 +1,5 @@
 /*
- * loader.c
+ * dynlink.c
  * 
  * This file is part of the Oxford Oberon-2 compiler
  * Copyright (c) 2006--2016 J. M. Spivey
@@ -45,14 +45,14 @@ in its initialization part.
 #include "obx.h"
 
 #ifdef DYNLINK
+
 #ifndef __USE_GNU
 #define __USE_GNU
 #endif
 #include <dlfcn.h>
-#endif
+#include <ffi.h>
 
 void load_lib(char *fname) {
-#ifdef DYNLINK
      char buf[128];
 	
      /* If the library name contains no slash, look in the OBC lib directory 
@@ -71,10 +71,132 @@ void load_lib(char *fname) {
      /* Load the library */
      if (dlopen(fname, RTLD_LAZY|RTLD_GLOBAL) == NULL) 
 	  panic("Can't find library %s: %s", fname, dlerror());
-#endif
 }
 
-#ifndef DYNLINK
+#define MAXP 16
+
+typedef struct {
+     void (*fun)(void);
+     ffi_cif cif;
+} callgate;
+
+static ffi_type *ffi_decode(char c) {
+     switch (c) {
+     case 'C':
+     case 'I':
+          return &ffi_type_sint32;
+     case 'L':
+          return &ffi_type_sint64;
+     case 'F':
+          return &ffi_type_float;
+     case 'D':
+          return &ffi_type_double;
+     case 'P':
+     case 'Q':
+     case 'X':
+     case 'Z':
+          return &ffi_type_pointer;
+     case 'V':
+          return &ffi_type_void;
+     default:
+          panic("Bad type");
+          return NULL;
+     }
+}
+
+void dlstub(value *bp) {
+     value *cp = valptr(bp[CP]);
+     char *tstring = (char *) pointer(cp[CP_CODE]);
+
+     ffi_raw avals[MAXP], rval[2];
+     int i, p = 0, q = 0;
+     double d; longint z;
+     
+     FPINIT;
+
+     for (i = 0; tstring[i+1] != '\0'; i++) {
+          switch (tstring[i+1]) {
+          case 'C':
+               avals[q].sint = align_byte(bp[HEAD+p].i);
+               p += 1; q += 1; break;
+          case 'I':
+               avals[q].sint = bp[HEAD+p].i;
+               p += 1; q += 1; break;
+          case 'L':
+               z = get_long(&bp[HEAD+p]);
+               memcpy(avals[q].data, &z, sizeof(longint));
+               p += 2; q += sizeof(longint)/sizeof(ffi_raw); break;
+          case 'F':
+               avals[q].flt = bp[HEAD+p].f;
+               p += 1; q += 1; break;
+          case 'D':
+               d = get_double(&bp[HEAD+p]);
+               memcpy(avals[q].data, &d, sizeof(double));
+               p += 2; q += sizeof(double)/sizeof(ffi_raw); break;
+          case 'P':
+               avals[q].ptr = pointer(bp[HEAD+p]);
+               p += 1; q += 1; break;
+          case 'X':
+               avals[q].ptr = pointer(bp[HEAD+p]);
+               p += 2; q += 1; break;
+          case 'Q':
+               avals[q].ptr = ptrcast(uchar, get_long(&bp[HEAD+p]));
+               p += 2; q += 1; break;
+          case 'Z':
+               avals[q].ptr = bp;
+               q += 1; break;
+          default:
+               panic("Bad type 2 %c", tstring[i+1]);
+          }
+     }
+
+     callgate *gate = (callgate *) pointer(cp[CP_CONST]);
+     ffi_raw_call(&gate->cif, gate->fun, rval, avals);
+     
+     switch (tstring[0]) {
+     case 'C':
+     case 'I':
+          ob_res.i = rval->sint;
+          break;
+     case 'L':
+          memcpy(&z, rval, sizeof(longint));
+          put_long(&ob_res, z);
+          break;
+     case 'F':
+          ob_res.f = rval->flt;
+          break;
+     case 'D':
+          memcpy(&d, rval, sizeof(double));
+          put_double(&ob_res, d);
+          break;
+     case 'P':
+          ob_res.a = rval->uint;
+          break;
+     case 'Q':
+          put_long(&ob_res, (ptrtype) rval->ptr);
+          break;
+     case 'V':
+          break;
+     default:
+          panic("Bad type 3");
+     }
+}
+
+primitive *find_prim(char *name) {
+     char primname[32];
+     sprintf(primname, "P_%s", name);
+     return (primitive *) dlsym(RTLD_DEFAULT, primname);
+}
+
+#else
+
+void load_lib(char *fname) {
+}
+
+void dlstub(value *bp) {
+     panic("FFI not enabled");
+}
+
 primitive *find_prim(char *name) {
      int i;
 
@@ -85,27 +207,46 @@ primitive *find_prim(char *name) {
 
      return NULL;
 }
+
 #endif
 
-void dltrap(value *sp) {
-     value *bp = sp;
+void dltrap(value *bp) {
      value *cp = valptr(bp[CP]);
-     char *name = (char * ) pointer(cp[CP_CODE]);
-     primitive *prim;
+     char *tstring = (char *) pointer(cp[CP_CODE]);
+     char *name = tstring + strlen(tstring) + 1;
+
+     /* First look for a specific wrapper */
+     primitive *prim = find_prim(name);
+     
+     if (prim != NULL) {
+          cp[CP_PRIM].a = wrap_prim(prim);
+          (*prim)(bp);
+          return;
+     }
 
 #ifdef DYNLINK
-     prim = (primitive * ) dlsym(RTLD_DEFAULT, name);
-#else
-     prim = find_prim(name);
+     /* Build a wrapper with FFI */
+     void (*fun)(void) = (void(*)(void)) dlsym(RTLD_DEFAULT, name);
+
+     if (fun != NULL) {
+          int np = strlen(tstring)-1;
+          ffi_type *rtype = ffi_decode(tstring[0]);
+          ffi_type **atypes =
+               (ffi_type **) scratch_alloc(np * sizeof(ffi_type *));
+          for (int i = 0; tstring[i+1] != '\0'; i++)
+               atypes[i] = ffi_decode(tstring[i+1]);
+
+          callgate *gate = (callgate *) scratch_alloc(sizeof(callgate));
+          gate->fun = fun;
+          ffi_prep_cif(&gate->cif, FFI_DEFAULT_ABI, np, rtype, atypes);
+
+          cp[CP_PRIM].a = dynstub;
+          cp[CP_CONST].a = address(gate);
+
+          dlstub(bp);
+          return;
+     }
 #endif
 
-     if (prim == NULL) 
-	  panic("couldn't find primitive %s", name);
-
-     /* Bind the primitive to the library symbol */
-     cp[CP_PRIM].a = wrap_prim(prim);
-
-     /* Call the primitive for the first time */
-     ( * prim)(sp);
+     panic("Couldn't find primitive %s", name);
 }
-

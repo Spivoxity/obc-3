@@ -43,7 +43,28 @@ CONST
   (** H -- height of the graphics window *)
   H* = 480;
 
-(* COPY
+(** Clear -- clear the window to all white *)
+PROCEDURE Clear* IS "XYplane_clear";
+
+(** Dot -- draw a dot at coordinates (x, y) *)
+PROCEDURE Dot*(x, y, mode: INTEGER) IS "XYplane_draw";
+
+(** IsDot -- return the current colour of the dot at (x, y) *)
+PROCEDURE IsDot*(x, y: INTEGER): BOOLEAN IS "XYplane_isdot";
+
+(** Key -- return the last key pressed, or 0X if none *)
+PROCEDURE Key*(): CHAR IS "XYplane_key";
+
+(** Open -- create the graphics window *)
+PROCEDURE Open* IS "XYplane_open";
+
+BEGIN
+  DynLink.Load("XYplane");
+END XYplane.
+
+--CODE--
+
+#include "obx.h"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -63,49 +84,34 @@ static void fatal(const char *msg) {
      exit(2);
 }
 
-static void clear(void) {
+void XYplane_clear(void) {
      if (display != NULL) {
 	  XFillRectangle(display, window, bg, 0, 0, W, H);
 	  memset(bitmap, 0, H * ((W+NBITS-1)/NBITS) * sizeof(int));
      }
 }
-*)
 
-(** Clear -- clear the window to all white *)
-PROCEDURE Clear* IS "XYplane_clear";
-(* CODE clear(); *)
-
-(** Dot -- draw a dot at coordinates (x, y) *)
-PROCEDURE Dot*(x, y, mode: INTEGER) IS "XYplane_draw";
-(* CODE
-     int x = args[0].i, y = args[1].i, m = args[2].i;
+void XYplane_draw(int x, int y, int m) {
      if (display != NULL && x >= 0 && x < W && y >= 0 && y < H) {
 	  XPutPixel(image, x, H-y-1, m);
 	  XDrawPoint(display, window, (m == 1 ? fg : bg), x, H-y-1);
      }
-*)
+}
 
-(** IsDot -- return the current colour of the dot at (x, y) *)
-PROCEDURE IsDot*(x, y: INTEGER): BOOLEAN IS "XYplane_peek";
-(* CODE
-     int x = args[0].i, y = args[1].i;
-
+int XYplane_isdot(int x, int y) {
      if (display == NULL || x < 0 || x >= W || y < 0 || y >= H) 
-	  ob_res.i = 0;
+	  return 0;
      else
-	  ob_res.i = XGetPixel(image, x, H-y-1);
-*)
+	  return XGetPixel(image, x, H-y-1);
+}
 
-(** Key -- return the last key pressed, or 0X if none *)
-PROCEDURE Key*(): CHAR IS "XYplane_key";
-(* CODE
+char XYplane_key() {
      XEvent event;
      char buf[16];
      KeySym keysym;
      int n, x, y ,w, h;
 
-     ob_res.i = '\0';
-     if (display == NULL) return;
+     if (display == NULL) return '\0';
 
      XFlush(display);
 
@@ -114,7 +120,7 @@ PROCEDURE Key*(): CHAR IS "XYplane_key";
 	  switch (event.type) {
 	  case KeyPress:
 	       n = XLookupString(&(event.xkey), buf, 16, &keysym, NULL);
-	       if (n > 0) { ob_res.i = buf[0]; return; }
+	       if (n > 0) return buf[0];
 	       break;
 
 	  case Expose:
@@ -127,11 +133,11 @@ PROCEDURE Key*(): CHAR IS "XYplane_key";
 	       break;
 	  }
      }
-*)
 
-(** Open -- create the graphics window *)
-PROCEDURE Open* IS "XYplane_open";
-(* CODE
+     return '\0';
+}
+
+void XYplane_open(void) {
      Visual *visual;
      XGCValues values;
      XEvent event;
@@ -140,7 +146,7 @@ PROCEDURE Open* IS "XYplane_open";
 
      /* Opening a second time is the same as clearing */
      if (display != NULL) {
-	  clear(); return;
+	  XYplane_clear(); return;
      }
 
      display = XOpenDisplay(NULL);
@@ -169,8 +175,5 @@ PROCEDURE Open* IS "XYplane_open";
      values.foreground = bgColour;
      values.background = fgColour;
      bg = XCreateGC(display, parent, GCForeground|GCBackground, &values);
-*)
+}
 
-BEGIN
-  DynLink.Load("XYplane");
-END XYplane.

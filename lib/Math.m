@@ -31,38 +31,26 @@
 (** Mathematical functions for single precision *)
 MODULE Math;
 
-IMPORT DynLink;
-
 (* COPY #include <math.h> *)
 
 CONST
   pi* = 3.1415926535897932385;
   e* =  2.7182818284590452354;
 
-PROCEDURE Sqrt*(x: REAL): REAL IS "Math_Sqrt";
-(* CODE ob_res.f = sqrtf(args[0].f); *)
+PROCEDURE Sqrt*(x: REAL): REAL IS "sqrtf";
 
-PROCEDURE Sin*(x: REAL): REAL IS "Math_Sin";
-(* CODE ob_res.f = sinf(args[0].f); *)
+PROCEDURE Sin*(x: REAL): REAL IS "sinf";
 
-PROCEDURE Cos*(x: REAL): REAL IS "Math_Cos";
-(* CODE ob_res.f = cosf(args[0].f); *)
+PROCEDURE Cos*(x: REAL): REAL IS "cosf";
 
-PROCEDURE Tan*(x: REAL): REAL IS "Math_Tan";
-(* CODE ob_res.f = tanf(args[0].f); *)
+PROCEDURE Tan*(x: REAL): REAL IS "tanf";
 
-PROCEDURE Arctan*(x: REAL): REAL IS "Math_Atan";
-(* CODE ob_res.f = atanf(args[0].f); *)
+PROCEDURE Arctan*(x: REAL): REAL IS "atanf";
 
-PROCEDURE Arctan2*(y, x: REAL): REAL IS "Math_Atan2";
-(* CODE ob_res.f = atan2f(args[0].f, args[1].f); *)
+PROCEDURE Arctan2*(y, x: REAL): REAL IS "atan2f";
 
-PROCEDURE Exp*(x: REAL): REAL IS "Math_Exp";
-(* CODE ob_res.f = expf(args[0].f); *)
+PROCEDURE Exp*(x: REAL): REAL IS "expf";
 
-PROCEDURE Ln*(x: REAL): REAL IS "Math_Ln";
-(* CODE ob_res.f = logf(args[0].f); *)
+PROCEDURE Ln*(x: REAL): REAL IS "logf";
 
-BEGIN
-  DynLink.Load("Math");
 END Math.

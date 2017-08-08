@@ -32,27 +32,119 @@ MODULE Builtin;
 
 IMPORT SYSTEM;
 
-(* COPY #include <ctype.h> *)
-(* COPY #include <math.h> *)
-
 CONST version =
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
-(* COPY 
+
+PROCEDURE HALT(n: INTEGER) IS "xmain_exit";
+
+PROCEDURE NEW(desc: SYSTEM.PTR; size: INTEGER): SYSTEM.PTR IS + "NEW";
+
+PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS + "NEWFLEX";
+
+PROCEDURE COMPARE(s, t: ARRAY OF CHAR): INTEGER IS + "COMPARE";
+
+PROCEDURE CAP(c: CHAR): CHAR IS "toupper";
+
+PROCEDURE COPY(VAR s, t: ARRAY OF CHAR) IS + "COPY";
+
+PROCEDURE SYSMOVE(src, dest: INTEGER; n: INTEGER) IS + "MOVE";
+
+PROCEDURE FLEXASSIGN(elsize, dim: INTEGER (* ... *)) IS + "FLEXASSIGN";
+
+PROCEDURE ABSINT(x: INTEGER): INTEGER;
+BEGIN
+  IF x >= 0 THEN RETURN x ELSE RETURN -x END
+END ABSINT;
+
+PROCEDURE ABSQUAD(x: LONGINT): LONGINT;
+BEGIN
+  IF x >= 0 THEN RETURN x ELSE RETURN -x END
+END ABSQUAD;
+
+PROCEDURE ABSREAL(x: REAL): REAL;
+BEGIN
+  IF x >= 0 THEN RETURN x ELSE RETURN -x END
+END ABSREAL;
+
+PROCEDURE ABSLONG(x: LONGREAL): LONGREAL;
+BEGIN
+  IF x >= 0 THEN RETURN x ELSE RETURN -x END
+END ABSLONG;
+
+PROCEDURE INTREAL(x: REAL): INTEGER IS "INTREAL";
+
+PROCEDURE INTLONG(x: LONGREAL): INTEGER IS "INTDOUBLE";
+
+PROCEDURE INCLONG(VAR x: LONGINT; n: LONGINT);
+BEGIN
+  x := x + n
+END INCLONG;
+
+PROCEDURE DECLONG(VAR x: LONGINT; n: LONGINT);
+BEGIN
+  x := x - n
+END DECLONG;
+
+PROCEDURE ASH(a, b: INTEGER): INTEGER;
+BEGIN
+  IF b >= 0 THEN RETURN LSL(a, b) ELSE RETURN ASR(a, -b) END
+END ASH;
+
+PROCEDURE ldexpf(x: REAL; n: INTEGER): REAL IS "ldexpf";
+PROCEDURE frexpf(x: REAL; VAR n: INTEGER): REAL IS "frexpf";
+PROCEDURE ldexp(x: LONGREAL; n: INTEGER): LONGREAL IS "ldexp";
+PROCEDURE frexp(x: LONGREAL; VAR n: INTEGER): LONGREAL IS "frexp";
+
+PROCEDURE PACK(VAR x: REAL; n: INTEGER);
+BEGIN
+  x := ldexpf(x, n)
+END PACK;
+
+PROCEDURE UNPK(VAR x: REAL; VAR n: INTEGER);
+  VAR y: REAL; k: INTEGER;
+BEGIN
+  y := frexpf(x, k);
+  IF y # 0.0 THEN
+    y := y*2; k := k-1
+  END;
+  x := y; n := k
+END UNPK;
+
+PROCEDURE PACKLONG(VAR x: LONGREAL; n: INTEGER);
+BEGIN
+  x := ldexp(x, n)
+END PACKLONG;
+
+PROCEDURE UNPKLONG(VAR x: LONGREAL; VAR n: INTEGER);
+  VAR y: LONGREAL; k: INTEGER;
+BEGIN
+  y := frexp(x, k);
+  IF y # 0.0 THEN
+    y := y*2; k := k-1
+  END;
+  x := y; n := k
+END UNPKLONG;
+
+PROCEDURE LIBERROR(CONST msg: ARRAY OF CHAR) IS + "LIBERROR";
+
+END Builtin.
+
+--CODE--
+
+#include "obx.h"
+#include <ctype.h>
+#include <math.h>
+
 char *lib_version = 
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
-*)
 
-PROCEDURE HALT(n: INTEGER) IS "HALT";
-(* CODE xmain_exit(args[0].i); *)
+word NEW(value *bp) {
+     value *desc = valptr(bp[HEAD+0]);
+     int size = bp[HEAD+1].i;
+     return address(gc_alloc(desc, size, bp));
+}
 
-PROCEDURE NEW(desc: SYSTEM.PTR; size: INTEGER): SYSTEM.PTR IS "NEW";
-(* CODE 
-     value *desc = valptr(args[0]);
-     int size = args[1].i;
-     ob_res.a = address(gc_alloc(desc, size, bp));
-*)
-
-(*
+/*
 Layout for flexible arrays:
 
 	desc
@@ -81,14 +173,13 @@ size = align(n*elsize) + 4*k + 16 + (28 if elmap != 0)
 
 Parameters NEWFLEX(elmap, elsize, k: INTEGER;
 			dim_0, ..., dim_{k-1}: INTEGER): SYSTEM.PTR
-*)
+*/
 
-PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
-(* CODE 
-     value *elmap = valptr(args[0]);
-     int elsize = args[1].i;
-     int k = args[2].i;
-     value *dim = &args[3];		/* Array of bounds */
+word NEWFLEX(value *bp) {
+     value *elmap = valptr(bp[HEAD+0]);
+     int elsize = bp[HEAD+1].i;
+     int k = bp[HEAD+2].i;
+     value *dim = &bp[HEAD+3];		/* Array of bounds */
 
      int size, arsize, i, n;
      value *q, *desc, *map;
@@ -112,7 +203,7 @@ PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 
      /* Fill in the descriptor */
      desc[DESC_MAP].a = address(map);
-     dim = &args[3];			/* In case our stack moved */
+     dim = &bp[HEAD+3];			/* In case our stack moved */
      for (i = 0; i < k; i++) desc[DESC_BOUND+i].i = dim[i].i;
 
      /* Fill in the map */
@@ -131,35 +222,32 @@ PROCEDURE NEWFLEX(elmap, elsize, k: INTEGER): SYSTEM.PTR IS "NEWFLEX";
 	  map[9].i = GC_END;
      }
 
-     ob_res.a = address(q); 
-*)
+     return address(q); 
+}
 
-PROCEDURE COMPARE(s, t: ARRAY OF CHAR): INTEGER IS "COMPARE";
-(* CODE 
-     uchar *s1 = pointer(args[0]), *s2 = pointer(args[2]);
-     int i = 0, n = min(args[1].i, args[3].i);
+int COMPARE(value *bp) {
+     uchar *s1 = pointer(bp[HEAD+0]), *s2 = pointer(bp[HEAD+2]);
+     int i = 0, n = min(bp[HEAD+1].i, bp[HEAD+3].i);
 
      while (i < n && s1[i] != '\0' && s1[i] == s2[i]) i++;
      if (i >= n) liberror("string is not null-terminated");
-     ob_res.i = s1[i] - s2[i]; 
-*)
+     return s1[i] - s2[i]; 
+}
 
-PROCEDURE CAP(c: CHAR): CHAR IS "CAP";
-(* CODE ob_res.i = toupper(align_byte(args[0].i)); *)
+void COPY(value *bp) {
+     obcopy((char * ) pointer(bp[HEAD+2]), (char * ) pointer(bp[HEAD+0]), 
+					min(bp[HEAD+1].i, bp[HEAD+3].i));
+}
 
-PROCEDURE COPY(VAR s, t: ARRAY OF CHAR) IS "COPY";
-(* CODE obcopy((char * ) pointer(args[2]), (char * ) pointer(args[0]), 
-					min(args[1].i, args[3].i)); *)
+void MOVE(value *bp) {
+     memmove(pointer(bp[HEAD+1]), pointer(bp[HEAD+0]), bp[HEAD+2].i);
+}
 
-PROCEDURE SYSMOVE(src, dest: INTEGER; n: INTEGER) IS "MOVE";
-(* CODE memmove(pointer(args[1]), pointer(args[0]), args[2].i); *)
-
-PROCEDURE FLEXASSIGN(elsize, dim: INTEGER (* ... *)) IS "FLEXASSIGN";
-(* CODE
-     int size = args[0].i;
-     int dim = args[1].i;
-     uchar *src = pointer(args[2]), *dst = pointer(args[dim+3]);
-     value *sbound = &args[3], *dbound = &args[dim+4];
+void FLEXASSIGN(value *bp) {
+     int size = bp[HEAD+0].i;
+     int dim = bp[HEAD+1].i;
+     uchar *src = pointer(bp[HEAD+2]), *dst = pointer(bp[HEAD+dim+3]);
+     value *sbound = &bp[HEAD+3], *dbound = &bp[HEAD+dim+4];
      int i;
 
      for (i = 0; i < dim; i++) {
@@ -170,86 +258,16 @@ PROCEDURE FLEXASSIGN(elsize, dim: INTEGER (* ... *)) IS "FLEXASSIGN";
      }
 
      memmove(dst, src, size);
- *)
+}
 
-PROCEDURE ABSINT(x: INTEGER): INTEGER;
-BEGIN
-  IF x >= 0 THEN RETURN x ELSE RETURN -x END
-END ABSINT;
+int INTREAL(float x) { return (int) x; }
 
-PROCEDURE ABSQUAD(x: LONGINT): LONGINT;
-BEGIN
-  IF x >= 0 THEN RETURN x ELSE RETURN -x END
-END ABSQUAD;
+int INTDOUBLE(double x) { return (int) x; }
 
-PROCEDURE ABSREAL(x: REAL): REAL;
-BEGIN
-  IF x >= 0 THEN RETURN x ELSE RETURN -x END
-END ABSREAL;
+void LIBERROR(value *bp) {
+     value *bp1 = valptr(bp[BP]);
+     error_stop((char * ) pointer(bp[HEAD+0]), 0, bp1, NULL);
+}
 
-PROCEDURE ABSLONG(x: LONGREAL): LONGREAL;
-BEGIN
-  IF x >= 0 THEN RETURN x ELSE RETURN -x END
-END ABSLONG;
-
-PROCEDURE INTREAL(x: REAL): INTEGER IS "INTREAL";
-(* CODE ob_res.i = (int) args[0].f; *)
-
-PROCEDURE INTLONG(x: LONGREAL): INTEGER IS "INTDOUBLE";
-(* CODE ob_res.i = (int) get_double(&args[0]); *)
-
-PROCEDURE INCLONG(VAR x: LONGINT; n: LONGINT);
-BEGIN
-  x := x + n
-END INCLONG;
-
-PROCEDURE DECLONG(VAR x: LONGINT; n: LONGINT);
-BEGIN
-  x := x - n
-END DECLONG;
-
-PROCEDURE ASH(a, b: INTEGER): INTEGER IS "ASH";
-(* CODE
-     int a = args[0].i, b = args[1].i;
-     ob_res.i = (b >= 0 ? a << b : a >> (-b));
-*)
-
-PROCEDURE PACK(VAR x: REAL; n: INTEGER) IS "PACK";
-(* CODE
-     value *x = valptr(args[0]);
-     int n = args[1].i;
-     float y = x->f;
-     y = ldexpf(y, n);
-     x->f = y;
-*)
-
-PROCEDURE UNPK(VAR x: REAL; VAR n: INTEGER) IS "UNPK";
-(* CODE
-    value *x = valptr(args[0]);
-    value *n = valptr(args[1]);
-    float y = x->f; int k;
-    y = frexpf(y, &k);
-    if (y != 0.0) { y *= 2; k--; }
-    x->f = y; n->i = k;
-*)
-
-PROCEDURE PACKLONG(VAR x: REAL; n: INTEGER) IS "PACKLONG";
-(* CODE
-     value *x = valptr(args[0]);
-     int n = args[1].i;
-     double y = get_double(x);
-     y = ldexp(y, n);
-     put_double(x, y);
-*)
-
-PROCEDURE UNPKLONG(VAR x: REAL; VAR n: INTEGER) IS "UNPKLONG";
-(* CODE
-    value *x = valptr(args[0]);
-    value *n = valptr(args[1]);
-    double y = get_double(x); int k;
-    y = frexp(y, &k);
-    if (y != 0.0) { y *= 2; k--; }
-    put_double(x, y); n->i = k;
-*)
-
-END Builtin.
+/* Force loading of math library */
+static UNUSED float (*_sinf)(float) = sinf;

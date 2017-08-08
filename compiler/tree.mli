@@ -68,7 +68,7 @@ and decl =
   | VarDecl of def_kind * name list * typexpr * docstring
   | TypeDecl of (name * typexpr * docstring) list
   | ProcDecl of proc_kind * name * proc_heading * block * docstring
-  | PrimDecl of name * proc_heading * string * docstring
+  | PrimDecl of name * proc_heading * char * string * docstring
   | ForwardDecl of proc_kind * name * proc_heading * docstring
   | DummyDecl
 

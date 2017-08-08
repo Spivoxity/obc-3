@@ -443,7 +443,7 @@ equiv EASSERT 2		{RESULTW, ERROR E_ASSERT $a}
 # MORE BITS AND PIECES
 
 # ALIGNs instructions are used on big-endian machines like the SPARC
-# to ensure than CHAR and SHORT parameters appear at the right address.
+# to ensure that CHAR and SHORT parameters appear at the right address.
 defs {
 #ifdef WORDS_BIGENDIAN
 #define alignx(a, n) 	(a <<= (32-n))
@@ -622,7 +622,7 @@ dir GLOBAL ?
 dir LABEL ?
 dir PROC ????
 dir END 0
-dir PRIMDEF ????
+dir PRIMDEF ???
 dir DEFINE ?
 dir STRING ?
 dir GLOVAR ??

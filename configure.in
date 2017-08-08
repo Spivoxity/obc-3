@@ -97,7 +97,7 @@ case $host in
     WIN=win64
     AC_SUBST(CFLAGS_JIT, [-Wl,--stack,16777216])
     if test "$enable_m64x32" != no; then
-      M64X32=1; CC='gcc -std=gnu99'; CPP='gcc -E'
+      M64X32=1; CC='gcc -std=gnu99'
     else
       CC='gcc32 -std=gnu99'; LD=ld32
     fi;;
@@ -165,6 +165,7 @@ AC_SUBST(DOS_VERSION)
 AC_SUBST(WIN_INSTALL, obc-$WIN-$DOS_VERSION)
 
 AC_PROG_CC
+AC_REQUIRE_CPP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
@@ -208,6 +209,9 @@ if test "$enable_dynlink" != no && test "$WINDOWS" != 1; then
   AC_DEFINE(DYNLINK, 1, [Define if dynamic linking enabled])
   AC_SEARCH_LIBS(dlopen, dl)
   AC_TEST_RDYNAMIC(DLFLAGS="-rdynamic")
+
+  AC_CHECK_HEADERS(ffi.h)
+  AC_SEARCH_LIBS(ffi_call, ffi)
 fi
 AC_SUBST(DYNLINK)
 AC_SUBST(DLFLAGS)
@@ -269,8 +273,7 @@ if ! ocamlc; then echo not found; else
 fi
 
 # Checks for libraries.
-AC_CHECK_LIB(m, sin, MATHLIB=-lm)
-AC_SUBST(MATHLIB)
+AC_CHECK_LIB(m, sinf)
 
 # Checks for X
 AC_PATH_XTRA
@@ -295,6 +298,7 @@ AC_C_BIGENDIAN
 AC_C_INLINE
 AC_C_INDEXED_JUMPS
 AC_C_UNUSED
+AC_C_USED
 AC_C_NORETURN
 AC_FIND_PAGESIZE
 
@@ -322,28 +326,26 @@ AC_SUBST(DEB_LIBS)
 
 # Module list
 
-# Library modules (apart from Builtin) in dependency order:
-MODULES="DynLink Files Conv In Out Err Args Bit Timer GC \
-	Strings Random Math MathL $XYPLANE"
-AC_SUBST(MODULES)
-MODULES_B="DynLink Files Conv In-b Out Err Args Bit Timer GC \
-	Strings-b Random-b Math MathL $XYPLANE"
-AC_SUBST(MODULES_B)
-CHECKMODS="In Random Strings"
-AC_SUBST(CHECKMODS)
+# Standard modules
+AC_SUBST(STDMODS, "DynLink Files Conv In Out Err Args Bit Timer GC \
+Strings Random Math MathL")
 
-# These modules contain standard primitives:
-PRIMMODS="Args GC Timer DynLink Files Conv Random"
-AC_SUBST(PRIMMODS)
+AC_SUBST(STDMODS_B, "DynLink Files Conv In-b Out Err Args Bit Timer GC \
+Strings-b Random-b Math MathL")
 
-# These modules have primitives in separate shared libraries:
-SHLMODS="Math MathL $XYPLANE"
-AC_SUBST(SHLMODS)
+# Modules that contain runtime checks
+AC_SUBST(CHECKMODS, "In Random Strings")
+
+# Modules containing C code
+AC_SUBST(PRIMMODS, "Args Timer Files Conv Random")
+
+# Modules with primitives in separate shared libraries:
+AC_SUBST(SHLMODS, "$XYPLANE")
 
 # Resource files needed by GUI debugger 
 AC_SUBST(RESOURCES, "blank.png breakpoint.png continue.png here.png \
-  oberon.lang pause.png sober.xml stepinto.png stepout.png stepover.png \
-  restart.png exit.png")
+oberon.lang pause.png sober.xml stepinto.png stepout.png stepover.png \
+restart.png exit.png")
 
 # The endgame
 AC_OUTPUT

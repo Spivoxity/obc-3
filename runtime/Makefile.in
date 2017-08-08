@@ -155,7 +155,7 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 
 support.o interp.o interp-t.o interp-p.o interp-d.o profile.o \
 xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o \
-debug.o gc0.o gc.o gc-t.o trace.o loader.o jit.o jitlab.o: \
+debug.o gc0.o gc.o gc-t.o trace.o loader.o jit.o jitlab.o jitval.o: \
 	obx.h obcommon.h ../config.h exec.h
 
 interp.o interp-t.o interp-p.o interp-d.o \

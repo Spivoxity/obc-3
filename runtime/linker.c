@@ -130,7 +130,9 @@ static int const_value(char *s) {
 	Note that strtol is specified to truncate to MAXINT on
 	overflow, not to operate mod 2^32. */
 
-     if (s[0] == '-')
+     if (s == NULL)
+          return 0;
+     else if (s[0] == '-')
 	  return strtol(s, NULL, 0);
      else
 	  return strtoul(s, NULL, 0);
@@ -144,7 +146,7 @@ static void data_value(int value, int reloc) {
 
 static void data_word(char *s) {
      buf_grow(dbuf);
-     if (isdigit((int) s[0]) || s[0] == '-')
+     if (s == NULL || isdigit((int) s[0]) || s[0] == '-')
 	  put_value(dloc, const_value(s), R_WORD);
      else
 	  use_global(find_symbol(s), dbuf, dloc);
@@ -157,7 +159,6 @@ static void put_string(char *str) {
 	  buf_grow(dbuf); 
 	  dbuf[dloc++] = *s;
      } while (*s++ != '\0');
-     dloc = align(dloc, 4);
 }
 
 
@@ -638,13 +639,15 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  break;
 
      case D_PRIMDEF:
-	  nprocs++;
-	  dloc = align(dloc, 8);
-	  def_global(find_symbol(rands[0]), DATA, dloc, X_PROC);
-	  const_head(DLTRAP, dloc + 4*CP_CONST, R_DATA, 
-		     atoi(rands[2]), 0, rands[3]);
-	  put_string(rands[1]);
-	  break;
+          nprocs++;
+          dloc = align(dloc, 8);
+          def_global(find_symbol(rands[0]), DATA, dloc, X_PROC);
+          const_head(DLTRAP, dloc + 4*CP_CONST + 4, R_DATA, 0, 0, NULL);
+          data_value(0, R_WORD); // Pointer to access block
+          put_string(rands[2]);  // Type descriptor
+          put_string(rands[1]);  // Symbol name
+          dloc = align(dloc, 4);
+          break;
 
      case D_PROC:
 	  nprocs++;
@@ -751,6 +754,7 @@ void gen_inst(const char *fmt, ...) {
 void save_string(const char *label, char *str) {
      def_global(find_symbol(label), DATA, dloc, X_DATA);
      put_string(str);
+     dloc = align(dloc, 4);
 }
 
 

@@ -34,25 +34,21 @@ MODULE GC;
 IMPORT SYSTEM;
 
 (** Collect -- perform a garbage collection *)
-PROCEDURE Collect* IS "GC_Collect";
-(* CODE gc_collect(bp); *)
+PROCEDURE Collect* IS + "gc_collect";
 
 (** HeapSize -- return the total size of the heap *)
-PROCEDURE HeapSize*(): INTEGER IS "GC_HeapSize";
-(* CODE ob_res.i = gc_heap_size(); *)
+PROCEDURE HeapSize*(): INTEGER IS "gc_heap_size";
 
 (** All debugging flags *)
 CONST all* = "abcdghlmz";
 
 (** Debug -- set flags for debugging the garbage collector *)
-PROCEDURE Debug*(flags: ARRAY OF CHAR) IS "GC_Debug";
-(* CODE gc_debug((char * ) pointer(args[0])); *)
+PROCEDURE Debug*(flags: ARRAY OF CHAR) IS "gc_debug";
 
 (** Dump -- print heap layout *)
-PROCEDURE Dump* IS "GC_Dump";
-(* CODE gc_dump(); *)
+PROCEDURE Dump* IS "gc_dump";
 
-PROCEDURE AllocSize*(p: SYSTEM.PTR): INTEGER IS "GC_AllocSize";
-(* CODE ob_res.i = gc_alloc_size(pointer(args[0])); *)
+(** AllocSize -- compute allocated size *)
+PROCEDURE AllocSize*(p: SYSTEM.PTR): INTEGER IS "gc_alloc_size";
 
 END GC.

@@ -784,7 +784,7 @@ and check_decl d env alloc lzy =
 	let fsize = 
 	  match body with Block (_, _, _, fs) -> fs | NoBlock -> ref 0 in
 	check_proc kind x heading doc env fsize
-    | PrimDecl (x, heading, name, doc) ->
+    | PrimDecl (x, heading, flag, name, doc) ->
 	if !level > 0 then
 	  sem_error "primitives must be declared at the outermost level"
 	    [] x.x_loc;
@@ -900,13 +900,6 @@ and check_body d env =
 	  List.iter (param_copy fsize) p.p_fparams;
 	  align max_align fsize;
 	  d.d_map <- local_map (top_block env')
-	end
-
-    | PrimDecl (x, _, _, _) ->
-	if not (undefined x) then begin
-	  let d = get_def x in
-	  let p = get_proc d.d_type in
-	  d.d_map <- local_map p.p_fparams
 	end
 
     | _ -> ()

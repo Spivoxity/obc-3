@@ -93,4 +93,4 @@ typedef struct {
 
 /* Fixed primitives */
 #define INTERP 0		/* Index of interpreter as primitive */
-#define DLTRAP 1		/* Index of dynlink trap */
+#define DLTRAP 2                /* Index of dynlink trap */

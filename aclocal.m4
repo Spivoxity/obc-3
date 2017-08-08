@@ -51,6 +51,16 @@ AC_DEFUN(AC_C_UNUSED,
     fi
     AC_DEFINE_UNQUOTED(UNUSED, $UNUSED, [Attribute for unused variables])])
 
+dnl See if the C compiler understands __attribute__ ((used))
+AC_DEFUN(AC_C_USED,
+  [AC_CACHE_CHECK(for 'used' attribute, ac_cv_used_attr,
+      [AC_TRY_COMPILE(, [int __attribute__ ((used)) n],
+	ac_cv_used_attr=yes, ac_cv_used_attr=no)])
+    if test $ac_cv_used_attr = yes; then 
+      USED="__attribute__ ((used))"
+    fi
+    AC_DEFINE_UNQUOTED(USED, $USED, [Attribute for used variables])])
+
 dnl See if the C compiler understands __attribute__ ((noreturn))
 AC_DEFUN(AC_C_NORETURN,
   [AC_CACHE_CHECK(for 'noreturn' attribute, ac_cv_noreturn_attr,

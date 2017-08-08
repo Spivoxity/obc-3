@@ -30,39 +30,26 @@
 
 MODULE MathL;
 
-IMPORT DynLink;
-
 (* COPY #include <math.h> *)
 
 CONST
   pi* = 3.1415926535897932385D0;
   e* =  2.7182818284590452354D0;
 
-PROCEDURE Sqrt*(x: LONGREAL): LONGREAL IS "MathL_Sqrt";
-(* CODE put_double(&ob_res, sqrt(get_double(&args[0]))); *)
+PROCEDURE Sqrt*(x: LONGREAL): LONGREAL IS "sqrt";
 
-PROCEDURE Sin*(x: LONGREAL): LONGREAL IS "MathL_Sin";
-(* CODE put_double(&ob_res, sin(get_double(&args[0]))); *)
+PROCEDURE Sin*(x: LONGREAL): LONGREAL IS "sin";
 
-PROCEDURE Cos*(x: LONGREAL): LONGREAL IS "MathL_Cos";
-(* CODE put_double(&ob_res, cos(get_double(&args[0]))); *)
+PROCEDURE Cos*(x: LONGREAL): LONGREAL IS "cos";
 
-PROCEDURE Tan*(x: LONGREAL): LONGREAL IS "MathL_Tan";
-(* CODE put_double(&ob_res, tan(get_double(&args[0]))); *)
+PROCEDURE Tan*(x: LONGREAL): LONGREAL IS "tan";
 
-PROCEDURE Arctan*(x: LONGREAL): LONGREAL IS "MathL_Atan";
-(* CODE put_double(&ob_res, atan(get_double(&args[0]))); *)
+PROCEDURE Arctan*(x: LONGREAL): LONGREAL IS "atan";
 
-PROCEDURE Arctan2*(y, x: LONGREAL): LONGREAL IS "MathL_Atan2";
-(* CODE put_double(&ob_res, 
-   	           atan2(get_double(&args[0]), get_double(&args[2]))); *)
+PROCEDURE Arctan2*(y, x: LONGREAL): LONGREAL IS "atan2";
 
-PROCEDURE Exp*(x: LONGREAL): LONGREAL IS "MathL_Exp";
-(* CODE put_double(&ob_res, exp(get_double(&args[0]))); *)
+PROCEDURE Exp*(x: LONGREAL): LONGREAL IS "exp";
 
-PROCEDURE Ln*(x: LONGREAL): LONGREAL IS "MathL_Ln";
-(* CODE put_double(&ob_res, log(get_double(&args[0]))); *)
+PROCEDURE Ln*(x: LONGREAL): LONGREAL IS "log";
 
-BEGIN
-  DynLink.Load("MathL");
 END MathL.

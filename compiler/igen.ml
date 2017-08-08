@@ -1135,6 +1135,28 @@ let gen_procdef d loc fsize body ret =
   Icode.output line code2;
   put "END\n" []
 
+let type_code t =
+  if same_types t inttype then 'I'
+  else if same_types t character || same_types t boolean then 'C'
+  else if same_types t longint then 'L'
+  else if same_types t realtype then 'F'
+  else if same_types t longreal then 'D'
+  else if same_types t voidtype then 'V'
+  else if is_flex t then 'X' (* addr+bound *)
+  else if is_array t || is_pointer t
+    || same_types t ptrtype then 'P' (* 32-bit pointer *)
+  else if same_types t longptr then 'Q' (* 64-bit pointer *)
+  else failwith (sprintf "Can't pass $" [fOType t])
+
+let param_code d =
+  match d.d_kind with
+      ParamDef|CParamDef -> type_code d.d_type
+    | VParamDef ->
+       if is_flex d.d_type then 'X' (* addr+bound *)
+       else if scalar d.d_type || is_array d.d_type then 'P'
+       else failwith "Can't pass VParam"
+    | _ -> failwith "param_code"
+
 (* gen_proc -- generate code for a procedure, ignore other declarations *)
 let rec gen_proc = 
   function
@@ -1142,10 +1164,14 @@ let rec gen_proc =
         List.iter gen_proc decls;
 	let d = get_def x in
         gen_procdef d x.x_loc fsize body ret
-    | PrimDecl (x, _, name, _) ->
-	let d = get_def x in
-	put "PRIMDEF $ $ 0 $\n" 
-	  [fSym d.d_lab; fStr name; fSym (frame_map d)];
+    | PrimDecl (x, _, flag, name, _) ->
+        let d = get_def x in
+        let p = get_proc d.d_type in
+        let rt = type_code p.p_result in
+        let pts =
+          if flag = '+' then ['Z'] else List.map param_code p.p_fparams in
+        put "PRIMDEF $ $ $$\n"
+          [fSym d.d_lab; fStr name; fChr rt; fSeq(fChr, "") pts]
     | _ -> ()
 
 (* gen_descriptor -- generate a descriptor *)

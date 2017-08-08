@@ -61,7 +61,7 @@ union value {
 };
 
 #define valptr(v) ((value *) (ptrtype) ((v).a))
-#define pointer(v) ((uchar *) (ptrtype) ((v).a))
+#define pointer(v) ((void *) (ptrtype) ((v).a))
 
 #define address(p) ((word) (ptrtype) (p))
 #define ptrcast(t, a) ((t *) (ptrtype) (a))
@@ -107,7 +107,7 @@ EXTERN int stack_size;		/* Size of main stack */
 EXTERN char *libpath;		/* Path to dynamic library */
 EXTERN value *entry;		/* Program entry point */
 EXTERN value *gcmap;		/* Global pointer map */
-EXTERN word interpreter, dyntrap;
+EXTERN word interpreter, dyntrap, dynstub;
 
 #define interpreted(p) ((p)[CP_PRIM].a == interpreter)
 
@@ -181,7 +181,7 @@ void profile(FILE *fp);
 #endif
 
 /* interp.c */
-primitive interp, dltrap;
+primitive interp, dltrap, dlstub;
 
 /* xmain.c */
 EXTERN int saved_argc;
