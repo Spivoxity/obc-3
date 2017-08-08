@@ -223,7 +223,7 @@ proc make_proc(char *name, uchar *addr);
 void make_symbol(const char *kind, char *name, uchar *addr);
 
 void panic(const char *, ...);
-void obcopy(char *dst, const char *src, int n);
+void obcopy(char *dst, int dlen, const char *src, int slen, value *bp);
 
 void error_stop(const char *msg, int line, value *bp, uchar *pc);
 void runtime_error(int num, int line, value *bp, uchar *pc);

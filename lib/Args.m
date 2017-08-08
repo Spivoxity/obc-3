@@ -35,47 +35,41 @@ MODULE Args;
 VAR argc-: INTEGER;
 
 (** GetArg -- fetch an argument into a string buffer *)
-PROCEDURE GetArg*(n: INTEGER; VAR s: ARRAY OF CHAR);
-BEGIN
-  GetArg0(n, s, LEN(s))
-END GetArg;
-
-PROCEDURE GetArg0(n: INTEGER;
-                  VAR s: ARRAY OF CHAR; len: INTEGER) IS "GetArg0";
+PROCEDURE GetArg*(n: INTEGER; VAR s: ARRAY OF CHAR) IS + "GetArg";
 
 (** GetEnv -- fetch an environment variable into a string buffer *)
-PROCEDURE GetEnv*(name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR);
-BEGIN
-  GetEnv0(name, s, LEN(s))
-END GetEnv;
+PROCEDURE GetEnv*(name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR) IS + "GetEnv";
 
-PROCEDURE GetEnv0(name: ARRAY OF CHAR;
-                  VAR s: ARRAY OF CHAR; len: INTEGER) IS "GetEnv0";
-
-PROCEDURE SetArgc(VAR ac: INTEGER) IS "SetArgc";
+PROCEDURE GetArgc(): INTEGER IS "GetArgc";
 
 BEGIN
-  SetArgc(argc)
+  argc := GetArgc()
 END Args.
 
 --CODE--
 
 #include "obx.h"
 
-void GetArg0(int n, char *s, int len) {
-     const char *t = (0 <= n && n < saved_argc ? 
-	              saved_argv[n] : "");
-     obcopy(s, t, len);
+void GetArg(value *bp) {
+     int n = bp[HEAD+0].i;
+     char *s = (char *) pointer(bp[HEAD+1]);
+     int len = bp[HEAD+2].i;
+     const char *t =
+          (0 <= n && n < saved_argc ? saved_argv[n] : "");
+     obcopy(s, len, t, 0, bp);
 }
 
-void GetEnv0(char *name, char *s, int len) {
+void GetEnv(value *bp) {
+     char *name = (char *) pointer(bp[HEAD+0]);
+     char *s = (char *) pointer(bp[HEAD+2]);
+     int len = bp[HEAD+3].i;
      const char *t = getenv(name);
      if (t == NULL) t = "";
-     obcopy(s, t, len);
+     obcopy(s, len, t, 0, bp);
 }
 
-void SetArgc(int *ac) {
-  *ac = saved_argc;
+int GetArgc(void) {
+  return saved_argc;
 }
 
 

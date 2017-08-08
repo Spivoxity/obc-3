@@ -126,18 +126,33 @@ double flo_convq(longint x) {
 
 
 /* obcopy -- like strncpy, but guarantees termination with zero */
-void obcopy(char *dst, const char *src, int n) {
-     char c;
-
-     if (n == 0) return;
-
-     while (n-- > 1) {
-	  c = *src++;
-	  if (c == '\0') break;
-	  *dst++ = c;
+void obcopy(char *dst, int dlen, const char *src, int slen, value *bp) {
+     if (slen == 0 || dlen < slen) {
+          strncpy(dst, src, dlen);
+          if (dst[dlen-1] != '\0')
+               liberror("string copy overflows destination");
+     } else {
+          strncpy(dst, src, slen);
+          if (dst[slen-1] != '\0')
+               liberror("source was not null-terminated");
+          memset(&dst[slen], '\0', dlen-slen);
      }
+#if 0
+     char c;
+     int n;
 
-     *dst = '\0';
+     do {
+          if (slen > 0 && n >= slen)
+               liberror("source was not null-terminated");
+          if (n >= dlen)
+               liberror("string copy overflows destination");
+          dst[n] = c = src[n]; n++;
+     } while (c != '\0');
+
+     /* Fill remainder with zeroes */
+     while (n < dlen)
+          dst[n++] = '\0';
+#endif
 }
 
 #ifndef UNALIGNED_MEM

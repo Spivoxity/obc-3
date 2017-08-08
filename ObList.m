@@ -106,6 +106,7 @@ BEGIN
   LOOP
     Files.ReadChar(f, c);
     IF (c = 0AX) OR (c = ' ') THEN
+      buf[i] := 0X;
       field[n] := MakeString(buf, i);
       n := n+1; i := 0;
       IF c = 0AX THEN EXIT END

@@ -235,8 +235,8 @@ int COMPARE(value *bp) {
 }
 
 void COPY(value *bp) {
-     obcopy((char * ) pointer(bp[HEAD+2]), (char * ) pointer(bp[HEAD+0]), 
-					min(bp[HEAD+1].i, bp[HEAD+3].i));
+     obcopy((char * ) pointer(bp[HEAD+2]), bp[HEAD+3].i,
+            (char * ) pointer(bp[HEAD+0]), bp[HEAD+1].i, bp);
 }
 
 void MOVE(value *bp) {
