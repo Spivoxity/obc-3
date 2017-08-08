@@ -97,7 +97,7 @@ case $host in
     WIN=win64
     AC_SUBST(CFLAGS_JIT, [-Wl,--stack,16777216])
     if test "$enable_m64x32" != no; then
-      M64X32=1; CC='gcc -std=gnu99'
+      M64X32=1; CC='gcc -std=gnu99'; CPP='gcc -E'
     else
       CC='gcc32 -std=gnu99'; LD=ld32
     fi;;

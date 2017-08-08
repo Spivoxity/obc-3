@@ -1240,6 +1240,7 @@ int vm_prelude(int n, int locs) {
 #ifdef WINDOWS     
      if (n > 1) vm_panic("sorry, only one parameter allowed today");
      if (locs > 0) vm_panic("sorry, no local variables allowed");
+     locals = 0;
      push_r(rSI); push_r(rDI);
      sub64_i(rSP, 40);
 #else

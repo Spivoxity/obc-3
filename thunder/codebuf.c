@@ -78,8 +78,8 @@ code_addr vm_literal(int n) {
 }
 
 int _vm_addr(void *p) {
-     int r = (int) (long) p;
-     if (p != (void *) (long) r)
+     int r = (int) (ptr) p;
+     if (p != (void *) (ptr) r)
           vm_panic("address overflow");
      return r;
 }
@@ -90,7 +90,7 @@ int vm_wrap(funptr fun) {
 #else
      /* Use a trampoline */
      vm_space(12);
-     limit = (code_addr) (((unsigned long) limit - 8) & ~0x7);
+     limit = (code_addr) (((ptr) limit - 8) & ~0x7);
      * (funptr *) limit = fun;
      return vm_addr(*limit);
 #endif
@@ -100,7 +100,7 @@ funptr vm_func(int fun) {
 #ifndef M64X32
      return (funptr) fun;
 #else
-     return * (funptr *) (long) fun;
+     return * (funptr *) (ptr) fun;
 #endif
 }
 

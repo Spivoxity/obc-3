@@ -37,6 +37,15 @@
 
 typedef unsigned char *code_addr;
 
+typedef long long int64;
+typedef unsigned long long uint64;
+
+#ifdef M64X32
+typedef uint64 ptr;
+#else
+typedef unsigned ptr;
+#endif
+
 struct _vmreg {
      const char *vr_name;
      int vr_reg;
