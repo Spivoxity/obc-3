@@ -127,16 +127,15 @@ let fType =
   function
       FloatT -> fStr "F"
     | DoubleT -> fStr "D"
-    | LongT -> fStr "Q"
+    | LongT | LongPtrT -> fStr "Q"
     | _ -> fStr ""
 
 let fType1 =
   function
-      CharT -> fStr "C"
-    | ByteT -> fStr "C"
+      CharT|ByteT -> fStr "C"
     | ShortT -> fStr "S"
     | IntT -> fStr "N"
-    | LongT -> fStr "Q"
+    | LongT|LongPtrT -> fStr "Q"
     | FloatT -> fStr "F"
     | DoubleT -> fStr "D"
     | _ -> fStr "?"
@@ -144,11 +143,10 @@ let fType1 =
 let fKind =
   function
       VoidT -> fStr ""
-    | CharT -> fStr "C"
-    | ByteT -> fStr "C"
+    | CharT|ByteT -> fStr "C"
     | ShortT -> fStr "S"
     | IntT -> fStr "W"
-    | LongT -> fStr "Q"
+    | LongT|LongPtrT -> fStr "Q"
     | FloatT -> fStr "F"
     | DoubleT -> fStr "D"
     | _ -> fStr "?"

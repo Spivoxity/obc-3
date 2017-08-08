@@ -285,11 +285,12 @@ let niltype = basic_type PtrT addr_rep "NIL"
 let errtype = basic_type ErrT int_rep "*errtype*"
 
 let ptrtype = sys_type PtrT addr_rep "PTR"
+let longptr = sys_type LongPtrT long_rep "LONGPTR"
 let sysbyte = sys_type SysByteT char_rep "BYTE"
 
 let basic_types = 
   [voidtype; bytetype; shortint; inttype; longint; character; boolean; 
-    realtype; longreal; settype; ptrtype; sysbyte]
+    realtype; longreal; settype; ptrtype; longptr; sysbyte]
 
 let pointer d =
   (PointerType d, addr_rep, ptr_map)
@@ -665,6 +666,7 @@ let init_env () =
 let sysenv () = 
   let defs =
     [ make_def "PTR" TypeDef ptrtype;
+      make_def "LONGPTR" TypeDef longptr;
       make_def "BYTE" TypeDef sysbyte;
       builtin "ADR" AdrFun 1 [];
       builtin "VAL" ValFun 2 [];

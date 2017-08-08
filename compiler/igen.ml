@@ -102,7 +102,7 @@ let expr_line e = line_num e.e_loc
 let op_kind t = 
   let k = kind_of t in
   match k with 
-      FloatT | DoubleT | LongT | BoolT | VoidT -> k 
+      FloatT | DoubleT | LongT | LongPtrT | BoolT | VoidT -> k 
     | _ -> IntT
 
 (* mem_kind -- machine type for load or store *)

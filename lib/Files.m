@@ -36,7 +36,7 @@ IMPORT SYSTEM;
 TYPE 
   (** File -- type of open files *)
   File* = POINTER TO FileDesc;
-  FileDesc = RECORD file: LONGINT END;
+  FileDesc = RECORD file*: SYSTEM.LONGPTR END;
 
 VAR
   (** stdin -- standard input file *)
@@ -57,31 +57,32 @@ static FILE *get_file(value *p, value *cp, value *bp) {
 #define file_arg(a) get_file(valptr(a), cp, bp)
 *)
 
-PROCEDURE PrimOpen(name, mode: ARRAY OF CHAR): LONGINT IS "Files_PrimOpen";
+PROCEDURE PrimOpen(name, mode:
+                        ARRAY OF CHAR): SYSTEM.LONGPTR IS "Files_PrimOpen";
 (* CODE put_long(&ob_res, 
 		 (ptrtype) fopen((char * ) pointer(args[0]),
 				 (char * ) pointer(args[2]))); *)
 
 PROCEDURE PrimFDOpen(fd: INTEGER;
-	  		mode: ARRAY OF CHAR): LONGINT IS "File_PrimFDOpen";
+  		mode: ARRAY OF CHAR): SYSTEM.LONGPTR IS "File_PrimFDOpen";
 (* CODE put_long(&ob_res,
 		 (ptrtype) fdopen(args[0].i, (char * ) pointer(args[1]))); *)
 
 (** Open -- open a file by name; return NIL if not found *)
 PROCEDURE Open*(CONST name, mode: ARRAY OF CHAR): File;
-  VAR fp: LONGINT; f: File;
+  VAR fp: SYSTEM.LONGPTR; f: File;
 BEGIN
   fp := PrimOpen(name, mode);
-  IF fp = 0 THEN RETURN NIL END;
+  IF fp = SYSTEM.VAL(SYSTEM.LONGPTR, LONG(0)) THEN RETURN NIL END;
   NEW(f); f.file := fp; RETURN f
 END Open;
 
 (** FDOpen -- open a file given a file descriptor, or return NIL *)
 PROCEDURE FDOpen*(fd: INTEGER; CONST mode: ARRAY OF CHAR): File;
-  VAR fp: LONGINT; f: File;
+  VAR fp: SYSTEM.LONGPTR; f: File;
 BEGIN
   fp := PrimFDOpen(fd, mode);
-  IF fp = 0 THEN RETURN NIL END;
+  IF fp = SYSTEM.VAL(SYSTEM.LONGPTR, LONG(0)) THEN RETURN NIL END;
   NEW(f); f.file := fp; RETURN f
 END FDOpen;
 
@@ -174,7 +175,7 @@ CONST
 PROCEDURE Tell*(f: File): INTEGER IS "Files_Tell";
 (* CODE ob_res.i = ftell(file_arg(args[0])); *)
 
-PROCEDURE Init(VAR in, out, err: LONGINT) IS "Files_Init";
+PROCEDURE Init(VAR in, out, err: SYSTEM.LONGPTR) IS "Files_Init";
 (* CODE 
      put_long(valptr(args[0]), (ptrtype) stdin); 
      put_long(valptr(args[1]), (ptrtype) stdout);

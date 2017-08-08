@@ -138,6 +138,7 @@ val longreal: otype
 val settype: otype
 val niltype : otype
 val ptrtype : otype
+val longptr : otype
 val sysbyte : otype
 val errtype : otype
 val strtype : otype

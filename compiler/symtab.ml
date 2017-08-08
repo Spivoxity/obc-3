@@ -144,7 +144,7 @@ let put_strings () =
 type kind = 
     NumT | ByteT | ShortT | IntT | LongT | FloatT | DoubleT  
 				(* Numerics in order of width *)
-  | CharT | BoolT | SetT | PtrT | SysByteT
+  | CharT | BoolT | SetT | PtrT | LongPtrT | SysByteT
 				(* Non-numerics *)
   | VoidT | ErrT		(* Fictitious types *)
 
