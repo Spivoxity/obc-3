@@ -1320,7 +1320,7 @@ static code_addr cploc;
 static code_addr entry;
 static int locals;
 
-code_addr vm_prelude(int n, int locs) {
+int vm_prelude(int n, int locs) {
      nlits = 0;
      regmap = 0;
      retchain = NULL;
@@ -1335,7 +1335,7 @@ code_addr vm_prelude(int n, int locs) {
      move_reg(FP, SP);
      if (locals > 0) arith_immed(opSUB, SP, SP, locals);
 
-     return entry;
+     return (int) entry;
 }
 
 void vm_chain(code_addr p) {
