@@ -35,6 +35,8 @@ MODULE ObList;
 
 IMPORT Files, Out, Conv, Err, Strings, Args;
 
+CONST progname = "oblist";
+
 (* Line counts are kept in a hash table indexed by (module, line). *)
 
 CONST HSIZE = 1024;
@@ -124,7 +126,7 @@ PROCEDURE LoadProf;
 BEGIN
   f := Files.Open("obprof.out", "r");
   IF f = NIL THEN
-    Err.String("obdump: can't read obprof.out"); Err.Ln;
+    Err.String(progname); Err.String(": can't read obprof.out"); Err.Ln;
     HALT(1)
   END;
 
@@ -182,7 +184,8 @@ PROCEDURE List(fname: ARRAY OF CHAR);
 BEGIN
   f := Files.Open(fname, "r");
   IF f = NIL THEN
-    Err.String("obdump: can't read "); Err.String(fname); Err.Ln;
+    Err.String(progname); Err.String(": can't read ");
+    Err.String(fname); Err.Ln;
     HALT(1)
   END;
 
