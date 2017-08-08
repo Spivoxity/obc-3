@@ -40,28 +40,28 @@ CONST
   e* =  2.7182818284590452354;
 
 PROCEDURE Sqrt*(x: REAL): REAL IS "Math_Sqrt";
-(* CODE ob_res.f = sqrt(args[0].f); *)
+(* CODE ob_res.f = sqrtf(args[0].f); *)
 
 PROCEDURE Sin*(x: REAL): REAL IS "Math_Sin";
-(* CODE ob_res.f = sin(args[0].f); *)
+(* CODE ob_res.f = sinf(args[0].f); *)
 
 PROCEDURE Cos*(x: REAL): REAL IS "Math_Cos";
-(* CODE ob_res.f = cos(args[0].f); *)
+(* CODE ob_res.f = cosf(args[0].f); *)
 
 PROCEDURE Tan*(x: REAL): REAL IS "Math_Tan";
-(* CODE ob_res.f = tan(args[0].f); *)
+(* CODE ob_res.f = tanf(args[0].f); *)
 
 PROCEDURE Arctan*(x: REAL): REAL IS "Math_Atan";
-(* CODE ob_res.f = atan(args[0].f); *)
+(* CODE ob_res.f = atanf(args[0].f); *)
 
 PROCEDURE Arctan2*(y, x: REAL): REAL IS "Math_Atan2";
-(* CODE ob_res.f = atan2(args[0].f, args[1].f); *)
+(* CODE ob_res.f = atan2f(args[0].f, args[1].f); *)
 
 PROCEDURE Exp*(x: REAL): REAL IS "Math_Exp";
-(* CODE ob_res.f = exp(args[0].f); *)
+(* CODE ob_res.f = expf(args[0].f); *)
 
 PROCEDURE Ln*(x: REAL): REAL IS "Math_Ln";
-(* CODE ob_res.f = log(args[0].f); *)
+(* CODE ob_res.f = logf(args[0].f); *)
 
 BEGIN
   DynLink.Load("Math");
