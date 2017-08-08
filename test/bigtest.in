@@ -55,25 +55,3 @@ echo Fib
 
 echo Browser
 ($browser Files | $fixup| cmp $srcdir/File.out -)
-
-exit
-
-echo Primtest
-
-prim=prim$EXEEXT
-(tclsh $top_srcdir/lib/makeprims.tcl $srcdir/PrimTest.m >newprims.c \
-    && $compiler $srcdir/PrimTest.m >PrimTest.k \
-    && ../runtime/oblink -custom -L ../lib PrimTest.k \
-	-o PrimTest.x >primtab.c \
-    && gcc -g -I $top_srcdir/runtime -I .. primtab.c newprims.c \
-	../runtime/obx.a ../lib/dlstub.o ../lib/oblib.a \
-        $GC_LIB -o $prim \
-    && cat PrimTest.x >>$prim \
-    && ./$prim | $fixup | cmp $srcdir/PrimTest.out -)
-    
-echo PrimTest2
-(gcc -g -I $top_srcdir/runtime -I .. primtab.c newprims.c \
-	../runtime/obx-p.a ../lib/oblib.a -o $prim \
-    && cat PrimTest.x >>$prim \
-    && ./$prim -o PrimTest.p | cmp $srcdir/PrimTest.out - \
-    && cmp $srcdir/PrimTest.prof PrimTest.p)
