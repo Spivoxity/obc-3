@@ -36,7 +36,7 @@ open Print
 
 let use_inet = ("@USE_INET@" <> "")
 let lib_mods = 
-  List.map Symtab.intern (Util.split_string "@MODULES@")
+  List.map Symtab.intern (Util.split_string "@ALLMODS@")
 let mono_font = "@MONOFONT@"
 let sans_font = "@SANSFONT@"
 let macos = ("@MACOS@" <> "")

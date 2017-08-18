@@ -198,7 +198,7 @@ class main_window () =
       self#set_button_states false;
       notebook#set_click_enabled true;
 
-    (* Add a module to the menu and load it if not a library module *)
+    (* Add a module to the menu *)
     method add_module m =
       try
 	let fname = Debconf.find_source m in

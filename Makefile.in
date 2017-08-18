@@ -94,7 +94,6 @@ ifdef WINDOWS
 endif
 
 ifndef DYNLINK
-  PRIMS += lib/primtab.o
   EXTRA_LIBS = $(XLIB)
 endif
 
@@ -152,13 +151,6 @@ ifdef MACOS
 lablgtk: macport/gtklib
 macport/gtklib:
 	$(MAKE) -C macport gtklib
-endif
-
-PRIMS = lib/oblib.o
-
-ifndef DYNLINK
-  PRIMS += lib/primtab.o
-  EXTRA_LIBS = $(XLIB)
 endif
 
 ALL_LIBS = $(EXTRA_LIBS) $(LIBS)

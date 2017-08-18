@@ -46,7 +46,6 @@ AC_CONFIG_FILES(test/regress, chmod +x test/regress)
 AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)
 AC_CONFIG_FILES(test/edtest, chmod +x test/edtest)
 AC_CONFIG_HEADERS(config.h)
-AC_CANONICAL_HOST
 
 : ${AUTOCONF=autoconf} ${AUTOHEADER=autoheader}
 AC_SUBST(AUTOCONF)
@@ -63,61 +62,44 @@ AC_DEFINE_UNQUOTED(SIG, $SIG, [Version signature for symbol tables])
 AC_SUBST(SIG)
 AC_SUBST(PACKAGE_TRACKER, https://bitbucket.org/Spivey/obc-3/issues)
 AC_DEFINE_UNQUOTED(PACKAGE_TRACKER, "$PACKAGE_TRACKER", [Bug tracker])
+DOS_VERSION=`echo $PACKAGE_VERSION | sed 's/\./-/g'`
 
 ABS_SRCDIR=`cd $srcdir; pwd`
 ABS_BINDIR=`pwd`
 AC_SUBST(ABS_SRCDIR)
 AC_SUBST(ABS_BINDIR)
 
+# Host dependent setup
+AC_CANONICAL_HOST
+
 AC_ARG_ENABLE(m64x32,
   AS_HELP_STRING([--disable-m64x32], [disable 64-bit runtime for amd64]))
 
-# Host dependent setup
 DIRSEP="/"
+CC='gcc -std=gnu99'
 LD=ld
 
 case $host in
-  x86_64-*-linux-*)
-    AC_DEFINE(LINUX, 1, [Define for Linux])
-    if test "$enable_m64x32" != no; then
-      M64X32=1; CC='gcc -std=gnu99'
-    else
-      CC='gcc -std=gnu99 -m32'; LD='ld -melf_i386'
-    fi;;
-
   *-*-linux-*)
-    AC_DEFINE(LINUX, 1, [Define for Linux])
-    CC='gcc -std=gnu99';;
+    AC_DEFINE(LINUX, 1, [Define for Linux]);;
 
-  x86_64-*-mingw*|*-*-cygwin) 
+  *-*-mingw*|*-*-cygwin)
     AC_SUBST(WINDOWS, 1)
     AC_DEFINE(WINDOWS, 1, [Define to enable hacks for Windows])
-    AC_SUBST(ROOT, C:/msys64)
-    DIRSEP="\\\\"
-    WIN=win64
-    AC_SUBST(CFLAGS_JIT, [-Wl,--stack,16777216])
-    if test "$enable_m64x32" != no; then
-      M64X32=1; CC='gcc -std=gnu99'
-    else
-      CC='gcc32 -std=gnu99'; LD=ld32
-    fi;;
-    
-  i686-*-mingw*|*-*-cygwin) 
-    AC_SUBST(WINDOWS, 1)
-    AC_DEFINE(WINDOWS, 1, [Define to enable hacks for Windows])
-    AC_SUBST(ROOT, C:/msys32)
-    DIRSEP="\\\\"
-    WIN=win32
-    AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304])
-    CC='gcc -std=gnu99';;
-    
-  x86_64-*-darwin*)
+    DIRSEP="\\\\";;
+
+  *-*-darwin*)
     AC_SUBST(MACOS, 1)
-    AC_DEFINE(MACOS, 1, [Define to enable hacks for MacOS X])
+    AC_DEFINE(MACOS, 1, [Define to enable hacks for MacOS X]);;
+esac    
+
+
+AC_DEFINE_UNQUOTED(DIRSEP, "$DIRSEP", [Directory separator in file names])
+
+case $host in
+  x86_64-*)
     if test "$enable_m64x32" != no; then
-      M64X32=1; CC='gcc -std=gnu99'
-    else
-      CC='gcc -std=gnu99 -m32'
+      AC_DEFINE(M64X32, 1, [Define for 64-bit runtime with 32-bit pointers])
     fi;;
 esac
 
@@ -126,50 +108,40 @@ case $host in
     AC_DEFINE(UNALIGNED_MEM, 1, [Define if unaligned loads and stores work]);;
 esac
 
-AC_DEFINE_UNQUOTED(DIRSEP, "$DIRSEP", [Directory separator in file names])
+case $host in
+  x86_64-*-linux-*)
+    if test "$enable_m64x32" = no; then
+      CC='gcc -std=gnu99 -m32'; LD='ld -melf_i386'
+    fi;;
 
-if test "$M64X32" = 1; then
-  AC_DEFINE(M64X32, 1, [Define for 64-bit runtime with 32-bit pointers])
-fi
+  x86_64-*-mingw*|*-*-cygwin) 
+    AC_SUBST(ROOT, C:/msys64)
+    WIN=win64
+    AC_SUBST(CFLAGS_JIT, [-Wl,--stack,16777216])
+    if test "$enable_m64x32" = no; then
+      CC='gcc32 -std=gnu99'; LD=ld32
+    fi;;
+    
+  i686-*-mingw*|*-*-cygwin) 
+    AC_SUBST(ROOT, C:/msys32)
+    WIN=win32
+    AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304]);;
+    
+  x86_64-*-darwin*)
+    if test "$enable_m64x32" = no; then
+      CC='gcc -std=gnu99 -m32'
+    fi;;
+esac
 
-AC_ARG_VAR(MLFLAGS, [Flags to pass to ocamlc])
-if test "$WINDOWS" = 1; then
-  AC_SUBST(MLLINKFLAGS, "-ccopt -L/lib/mingw")
-fi
-
-: ${GTKDIR=/usr}
-AC_ARG_VAR(GTKDIR, [Directory to find GTK])
-
-# Fonts for debugger
-MONOFONT="Monospace 10"
-SANSFONT="Sans 10"
-if test "$MACOS" = 1; then
-  MONOFONT="Monospace 14"
-  SANSFONT="Lucida Grande 14"
-fi
-AC_SUBST(MONOFONT)
-AC_SUBST(SANSFONT)
-
-# Misc paths
-OBDB1='"$LIBDIR/obdb1 -R $LIBDIR/resources"'
-OBDB1_DEBUG='"$BINDIR/debugger/obdb1 -R $ROOT$TOPDIR/resources"'
-if test "$MACOS" = 1; then
-  OBDB1='"$LIBDIR/Obdb.app/Contents/MacOS/obdb"'
-  OBDB1_DEBUG='"$BINDIR/macport/Obdb.app/Contents/MacOS/obdb"'
-fi
-AC_SUBST(OBDB1)
-AC_SUBST(OBDB1_DEBUG)   
-
-DOS_VERSION=`echo $PACKAGE_VERSION | sed 's/\./-/g'`
-AC_SUBST(DOS_VERSION)
 AC_SUBST(WIN_INSTALL, obc-$WIN-$DOS_VERSION)
+AC_SUBST(LD)
 
+# Checks for programs
 AC_PROG_CC
 AC_REQUIRE_CPP
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
-AC_SUBST(LD)
 
 AC_CHECK_PROGS(TCLSH, tclsh)
 test "$TCLSH" != "" || AC_MSG_ERROR(tclsh not found)
@@ -177,6 +149,8 @@ test "$TCLSH" != "" || AC_MSG_ERROR(tclsh not found)
 AC_CHECK_PROGS(DIFF, gdiff diff)
 test "$DIFF" != "" || AC_MSG_ERROR(diff not found)
 
+: ${GTKDIR=/usr}
+AC_ARG_VAR(GTKDIR, [Directory to find GTK])
 AC_PATH_PROG(PKG_CONFIG, pkg-config, /usr/bin/pkg-config, 
   $GTKDIR/bin$PATH_SEPARATOR$PATH)
 test "$PKG_CONFIG" != "" || AC_MSG_ERROR(pkg-config not found)
@@ -188,11 +162,58 @@ if test "$GCC" == yes; then
 fi
 AC_SUBST(RTFLAGS)
 
-# Autoconf uses one, global variable LIBS for needed libraries.  I'm going
-# to use it to keep track of the libraries needed for the runtime, and assume
-# that other C-language components need only standard libraries.
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_C_BIGENDIAN
+AC_C_INLINE
+AC_C_INDEXED_JUMPS
+AC_C_UNUSED
+AC_C_USED
+AC_C_NORETURN
+AC_FIND_PAGESIZE
 
-# Package options
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(unistd.h time.h sys/time.h)
+
+# Checks for library functions.
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(clock time gettimeofday strtoul stpcpy)
+AC_CHECK_FUNCS(mmap sigprocmask) # assume they work OK for our purposes
+AC_CHECK_FUNCS(getopt_long_only)
+AC_CHECK_LIB(m, sinf)
+
+# Checks for X
+AC_PATH_XTRA
+if test "$no_x" != yes; then
+  AC_SUBST(HAVE_X, 1)
+  AC_SUBST(XYPLANE, XYplane)
+  AC_SUBST(XLIB, "$X_LIBS -lX11")
+fi
+
+# OCaml stuff
+AC_ARG_VAR(MLFLAGS, [Flags to pass to ocamlc])
+if test "$WINDOWS" = 1; then
+  AC_SUBST(MLLINKFLAGS, "-ccopt -L/lib/mingw")
+fi
+
+# Check ocaml version
+$as_echo_n "checking ocaml version... "
+if ! ocamlc; then echo not found; else
+  OCAML_VERSION=`ocamlc -v \
+      | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
+  $as_echo $OCAML_VERSION
+  XXXTMP=`echo $OCAML_VERSION | \
+      sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
+  if test $XXXTMP -lt 40002; then
+      AC_SUBST(COMPAT, bytes.cmo)
+  fi
+fi
+
+
+# PACKAGE OPTIONS
+
+# Option debug
 AC_ARG_ENABLE(debug,
   AS_HELP_STRING([--enable-debug], [set up for debugging]),
   if test "$enable_debug" = yes; then 
@@ -202,6 +223,7 @@ AC_ARG_ENABLE(debug,
   fi)
 AC_SUBST(DEBUG)
 
+# Option dynlink
 AC_ARG_ENABLE(dynlink,
   AS_HELP_STRING([--disable-dynlink], [do not use dynamic linking]))
 if test "$enable_dynlink" != no && test "$WINDOWS" != 1; then
@@ -227,6 +249,7 @@ AC_SUBST(SHL_LFLAGS)
 AC_SUBST(DLEXT, [.so])
 AC_DEFINE_UNQUOTED(DLEXT, "$DLEXT", [Extension for dynamic libraries])
 
+# Option jit
 AC_ARG_ENABLE(jit,
   AS_HELP_STRING([--disable-jit], [disable JIT translator]))
 if test "$enable_jit" != no; then
@@ -242,6 +265,7 @@ fi
 AC_SUBST(VM)
 AC_SUBST(ENABLE_JIT)
 
+# Option debugger
 AC_ARG_ENABLE(debugger,
   AS_HELP_STRING([--disable-debugger], [disable runtime debugger]))
 if test "$enable_debugger" != no; then 
@@ -252,61 +276,31 @@ if test "$enable_debugger" = inet || test "$WINDOWS" = 1; then
   AC_DEFINE(USE_INET, 1, [Whether to use inet sockets for the debugger])
 fi
 
-AC_ARG_WITH(lablgtk2,
-  AS_HELP_STRING([--with-lablgtk2=path]),
-  LABLGTK2=$with_lablgtk2, LABLGTK2='${OCAMLDIR}/lablgtk2')
-AC_SUBST(LABLGTK2)
+OBDB1='"$LIBDIR/obdb1 -R $LIBDIR/resources"'
+OBDB1_DEBUG='"$BINDIR/debugger/obdb1 -R $ROOT$TOPDIR/resources"'
+if test "$MACOS" = 1; then
+  OBDB1='"$LIBDIR/Obdb.app/Contents/MacOS/obdb"'
+  OBDB1_DEBUG='"$BINDIR/macport/Obdb.app/Contents/MacOS/obdb"'
+fi
+AC_SUBST(OBDB1)
+AC_SUBST(OBDB1_DEBUG)   
+
+# GTK setup for debugger
+MONOFONT="Monospace 10"
+SANSFONT="Sans 10"
+if test "$MACOS" = 1; then
+  MONOFONT="Monospace 14"
+  SANSFONT="Lucida Grande 14"
+fi
+AC_SUBST(MONOFONT)
+AC_SUBST(SANSFONT)
+AC_SUBST(RESOURCES, "blank.png breakpoint.png continue.png here.png \
+oberon.lang pause.png sober.xml stepinto.png stepout.png stepover.png \
+restart.png exit.png")
 
 GTKPKGS="gtk+-2.0 gtksourceview-2.0"
 if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration"; fi
 AC_SUBST(GTKPKGS)
-
-# Check ocaml version
-$as_echo_n "checking ocaml version... "
-if ! ocamlc; then echo not found; else
-  OCAML_VERSION=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
-  $as_echo $OCAML_VERSION
-  XXXTMP=`echo $OCAML_VERSION | sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
-  if test $XXXTMP -lt 40002; then
-      AC_SUBST(COMPAT, bytes.cmo)
-  fi
-fi
-
-# Checks for libraries.
-AC_CHECK_LIB(m, sinf)
-
-# Checks for X
-AC_PATH_XTRA
-if test "$no_x" = yes; then
-  XYPLANE=
-else
-  HAVE_X=1
-  XYPLANE=XYplane
-  XLIB="$X_LIBS -lX11"
-fi
-AC_SUBST(HAVE_X)
-AC_SUBST(XYPLANE)
-AC_SUBST(XLIB)
-
-# Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h time.h sys/time.h)
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_C_BIGENDIAN
-AC_C_INLINE
-AC_C_INDEXED_JUMPS
-AC_C_UNUSED
-AC_C_USED
-AC_C_NORETURN
-AC_FIND_PAGESIZE
-
-# Checks for library functions.
-AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(clock time gettimeofday strtoul stpcpy)
-AC_CHECK_FUNCS(mmap sigprocmask) # assume they work OK for our purposes
-AC_CHECK_FUNCS(getopt_long_only)
 
 if test "$WINDOWS" = 1; then
   OCAMLDIR='"/cygdrive/c/Program Files/Objective Caml/lib"'
@@ -333,7 +327,7 @@ Strings Random Math MathL")
 AC_SUBST(STDMODS_B, "DynLink Files Conv In-b Out Err Args Bit Timer GC \
 Strings-b Random-b Math MathL")
 
-# Modules that contain runtime checks
+# Modules that contain runtime checks -- recompile with -b
 AC_SUBST(CHECKMODS, "In Random Strings")
 
 # Modules containing C code
@@ -342,10 +336,8 @@ AC_SUBST(PRIMMODS, "Args Timer Files Conv Random")
 # Modules with primitives in separate shared libraries:
 AC_SUBST(SHLMODS, "$XYPLANE")
 
-# Resource files needed by GUI debugger 
-AC_SUBST(RESOURCES, "blank.png breakpoint.png continue.png here.png \
-oberon.lang pause.png sober.xml stepinto.png stepout.png stepover.png \
-restart.png exit.png")
+# All library modules
+AC_SUBST(ALLMODS, "$STDMODS $SHLMODS")
 
 # The endgame
 AC_OUTPUT
