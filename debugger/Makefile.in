@@ -57,20 +57,12 @@ all: obdb1
 
 INCLUDE = -I ../mllib -I ../compiler -I ../yacc -I ../lablgtk
 
-PKGCONF = $(PKG_ENV) $(PKG_CONFIG) $(PKG_FLAGS)
-
-ifdef WINDOWS
-# PKG_PATH = $(abs_top_srcdir)/winport:/cygdrive/c/GTK/lib/pkgconfig
-# PKG_ENV = env PKG_CONFIG_PATH=$(PKG_PATH)
-  PKG_FLAGS = --define-variable=prefix=C:/msys64/mingw64
-endif
-
 ifdef MACOS
   GTKLIBS := -L$(abs_top_builddir)/macport/gtklib \
-	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
+	$(shell $(PKG_CONFIG) --libs-only-l $(GTKPKGS))
 else
-  GTKLIBS := $(shell $(PKGCONF) --libs-only-L $(GTKPKGS)) \
-	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
+  GTKLIBS := $(shell $(PKG_CONFIG) --libs-only-L $(GTKPKGS)) \
+	$(shell $(PKG_CONFIG) --libs-only-l $(GTKPKGS))
 endif
 
 LIBS = unix.cma threads.cma str.cma

@@ -115,8 +115,10 @@ case $host in
     fi;;
 
   x86_64-*-mingw*|*-*-cygwin) 
-    AC_SUBST(ROOT, C:/msys64)
     WIN=win64
+    AC_SUBST(ROOT, C:/msys64)
+    AC_SUBST(GTKROOT, C:/msys64/mingw64)
+    AC_SUBST(PKG_FLAGS, --define-variable=prefix=C:/msys64/mingw64)
     AC_SUBST(CFLAGS_JIT, [-Wl,--stack,16777216])
     if test "$enable_m64x32" = no; then
       CC='gcc32 -std=gnu99'; LD=ld32
@@ -124,6 +126,8 @@ case $host in
     
   i686-*-mingw*|*-*-cygwin) 
     AC_SUBST(ROOT, C:/msys32)
+    AC_SUBST(GTKROOT, C:/msys32/mingw32)
+    AC_SUBST(PKG_FLAGS, --define-variable=prefix=C:/msys32/mingw32)
     WIN=win32
     AC_SUBST(CFLAGS_JIT, [-Wl,--stack,4194304]);;
     

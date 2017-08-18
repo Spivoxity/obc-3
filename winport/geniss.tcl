@@ -4,7 +4,8 @@ set gtk 0
 
 if {[lindex $argv 0] == "-gtk"} {
     set gtk 1
-    set argv [lrange $argv 1 end]
+    set gtkdir [lindex $argv 1]
+    set argv [lrange $argv 2 end]
 }
 
 foreach f $argv {
@@ -12,9 +13,9 @@ foreach f $argv {
     regexp {(.*)/(.*)} $f _ d f
     if {$gtk} {
 	if {$d == ""} {
-	    set p "C:/GTK/bin/"
+	    set p "$gtkdir/bin/"
 	} else {
-	    set p "C:/GTK/$d/"
+	    set p "$gtkdir/$d/"
 	    set q "$q/$d"
 	}
     } elseif {$d != ""} {

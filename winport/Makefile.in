@@ -34,7 +34,7 @@
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
 subdir = winport
-MODULES = @MODULES@
+ALLMODS = @ALLMODS@
 CHECKMODS = @CHECKMODS@
 PRIMMODS = @PRIMMODS@
 SHLMODS = @SHLMODS@
@@ -42,15 +42,16 @@ TARGET = @WIN_INSTALL@.exe
 VPATH = @srcdir@
 CC = @CC@
 CFLAGS = @CFLAGS@
-ISCC = "/cygdrive/c/Program Files/Inno Setup 5/ISCC"
+ISCC = "/c/Program Files/Inno Setup 5/ISCC"
 RESOURCES = @RESOURCES@
 RESDIR = $(top_srcdir)/resources
+GTKROOT = @GTKROOT@
 # End
 
 all: files
 
-LIBSRC = Builtin.m $(MODULES:%=%.m)
-LIBOBJ = $(MODULES:%=%.k) $(CHECKMODS:%=%-b.k) _Builtin.k 
+LIBSRC = Builtin.m $(ALLMODS:%=%.m)
+LIBOBJ = $(ALLMODS:%=%.k) $(CHECKMODS:%=%-b.k) _Builtin.k 
 LIBTXT = lscript-b lscript _Builtin.k
 
 # Executables needing stripping
@@ -108,25 +109,20 @@ head.iss: $(srcdir)/head.iss.in ../config.status
 files.iss: Makefile geniss.tcl
 	(echo "[Files]"; tclsh geniss.tcl $(INSTALL)) >$@
 
-GTK = intl.dll libatk-1.0-0.dll libcairo-2.dll libfontconfig-1.dll	\
-	freetype6.dll libgdk-win32-2.0-0.dll libgdk_pixbuf-2.0-0.dll	\
-	libgio-2.0-0.dll libglib-2.0-0.dll libgmodule-2.0-0.dll		\
-	libgobject-2.0-0.dll libgtk-win32-2.0-0.dll			\
-	libgtksourceview-2.0-0.dll libpango-1.0-0.dll			\
-	libpangocairo-1.0-0.dll libpangoft2-1.0-0.dll			\
-	libpangowin32-1.0-0.dll libpng12-0.dll libxml2.dll zlib1.dll	\
-	etc/gtk-2.0/gdk-pixbuf.loaders etc/pango/pango.modules		\
+
+DLLS := $(shell ldd ../debugger/obdb1.exe | awk '/mingw/ { print $$1 }')
+
+GTK = $(DLLS) \
 	share/gtksourceview-2.0/language-specs/def.lang			\
 	share/gtksourceview-2.0/language-specs/language.dtd		\
 	share/gtksourceview-2.0/language-specs/language.rng		\
 	share/gtksourceview-2.0/language-specs/language2.rng		\
 	share/gtksourceview-2.0/styles/classic.xml			\
 	share/gtksourceview-2.0/styles/styles.rng			\
-	share/themes/Default/gtk-2.0-key/gtkrc libexpat-1.dll		\
-	iconv.dll
+	share/themes/Default/gtk-2.0-key/gtkrc
 
 gtk.iss: Makefile geniss.tcl
-	(tclsh geniss.tcl -gtk $(GTK); \
+	(tclsh geniss.tcl -gtk $(GTKROOT) $(GTK); \
 	  tclsh geniss.tcl $(RESOURCES:%=$(RESDIR)/%)) >$@
 
 obc.exe obb.exe obdb.exe: %.exe: %.o wrap.o

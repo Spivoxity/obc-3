@@ -44,6 +44,7 @@ CAMLDEP = @top_srcdir@/camldep
 DEPEND = @DEPEND@
 PKG_CONFIG = @PKG_CONFIG@
 GTKPKGS = @GTKPKGS@
+PKG_FLAGS = @PKG_FLAGS@
 # End of config
 
 ALL = lablgtk.cma liblablgtk.a gtkThread.cmo
@@ -77,13 +78,7 @@ INCLUDE = -I ../mllib
 
 all: $(ALL)
 
-PKGCONF = $(PKG_ENV) $(PKG_CONFIG) $(PKG_FLAGS)
-
-ifdef WINDOWS
-#  PKG_PATH = $(abs_top_srcdir)/winport:/cygdrive/c/GTK/lib/pkgconfig
-#  PKG_ENV = env PKG_CONFIG_PATH=$(PKG_PATH)
-   PKG_FLAGS = --define-variable=prefix=C:/msys64/mingw64
-endif
+PKGCONF = $(PKG_CONFIG) $(PKG_FLAGS)
 
 GTKFLAGS := $(shell $(PKGCONF) --cflags $(GTKPKGS))
 
