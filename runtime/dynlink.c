@@ -50,7 +50,10 @@ in its initialization part.
 #define __USE_GNU
 #endif
 #include <dlfcn.h>
+
+#ifdef USEFFI
 #include <ffi.h>
+#endif
 
 void load_lib(char *fname) {
      char buf[128];
@@ -73,6 +76,7 @@ void load_lib(char *fname) {
 	  panic("Can't find library %s: %s", fname, dlerror());
 }
 
+#ifdef USEFFI
 #define MAXP 16
 
 typedef struct {
@@ -103,6 +107,8 @@ static ffi_type *ffi_decode(char c) {
           return NULL;
      }
 }
+
+#define HAVE_DLSTUB 1
 
 void dlstub(value *bp) {
      value *cp = valptr(bp[CP]);
@@ -181,6 +187,7 @@ void dlstub(value *bp) {
           panic("Bad type 3");
      }
 }
+#endif
 
 primitive *find_prim(char *name) {
      char primname[32];
@@ -191,10 +198,6 @@ primitive *find_prim(char *name) {
 #else
 
 void load_lib(char *fname) {
-}
-
-void dlstub(value *bp) {
-     panic("FFI not enabled");
 }
 
 primitive *find_prim(char *name) {
@@ -225,6 +228,7 @@ void dltrap(value *bp) {
      }
 
 #ifdef DYNLINK
+#ifdef USEFFI
      /* Build a wrapper with FFI */
      void (*fun)(void) = (void(*)(void)) dlsym(RTLD_DEFAULT, name);
 
@@ -247,6 +251,13 @@ void dltrap(value *bp) {
           return;
      }
 #endif
+#endif
 
      panic("Couldn't find primitive %s", name);
 }
+
+#ifndef HAVE_DLSTUB
+void dlstub(value *bp) {
+     panic("FFI not enabled");
+}
+#endif
