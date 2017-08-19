@@ -70,12 +70,12 @@ proc map {f xs} {
 }
 
 proc fmt_type {c} {
-    switch $c {
+    switch -exact $c {
         C - I {return int}
         L {return longint}
         F {return float}
         D {return double}
-        P - Q - X - Z {return "void *"}
+        P - Q - X - * {return "void *"}
         V {return void}
         default {error "type $c"}
     }
@@ -109,7 +109,7 @@ proc args {atypes} {
     set res {}
     set i 0
     foreach a [split $atypes {}] {
-        switch $a {
+        switch -exact $a {
             I {set e "bp\[HEAD+$i\].i"; incr i}
             C {set e "align_byte(bp\[HEAD+$i\].i)"; incr i}
             L {set e "get_long(&bp\[HEAD+$i\])"; incr i 2}
@@ -118,7 +118,7 @@ proc args {atypes} {
             P {set e "pointer(bp\[HEAD+$i\])"; incr i}
             X {set e "pointer(bp\[HEAD+$i\])"; incr i 2}
             Q {set e "ptrcast(void, get_long(&bp\[HEAD+$i\]))"; incr i 2}
-            Z {set e "bp"}
+            * {set e "bp"}
             default {error "arg $a"}
         }
         lappend res $e

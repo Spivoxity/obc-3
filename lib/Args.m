@@ -35,10 +35,10 @@ MODULE Args;
 VAR argc-: INTEGER;
 
 (** GetArg -- fetch an argument into a string buffer *)
-PROCEDURE GetArg*(n: INTEGER; VAR s: ARRAY OF CHAR) IS + "GetArg";
+PROCEDURE GetArg*(n: INTEGER; VAR s: ARRAY OF CHAR) IS * "GetArg";
 
 (** GetEnv -- fetch an environment variable into a string buffer *)
-PROCEDURE GetEnv*(name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR) IS + "GetEnv";
+PROCEDURE GetEnv*(name: ARRAY OF CHAR; VAR s: ARRAY OF CHAR) IS * "GetEnv";
 
 PROCEDURE GetArgc(): INTEGER IS "GetArgc";
 

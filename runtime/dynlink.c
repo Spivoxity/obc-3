@@ -148,7 +148,7 @@ void dlstub(value *bp) {
           case 'Q':
                avals[q].ptr = ptrcast(uchar, get_long(&bp[HEAD+p]));
                p += 2; q += 1; break;
-          case 'Z':
+          case '*':
                avals[q].ptr = bp;
                q += 1; break;
           default:

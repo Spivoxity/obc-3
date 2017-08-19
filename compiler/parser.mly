@@ -249,8 +249,8 @@ proc :
         ForwardDecl (Method, $procid, Heading ($rcvr::ps, r), $doc) } ;
 
 flag :
-    /* empty */			{ '*' }
-  | PLUS			{ '+' } ;
+    /* empty */			{ ' ' }
+  | STAR			{ '*' } ;
 
 procid :
     defid			{ end_name := $defid.x_name; $defid } ;

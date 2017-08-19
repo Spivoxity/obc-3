@@ -1169,7 +1169,7 @@ let rec gen_proc =
         let p = get_proc d.d_type in
         let rt = type_code p.p_result in
         let pts =
-          if flag = '+' then ['Z'] else List.map param_code p.p_fparams in
+          if flag = '*' then ['*'] else List.map param_code p.p_fparams in
         put "PRIMDEF $ $ $$\n"
           [fSym d.d_lab; fStr name; fChr rt; fSeq(fChr, "") pts]
     | _ -> ()
