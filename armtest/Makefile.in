@@ -43,32 +43,25 @@ CC = arm-linux-gnueabihf-gcc -marm -march=armv6
 CFLAGS = -g -O2 $(INCLUDE)
 INCLUDE = -I . -I $(top_srcdir)/runtime -I $(top_srcdir)/thunder -I ../runtime
 RTFLAGS = -rdynamic
-LIBS = -ldl
+LIBS = -ldl -lm
 LIBDIR = /usr/arm-linux-gnueabihf/lib
 OBXJ = jit.o jitlab.o jitregs.o jitval.o xmain-j.o \
-	support.o loader.o dynlink.o gc.o
+	support.o loader.o dynlink.o gc.o primtab.o
 THUNDER = vmpi.o labels.o vmdebug.o codebuf.o 
-PRIMS = Builtin Args GC Timer DynLink Files Conv Random
-DLPRIMS = Math MathL
+PRIMS = Builtin Args Timer Files Conv Random
 TCLSH = tclsh
 AR = arm-linux-gnueabihf-ar
 RANLIB = arm-linux-gnueabihf-ranlib
 
 vpath %.c $(top_srcdir)/runtime $(top_srcdir)/thunder ../runtime ../lib
 
-all: obxj-arm $(DLPRIMS:%=%.so) regress sanity
+all: obxj-arm regress sanity
 
 obxj-arm: $(OBXJ) $(PRIMS:%=%.o) libthunder.a
 	$(CC) $(RTFLAGS) -o $@ $^ $(LIBS)
 
 xmain-j.o: xmain.c
 	$(CC) $(CFLAGS) -DJIT -DREVID=\"$(REVID)\" -c $< -o $@
-
-Math.so MathL.so: %.so: %.c
-	$(CC) $(CFLAGS) -fPIC -shared $< -lm -o $@
-
-primtab.c: $(PRIMS:%=../lib/%.m)
-	$(TCLSH) ../lib/makeprims.tcl -t $^ >$@
 
 libthunder.a: $(THUNDER)
 	$(AR) cr $@ $^; $(RANLIB) $@
