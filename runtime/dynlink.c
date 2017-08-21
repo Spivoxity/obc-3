@@ -58,22 +58,22 @@ in its initialization part.
 void load_lib(char *fname) {
      char buf[128];
 	
-     /* If the library name contains no slash, look in the OBC lib directory 
+     /* If the library name starts with '@', look in the OBC lib directory 
         and append the extension ".so" or ".dylib" au chois */
-     if (strchr(fname, '/') == NULL) {
+     if (fname[0] == '@') {
 	  char *dir = getenv("OBC_LIB");
 	  if (dir == NULL) dir = libpath;
 	  if (dir == NULL) panic("no runtime library");
 	  strcpy(buf, dir);
 	  strcat(buf, "/");
-	  strcat(buf, fname);
+	  strcat(buf, fname+1);
 	  strcat(buf, DLEXT);
 	  fname = buf;
      }
 
      /* Load the library */
      if (dlopen(fname, RTLD_LAZY|RTLD_GLOBAL) == NULL) 
-	  panic("Can't find library %s: %s", fname, dlerror());
+	  panic(dlerror());
 }
 
 #ifdef USEFFI
@@ -82,7 +82,7 @@ void load_lib(char *fname) {
 typedef struct {
      void (*fun)(void);
      ffi_cif cif;
-} callgate;
+} wrapper;
 
 static ffi_type *ffi_decode(char c) {
      switch (c) {
@@ -152,8 +152,8 @@ void dlstub(value *bp) {
           }
      }
 
-     callgate *gate = (callgate *) pointer(cp[CP_CONST]);
-     ffi_raw_call(&gate->cif, gate->fun, rval, avals);
+     wrapper *w = (wrapper *) pointer(cp[CP_CONST]);
+     ffi_raw_call(&w->cif, w->fun, rval, avals);
      
      switch (tstring[0]) {
      case 'C':
@@ -236,12 +236,12 @@ void dltrap(value *bp) {
           for (int i = 0; tstring[i+1] != '\0'; i++)
                atypes[i] = ffi_decode(tstring[i+1]);
 
-          callgate *gate = (callgate *) scratch_alloc(sizeof(callgate));
-          gate->fun = fun;
-          ffi_prep_cif(&gate->cif, FFI_DEFAULT_ABI, np, rtype, atypes);
+          wrapper *w = (wrapper *) scratch_alloc(sizeof(wrapper));
+          w->fun = fun;
+          ffi_prep_cif(&w->cif, FFI_DEFAULT_ABI, np, rtype, atypes);
 
           cp[CP_PRIM].a = dynstub;
-          cp[CP_CONST].a = address(gate);
+          cp[CP_CONST].a = address(w);
 
           dlstub(bp);
           return;

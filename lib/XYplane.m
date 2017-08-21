@@ -59,7 +59,7 @@ PROCEDURE Key*(): CHAR IS "XYplane_key";
 PROCEDURE Open* IS "XYplane_open";
 
 BEGIN
-  DynLink.Load("XYplane");
+  DynLink.Load("@XYplane");
 END XYplane.
 
 --CODE--
