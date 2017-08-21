@@ -199,7 +199,7 @@ void usage(void)
      p("  -s      Strip symbol table in linker output");
      p("  -j0     Disable JIT translator at runtime");
      p("  -k n    Set runtime stack size");
-     p("  -07     Compile Oberon07 source");
+     p("  -07     Compile Oberon-07 source");
      p("");
      p("  *.m     Oberon source file to be compiled");
      p("  *.k     Bytecode file for linking");

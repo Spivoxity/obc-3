@@ -48,7 +48,7 @@ LIBDIR = /usr/arm-linux-gnueabihf/lib
 OBXJ = jit.o jitlab.o jitregs.o jitval.o xmain-j.o \
 	support.o loader.o dynlink.o gc.o primtab.o
 THUNDER = vmpi.o labels.o vmdebug.o codebuf.o 
-PRIMS = Builtin Args Timer Files Conv Random
+PRIMS = Builtin Args Timer Files Conv Random GC
 TCLSH = tclsh
 AR = arm-linux-gnueabihf-ar
 RANLIB = arm-linux-gnueabihf-ranlib
@@ -93,7 +93,7 @@ force:
 
 # clean: remove object files
 clean: force
-	rm -f obxj-arm *.o *.so libthunder.a primtab.c *.k \
+	rm -f obxj-arm *.o *.so libthunder.a *.k \
 		a.out data out.0 out config.h code
 
 # quiteclean: remove generated files too

@@ -93,7 +93,6 @@ case $host in
     AC_DEFINE(MACOS, 1, [Define to enable hacks for MacOS X]);;
 esac    
 
-
 AC_DEFINE_UNQUOTED(DIRSEP, "$DIRSEP", [Directory separator in file names])
 
 case $host in
@@ -185,7 +184,9 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(clock time gettimeofday strtoul stpcpy)
 AC_CHECK_FUNCS(mmap sigprocmask) # assume they work OK for our purposes
 AC_CHECK_FUNCS(getopt_long_only)
-AC_CHECK_LIB(m, sinf)
+
+AC_CHECK_LIB(m, sinf, MATHLIB=-lm)
+AC_SUBST(MATHLIB)
 
 # Checks for X
 AC_PATH_XTRA
@@ -341,7 +342,7 @@ Strings-b Random-b Math MathL")
 AC_SUBST(CHECKMODS, "In Random Strings")
 
 # Modules containing C code
-AC_SUBST(PRIMMODS, "Args Timer Files Conv Random GC")
+AC_SUBST(PRIMMODS, "Args Timer Files Conv Random GC Strings")
 
 # Modules with primitives in separate shared libraries:
 AC_SUBST(SHLMODS, "$XYPLANE")

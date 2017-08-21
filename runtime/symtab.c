@@ -30,12 +30,10 @@
 
 #include "oblink.h"
 
-/* This module implements three completely independent symbol tables:
-   one for global symbols, another for labels used in branches, and
-   the third for primitives compiled into the interpreter.  Global
-   symbols have symbolic names, and are used only in the data
-   segment. Labels have names that are integers.  Primitives have
-   symbolic names, and appear only in SUBR directives. */
+/* This module implements two completely independent symbol tables:
+   one for global symbols, and another for labels used in branches.
+   Global symbols have symbolic names, and are used only in the data
+   segment. Labels have names that are integers. */
 
 
 /* GLOBAL SYMBOLS */

@@ -63,6 +63,7 @@ DYNLINK = @DYNLINK@
 DLEXT = @DLEXT@
 DLFLAGS = @DLFLAGS@
 LIBS = @LIBS@
+MATHLIB = @MATHLIB@
 HAVE_X = @HAVE_X@
 XLIB = @XLIB@
 DEB_LIBS = @DEB_LIBS@
@@ -97,8 +98,8 @@ ifndef DYNLINK
   EXTRA_LIBS = $(XLIB)
 endif
 
-ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
-obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
+ALL_LIBS = $(EXTRA_LIBS) $(LIBS) $(MATHLIB)
+obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS) $(MATHLIB)
 
 ifdef ENABLE_JIT
   PREDIRS += thunder
@@ -153,8 +154,8 @@ macport/gtklib:
 	$(MAKE) -C macport gtklib
 endif
 
-ALL_LIBS = $(EXTRA_LIBS) $(LIBS)
-obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS)
+ALL_LIBS = $(EXTRA_LIBS) $(LIBS) $(MATHLIB)
+obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS) $(MATHLIB)
 
 LINK = $(CC) $(LDFLAGS) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
 JITPROC = $(shell nm runtime/obx-jd.a | sed -n '/jit_proc/s/.* //p')

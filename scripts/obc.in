@@ -69,7 +69,7 @@ usage () {
     $p "  -I dir  Add dir as search directory for imported modules" >&2
     $p "  -d n    Set compiler debugging level to n" >&2
     $p "  -rsb    Keywords and built-ins are in lower case"  >&2
-    $p "  -07     Use Oberon07 language rules" >&2
+    $p "  -07     Use Oberon-07 language rules" >&2
     $p "  -c      Compile only, omitting the linking step" >&2
     $p "  -o file Set output file for linking" >&2
     $p "  -s      Strip symbol table in linker output" >&2
@@ -103,13 +103,13 @@ compile () {
 
 linkit () {
     if $custom; then
-	{ command $oblink -script $lscript $lsw -L $ROOT$libdir \
-	        $obj -o $tmp.out \
+	{ command $oblink -C -script $lscript $lsw -L $ROOT$libdir \
+	        $obj -o $tmp.out >$tmp.c \
 	    && command $CC $incl $stdinc $ofiles $obx_a \
-	        $libdir/oblib.o $libs $LIBS $DLFLAGS -o $outfile \
+	        $libdir/oblib.o $tmp.c $libs $LIBS $DLFLAGS -o $outfile \
 	    && command cat $tmp.out \>\>$outfile; } \
 	|| { /bin/rm -f $outfile; status=1; }
-        /bin/rm -f $tmp.out
+        /bin/rm -f $tmp.out $tmp.c
     else
 	{ command $oblink -g -pl -i $interp $lsw -script $lscript \
 	        -L $ROOT$libdir $obj -o $outfile \
