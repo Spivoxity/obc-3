@@ -81,15 +81,6 @@ proc fmt_type {c} {
     }
 }
 
-# Function declarations
-foreach {name func patt} $prims {
-    if {! [string is upper [string index $func 0]]} continue
-    set restype [fmt_type [string index $patt 0]]
-    set argtypes [map fmt_type [split [string range $patt 1 end] {}]]
-    puts "$restype ${func}([join $argtypes ", "]);"
-}
-puts ""
-
 # Wrappers
 
 proc result {rtype val} {
@@ -118,7 +109,6 @@ proc args {atypes} {
             P {set e "pointer(bp\[HEAD+$i\])"; incr i}
             X {set e "pointer(bp\[HEAD+$i\])"; incr i 2}
             Q {set e "ptrcast(void, get_long(&bp\[HEAD+$i\]))"; incr i 2}
-            * {set e "bp"}
             default {error "arg $a"}
         }
         lappend res $e
@@ -131,17 +121,25 @@ proc call {func params} {
     return "${func}($args)"
 }
 
-
 foreach {name func patt} $prims {
-    puts "void P_${func}(value *bp) {"
-    puts "     FPINIT;"
-
-    set rtype [string index $patt 0]
-    set atypes [string range $patt 1 end]
-    puts "     [result $rtype [call $func [args $atypes]]]"
-
-    puts "}"
-    puts ""
+    if {$patt == "*"} {
+        puts "void P_${func}(value *bp);"
+    } else {
+        if {[string is upper [string index $func 0]]} {
+            set restype [fmt_type [string index $patt 0]]
+            set argtypes [map fmt_type [split [string range $patt 1 end] {}]]
+            puts "$restype ${func}([join $argtypes ", "]);"
+            puts ""
+        }
+        
+        puts "void P_${func}(value *bp) {"
+        puts "     FPINIT;"
+        set rtype [string index $patt 0]
+        set atypes [string range $patt 1 end]
+        puts "     [result $rtype [call $func [args $atypes]]]"
+        puts "}"
+        puts ""
+    }
 }
     
 # Table
@@ -153,35 +151,3 @@ foreach {name func patt} $prims {
 puts "     { NULL, NULL }"
 puts "};"
 puts "#endif"
-
-exit
-
-
-proc maketable {} {
-    global prims
-
-    puts "/* primtab.c */"
-    puts ""
-    puts "#include \"obx.h\""
-    puts ""
-    puts -nonewline "PRIMDEF primitive"
-    set sep ""
-    foreach p $prims {
-	puts $sep
-	puts -nonewline "     $p"
-	set sep ","
-    }
-    puts ";"
-    puts ""
-}
-
-if {[lindex $argv 0] == "-t"} {
-    set mode "table"
-    set argv [lrange $argv 1 end]
-}
-
-init
-
-
-
-if {$mode == "table"} maketable

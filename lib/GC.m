@@ -34,7 +34,7 @@ MODULE GC;
 IMPORT SYSTEM;
 
 (** Collect -- perform a garbage collection *)
-PROCEDURE Collect* IS * "gc_collect";
+PROCEDURE Collect* IS * "GC_Collect";
 
 (** HeapSize -- return the total size of the heap *)
 PROCEDURE HeapSize*(): INTEGER IS "gc_heap_size";
@@ -52,3 +52,11 @@ PROCEDURE Dump* IS "gc_dump";
 PROCEDURE AllocSize*(p: SYSTEM.PTR): INTEGER IS "gc_alloc_size";
 
 END GC.
+
+--CODE--
+
+#include "obx.h"
+
+void P_GC_Collect(value *bp) {
+     gc_collect(bp);
+}

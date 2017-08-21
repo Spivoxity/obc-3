@@ -98,12 +98,11 @@ static ffi_type *ffi_decode(char c) {
      case 'P':
      case 'Q':
      case 'X':
-     case 'Z':
           return &ffi_type_pointer;
      case 'V':
           return &ffi_type_void;
      default:
-          panic("Bad type");
+          panic("Bad type %c", c);
           return NULL;
      }
 }
@@ -148,9 +147,6 @@ void dlstub(value *bp) {
           case 'Q':
                avals[q].ptr = ptrcast(uchar, get_long(&bp[HEAD+p]));
                p += 2; q += 1; break;
-          case '*':
-               avals[q].ptr = bp;
-               q += 1; break;
           default:
                panic("Bad type 2 %c", tstring[i+1]);
           }
@@ -232,7 +228,7 @@ void dltrap(value *bp) {
      /* Build a wrapper with FFI */
      void (*fun)(void) = (void(*)(void)) dlsym(RTLD_DEFAULT, name);
 
-     if (fun != NULL) {
+     if (fun != NULL && tstring[0] != '*') {
           int np = strlen(tstring)-1;
           ffi_type *rtype = ffi_decode(tstring[0]);
           ffi_type **atypes =

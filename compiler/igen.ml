@@ -1166,12 +1166,15 @@ let rec gen_proc =
         gen_procdef d x.x_loc fsize body ret
     | PrimDecl (x, _, flag, name, _) ->
         let d = get_def x in
-        let p = get_proc d.d_type in
-        let rt = type_code p.p_result in
-        let pts =
-          if flag = '*' then ['*'] else List.map param_code p.p_fparams in
-        put "PRIMDEF $ $ $$\n"
-          [fSym d.d_lab; fStr name; fChr rt; fSeq(fChr, "") pts]
+        if flag = '*' then
+          put "PRIMDEF $ $ *\n" [fSym d.d_lab; fStr name]
+        else begin
+          let p = get_proc d.d_type in
+          let rt = type_code p.p_result in
+          let pts = List.map param_code p.p_fparams in
+          put "PRIMDEF $ $ $$\n"
+            [fSym d.d_lab; fStr name; fChr rt; fSeq(fChr, "") pts]
+        end
     | _ -> ()
 
 (* gen_descriptor -- generate a descriptor *)

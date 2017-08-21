@@ -341,7 +341,7 @@ Strings-b Random-b Math MathL")
 AC_SUBST(CHECKMODS, "In Random Strings")
 
 # Modules containing C code
-AC_SUBST(PRIMMODS, "Args Timer Files Conv Random")
+AC_SUBST(PRIMMODS, "Args Timer Files Conv Random GC")
 
 # Modules with primitives in separate shared libraries:
 AC_SUBST(SHLMODS, "$XYPLANE")

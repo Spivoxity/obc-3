@@ -50,7 +50,7 @@ END Args.
 
 #include "obx.h"
 
-void GetArg(value *bp) {
+void P_GetArg(value *bp) {
      int n = bp[HEAD+0].i;
      char *s = (char *) pointer(bp[HEAD+1]);
      int len = bp[HEAD+2].i;
@@ -59,7 +59,7 @@ void GetArg(value *bp) {
      obcopy(s, len, t, 0, bp);
 }
 
-void GetEnv(value *bp) {
+void P_GetEnv(value *bp) {
      char *name = (char *) pointer(bp[HEAD+0]);
      char *s = (char *) pointer(bp[HEAD+2]);
      int len = bp[HEAD+3].i;

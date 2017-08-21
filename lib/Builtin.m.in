@@ -138,10 +138,10 @@ END Builtin.
 char *lib_version = 
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
 
-word NEW(value *bp) {
+void P_NEW(value *bp) {
      value *desc = valptr(bp[HEAD+0]);
      int size = bp[HEAD+1].i;
-     return address(gc_alloc(desc, size, bp));
+     ob_res.a = address(gc_alloc(desc, size, bp));
 }
 
 /*
@@ -175,7 +175,7 @@ Parameters NEWFLEX(elmap, elsize, k: INTEGER;
 			dim_0, ..., dim_{k-1}: INTEGER): SYSTEM.PTR
 */
 
-word NEWFLEX(value *bp) {
+void P_NEWFLEX(value *bp) {
      value *elmap = valptr(bp[HEAD+0]);
      int elsize = bp[HEAD+1].i;
      int k = bp[HEAD+2].i;
@@ -222,28 +222,28 @@ word NEWFLEX(value *bp) {
 	  map[9].i = GC_END;
      }
 
-     return address(q); 
+     ob_res.a = address(q); 
 }
 
-int COMPARE(value *bp) {
+void P_COMPARE(value *bp) {
      uchar *s1 = pointer(bp[HEAD+0]), *s2 = pointer(bp[HEAD+2]);
      int i = 0, n = min(bp[HEAD+1].i, bp[HEAD+3].i);
 
      while (i < n && s1[i] != '\0' && s1[i] == s2[i]) i++;
      if (i >= n) liberror("string is not null-terminated");
-     return s1[i] - s2[i]; 
+     ob_res.i = s1[i] - s2[i]; 
 }
 
-void COPY(value *bp) {
+void P_COPY(value *bp) {
      obcopy((char * ) pointer(bp[HEAD+2]), bp[HEAD+3].i,
             (char * ) pointer(bp[HEAD+0]), bp[HEAD+1].i, bp);
 }
 
-void MOVE(value *bp) {
+void P_MOVE(value *bp) {
      memmove(pointer(bp[HEAD+1]), pointer(bp[HEAD+0]), bp[HEAD+2].i);
 }
 
-void FLEXASSIGN(value *bp) {
+void P_FLEXASSIGN(value *bp) {
      int size = bp[HEAD+0].i;
      int dim = bp[HEAD+1].i;
      uchar *src = pointer(bp[HEAD+2]), *dst = pointer(bp[HEAD+dim+3]);
@@ -264,10 +264,7 @@ int INTREAL(float x) { return (int) x; }
 
 int INTDOUBLE(double x) { return (int) x; }
 
-void LIBERROR(value *bp) {
+void P_LIBERROR(value *bp) {
      value *bp1 = valptr(bp[BP]);
      error_stop((char * ) pointer(bp[HEAD+0]), 0, bp1, NULL);
 }
-
-/* Force loading of math library */
-static UNUSED float (*_sinf)(float) = sinf;
