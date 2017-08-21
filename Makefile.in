@@ -82,7 +82,7 @@ SUBDIRS = compiler runtime lib
 EXTRADIRS = test
 BUILD = obx obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
-PRIMS = lib/oblib.o
+PRIMS = lib/oblib.o lib/primtab.o
 
 ifdef MACOS
   EXTRADIRS += macport

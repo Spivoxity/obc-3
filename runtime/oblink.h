@@ -82,11 +82,11 @@ struct _template {		/* An encoding of an instruction */
 #define put2(buf, x) put_int(2, buf, x)
 #define put4(buf, x) put_int(4, buf, x)
 
-
 EXTERN int dflag;
 EXTERN int zflag;		/* Whether to compress the bytecode */
 EXTERN mybool sflag;		/* Whether to suppress symbol table */
 EXTERN mybool gflag;		/* Whether to output extra debugging info */
+EXTERN mybool custom;           /* Whether to output a primitive table */
 EXTERN mybool linecount;
 EXTERN int stack_size;
 
@@ -122,6 +122,7 @@ void gen_inst(const char *fmt, ...);
 void save_string(const char *label, char *string);
 void open_output(char *name, char *interp);
 void end_linking(void);
+void dump_prims(void);
 
 void relocate(int loc, int bits);
 

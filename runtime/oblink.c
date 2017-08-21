@@ -262,7 +262,6 @@ static void gen_main(void) {
      gen_inst("WORD GC_END");
 }
 
-#ifdef HAVE_GETOPT_LONG_ONLY
 #include <getopt.h>
 
 #define SCRIPT 1
@@ -277,7 +276,7 @@ static struct option longopts[] = {
 /* get_options -- analyse arguments */
 static void get_options(int argc, char **argv) {
      for (;;) {
-	  int c = getopt_long_only(argc, argv, "dvsgmi:L:R:o:k:", 
+	  int c = getopt_long_only(argc, argv, "dvsgCi:L:R:o:k:", 
 				   longopts, NULL);
 
 	  if (c == -1) break;
@@ -293,6 +292,8 @@ static void get_options(int argc, char **argv) {
 	       sflag = TRUE; break;
 	  case 'g':
 	       gflag = TRUE; break;
+          case 'C':
+               custom = TRUE; break;
 	  case 'i':
 	       interp = optarg; break;
 	  case 'L':
@@ -323,58 +324,6 @@ static void get_options(int argc, char **argv) {
      nfiles = argc - optind;
      file = &argv[optind];
 }
-
-#else
-
-/* get_options -- analyse arguments */
-static void get_options(int argc, char **argv) {
-     buf_init(file, INIT_MODS, 1, char *, "files");
-
-     for (int i = 1; i < argc; i++) {
-	  if (strcmp(argv[i], "-d") == 0)
-	       dflag++;
-	  else if (strcmp(argv[i], "-v") == 0) {
-	       printf("Oxford Oberon-2 linker version %s\n", PACKAGE_VERSION);
-	       exit(0);
-	  } else if (strcmp(argv[i], "-s") == 0) {
-	       sflag = TRUE;
-	  } else if (strcmp(argv[i], "-g") == 0) {
-	       gflag = TRUE;
-	  } else if (strcmp(argv[i], "-script") == 0) {
-	       if (++i == argc) panic("missing argument after -script");
-	       lscript = argv[i];
-	  } else if (strcmp(argv[i], "-dump") == 0) {
-	       dump = TRUE;
-	  } else if (strcmp(argv[i], "-nostdlib") == 0) {
-	       stdlib = FALSE;
-	  } else if (strcmp(argv[i], "-pl") == 0) {
-	       linecount = TRUE;
-	  } else if (strcmp(argv[i], "-i") == 0) {
-	       if (++i == argc) panic("missing argument after -i");
-	       interp = argv[i];
-	  } else if (strcmp(argv[i], "-L") == 0) {
-	       if (++i == argc) panic("missing argument after -L");
-	       libdir = argv[i];
-	  } else if (strcmp(argv[i], "-R") == 0) {
-	       if (++i == argc) panic("missing argument after -R");
-	       rtlibdir = argv[i];
-	  } else if (strcmp(argv[i], "-o") == 0) {
-	       if (++i == argc) panic("missing argument after -o");
-	       outname = argv[i];
-	  } else if (strcmp(argv[i], "-k") == 0) {
-	       if (++i == argc) panic("missing argument after -k");
-	       stack_size = atoi(argv[i]);
-	       if (stack_size < MIN_STACK) stack_size = MIN_STACK;
-	  } else if (argv[i][0] == '-') {
-	       panic("unknown switch %s", argv[i]);
-	  } else {
-	       buf_grow(file);
-	       file[nfiles] = argv[i];
-	       nfiles++;
-	  }
-     }
-}
-#endif
 
 int main(int argc, char **argv) {
      progname = argv[0];
@@ -415,6 +364,9 @@ int main(int argc, char **argv) {
      if (rtlibdir != NULL)
 	  save_string("LIBDIR", rtlibdir);
      end_linking();
+
+     if (custom)
+          dump_prims();
 
      return status;
 }

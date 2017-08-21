@@ -69,7 +69,7 @@ ifdef DEBUG
 endif
 
 all:: _Builtin.k $(STDMODS:%=%.k) $(CHECKMODS:%=%-b.k) $(SHLMODS:%=%.k) \
-	oblib.o lscript lscript-b
+	oblib.o primtab.o lscript lscript-b
 
 ### Bytecode files
 
@@ -111,7 +111,7 @@ endif
 ALL_RTFLAGS = $(RTFLAGS) -Wall $(INCLUDE)
 INCLUDE = -I .. -I $(top_srcdir)/runtime -I ../runtime
 
-oblib.o: $(OBLIB:%=%.o) primtab.o
+oblib.o: $(OBLIB:%=%.o)
 	$(LD) -r $^ -o $@
 
 $(CSRC:%=%.c): %.c: %.m
@@ -131,8 +131,11 @@ $(OBLIB:%=%.o) $(SHLMODS:%=%$(DLEXT)) primtab.o: \
 	../config.h $(top_srcdir)/runtime/obx.h \
 	$(top_srcdir)/runtime/obcommon.h
 
-primtab.c: _Builtin.k $(STDMODS:%=%.k) $(srcdir)/makeprims.tcl
-	$(TCLSH) $(srcdir)/makeprims.tcl _Builtin.k $(STDMODS:%=%.k) >$@
+primtab.o: $(top_srcdir)/runtime/primtab.h
+
+primtab.c: _Builtin.k $(STDMODS:%=%.k) ../runtime/oblink
+	../runtime/oblink -C --nostdlib _Builtin.k $(STDMODS:%=%.k) >$@
+	@rm a.out
 
 
 ### Library scripts
