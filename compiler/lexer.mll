@@ -57,11 +57,11 @@ let init () =
   if not !Config.ob07flag then
     List.iter add [ "RETURN", RETURN; "WITH", WITH ];
 
-  (* Oberon07 *)
+  (* Oberon-07 *)
   if !Config.ob07flag then
     List.iter add [ "RETURN", RETURN07; "TRUE", TRUE; "FALSE", FALSE ];
 
-  (* Extensions to Oberon07 *)
+  (* Extensions to Oberon-07 *)
   if not !Config.ob07flag || !Config.extensions then
     List.iter add [ "LOOP", LOOP; "EXIT", EXIT ];
 

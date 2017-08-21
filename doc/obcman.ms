@@ -860,10 +860,10 @@ defined at the same nesting level, without the need for `forward
 declarations'.
 \enditems
 
-\section Oberon07 mode.
+\section Oberon--07 mode.
 
 The command-line flags \verb/-07/ changes the behaviour of the
-compiler so that it accepts a language that is more like Oberon07,
+compiler so that it accepts a language that is more like Oberon--07,
 Wirth's 2007 revision of Oberon.
 Specifically, the following changes are made:
 \enumerate
@@ -893,7 +893,7 @@ end of each function.
 \item{10}
 {\sf CASE} statements may discriminate on types.
 \endenum
-In addition, the following language features are deleted in Oberon07
+In addition, the following language features are deleted in Oberon--07
 mode, unless the \verb/-x/ flag is given:
 \enumerate
 \item{11}
@@ -910,7 +910,7 @@ Type-bound procedures are not allowed.
 \section Optional language extensions.
 \label{s:extend}
 The command-line flag \verb/-x/ may be given with or
-without the flag \verb/-07/.  In Oberon07 mode, it relaxes some of the
+without the flag \verb/-07/.  In Oberon--07 mode, it relaxes some of the
 restrictions listed above, and in both modes it enables a number of
 language extensions:
 \enumerate
@@ -927,7 +927,7 @@ just |INTEGER| and |CHAR|.
 \item5 The function |ORD| may be applied to any discrete type,
 not just |CHAR|, and |MIN| and |MAX| also apply to enumeration types.
 \item6 The multipart {\sf WHILE} statements and type-based {\sf CASE}
-statements of Oberon07 are also enabled in Oberon--2 mode.
+statements of Oberon--07 are also enabled in Oberon--2 mode.
 \item7 Forward references to types need not be pointer targets: for
 example,
 \program

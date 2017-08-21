@@ -904,7 +904,7 @@ let rec gen_stmt exit_lab s =
 	        const (flexity t); const t0.t_rep.m_size;
 	        call_proc "FLEXASSIGN" (4 + 2 * flexity t) voidtype])
           else if is_flex e.e_type then
-            (* Oberon07 form array := flex *)
+            (* Oberon-07 form array := flex *)
             (let t0 = flex_base e.e_type in
               SEQ [gen_flexarg e.e_type v; gen_flexarg e.e_type e;
                 const 1; const t0.t_rep.m_size;

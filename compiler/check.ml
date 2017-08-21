@@ -58,7 +58,7 @@ let add_def d env =
 	sem_error "'$' has already been declared" [fId d.d_tag] d.d_loc
 
 let make_def x k t doc =
-  (* Variables are exported read-only in Oberon07 *)
+  (* Variables are exported read-only in Oberon-07 *)
   let exp = if !Config.ob07flag && k = VarDef
 		&& x.x_export = Visible then ReadOnly else x.x_export in
   { d_tag = x.x_name; d_module = !current; d_export = exp; d_kind = k; 
@@ -137,7 +137,7 @@ let is_typename tx =
 
 let not_07 feature loc = 
   if !Config.ob07flag && not !Config.extensions then 
-    sem_extend "$ is not allowed in Oberon07" [fStr feature] loc
+    sem_extend "$ is not allowed in Oberon-07" [fStr feature] loc
 
 let check_target t loc = 
   match t.t_guts with
@@ -769,7 +769,7 @@ and check_decl d env alloc lzy =
 	    | _ -> failwith "var kind"
 	  end;
           let kind' =
-            (* In Oberon07, aggregate value parameters are implicitly CONST *)
+            (* In Oberon-07, aggregate value parameters are implicitly CONST *)
             if !Config.ob07flag && kind = ParamDef 
               && not (scalar t) then CParamDef else kind in
 	  let d = make_def x kind' t doc in alloc d; add_def d env in

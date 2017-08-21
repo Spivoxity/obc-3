@@ -169,9 +169,9 @@ let rec is_var e =
 	  let d = get_def x in
 	  match d.d_kind with 
 	      VarDef ->
-                (* In Oberon07, imported variables are read-only,
+                (* In Oberon-07, imported variables are read-only,
                    even if they were exported read-write from another
-                   (non-Oberon07) module *)
+                   (non-Oberon-07) module *)
 		d.d_module = !current 
                   || d.d_export = Visible && not !Config.ob07flag
 	    | ParamDef -> true

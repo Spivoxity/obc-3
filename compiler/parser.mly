@@ -146,7 +146,7 @@ body :
     /* empty */                 { makeStmt (Skip, no_loc) }
   | BEGIN stmts		        { $stmts } ;  
 
-/* The syntax of RETURN clauses is different in Oberon07, so in 07
+/* The syntax of RETURN clauses is different in Oberon-07, so in 07
    mode we make the lexer return a different token RETURN07; the abstract
    syntax allows both RETURN statements and 07-style clauses, but only
    one is accessible from the concrete syntax in each mode. */
@@ -227,7 +227,7 @@ fdecl :
 stray :
     SEMI
       { if !Config.ob07flag then
-          syn_error "Oberon07 forbids a semicolon here" [] (rloc 1) } ;
+          syn_error "Oberon-07 forbids a semicolon here" [] (rloc 1) } ;
 
 proc :
     doc PROCEDURE procid params semi pblock semi	
@@ -468,7 +468,7 @@ export :
   | STAR			{ Visible }
   | MINUS			
       { if !Config.ob07flag then
-          parse_error "'-' is not allowed as an export mark in Oberon07";
+          parse_error "'-' is not allowed as an export mark in Oberon-07";
         ReadOnly } ;
 
 semi :
