@@ -64,7 +64,7 @@ let fetch t a =
 	  Simple (IntVal (integer_of_int32 (peek t.t_rep.m_size a)))
       | BasicType ShortT ->
 	  Simple (IntVal (signext 16 (integer_of_int32 (peek 2 a))))
-      | BasicType LongT ->
+      | BasicType (LongT | LongPtrT) ->
 	  Simple (IntVal (integer_of_int64 (peek_int64 a)))
       | BasicType FloatT ->
 	  Simple (FloVal (peek_float a))
@@ -192,6 +192,8 @@ let fDynVal =
 	      fStr (Printf.sprintf "%.12G" (flo_value v))
 	  | BasicType VoidT ->
 	      fStr "-"
+          | BasicType LongPtrT ->
+              fStr (Printf.sprintf "%#Lx" (int64_of_integer (int_value v)))
 	  | EnumType _ ->
 	      fEnum t v
 	  | _ -> fVal v
