@@ -90,42 +90,37 @@ BEGIN
   IF b >= 0 THEN RETURN LSL(a, b) ELSE RETURN ASR(a, -b) END
 END ASH;
 
-PROCEDURE ldexpf(x: REAL; n: INTEGER): REAL IS "ldexpf";
-PROCEDURE frexpf(x: REAL; VAR n: INTEGER): REAL IS "frexpf";
-PROCEDURE ldexp(x: LONGREAL; n: INTEGER): LONGREAL IS "ldexp";
-PROCEDURE frexp(x: LONGREAL; VAR n: INTEGER): LONGREAL IS "frexp";
+PROCEDURE LIBERROR(CONST msg: ARRAY OF CHAR) IS * "LIBERROR";
 
+(* These are very flaky, but they are what Wirth describes. *)
+ 
 PROCEDURE PACK(VAR x: REAL; n: INTEGER);
 BEGIN
-  x := ldexpf(x, n)
+  x := SYSTEM.VAL(REAL, SYSTEM.VAL(INTEGER, x) + LSL(n, 23))
 END PACK;
-
+ 
 PROCEDURE UNPK(VAR x: REAL; VAR n: INTEGER);
-  VAR y: REAL; k: INTEGER;
+  VAR xx: INTEGER;
 BEGIN
-  y := frexpf(x, k);
-  IF y # 0.0 THEN
-    y := y*2; k := k-1
-  END;
-  x := y; n := k
+  xx := SYSTEM.VAL(INTEGER, x);
+  n := LSR(xx, 23) - 127;
+  x := SYSTEM.VAL(REAL, xx - LSL(n, 23))
 END UNPK;
-
+ 
+CONST two52 = 10000000000000H;
+ 
 PROCEDURE PACKLONG(VAR x: LONGREAL; n: INTEGER);
 BEGIN
-  x := ldexp(x, n)
+  x := SYSTEM.VAL(LONGREAL, SYSTEM.VAL(LONGINT, x) + LONG(n) * two52)
 END PACKLONG;
-
+ 
 PROCEDURE UNPKLONG(VAR x: LONGREAL; VAR n: INTEGER);
-  VAR y: LONGREAL; k: INTEGER;
+  VAR xx: LONGINT;
 BEGIN
-  y := frexp(x, k);
-  IF y # 0.0 THEN
-    y := y*2; k := k-1
-  END;
-  x := y; n := k
+  xx := SYSTEM.VAL(LONGINT, x);
+  n := SHORT(xx DIV two52 - 1023);
+  x := SYSTEM.VAL(LONGREAL, xx - LONG(n) * two52)
 END UNPKLONG;
-
-PROCEDURE LIBERROR(CONST msg: ARRAY OF CHAR) IS * "LIBERROR";
 
 END Builtin.
 
@@ -267,4 +262,20 @@ int INTDOUBLE(double x) { return (int) x; }
 void P_LIBERROR(value *bp) {
      value *bp1 = valptr(bp[BP]);
      error_stop((char * ) pointer(bp[HEAD+0]), 0, bp1, NULL);
+}
+
+/* These are very flaky, but they are what Wirth describes. */
+
+void PACKLONG(void *xx, int n) {
+     double x = get_double(xx);
+     uint64_t y = * (uint64_t *) &x;
+     * (uint64_t *) &x = y + ((int64_t) n << 52);
+     put_double(xx, x);
+}
+void UNPKLONG(void *xx, int *n) {
+     double x = get_double(xx);
+     uint64_t y = * (uint64_t *) &x;
+     int k = (y>>52) - 1023;
+     *n = k; * (uint64_t *) &x = y - ((int64_t) k << 52);
+     put_double(xx, x);
 }
