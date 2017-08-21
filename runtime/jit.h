@@ -141,7 +141,7 @@ void flush_stack(int a, int b);
 void spill(reg r);
 
 void deref(int op, int ty, int size);
-void store(int ldop, int ty, int s);
+void store(int ldop, int s);
 void plusa();
 
 void save_stack(codepoint lab);

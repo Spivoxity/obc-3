@@ -608,15 +608,14 @@ static void unalias(int a, ctvalue v) {
 }
 
 /* store -- perform store operation on top of stack */
-void store(int ldop, int ty, int s) {
+void store(int ldop, int s) {
      reg r1;
      ctvalue v;
      int op = -1;
      mybool cache = TRUE;
 
-     deref(ldop, ty, s);							
+     deref(ldop, vstack[sp-2].v_type, s);							
      v = &vstack[sp-1];
-     v->v_type = vstack[sp-2].v_type;
      if (same(v, &vstack[sp-2])) {
 	  /* Store into same location as load: mostly for
 	     SLIDEW / RESULTW */
@@ -626,16 +625,20 @@ void store(int ldop, int ty, int s) {
 
      unalias(2, v); 
 
+     int ty = v->v_type;
+
 #ifndef M64X32
      if (ldop == I_LOADQ) {
 	  move_longval(&vstack[sp-2], vstack[sp-1].v_reg, vstack[sp-1].v_val);
 	  pop(2);
 	  return;
      }
+
+     if (ldop == I_LOADD) ty = FLO;
 #endif
      
      rlock(v->v_reg);
-     r1 = move_to_reg(2, v->v_type); 
+     r1 = move_to_reg(2, ty); 
      pop(2); unlock(2);						
 
      switch (ldop) {

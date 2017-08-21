@@ -320,9 +320,9 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
 }
 
 /* result -- store procedure result */
-static void result(int ty, int ldop, int size) {
+static void result(int ldop, int size) {
      push(I_CON, INT, NULL, address(&ob_res), 1);
-     store(ldop, ty, size);
+     store(ldop, size);
 }
 
 /* instr -- translate one bytecode instruction */
@@ -376,12 +376,12 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #endif
 	  break;
 
-     case I_STOREW:	store(I_LOADW, INT, 1); break;
-     case I_STOREF:	store(I_LOADF, FLO, 1); break;
-     case I_STORES:	store(I_LOADS, INT, 1); break;
-     case I_STOREC:	store(I_LOADC, INT, 1); break;
-     case I_STORED:	store(I_LOADD, FLO, 2); break;
-     case I_STOREQ:	store(I_LOADQ, INT, 2); break;
+     case I_STOREW:	store(I_LOADW, 1); break;
+     case I_STOREF:	store(I_LOADF, 1); break;
+     case I_STORES:	store(I_LOADS, 1); break;
+     case I_STOREC:	store(I_LOADC, 1); break;
+     case I_STORED:	store(I_LOADD, 2); break;
+     case I_STOREQ:	store(I_LOADQ, 2); break;
 
      case I_DUP:
 	  v = move_from_frame(arg1+1);
@@ -614,13 +614,13 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_LINK:
 	  push(I_CON, INT, NULL, address(&statlink), 1);
-	  store(I_LOADW, INT, 1);
+	  store(I_LOADW, 1);
 	  break;
 
      case I_SAVELINK:
 	  push(I_LOADW, INT, NULL, address(&statlink), 1);
 	  push(I_ADDR, INT, rBP, 4*SL, 1);
-	  store(I_LOADW, INT, 1);
+	  store(I_LOADW, 1);
 	  break;
 
      case I_JPROC:
@@ -633,10 +633,10 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_SLIDEF:	proc_call(pc, arg1, FLO, I_LOADF, 1); break;
      case I_SLIDED:	proc_call(pc, arg1, FLO, I_LOADD, 2); break;
 
-     case I_RESULTW:	result(INT, I_LOADW, 1); break;
-     case I_RESULTQ:	result(INT, I_LOADQ, 2); break;
-     case I_RESULTF:	result(FLO, I_LOADF, 1); break;
-     case I_RESULTD:    result(FLO, I_LOADD, 2); break;
+     case I_RESULTW:	result(I_LOADW, 1); break;
+     case I_RESULTQ:	result(I_LOADQ, 2); break;
+     case I_RESULTF:	result(I_LOADF, 1); break;
+     case I_RESULTD:    result(I_LOADD, 2); break;
 
      case I_RETURN:
           /* Elide the jump at end of procedure */
