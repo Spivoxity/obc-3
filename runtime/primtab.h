@@ -125,7 +125,7 @@ typedef void type_V;
      struct primdef primtab[] = { \
           prims(PRIM, PRIM, PRIM) \
           { NULL, NULL }          \
-     }
+     };
 
 #ifdef DYNLINK
 #define PRIMTAB(prims) WRAPPERS(prims)
