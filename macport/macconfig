@@ -1,3 +1,2 @@
 autoreconf
-export GTKDIR=$HOME/gtk/inst
-./configure --prefix=/usr/local $*
+./configure --prefix=/usr/local GTKDIR=/Users/gtk/gtk/inst $*

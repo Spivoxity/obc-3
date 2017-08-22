@@ -1,0 +1,21 @@
+BB_AUTH_STRING=`cat ~/.bitbucket`
+URL=https://api.bitbucket.org/2.0/repositories/Spivey/obc-3/downloads
+
+(hg pull bitbucket && hg up default) || exit
+
+REV=`hg ident -i`
+# For releases:
+# REL=`hg tags | awk '/rel-3\.0/ { print $1; exit }'`
+if echo $REV | cmp build -; then exit; fi
+echo $REV >build
+
+autoreconf \
+&& sh macport/macconfig \
+&& make quiteclean \
+&& make \
+&& make test \
+&& make test0 \
+&& make -C macport package \
+&& (cd macport; \
+    curl -u $BB_AUTH_STRING $URL -F files=@`echo obc-mac-*.pkg`) \
+&& echo Done.
