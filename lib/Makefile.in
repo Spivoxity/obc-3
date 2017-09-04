@@ -117,9 +117,12 @@ oblib.o: $(OBLIB:%=%.o)
 $(CSRC:%=%.c): %.c: %.m
 	sed -e '1,/^--CODE--/d' $< >$@
 
-XYplane$(DLEXT): XYplane.c
+XYplane$(DLEXT): XYplane.c XYstubs.c
 	$(CC) $(ALL_RTFLAGS) $(X_CFLAGS) $(SHL_CFLAGS) \
-		$(SHL_LFLAGS) $< $(LIBS) $(XLIB) -o $@
+		$(SHL_LFLAGS) $^ $(LIBS) $(XLIB) -o $@
+
+XYstubs.c: XYplane.k makestubs.tcl
+	$(TCLSH) makestubs.tcl XYplane.k >$@
 
 %$(DLEXT): %.c
 	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $(SHL_LFLAGS) $< $(LIBS) -o $@
@@ -133,9 +136,8 @@ $(OBLIB:%=%.o) $(SHLMODS:%=%$(DLEXT)) primtab.o: \
 
 primtab.o: $(top_srcdir)/runtime/primtab.h
 
-primtab.c: _Builtin.k $(STDMODS:%=%.k) ../runtime/oblink
-	../runtime/oblink -C --nostdlib _Builtin.k $(STDMODS:%=%.k) >$@
-	@rm a.out
+primtab.c: _Builtin.k $(STDMODS:%=%.k) makestubs.tcl
+	$(TCLSH) makestubs.tcl _Builtin.k $(STDMODS:%=%.k) >$@
 
 
 ### Library scripts

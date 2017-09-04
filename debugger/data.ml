@@ -75,7 +75,7 @@ let fetch t a =
       | PointerType _ | BasicType PtrT | ProcType _ ->
 	  Address (peek 4 a)
       | _ ->
-	failwith "fetching unknown type" in
+ 	  failwith (sprintf "fetching unknown type $" [fOType t]) in
     (t, r)
   end
 
