@@ -776,9 +776,6 @@ and check_args kind env formals args loc =
     List.iter (check_arg env) (List.combine formals args)
 
 and check_arg env (formal, arg) =
-  if formal.d_kind = VParamDef && not (is_var arg) then
-    sem_error "VAR parameter '$' should be a variable" 
-      [fId formal.d_tag] arg.e_loc;
   if is_flex formal.d_type then begin
     let t1 = check_expr arg env in
     if is_string formal.d_type && is_char_const arg then
@@ -808,7 +805,11 @@ and check_arg env (formal, arg) =
 	    sem_type t1
 	  end
       | _ -> failwith "check_arg"
-  end
+  end;
+
+  if formal.d_kind = VParamDef && not (is_var arg) then
+    sem_error "VAR parameter '$' should be a variable" 
+      [fId formal.d_tag] arg.e_loc;
 
 and check_builtin env p args e loc =
   (* p.b_nargs = -1 if the primitive has a variable number of arguments;
