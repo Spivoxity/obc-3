@@ -316,9 +316,12 @@ stmts1 :
 stmt0 :
     desig ASSIGN expr		{ Assign ($desig, $expr) }
   | desig COMMA desigs ASSIGN expr COMMA exprs
-      { if List.length $desigs <> List.length $exprs then
-	  syn_error "Wrong number of expressions on RHS" [] (here ());
-	SimAssign (List.combine ($desig::$desigs) ($expr::$exprs)) }
+      { if List.length $desigs = List.length $exprs then
+	  SimAssign (List.combine ($desig::$desigs) ($expr::$exprs))
+        else begin
+          syn_error "Wrong number of expressions on RHS" [] (lloc ());
+          Skip
+        end }
   | desig			{ ProcCall (make_call $desig) } ;
 
 stmt1 :
@@ -468,7 +471,8 @@ export :
   | STAR			{ Visible }
   | MINUS			
       { if !Config.ob07flag then
-          parse_error "'-' is not allowed as an export mark in Oberon-07";
+          syn_error "'-' is not allowed as an export mark in Oberon-07"
+            [] (rloc 1);
         ReadOnly } ;
 
 semi :

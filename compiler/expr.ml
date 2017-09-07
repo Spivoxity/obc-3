@@ -690,7 +690,7 @@ and check_call f args e env cast_ok =
     | _ ->
 	(* Maybe it's a cast? *)
         begin try
-	  (* raise Non_proc if it isn't a cast after after all *)
+	  (* raise Non_proc if it isn't a cast after all *)
 	  if not cast_ok || List.length args <> 1 then raise Non_proc;
           let tn = List.hd args in
 	  check_qual tn env;
@@ -828,7 +828,7 @@ and check_builtin env p args e loc =
 
     let propagate f e1 t1 =
       begin match e1.e_guts with
-	  Const (v, _) -> edit_expr e (Const(f v, t1))
+	  Const (v, _) -> edit_expr e (Const (f v, t1))
         | _ -> () 
       end;
       t1 in
@@ -1100,14 +1100,16 @@ and check_builtin env p args e loc =
 
       | (IncProc | DecProc), _ ->
 	  if List.length args < 1 || List.length args > 2 then
-	    sem_error "$ expects 1 or 2 arguments" [fStr p.b_name] e.e_loc;
-	  let e1 = List.nth args 0 in
-	  let t1 = check_var integral "an integer" e1 in
-	  if List.length args = 2 && integral t1 then begin
-	    let e2 = List.nth args 1 in
-	    check_assign e2 t1 env
-              "as the second argument of $" [fStr p.b_name]
-	  end;
+	    sem_error "$ expects 1 or 2 arguments" [fStr p.b_name] e.e_loc
+          else begin
+            let e1 = List.nth args 0 in
+            let t1 = check_var integral "an integer" e1 in
+            if List.length args = 2 && integral t1 then begin
+              let e2 = List.nth args 1 in
+              check_assign e2 t1 env
+                "as the second argument of $" [fStr p.b_name]
+            end
+          end;
 	  voidtype
 
       | PackProc, [e1; e2] ->
@@ -1126,14 +1128,17 @@ and check_builtin env p args e loc =
 		[fStr p.b_name] e1.e_loc;
 	  voidtype
 
-      | Assert, e1::_ ->
+      | Assert, _ ->
 	  if List.length args < 1 || List.length args > 2 then
-	    sem_error "ASSERT expects 1 or 2 arguments" [] e.e_loc;
-	  check_assign e1 boolean env "as argument of ASSERT" [];
-	  if List.length args = 2 then begin
-	    let e2 = List.nth args 1 in
-	    check_assign e2 inttype env "as argument of ASSERT" []
-	  end;
+	    sem_error "ASSERT expects 1 or 2 arguments" [] e.e_loc
+          else begin
+            let e1 = List.nth args 0 in
+  	    check_assign e1 boolean env "as argument of ASSERT" [];
+	    if List.length args = 2 then begin
+	      let e2 = List.nth args 1 in
+	      check_assign e2 inttype env "as argument of ASSERT" []
+	    end
+          end;
 	  voidtype
 
       | AdrFun, [e1] ->
