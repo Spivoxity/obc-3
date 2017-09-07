@@ -53,17 +53,16 @@ let rows = ref []
 
 let table = Growvect.create 1000
 let check = Growvect.create 1000
-
+let unassigned = -1000			(* Unused slots in check vector *)
 let taken = Hashtbl.create 500
-
-let first_zero = ref 0
+let first_free = ref 0
 
 (* make_row -- create a row with a specified list of entries *)
 let make_row ts =
   if ts = [] then
     empty_row
   else begin
-    let v = { v_size = List.length ts; v_span = span ts; v_start = -1;
+    let v = { v_size = List.length ts; v_span = span ts; v_start = -999;
 		v_entries = List.sort (fun (a, _) (b, _) -> a - b) ts } in
     try Hashtbl.find rowtab v with
       Not_found -> 
@@ -74,14 +73,14 @@ let make_row ts =
 (* make_space -- expand the table up to a specified index *)
 let make_space i =
   while i >= Growvect.size table do
-    Growvect.append table 0; Growvect.append check (-1)
+    Growvect.append table 0; Growvect.append check unassigned
   done
 
 (* fits -- test if a row fits in the table at a certain position *)
 let fits v pos =
   pos <> 0
   && List.for_all (fun (i, _) -> 
-	make_space (pos+i); Growvect.get check (pos+i) = -1) 
+	make_space (pos+i); Growvect.get check (pos+i) = unassigned) 
       v.v_entries
   && not (Hashtbl.mem taken pos)
   
@@ -95,18 +94,18 @@ let insert v pos =
 
 (* pack_rows -- pack all allocated rows into the table *)
 let pack_rows () = 
-  (* Consider the rows in decreasing order of sparsity, hoping that 
+  (* Consider the rows in increasing order of sparsity, hoping that 
      later rows will fit in the spaces left within earlier ones *)
   let sorted =
     List.sort 
       (fun v1 v2 -> lexico (v2.v_span - v1.v_span) (v2.v_size - v1.v_size))
       !rows in
   List.iter (fun v ->
-      let pos = ref (!first_zero - fst (List.hd v.v_entries)) in
+      let pos = ref (!first_free - fst (List.hd v.v_entries)) in
       while not (fits v !pos) do incr pos done;
       insert v !pos; v.v_start <- !pos;
-      while !first_zero < Growvect.size table 
-	  && Growvect.get check !first_zero = -1 do 
-	incr first_zero 
+      while !first_free < Growvect.size table 
+	  && Growvect.get check !first_free <> unassigned do 
+	incr first_free 
       done)
     sorted

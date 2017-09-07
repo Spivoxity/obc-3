@@ -215,7 +215,8 @@ let actions_for p =
     Util.flat_map (fun z ->
 	let r = z.z_rule and k = z.z_index in
 	if k < r.r_len then [] else
-	  List.map (fun x -> (x, Reduce r)) (SymSet.elements z.z_lookahead))
+	  List.map (fun x -> (x, Reduce r))
+            (SymSet.elements (SymSet.remove error_sym z.z_lookahead)))
       (ItemSet.elements p.p_items) in
   shifts @ reductions
 

@@ -169,8 +169,6 @@ let main () =
 
   let t4 = Sys.time () in
 
-  if !verbosity > 0 then Report.close ();
-
   (* Check all rules are used at least once *)
   let useless = ref 0 in
   Grammar.do_rules 
@@ -198,6 +196,11 @@ let main () =
   Output.make_imp_file (!stem ^ ".ml") actvec defred gotovec defgoto;
 
   let t6 = Sys.time () in
+
+  if !verbosity > 2 then
+    Report.decode_tables actvec defred gotovec defgoto;
+
+  if !verbosity > 0 then Report.close ();
 
   if !tflag then begin
     printf "Parsing        $\n" [fFlo (t1 -. t0)];

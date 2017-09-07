@@ -34,10 +34,12 @@ open Lr0
 val start : string -> unit
 val show_rules : unit -> unit
 val show_firsts : unit -> unit
-val show_follow : string -> (Lr0.transition, Grammar.SymSet.t) Vector.t -> unit
-val show_lkb : 
-  (Lr0.state, (Grammar.rule * Lr0.transition) list) Vector.t -> unit
+val show_follow : string -> (transition, SymSet.t) Vector.t -> unit
+val show_lkb : (state, (rule * transition) list) Vector.t -> unit
 val report_conflict : state -> symbol -> action -> action -> unit
 val show_state : state -> (symbol * action) list -> int -> 
-			(symbol * state) list -> bool -> unit
+	(symbol * state) list -> bool -> unit
+val decode_tables : (state, Table.row) Vector.t ->
+        (state, int) Vector.t -> (symbol, Table.row) Vector.t ->
+        (symbol, int) Vector.t -> unit
 val close : unit -> unit

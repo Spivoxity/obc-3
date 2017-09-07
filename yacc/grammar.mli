@@ -66,6 +66,7 @@ val symbol_vector: 'a -> (symbol, 'a) Vector.t
 
 val do_syms : (symbol -> unit) -> unit
 val do_nonterms : (symbol -> unit) -> unit
+val do_tokens : (symbol -> unit) -> unit
 
 module SymSet : Set.S with type elt = symbol
 

@@ -137,6 +137,46 @@ let show_state p actions defred gotos vflag =
     lprintf "\n" []
   end
 
+(* decode_tables -- report transitions from the packed table *)
+let decode_tables actvec defred gotovec defgoto =
+  let lookup b i =
+    if b <> 0 && b+i >= 0 && b+i < Growvect.size Table.table
+        && Growvect.get Table.check (b+i) == i then
+      Growvect.get Table.table (b+i)
+    else
+      0 in
+
+  do_states (function p ->
+    lprintf "State $:" [fNum p.p_id];
+
+    let b = Table.start (Vector.get actvec p) in
+    if b <> 0 then
+      Grammar.do_tokens (function t ->
+        let a = lookup b t.x_value in
+        if a > 0 then lprintf " $ S$" [fSym t; fNum a]
+        else if a < 0 then lprintf " $ R$" [fSym t; fNum (-a)]);
+
+    let d = Vector.get defred p in
+    if d <> 0 then lprintf " . R$" [fNum d];
+
+    (* Get the list of gotos from the LR0 machine *)
+    let gotos = Lr0.gotos_for p in
+
+    (* But find the destinations from the table *)
+    if gotos <> [] then begin
+      lprintf " /" [];
+      List.iter (fun (x, q0) ->
+          let bx = Table.start (Vector.get gotovec x) in
+          let q1 = lookup bx p.p_id in
+          if q1 <> 0 then
+            lprintf " $ G$" [fSym x; fNum q1]
+          else
+            lprintf " [$ G$]" [fSym x; fNum (Vector.get defgoto x)])
+        gotos
+    end;
+
+    lprintf "\n" [])
+
 let close () =
   let useless = ref 0 in		(* Useless rules *)
   do_rules (fun r ->
