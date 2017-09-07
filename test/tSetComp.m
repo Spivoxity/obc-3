@@ -4,7 +4,7 @@ VAR x, y: SET; b: BOOLEAN; n: INTEGER;
 
 BEGIN
   b := (x <= y);
-  b := ({n} <= y);
+  b := (y >= {n});
   b := ({3} <= y)
 END tSetComp.
 
@@ -24,7 +24,7 @@ BITAND
 CONST 0
 EQ
 STGC tSetComp.b
-!   b := ({n} <= y);
+!   b := (y >= {n});
 CONST 1
 LDGW tSetComp.n
 CONST 32

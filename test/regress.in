@@ -85,7 +85,6 @@ for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
     echo "$f"
 
     case $f in
-        e*.m) flag=$cflags;;
         tMixIt.m) flag="$cflags -w -x";;
         tNan.m) flag="$cflags -b -x";;
         *07.m) flag="$cflags -07 -x";;

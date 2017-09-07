@@ -43,12 +43,6 @@ END eRetType.
 > PROCEDURE pip*(): rec; END pip;
 >           ^^^
 
-"eRetType.m", line 19: a call that returns a result cannot be used as a
-statement
->   pip();
->   ^^^^^
-> (Use the -x flag to remove this restriction)
-
 "eRetType.m", line 20: a RETURN statement is not allowed in a module body
 >   RETURN 2
 >   ^^^^^^^^

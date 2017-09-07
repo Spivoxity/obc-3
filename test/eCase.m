@@ -21,10 +21,4 @@ END eCase.
 "eCase.m", line 7: this is a duplicate case label for value 'a'
 >   CASE 'x' OF 'a': | 'a': END;
 >                      ^^^
-
-"eCase.m", line 8: CASE expects an integer or character expression
->   CASE TRUE OF TRUE: END
->        ^^^^
-> (Use the -x flag to remove this restriction)
-> This expression has type BOOLEAN
 >>*)

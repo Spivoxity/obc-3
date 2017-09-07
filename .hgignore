@@ -3,13 +3,16 @@ syntax: glob
 *.cmi
 *.cmo
 *.cma
+*.cmp
 *.o
 *.a
 *.k
 *.exe
 *.x
 *.so
-Makefile
+bisect*.out
+bisect/*.mli
+bisect/*.ml
 compiler/Depend
 compiler/Makefile
 compiler/config.ml

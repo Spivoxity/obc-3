@@ -106,13 +106,13 @@ END eAssign.
 >   b := 'a' = 3;
 >        ^^^^^^^
 > The left operand has type CHAR
-> The right operand has type INTEGER
+> The right operand has type integer
 
 "eAssign.m", line 25: the operands of & must have type BOOLEAN
 >   b := TRUE & 3;
 >        ^^^^^^^^
 > The left operand has type BOOLEAN
-> The right operand has type INTEGER
+> The right operand has type integer
 
 "eAssign.m", line 26: warning -- the integer value 9999999999 does not fit in
 type INTEGER

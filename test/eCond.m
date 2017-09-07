@@ -12,7 +12,7 @@ END eCond.
 "eCond.m", line 6: the test in an IF statement must have type BOOLEAN
 >   IF 3 THEN END;
 >      ^
-> This expression has type INTEGER
+> This expression has type integer
 
 "eCond.m", line 7: the test in a WHILE statement must have type BOOLEAN
 >   WHILE NIL DO END;

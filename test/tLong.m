@@ -4,6 +4,7 @@ MODULE tLong;
 Greater
 6.00000000000
 1.732051
+1.23000000000E+20
 >>*)
 
 IMPORT Out, MathL;
@@ -19,7 +20,8 @@ BEGIN
   x := 3.0;
   IF x > 2.0 THEN Out.String("Greater"); Out.Ln END;
   Out.LongReal(Mult(2.0, x)); Out.Ln;
-  Out.Fixed(MathL.Sqrt(x), 0, 6); Out.Ln
+  Out.Fixed(MathL.Sqrt(x), 0, 6); Out.Ln;
+  Out.LongReal(1.23D20); Out.Ln
 END tLong.
 
 (*[[
@@ -64,7 +66,7 @@ GLOBAL Out.LongReal
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   Out.Fixed(MathL.Sqrt(x), 0, 6); Out.Ln
+!   Out.Fixed(MathL.Sqrt(x), 0, 6); Out.Ln;
 CONST 6
 CONST 0
 LDGD tLong.x
@@ -72,6 +74,12 @@ GLOBAL MathL.Sqrt
 CALLD 2
 GLOBAL Out.Fixed
 CALL 4
+GLOBAL Out.Ln
+CALL 0
+!   Out.LongReal(1.23D20); Out.Ln
+DCONST 1.23e+20
+GLOBAL Out.LongReal
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 RETURN
