@@ -499,8 +499,7 @@ let rec check_stmt s env =
             sem_error "the expression after CASE must have $"
                 [fStr reqd] switch.e_loc;
             sem_type st
-          end
-          else begin
+          end else begin
             if not (integral st || same_types st character) 
                 && not !Config.extensions then begin
               sem_extend "CASE expects an integer or character expression" 
@@ -511,13 +510,15 @@ let rec check_stmt s env =
               sem_error "sorry, CASE for type LONGINT is not implemented" 
                 [] switch.e_loc;
 
+            (* Replace numtype by integer *)
+            let st' = if integral st then inttype else st in
             let nerrs = !Error.err_count in
             let check_labs (labs, body) = 
-              List.map (fun lab -> check_caselab lab st env) labs in
+              List.map (fun lab -> check_caselab lab st' env) labs in
             let vs = List.concat (List.map check_labs arms) in
             (* Check for duplicate only if there were no errors while
                 checking the labels *)
-            if !Error.err_count = nerrs then check_dupcases vs st
+            if !Error.err_count = nerrs then check_dupcases vs st'
           end;
           List.iter (function (labs, body) -> check_stmt body env) arms;
           check_else env default

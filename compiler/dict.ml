@@ -271,7 +271,7 @@ let sys_type k r s =
   t.t_module <- intern "SYSTEM"; t
 
 let voidtype = basic_type VoidT void_rep "VOID"
-let numtype = basic_type NumT void_rep "INTEGER"
+let numtype = basic_type NumT void_rep "integer"
 let bytetype = basic_type ByteT char_rep "BYTE"
 let shortint = basic_type ShortT short_rep "SHORTINT"
 let inttype = basic_type IntT int_rep "INTEGER"
