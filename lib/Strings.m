@@ -130,7 +130,7 @@ BEGIN
 END Cap;
 
 (** Compare -- compare two strings *)
-PROCEDURE Compare*(s, t: ARRAY OF CHAR): INTEGER IS * "Strings_Compare";
+PROCEDURE Compare*(s, t: ARRAY OF CHAR): INTEGER IS "*Strings_Compare";
 
 END Strings.
 

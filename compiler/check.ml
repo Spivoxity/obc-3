@@ -785,7 +785,7 @@ and check_decl d env alloc lzy =
 	let fsize = 
 	  match body with Block (_, _, _, fs) -> fs | NoBlock -> ref 0 in
 	check_proc kind x heading doc env fsize
-    | PrimDecl (x, heading, flag, name, doc) ->
+    | PrimDecl (x, heading, name, doc) ->
 	if !level > 0 then
 	  sem_error "primitives must be declared at the outermost level"
 	    [] x.x_loc;

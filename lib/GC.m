@@ -34,7 +34,7 @@ MODULE GC;
 IMPORT SYSTEM;
 
 (** Collect -- perform a garbage collection *)
-PROCEDURE Collect* IS * "GC_Collect";
+PROCEDURE Collect* IS "*GC_Collect";
 
 (** HeapSize -- return the total size of the heap *)
 PROCEDURE HeapSize*(): INTEGER IS "gc_heap_size";

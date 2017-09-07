@@ -1157,10 +1157,11 @@ let rec gen_proc =
         List.iter gen_proc decls;
 	let d = get_def x in
         gen_procdef d x.x_loc fsize body ret
-    | PrimDecl (x, _, flag, name, _) ->
+    | PrimDecl (x, _, name, _) ->
         let d = get_def x in
-        if flag = '*' then
-          put "PRIMDEF $ $ *\n" [fSym d.d_lab; fStr name]
+        if name.[0] = '*' then
+          put "PRIMDEF $ $ *\n" [fSym d.d_lab;
+            fStr (String.sub name 1 (String.length name - 1))]
         else begin
           let p = get_proc d.d_type in
           let rt = type_code p.p_result in
