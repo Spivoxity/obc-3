@@ -167,6 +167,7 @@ let commute =
     | Lt -> Gt | Leq -> Geq | Gt -> Lt | Geq -> Leq
     | _ -> raise Not_found
 
+(* (DEBUG-- *)
 (* op_name -- name of an operator *)
 let op_name = 
   function Plus -> "+" | Minus -> "-" | Times -> "*" 
@@ -177,5 +178,6 @@ let op_name =
     | BitNot -> "*BITNOT*" | BitXor -> "*BITXOR*" | BitSub -> "*BITSUB*"
     | In -> "IN" | Inc -> "INC" | Dec -> "DEC" 
     | Asr -> "ASR" | Lsr -> "LSR" | Lsl -> "LSL" | Ror -> "ROR"
+(* --DEBUG) *)
 
 let fOp w = fStr (op_name w)

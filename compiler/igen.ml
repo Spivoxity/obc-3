@@ -81,14 +81,9 @@ let size_of e = e.e_type.t_rep.m_size
 (* count_of -- calculate size of type in words for parameter *)
 let count_of t = (t.t_rep.m_size + word_size - 1) / word_size
 
-let roundup n = (n+3)/4*4
-
 (* is_const -- test if expression is a constant *)
 let is_const e = 
   match e.e_guts with (Const _ | Nil) -> true | _ -> false
-
-let is_deref e =
-  match e.e_guts with Deref _ -> true | _ -> false
 
 (* value_of -- get value of constant *)
 let value_of e =
@@ -118,9 +113,7 @@ let load_addr = SEQ [LOAD IntT; XMARK]
 let offset n = SEQ [const n; OFFSET]
 
 let rec schain n =
-  if n = 0 then
-    LOCAL 0
-  else if n = 1 then
+  if n = 1 then
     SEQ [LOCAL stat_link; load_addr]
   else
     SEQ [schain (n-1); offset stat_link; load_addr]
@@ -438,6 +431,23 @@ and gen_expr e =
               typecheck (base_type d.d_type) e])]
 
       | Set els ->
+          let gen_element =
+            function
+                Single x ->
+                  SEQ [const 1; gen_expr x;
+                    check (SEQ [const set_size; BOUND (expr_line x)]);
+                    BINOP (IntT, Lsl)]
+              | Range (x, y) ->
+                  (* {x..y} = {0..y} * {x..31} *)
+                  SEQ [const (-1); gen_expr x;
+                    check (SEQ [const set_size; BOUND (expr_line x)]);
+                    BINOP (IntT, Lsl);		(* {x..31} *)
+                    const (-2); gen_expr y;
+                    check (SEQ [const set_size; BOUND (expr_line y)]);
+                    BINOP (IntT, Lsl);		(* {y+1..31} *)
+                    MONOP (IntT, BitNot);	(* {0..y} *)
+                    BINOP (IntT, BitAnd)] in
+
 	  if els = [] then
 	    const 0
 	  else
@@ -827,23 +837,6 @@ and desc_type tn =
     base_type d.d_type
   else
     d.d_type
-
-and gen_element =
-  function
-      Single x ->
-	SEQ [const 1; gen_expr x;
-	  check (SEQ [const set_size; BOUND (expr_line x)]);
-	  BINOP (IntT, Lsl)]
-    | Range (x, y) ->
-	(* {x..y} = {0..y} * {x..31} *)
-	SEQ [const (-1); gen_expr x;
-	  check (SEQ [const set_size; BOUND (expr_line x)]);
-	  BINOP (IntT, Lsl);		(* {x..31} *)
-          const (-2); gen_expr y;
-	  check (SEQ [const set_size; BOUND (expr_line y)]);
-	  BINOP (IntT, Lsl);		(* {y+1..31} *)
-	  MONOP (IntT, BitNot);		(* {0..y} *)
-	  BINOP (IntT, BitAnd)]
 
 let check_assign v desc =
   let lab1 = label () in

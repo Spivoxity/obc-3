@@ -69,7 +69,6 @@ type icode =
   | JUMPN of kind * op * codelab  (* Negated condx branch *)
   | JCASE of codelab list       (* Case jump *)
   | JRANGE of codelab		(* Range jump *)
-  | TYPETEST of int		(* Type test (level) *)
   | LABEL of codelab		(* Set code label *)
   | LINE of int			(* Line number *)
 

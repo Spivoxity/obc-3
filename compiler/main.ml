@@ -31,8 +31,6 @@
 open Print
 open Tree
 
-let copyright = "Copyright (C) 1999 J. M. Spivey"
-
 let error_token lexbuf =
   let tok = Lexing.lexeme lexbuf in
   if tok.[0] = '\000' then "EOF" else tok
@@ -53,10 +51,13 @@ let compiler base_name in_file =
   if !Error.err_count > 0 then exit 1;
   Check.annotate prog;
   if !Error.err_count > 0 then exit 1;
+  (* (DEBUG-- *)
   if !Config.debug > 0 then print_tree stdout prog;
+  (* --DEBUG) *)
   let stamp = export prog in
   Igen.translate stamp prog
 
+(* (DEBUG-- *)
 let crash fmt args =
   fprintf stderr "*** Oxford Oberon-2 compiler version $\n" 
     [fStr Config.version];
@@ -81,6 +82,7 @@ let print_version () =
   fprintf stderr "Oxford Oberon-2 compiler version $ [build $]\n" 
     [fStr Config.version; fStr Revid.hash];
   exit 0
+(* --DEBUG) *)
 
 let spec =
   Arg.align [ 

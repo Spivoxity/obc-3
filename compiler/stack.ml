@@ -40,7 +40,6 @@ let arity =
     | RETURN VoidT -> (0, [])
     | RETURN (DoubleT|LongT) -> (2, [])
     | RETURN _ -> (1, [])
-    | TYPETEST _ -> (2, [f])
     | LINE _ -> (0, [])
     | CALL (n, VoidT) -> (n+1, []) 
     | CALL (n, (DoubleT|LongT)) -> (n+1, [f; f]) 
@@ -65,7 +64,7 @@ let arity =
     | JCASE _ -> (1, [])
     | JRANGE _ -> (3, [])
 
-    | _ -> raise Not_found
+    | i -> failwith (sprintf "stack_sim $" [fInst i])
 
 let simulate i =
   begin match i with
@@ -89,19 +88,13 @@ let simulate i =
 	stk := (try Hashtbl.find labstate lab with Not_found -> [])
 
     | _ -> 
-	(try
-	  let (k, xs) = arity i in
-	  stk := List.fold_right push_stack xs (pop_stack k !stk)
-	with Not_found ->
-	  failwith (sprintf "stack_sim $" [fInst i]))
+        let (k, xs) = arity i in
+	stk := List.fold_right push_stack xs (pop_stack k !stk)
   end;
   maxd := max !maxd (List.length !stk)
 
 let reset () =
   Hashtbl.clear labstate; stk := []
-
-let pop n = 
-  stk := pop_stack n !stk
 
 let mark () = 
   stk := push_stack true (pop_stack 1 !stk)

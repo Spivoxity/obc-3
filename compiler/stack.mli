@@ -14,9 +14,6 @@ val simulate : Icode.icode -> unit
 (* reset -- reset the simulated stack *)
 val reset : unit -> unit
 
-(* pop -- pop values from the simulated stack *)
-val pop : int -> unit
-
 (* mark -- mark top item as pointer *)
 val mark : unit -> unit
 

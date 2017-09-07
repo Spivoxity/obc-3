@@ -106,11 +106,6 @@ let flo_value =
 
 let widen v = FloVal (flo_value v)
 
-let narrow =
-  function
-      IntVal n -> IntVal n
-    | FloVal x -> IntVal (Int64.of_float x)
-
 let is_float = function FloVal _ -> true | _ -> false
 
 let integer_of_bool b = if b then Int64.one else Int64.zero
@@ -197,13 +192,6 @@ let do_binop w x y =
     flo_binop w (flo_value x) (flo_value y)
   else
     IntVal (int_binop w (int_value x) (int_value y))
-
-(* make_zero -- polymorphic zero *)
-let make_zero =
-  function
-      (IntT | PtrT) -> IntVal (integer 0)
-    | (FloatT | DoubleT) -> FloVal 0.0
-    | _ -> failwith "make_zero"
 
 let fVal =
   function

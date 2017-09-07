@@ -211,7 +211,6 @@ let ruleset1 replace =
     (* Easy array bounds *)
     | DUP n :: POP 1 :: _ -> replace 2 []
     | LOCAL n :: POP 1 :: _ -> replace 2 []
-    | GLOBAL x :: POP 1 :: _ -> replace 2 []
     | LOAD IntT :: POP 1 :: _  -> replace 1 []
 
     (* Unneeded static links *)
@@ -251,6 +250,7 @@ let ruleset1 replace =
         rkind := s; set_return lab; replace 2 [LABEL lab; RETURN s]
     | JUMP lab :: _ when is_return lab ->
         replace 1 [RETURN !rkind]
+    | NOP :: _ -> replace 1 []
 
     | _ -> ()
 
@@ -297,8 +297,6 @@ let ruleset2 replace =
 
     | CONST n :: JUMPC (IntT, w, lab) :: _ when n = integer 0 ->
 	replace 2 [JUMPCZ (w, lab)]
-    | DUP 0 :: CONST n :: JUMPC (IntT, Geq, lab) :: _ ->
-	replace 3 [CONST n; TESTGE lab]
 
     | CONST s :: BINOP (IntT, Times) :: OFFSET :: _
 	  when s = integer 2 || s = integer 4 || s = integer 8 ->

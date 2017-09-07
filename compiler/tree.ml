@@ -151,10 +151,6 @@ let copy_expr e =
 (* edit_expr -- overwrite root of expr *)
 let edit_expr e e1 = e.e_guts <- e1
 
-(* is_name -- test if an expression is a name *)
-let is_name e =
-  match e.e_guts with Name _ -> true | _ -> false
-
 (* is_string_const -- test if expression is a string constant *)
 let is_string_const e =
   match e.e_guts with
@@ -202,6 +198,7 @@ let makeDefId (x, s, n) =
 
 (* Grinder *)
 
+(* (DEBUG-- *)
 let fTail(fmt) xs = 
   fExt (fun prf -> List.iter (function x -> prf " $" [fmt x]) xs)
 
@@ -389,7 +386,4 @@ let ppTree (Module (m, imports, body, _, _)) =
 let print_tree fp t = fgrindf fp "$" [ppTree t]
 
 let print_expr fp e = fgrindf fp "$" [ppExpr e]
-
-exception Expr_failure of string * expr
-
-let expr_fail s e = raise (Expr_failure (s, e))
+(* --DEBUG) *)

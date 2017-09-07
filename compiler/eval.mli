@@ -72,8 +72,6 @@ exception Bound_error
 val do_monop : op -> value -> value
 val do_binop : op -> value -> value -> value
 
-val make_zero : kind -> value
-
 (* flo_value -- extract float *)
 val flo_value : value -> float
 
@@ -83,7 +81,7 @@ val int_value : value -> integer
 (* intval -- shortcut for creating small integer values *)
 val intval : int -> value
 
+(* widen -- widen to floating point *)
 val widen : value -> value
-val narrow : value -> value
 
 val fVal : value -> Print.arg

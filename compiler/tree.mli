@@ -161,9 +161,6 @@ val copy_expr : expr -> expr
 (* edit_expr -- overwrite root of expr *)
 val edit_expr : expr -> expr_guts -> unit
 
-(* is_name -- test if an expression is a name *)
-val is_name : expr -> bool
-
 (* is_string_const -- test if expression is a string constant *)
 val is_string_const : expr -> bool
 

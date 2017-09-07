@@ -43,7 +43,7 @@ count of a jump table that covers it, because a range is very compact
 representation of a list of contiguous cases.
 
 Unaggregated: 
-  one split CONST n / TESTGEQ = 4 bytes or more, 
+  one split CONST n / TESTGE = 4 bytes or more, 
   range test CONST a / CONST b / JRANGE = 6bytes or more, 
   total = 10 bytes or more
 

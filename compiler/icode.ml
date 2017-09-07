@@ -70,7 +70,6 @@ type icode =
   | JUMPN of kind * op * codelab  (* Negated condx branch *)
   | JCASE of codelab list       (* Case jump *)
   | JRANGE of codelab		(* Range jump *)
-  | TYPETEST of int		(* Type test (level) *)
   | LABEL of codelab		(* Set code label *)
   | LINE of int			(* Line number *)
 
@@ -198,7 +197,6 @@ let fInst =
     | TESTGE lab ->	fMeta "TESTGE $" [fLab lab]
     | JCASE labs ->	fMeta "JCASE $" [fNum (List.length labs)]
     | JRANGE lab ->	fMeta "JRANGE $" [fLab lab]
-    | TYPETEST lev ->	fMeta "TYPETEST $" [fNum lev]
     | INCL n ->		fMeta "INCL $" [fNum n]
     | DECL n ->		fMeta "DECL $" [fNum n]
     | JUMPCZ (w, lab) -> fMeta "J$Z $" [fOpcode w; fLab lab]
