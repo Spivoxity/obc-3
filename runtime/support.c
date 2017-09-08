@@ -84,6 +84,7 @@ void long_zcheck(value *sp) {
      if (get_long(sp+2) == 0)
           rterror(E_DIV, sp[0].i, ptrcast(value, sp[1].a));
 }
+
 #ifndef M64X32
 void long_add(value *sp) {
      put_long(sp+2, get_long(sp+2) + get_long(sp));
@@ -114,6 +115,7 @@ void long_ext(value *sp) {
 
 /* Conversions between int and floating point */
 
+#ifndef GCOV
 /* These are not done inline in interp() because that upsets the
    gcc optimiser on i386, adding overhead to every instruction. */
 double flo_conv(int x) { 
@@ -123,7 +125,7 @@ double flo_conv(int x) {
 double flo_convq(longint x) {
      return (double) x;
 }
-
+#endif
 
 /* obcopy -- like strncpy, but guarantees termination with zero */
 void obcopy(char *dst, int dlen, const char *src, int slen, value *bp) {
@@ -137,22 +139,6 @@ void obcopy(char *dst, int dlen, const char *src, int slen, value *bp) {
                liberror("source was not null-terminated");
           memset(&dst[slen], '\0', dlen-slen);
      }
-#if 0
-     char c;
-     int n;
-
-     do {
-          if (slen > 0 && n >= slen)
-               liberror("source was not null-terminated");
-          if (n >= dlen)
-               liberror("string copy overflows destination");
-          dst[n] = c = src[n]; n++;
-     } while (c != '\0');
-
-     /* Fill remainder with zeroes */
-     while (n < dlen)
-          dst[n++] = '\0';
-#endif
 }
 
 #ifndef UNALIGNED_MEM

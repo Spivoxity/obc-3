@@ -46,21 +46,28 @@ static reg def_reg(vmreg r, int c) {
 }
 
 void setup_regs(void) {
-     int totregs = vm_nireg + vm_nfreg + 1;
-     assert(vm_nireg >= 5 && vm_nvreg >= 2);
+#ifdef GCOV
+     /* Restrict register set to force use of spill code */
+     int nireg = 5, nvreg = 2;
+#else
+     int nireg = vm_nireg, nvreg = vm_nvreg;
+#endif
+
+     int totregs = nireg + vm_nfreg + 1;
+     assert(nireg >= 5 && nvreg >= 2);
 
      regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg));
 
      nregs = 0;
-     for (int i = vm_nvreg; i < vm_nireg; i++)
+     for (int i = nvreg; i < nireg; i++)
           def_reg(vm_ireg[i], INT);
-     for (int i = 0; i < vm_nvreg; i++)
+     for (int i = 0; i < nvreg; i++)
           def_reg(vm_ireg[i], INT);
      for (int i = 0; i < vm_nfreg; i++)
           def_reg(vm_freg[i], FLO);
 
      rI0 = &regs[0]; rI1 = &regs[1]; rI2 = &regs[2];
-     rSP = &regs[vm_nireg-2]; rBP = &regs[vm_nireg-1]; 
+     rSP = &regs[nireg-2]; rBP = &regs[nireg-1]; 
      rBP->r_class = 0;
 }
 
@@ -89,6 +96,7 @@ void setup_regs(void) {
    register that it allocates; that is done later when a value is pushed
    onto the stack. */
 
+#ifndef M64X32
 /* n_reserved -- count reserved integer registers */
 int n_reserved(void) {
      int res = 0;
@@ -101,6 +109,7 @@ int n_reserved(void) {
 
      return res;
 }
+#endif
 
 /* incref -- increment or decrement reference count */
 reg incref(reg r, int inc) {
