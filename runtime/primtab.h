@@ -32,6 +32,7 @@
 #include <math.h>
 #include <ctype.h>
 
+/* Types for each kind of argument */
 typedef int type_C, type_I;
 typedef longint type_L;
 typedef float type_F;
@@ -39,6 +40,7 @@ typedef double type_D;
 typedef void *type_P, *type_Q, *type_X;
 typedef void type_V;
 
+/* Size of each kind in argument words */
 #define size_C 1
 #define size_I 1
 #define size_F 1
@@ -48,6 +50,7 @@ typedef void type_V;
 #define size_X 2
 #define size_Q 2
 
+/* How to fetch each kind of argument */
 #define arg_I(j)  bp[HEAD+j].i
 #define arg_C(j)  align_byte(bp[HEAD+j].i)
 #define arg_L(j)  get_long(&bp[HEAD+j])
@@ -57,6 +60,7 @@ typedef void type_V;
 #define arg_X(j)  pointer(bp[HEAD+j])
 #define arg_Q(j)  ptrcast(void, get_long(&bp[HEAD+j]))
 
+/* How to return each kind of result via ob_res */
 #define res_I(v)  ob_res.i = v
 #define res_C(v)  ob_res.i = v
 #define res_F(v)  ob_res.f = v
@@ -66,9 +70,28 @@ typedef void type_V;
 #define res_Q(v)  put_long(&ob_res, (ptrtype) v)
 #define res_V(v)  v
 
-#define DIRECT(name)  void P_##name(value *bp);
+/* Three kinds of primitive: 
+   DIRECT   -- defined by a function "void prim(value *bp)"
+   WRAPPER  -- defined by an foreign function prim that declared in one of 
+               the included header files.  We generate a wrapper P_prim.
+   INDIRECT -- defined by an internal function in some library module, with
+               a natural type.  We generate a wrapper that includes a
+               declaration of the function. 
+
+   Call WRAPPER(name, res, a1, a2, ..., an) where res and a1, ..., an are
+   type letters for the result and arguments. */
+
+#define DIRECT(name)  void name(value *bp);
 #define WRAPPER(...)  WRAP(_WRAP, __VA_ARGS__)
 #define INDIRECT(...) WRAP(_INDIR, __VA_ARGS__)
+
+/* WRAP(mac, name, res, a1, ..., an) is
+
+   mac(name, res, 
+       (type_a1, ..., type_an), 
+       (arg_a1(0), arg_a2(s1), arg_a3(s1+s2), ..., arg_an(s1+s2+...s(n-1))))
+   
+   where si = size_ai. */
 
 #define WRAP(mac, ...) \
      SELECT(__VA_ARGS__, WRAP6, WRAP5, WRAP4, WRAP3, \
@@ -110,6 +133,8 @@ typedef void type_V;
 #define args6(j, a1, a2, a3, a4, a5, a6) \
      arg_##a1(j), args5(j+size_##a1, a2, a3, a4, a5, a6)
 
+/* How to generate a wrapper function with (_INDIR) or without (_WRAP)
+   a declaration of the function being wrapped. */
 #define _WRAP(name, res, atypes, args) \
      __WRAP(, name, res, args)
 #define _INDIR(name, res, atypes, args) \
@@ -119,13 +144,20 @@ typedef void type_V;
 
 #define WRAPPERS(prims) prims(DIRECT, INDIRECT, WRAPPER)
 
-#define PRIM(name, ...)  { #name, P_##name },
+/* How to generate entries in the primitive table */
+#define DPRIM(name, ...)  { #name, name },
+#define IPRIM(name, ...)  DPRIM(P_##name)
 
 #define TABLE(prims)              \
      struct primdef primtab[] = { \
-          prims(PRIM, PRIM, PRIM) \
+          prims(DPRIM, IPRIM, IPRIM) \
           { NULL, NULL }          \
      };
+
+/* If dynamic linking is enabled, we don't need a static table of
+   primitives; if not, then we make a table and dltrap(dynlink.c)
+   will search it. Note that we can have statically generated wrappers
+   for speed even if FFI is available. */
 
 #ifdef DYNLINK
 #define PRIMTAB(prims) WRAPPERS(prims)

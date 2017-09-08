@@ -97,7 +97,7 @@ LDLW 12
 CONST 1
 JGT L4
 !     SYSTEM.GC;
-GLOBAL GC
+GLOBAL SYSTEM.GC
 CALL 0
 !     t := NIL
 CONST 0
@@ -213,7 +213,7 @@ GLOBAL tFibTree07.Build
 CALLW 1
 STGW tFibTree07.p
 !     SYSTEM.GC;
-GLOBAL GC
+GLOBAL SYSTEM.GC
 CALL 0
 !     Print(p); Out.Ln();
 LDGW tFibTree07.p

@@ -675,10 +675,12 @@ let sysenv () =
       builtin "PUT" PutProc 2 [];
       libproc1 (if !Config.ob07flag then "COPY" else "MOVE") 3
           ["src", ParamDef, inttype; "dest", ParamDef, inttype; 
-	    "nbytes", ParamDef, inttype] voidtype "SYSMOVE";
-      libproc "LIBERROR" 2 ["msg", CParamDef, strtype] voidtype;
-      libproc "GC" 0 [] voidtype;
-      libproc "LOADLIB" 1 ["name", CParamDef, strtype] voidtype ]
+	    "nbytes", ParamDef, inttype] voidtype "SYSTEM.MOVE";
+      libproc1 "LIBERROR" 2 ["msg", CParamDef, strtype] voidtype
+          "SYSTEM.LIBERROR";
+      libproc1 "GC" 0 [] voidtype "SYSTEM.GC";
+      libproc1 "LOADLIB" 1 ["name", CParamDef, strtype] voidtype
+          "SYSTEM.LOADLIB" ]
     @ if !Config.ob07flag then [ builtin "SIZE" SizeFun 1 [] ] else [] in
   make_env defs
 

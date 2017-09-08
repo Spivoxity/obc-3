@@ -107,8 +107,6 @@ static ffi_type *ffi_decode(char c) {
      }
 }
 
-#define HAVE_DLSTUB 1
-
 void dlstub(value *bp) {
      value *cp = valptr(bp[CP]);
      char *tstring = (char *) pointer(cp[CP_CODE]);
@@ -186,9 +184,7 @@ void dlstub(value *bp) {
 #endif
 
 primitive *find_prim(char *name) {
-     char primname[32];
-     sprintf(primname, "P_%s", name);
-     return (primitive *) dlsym(RTLD_DEFAULT, primname);
+     return (primitive *) dlsym(RTLD_DEFAULT, name);
 }
 
 #else
@@ -213,10 +209,17 @@ void dltrap(value *bp) {
      value *cp = valptr(bp[CP]);
      char *tstring = (char *) pointer(cp[CP_CODE]);
      char *name = tstring + strlen(tstring) + 1;
+     primitive *prim = NULL;
 
-     /* First look for a specific wrapper */
-     primitive *prim = find_prim(name);
-     
+     if (tstring[0] == '*')
+          prim = find_prim(name);
+     else {
+          /* Look for a static wrapper */
+          char primname[32];
+          sprintf(primname, "P_%s", name);
+          prim = find_prim(primname);
+     }
+
      if (prim != NULL) {
           cp[CP_PRIM].a = wrap_prim(prim);
           (*prim)(bp);
@@ -251,9 +254,3 @@ void dltrap(value *bp) {
 
      panic("Couldn't find primitive %s", name);
 }
-
-#ifndef HAVE_DLSTUB
-void dlstub(value *bp) {
-     panic("FFI not enabled");
-}
-#endif

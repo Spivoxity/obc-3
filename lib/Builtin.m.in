@@ -47,8 +47,6 @@ PROCEDURE CAP(c: CHAR): CHAR IS "toupper";
 
 PROCEDURE COPY(VAR s, t: ARRAY OF CHAR) IS "*COPY";
 
-PROCEDURE SYSMOVE(src, dest: INTEGER; n: INTEGER) IS "*MOVE";
-
 PROCEDURE FLEXASSIGN(elsize, dim: INTEGER (* ... *)) IS "*FLEXASSIGN";
 
 PROCEDURE ABSINT(x: INTEGER): INTEGER;
@@ -122,9 +120,10 @@ BEGIN
   x := SYSTEM.VAL(LONGREAL, xx - LONG(n) * two52)
 END UNPKLONG;
 
-PROCEDURE LOADLIB(name: ARRAY OF CHAR) IS "load_lib";
-
-PROCEDURE GC IS "*GC";
+PROCEDURE SysMOVE(src, dest: INTEGER; n: INTEGER) IS "*sys_move";
+PROCEDURE SysLIBERROR(CONST msg: ARRAY OF CHAR) IS "*sys_liberror";
+PROCEDURE SysLOADLIB(name: ARRAY OF CHAR) IS "load_lib";
+PROCEDURE SysGC IS "*gc_collect";
 PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
 PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
 
@@ -139,7 +138,7 @@ END Builtin.
 char *lib_version = 
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
 
-void P_NEW(value *bp) {
+void NEW(value *bp) {
      value *desc = valptr(bp[HEAD+0]);
      int size = bp[HEAD+1].i;
      ob_res.a = address(gc_alloc(desc, size, bp));
@@ -176,7 +175,7 @@ Parameters NEWFLEX(elmap, elsize, k: INTEGER;
 			dim_0, ..., dim_{k-1}: INTEGER): SYSTEM.PTR
 */
 
-void P_NEWFLEX(value *bp) {
+void NEWFLEX(value *bp) {
      value *elmap = valptr(bp[HEAD+0]);
      int elsize = bp[HEAD+1].i;
      int k = bp[HEAD+2].i;
@@ -226,7 +225,7 @@ void P_NEWFLEX(value *bp) {
      ob_res.a = address(q); 
 }
 
-void P_COMPARE(value *bp) {
+void COMPARE(value *bp) {
      uchar *s1 = pointer(bp[HEAD+0]), *s2 = pointer(bp[HEAD+2]);
      int i = 0, n = min(bp[HEAD+1].i, bp[HEAD+3].i);
 
@@ -235,16 +234,12 @@ void P_COMPARE(value *bp) {
      ob_res.i = s1[i] - s2[i]; 
 }
 
-void P_COPY(value *bp) {
+void COPY(value *bp) {
      obcopy((char * ) pointer(bp[HEAD+2]), bp[HEAD+3].i,
             (char * ) pointer(bp[HEAD+0]), bp[HEAD+1].i, bp);
 }
 
-void P_MOVE(value *bp) {
-     memmove(pointer(bp[HEAD+1]), pointer(bp[HEAD+0]), bp[HEAD+2].i);
-}
-
-void P_FLEXASSIGN(value *bp) {
+void FLEXASSIGN(value *bp) {
      int size = bp[HEAD+0].i;
      int dim = bp[HEAD+1].i;
      uchar *src = pointer(bp[HEAD+2]), *dst = pointer(bp[HEAD+dim+3]);
@@ -265,7 +260,11 @@ int INTREAL(float x) { return (int) x; }
 
 int INTDOUBLE(double x) { return (int) x; }
 
-void P_LIBERROR(value *bp) {
+void sys_move(value *bp) {
+     memmove(pointer(bp[HEAD+1]), pointer(bp[HEAD+0]), bp[HEAD+2].i);
+}
+
+void sys_liberror(value *bp) {
      value *bp1 = valptr(bp[BP]);
      error_stop((char * ) pointer(bp[HEAD+0]), 0, bp1, NULL);
 }
@@ -286,6 +285,3 @@ void UNPKLONG(void *xx, int *n) {
      put_double(xx, x);
 }
 
-void P_GC(void *bp) {
-     gc_collect(bp);
-}

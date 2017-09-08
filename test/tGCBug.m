@@ -64,7 +64,7 @@ STGW tGCBug.t
 CONST 0
 STGW tGCBug.t
 !   SYSTEM.GC;
-GLOBAL GC
+GLOBAL SYSTEM.GC
 CALL 0
 !   Out.String("OK"); Out.Ln
 CONST 3

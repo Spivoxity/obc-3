@@ -130,16 +130,6 @@ BEGIN
 END Cap;
 
 (** Compare -- compare two strings *)
-PROCEDURE Compare*(s, t: ARRAY OF CHAR): INTEGER IS "*Strings_Compare";
+PROCEDURE Compare*(s, t: ARRAY OF CHAR): INTEGER IS "*COMPARE";
 
 END Strings.
-
---CODE--
-
-#include "obx.h"
-
-void P_COMPARE(value *bp);
-
-void P_Strings_Compare(value *bp) {
-     P_COMPARE(bp);
-}

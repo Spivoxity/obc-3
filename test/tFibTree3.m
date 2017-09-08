@@ -145,7 +145,7 @@ INCL -4
 JUMP L3
 LABEL L4
 !   SYSTEM.GC;
-GLOBAL GC
+GLOBAL SYSTEM.GC
 CALL 0
 !   NEW(p, LEN(a) + Random.Roll(10));
 LDLW 16
@@ -340,7 +340,7 @@ GLOBAL tFibTree3.Build
 CALLW 1
 STGW tFibTree3.p
 !     SYSTEM.GC;
-GLOBAL GC
+GLOBAL SYSTEM.GC
 CALL 0
 !     Print(p); Out.Ln();
 LDGW tFibTree3.p
