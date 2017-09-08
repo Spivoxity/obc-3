@@ -31,8 +31,6 @@
 (** Control of the garbage collector *)
 MODULE GC;
 
-IMPORT SYSTEM;
-
 (** Collect -- perform a garbage collection *)
 PROCEDURE Collect* IS "*GC_Collect";
 
@@ -47,9 +45,6 @@ PROCEDURE Debug*(flags: ARRAY OF CHAR) IS "gc_debug";
 
 (** Dump -- print heap layout *)
 PROCEDURE Dump* IS "gc_dump";
-
-(** AllocSize -- compute allocated size *)
-PROCEDURE AllocSize*(p: SYSTEM.PTR): INTEGER IS "gc_alloc_size";
 
 END GC.
 

@@ -1132,16 +1132,15 @@ GLOVAR tCDown2.best 80
 GLOVAR tCDown2.bestval 4
 GLOVAR tCDown2.bestdist 4
 
-! Pointer map
+! Global pointer map
 DEFINE tCDown2.%gcmap
 WORD GC_BASE
 WORD tCDown2.pool
 WORD GC_BLOCK
 WORD 0
 WORD 1024
-WORD GC_BASE
+WORD GC_POINTER
 WORD tCDown2.htable
-WORD 0
 WORD GC_END
 
 ! String "?+-*/"

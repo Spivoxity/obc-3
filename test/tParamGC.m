@@ -95,11 +95,10 @@ END
 GLOVAR tParamGC.x 4
 GLOVAR tParamGC.b 8
 
-! Pointer map
+! Global pointer map
 DEFINE tParamGC.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tParamGC.x
-WORD 0
 WORD GC_BASE
 WORD tParamGC.b
 WORD GC_MAP

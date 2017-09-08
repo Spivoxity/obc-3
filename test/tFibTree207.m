@@ -296,11 +296,10 @@ END
 GLOVAR tFibTree207.i 4
 GLOVAR tFibTree207.p 4
 
-! Pointer map
+! Global pointer map
 DEFINE tFibTree207.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tFibTree207.p
-WORD 0
 WORD GC_END
 
 ! String "gs"

@@ -997,7 +997,7 @@ GLOVAR tSignals.signal 1024
 GLOVAR tSignals.stack 4096
 GLOVAR tSignals.sp 4
 
-! Pointer map
+! Global pointer map
 DEFINE tSignals.%gcmap
 WORD GC_BASE
 WORD tSignals.signal

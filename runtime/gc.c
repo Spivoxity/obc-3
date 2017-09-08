@@ -34,9 +34,14 @@
 #undef MULTIBLOCKS
 
 static mybool debug[256];	/* Debugging flags */
-/* a - print addresses; g - print [GC...];
-   b - print chunks allocated; c - print every allocation;
-   d - general debugging; l - trace low-level allocator; m - print maps;  
+/* a - print addresses; 
+   g - print [GC...];
+   b - print chunks allocated; 
+   c - print every allocation;
+   d - general debugging; 
+   l - trace low-level allocator; 
+   m - print maps;  
+   s - scribble on freed storage;
    z - GC on each allocation */
 
 /* Assertions are enabled in all programs if DEBUG is defined */
@@ -791,6 +796,7 @@ static unsigned *map_next(unsigned *p) {
      switch (*p >> 2) {
      case GC_BASE >> 2:
      case GC_MAP >> 2:
+     case GC_POINTER >> 2:
 	  return p+2;
 
      case GC_REPEAT >> 2:
@@ -802,9 +808,6 @@ static unsigned *map_next(unsigned *p) {
      case GC_BLOCK >> 2:
 	  return p+3;
 			 
-     case GC_END >> 2:
-	  return p+1;
-
      default:
 	  panic("*bad map code %d", *p);
 	  return NULL;
@@ -822,12 +825,30 @@ static void redir_map(unsigned map, void *base, int bmshift) {
      if ((map & 0x1) != 0) {
 	  /* A bitmap */
 	  int i = -bmshift; 
-
           map >>= 1;
-	  while (map != 0) {
-	       if ((map & 0x1) != 0)
-		    redirect((word *) &get_word(base, i));
-	       i++; map >>= 1;
+
+#define mrk(j)  redirect((word *) &get_word(base, i+j))
+          while (map != 0) {
+               switch (map & 15) {
+               case 15: mrk(0);
+               case 14: mrk(1);
+               case 12: mrk(2); mrk(3); break;
+               case 13: mrk(2);
+               case  9: mrk(3); mrk(0); break;
+               case 11: mrk(0);
+               case 10: mrk(1);
+               case  8: mrk(3); break;
+               case  7: mrk(1);
+               case  5: mrk(0);
+               case  4: mrk(2); break;
+               case  6: mrk(2);
+               case  2: mrk(1); break;
+               case  3: mrk(1);
+               case  1: mrk(0);
+               case  0: break;
+               }
+
+               i += 4; map >>= 4;
 	  }
 
 	  return;
@@ -856,6 +877,10 @@ static void redir_map(unsigned map, void *base, int bmshift) {
 	       base = ptrcast(void, p[1]);
 	       break;
 
+          case GC_POINTER >> 2:
+               redirect(ptrcast(word, p[1]));
+               break;
+                        
 	  case GC_REPEAT >> 2:
 	       base2 = base + p[1];
 	       count = p[2];
@@ -1030,6 +1055,7 @@ static void unmask_signals(void) {
 #endif
 
 void gc_dump(void) {
+#ifdef DEBUG
      unsigned i;
      unsigned total, small_total = 0, big_total = 0, free_total = 0;
 
@@ -1082,6 +1108,7 @@ void gc_dump(void) {
      if (small_total + big_total != pool_total) printf(" (oops)");
      printf("\n");
      printf("Free:   %10u\n", free_total);
+#endif
 }
 
 void gc_collect(value *sp) {
@@ -1147,12 +1174,6 @@ void gc_debug(char *flags) {
 
      for (i = 0; flags[i] != '\0'; i++)
 	  debug[(uchar) flags[i]] = TRUE;
-}
-
-/* gc_alloc_size -- return allocated size of an object */
-int gc_alloc_size(void *p) {
-     header *h = get_header(p);
-     return h->h_objsize;
 }
 
 int gc_heap_size() {

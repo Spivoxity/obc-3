@@ -65,11 +65,10 @@ END
 GLOVAR tGC1.i 4
 GLOVAR tGC1.p 4
 
-! Pointer map
+! Global pointer map
 DEFINE tGC1.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGC1.p
-WORD 0
 WORD GC_END
 
 ! String "Done "

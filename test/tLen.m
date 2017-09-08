@@ -102,11 +102,10 @@ END
 ! Global variables
 GLOVAR tLen.foo 4
 
-! Pointer map
+! Global pointer map
 DEFINE tLen.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tLen.foo
-WORD 0
 WORD GC_END
 
 ! End of file

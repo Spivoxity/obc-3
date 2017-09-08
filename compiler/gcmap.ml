@@ -135,8 +135,11 @@ let put_submap m =
     Not_found -> List.iter put_item m
 
 let put_varmap lab m =
-  put_sym "GC_BASE"; put_sym lab; put_submap m
-
+  match m with
+      [GC_Offset 0] ->
+        put_sym "GC_POINTER"; put_sym lab
+    | _ ->
+        put_sym "GC_BASE"; put_sym lab; put_submap m
 
 let maps = ref []
 

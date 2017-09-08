@@ -120,17 +120,14 @@ GLOVAR tGloWith.a 4
 GLOVAR tGloWith.b 4
 GLOVAR tGloWith.c 4
 
-! Pointer map
+! Global pointer map
 DEFINE tGloWith.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGloWith.a
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGloWith.b
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGloWith.c
-WORD 0
 WORD GC_END
 
 ! String "none"

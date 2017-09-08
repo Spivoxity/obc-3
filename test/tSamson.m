@@ -96,14 +96,12 @@ END
 GLOVAR tSamson.a 4
 GLOVAR tSamson.b 4
 
-! Pointer map
+! Global pointer map
 DEFINE tSamson.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSamson.a
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSamson.b
-WORD 0
 WORD GC_END
 
 ! String "OK"

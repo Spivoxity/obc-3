@@ -79,14 +79,12 @@ END
 GLOVAR tGeraint.v0 4
 GLOVAR tGeraint.v1 4
 
-! Pointer map
+! Global pointer map
 DEFINE tGeraint.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGeraint.v0
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGeraint.v1
-WORD 0
 WORD GC_END
 
 ! Descriptor for r0

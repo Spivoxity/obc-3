@@ -71,11 +71,10 @@ END
 ! Global variables
 GLOVAR tProcRec.noqueue 4
 
-! Pointer map
+! Global pointer map
 DEFINE tProcRec.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tProcRec.noqueue
-WORD 0
 WORD GC_END
 
 ! String "Clear"

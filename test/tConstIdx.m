@@ -83,11 +83,10 @@ END
 ! Global variables
 GLOVAR tConstIdx.a 4
 
-! Pointer map
+! Global pointer map
 DEFINE tConstIdx.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tConstIdx.a
-WORD 0
 WORD GC_END
 
 ! End of file

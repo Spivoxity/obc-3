@@ -286,7 +286,7 @@ GLOVAR tGC3.seed 4
 GLOVAR tGC3.aa 4000
 GLOVAR tGC3.pool 4000
 
-! Pointer map
+! Global pointer map
 DEFINE tGC3.%gcmap
 WORD GC_BASE
 WORD tGC3.pool

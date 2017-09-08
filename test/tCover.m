@@ -331,11 +331,10 @@ GLOVAR tCover.pp 4
 GLOVAR tCover.aa 4
 GLOVAR tCover.b 1
 
-! Pointer map
+! Global pointer map
 DEFINE tCover.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tCover.pp
-WORD 0
 WORD GC_END
 
 ! String "OK1"

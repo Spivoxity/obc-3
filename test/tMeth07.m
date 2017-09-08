@@ -99,11 +99,10 @@ END
 ! Global variables
 GLOVAR tMeth07.p 4
 
-! Pointer map
+! Global pointer map
 DEFINE tMeth07.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tMeth07.p
-WORD 0
 WORD GC_END
 
 ! String "Hello!"

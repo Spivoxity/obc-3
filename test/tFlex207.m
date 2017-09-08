@@ -322,14 +322,12 @@ GLOVAR tFlex207.mm 48
 GLOVAR tFlex207.tt 4
 GLOVAR tFlex207.uu 4
 
-! Pointer map
+! Global pointer map
 DEFINE tFlex207.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tFlex207.tt
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tFlex207.uu
-WORD 0
 WORD GC_END
 
 ! End of file

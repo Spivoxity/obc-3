@@ -1548,11 +1548,10 @@ GLOVAR tSudoku.boardMove 2916
 GLOVAR tSudoku.choice 324
 GLOVAR tSudoku.level 4
 
-! Pointer map
+! Global pointer map
 DEFINE tSudoku.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSudoku.root
-WORD 0
 WORD GC_BASE
 WORD tSudoku.boardCell
 WORD GC_BLOCK

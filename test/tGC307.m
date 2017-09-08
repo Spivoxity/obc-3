@@ -293,7 +293,7 @@ GLOVAR tGC307.seed 4
 GLOVAR tGC307.aa 4000
 GLOVAR tGC307.pool 4000
 
-! Pointer map
+! Global pointer map
 DEFINE tGC307.%gcmap
 WORD GC_BASE
 WORD tGC307.pool

@@ -1300,7 +1300,7 @@ GLOVAR tSystolic.t 4
 GLOVAR tSystolic.proc 48
 GLOVAR tSystolic.chan 44
 
-! Pointer map
+! Global pointer map
 DEFINE tSystolic.%gcmap
 WORD GC_BASE
 WORD tSystolic.proc

@@ -1001,7 +1001,7 @@ GLOVAR tSignals07.signal 1024
 GLOVAR tSignals07.stack 4096
 GLOVAR tSignals07.sp 4
 
-! Pointer map
+! Global pointer map
 DEFINE tSignals07.%gcmap
 WORD GC_BASE
 WORD tSignals07.signal

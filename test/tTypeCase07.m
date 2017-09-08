@@ -159,14 +159,12 @@ END
 GLOVAR tTypeCase07.p 4
 GLOVAR tTypeCase07.q 4
 
-! Pointer map
+! Global pointer map
 DEFINE tTypeCase07.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tTypeCase07.p
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tTypeCase07.q
-WORD 0
 WORD GC_END
 
 ! Descriptor for Empty

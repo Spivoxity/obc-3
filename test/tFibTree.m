@@ -242,11 +242,10 @@ END
 GLOVAR tFibTree.i 4
 GLOVAR tFibTree.p 4
 
-! Pointer map
+! Global pointer map
 DEFINE tFibTree.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tFibTree.p
-WORD 0
 WORD GC_END
 
 ! String "Count = "

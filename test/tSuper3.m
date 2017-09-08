@@ -52,11 +52,10 @@ END
 ! Global variables
 GLOVAR tSuper3.p 4
 
-! Pointer map
+! Global pointer map
 DEFINE tSuper3.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSuper3.p
-WORD 0
 WORD GC_END
 
 ! String "foo"

@@ -85,14 +85,12 @@ END
 GLOVAR tNewBug07.p 4
 GLOVAR tNewBug07.q 4
 
-! Pointer map
+! Global pointer map
 DEFINE tNewBug07.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tNewBug07.p
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tNewBug07.q
-WORD 0
 WORD GC_END
 
 ! String "Pass"

@@ -50,7 +50,7 @@ GLOVAR tBigMap.exp1 2000000
 GLOVAR tBigMap.exp2 124
 GLOVAR tBigMap.exp3 128
 
-! Pointer map
+! Global pointer map
 DEFINE tBigMap.%gcmap
 WORD GC_BASE
 WORD tBigMap.exp1

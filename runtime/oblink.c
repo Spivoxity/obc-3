@@ -341,7 +341,7 @@ int main(int argc, char **argv) {
 #define bind(x) def_global(find_symbol(#x), ABS, x, X_SYM)
 
      bind(GC_BASE); bind(GC_REPEAT); bind(GC_BLOCK);
-     bind(GC_MAP); bind(GC_FLEX); bind(GC_END);
+     bind(GC_MAP); bind(GC_FLEX); bind(GC_END); bind(GC_POINTER);
      bind(E_CAST); bind(E_ASSIGN); bind(E_CASE);
      bind(E_WITH); bind(E_ASSERT); bind(E_RETURN);
      bind(E_BOUND); bind(E_NULL); bind(E_DIV);

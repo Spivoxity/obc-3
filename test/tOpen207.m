@@ -116,11 +116,10 @@ END
 GLOVAR tOpen207.j 4
 GLOVAR tOpen207.b 4
 
-! Pointer map
+! Global pointer map
 DEFINE tOpen207.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tOpen207.b
-WORD 0
 WORD GC_END
 
 ! End of file

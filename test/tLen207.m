@@ -200,14 +200,12 @@ GLOVAR tLen207.b 80
 GLOVAR tLen207.r 4
 GLOVAR tLen207.s 4
 
-! Pointer map
+! Global pointer map
 DEFINE tLen207.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tLen207.r
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tLen207.s
-WORD 0
 WORD GC_END
 
 ! End of file

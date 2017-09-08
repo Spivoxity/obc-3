@@ -107,11 +107,10 @@ END
 GLOVAR tKleinert.A 4
 GLOVAR tKleinert.tstArr 16
 
-! Pointer map
+! Global pointer map
 DEFINE tKleinert.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tKleinert.A
-WORD 0
 WORD GC_END
 
 ! String "OK"

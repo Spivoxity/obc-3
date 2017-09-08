@@ -74,11 +74,10 @@ END
 ! Global variables
 GLOVAR tAbsImport.p 4
 
-! Pointer map
+! Global pointer map
 DEFINE tAbsImport.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tAbsImport.p
-WORD 0
 WORD GC_END
 
 ! String "A Blip"

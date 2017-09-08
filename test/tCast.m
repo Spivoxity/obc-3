@@ -158,11 +158,10 @@ END
 ! Global variables
 GLOVAR tCast.a 4
 
-! Pointer map
+! Global pointer map
 DEFINE tCast.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tCast.a
-WORD 0
 WORD GC_END
 
 ! Descriptor for Base

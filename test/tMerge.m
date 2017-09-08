@@ -919,14 +919,12 @@ GLOVAR tMerge.k 4
 GLOVAR tMerge.n 4
 GLOVAR tMerge.m 4
 
-! Pointer map
+! Global pointer map
 DEFINE tMerge.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tMerge.a
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tMerge.s
-WORD 0
 WORD GC_END
 
 ! Descriptor for streamrec

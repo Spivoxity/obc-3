@@ -325,20 +325,16 @@ GLOVAR tSpies.v2 4
 GLOVAR tSpies.v3 4
 GLOVAR tSpies.v4 4
 
-! Pointer map
+! Global pointer map
 DEFINE tSpies.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSpies.v1
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSpies.v2
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSpies.v3
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tSpies.v4
-WORD 0
 WORD GC_END
 
 ! String ", "

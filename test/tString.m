@@ -495,11 +495,10 @@ GLOVAR tString.j 4
 GLOVAR tString.s 4
 GLOVAR tString.t 20
 
-! Pointer map
+! Global pointer map
 DEFINE tString.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tString.s
-WORD 0
 WORD GC_END
 
 ! String "abcdefghij"

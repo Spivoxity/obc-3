@@ -69,14 +69,12 @@ END
 GLOVAR tTypeRef.x 4
 GLOVAR tTypeRef.p 4
 
-! Pointer map
+! Global pointer map
 DEFINE tTypeRef.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tTypeRef.x
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tTypeRef.p
-WORD 0
 WORD GC_END
 
 ! End of file

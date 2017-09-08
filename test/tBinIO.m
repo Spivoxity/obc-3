@@ -446,17 +446,14 @@ GLOVAR tBinIO.p 4
 GLOVAR tBinIO.q 4
 GLOVAR tBinIO.f 4
 
-! Pointer map
+! Global pointer map
 DEFINE tBinIO.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tBinIO.p
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tBinIO.q
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tBinIO.f
-WORD 0
 WORD GC_END
 
 ! String "data"

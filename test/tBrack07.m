@@ -983,7 +983,7 @@ GLOVAR tBrack07.N 4
 GLOVAR tBrack07.ways 10800
 GLOVAR tBrack07.exp 10800
 
-! Pointer map
+! Global pointer map
 DEFINE tBrack07.%gcmap
 WORD GC_BASE
 WORD tBrack07.exp

@@ -225,11 +225,10 @@ END
 ! Global variables
 GLOVAR tInorder.t 4
 
-! Pointer map
+! Global pointer map
 DEFINE tInorder.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tInorder.t
-WORD 0
 WORD GC_END
 
 ! Descriptor for Node

@@ -371,11 +371,10 @@ GLOVAR tGC5.seed 4
 GLOVAR tGC5.i 4
 GLOVAR tGC5.t 4
 
-! Pointer map
+! Global pointer map
 DEFINE tGC5.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGC5.t
-WORD 0
 WORD GC_END
 
 ! String "ordered"

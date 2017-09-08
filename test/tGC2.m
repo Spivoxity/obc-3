@@ -194,11 +194,10 @@ END
 GLOVAR tGC2.n 4
 GLOVAR tGC2.a 4
 
-! Pointer map
+! Global pointer map
 DEFINE tGC2.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tGC2.a
-WORD 0
 WORD GC_END
 
 ! Descriptor for cell

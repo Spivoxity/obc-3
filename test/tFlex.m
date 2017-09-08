@@ -155,7 +155,7 @@ END
 GLOVAR tFlex.i 4
 GLOVAR tFlex.xxx 8
 
-! Pointer map
+! Global pointer map
 DEFINE tFlex.%gcmap
 WORD GC_BASE
 WORD tFlex.xxx

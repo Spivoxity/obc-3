@@ -394,14 +394,12 @@ END
 GLOVAR tFlex407.a 4
 GLOVAR tFlex407.c 4
 
-! Pointer map
+! Global pointer map
 DEFINE tFlex407.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tFlex407.a
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tFlex407.c
-WORD 0
 WORD GC_END
 
 ! End of file

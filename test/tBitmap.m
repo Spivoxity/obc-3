@@ -114,11 +114,10 @@ GLOVAR tBitmap.a 4
 GLOVAR tBitmap.i 4
 GLOVAR tBitmap.j 4
 
-! Pointer map
+! Global pointer map
 DEFINE tBitmap.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tBitmap.a
-WORD 0
 WORD GC_END
 
 ! End of file

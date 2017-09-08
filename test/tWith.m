@@ -135,14 +135,12 @@ END
 GLOVAR tWith.p 4
 GLOVAR tWith.q 4
 
-! Pointer map
+! Global pointer map
 DEFINE tWith.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tWith.p
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD tWith.q
-WORD 0
 WORD GC_END
 
 ! Descriptor for Empty

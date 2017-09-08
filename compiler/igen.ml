@@ -1228,7 +1228,7 @@ let translate stamp
 
     let mapdefs = List.filter (function d -> d.d_map <> null_map) vardefs in
     if mapdefs <> [] then begin
-      put "! Pointer map" [];
+      put "! Global pointer map" [];
       put "DEFINE $.%gcmap" [fId !current];
       List.iter (function d -> put_varmap d.d_lab d.d_map) mapdefs;
       put_sym "GC_END";

@@ -1354,19 +1354,17 @@ GLOVAR Planner.qhead 4
 GLOVAR Planner.hflag 1
 GLOVAR Planner.goal 4
 
-! Pointer map
+! Global pointer map
 DEFINE Planner.%gcmap
 WORD GC_BASE
 WORD Planner.hashtable
 WORD GC_BLOCK
 WORD 0
 WORD 127
-WORD GC_BASE
+WORD GC_POINTER
 WORD Planner.qhead
-WORD 0
-WORD GC_BASE
+WORD GC_POINTER
 WORD Planner.goal
-WORD 0
 WORD GC_END
 
 ! String "Unknown town"

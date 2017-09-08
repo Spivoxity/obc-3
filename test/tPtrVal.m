@@ -74,11 +74,10 @@ END
 ! Global variables
 GLOVAR tPtrVal.q 4
 
-! Pointer map
+! Global pointer map
 DEFINE tPtrVal.%gcmap
-WORD GC_BASE
+WORD GC_POINTER
 WORD tPtrVal.q
-WORD 0
 WORD GC_END
 
 ! Descriptor for *anon*

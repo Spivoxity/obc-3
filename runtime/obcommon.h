@@ -102,6 +102,7 @@ typedef union {
 #define GC_FLEX 18
 #define GC_BLOCK 22
 #define GC_MARK 26
+#define GC_POINTER 30
 
 /* Error codes */
 #define E_CAST 1
