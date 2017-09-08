@@ -78,8 +78,9 @@ revid.ml: ../revid
 
 ## Rules
 
+# It's OK to use the 'aggressive' (Bison-like) scheme for default reductions.
 %.ml %.mli: %.mly
-	$(MYACC) -v $<
+	$(MYACC) -a -v $<
 
 %.ml: %.mll
 	$(OCAMLLEX) -o $@ $<
