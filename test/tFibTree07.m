@@ -27,7 +27,7 @@ Count = 21
 
 >>*)
 
-IMPORT Out, GC;
+IMPORT Out, SYSTEM;
 
 TYPE 
   tree = POINTER TO node;
@@ -37,7 +37,7 @@ PROCEDURE Build(n: INTEGER): tree;
   VAR t: tree;
 BEGIN
   IF n <= 1 THEN
-    GC.Collect;
+    SYSTEM.GC;
     t := NIL
   ELSE
     NEW(t);
@@ -75,7 +75,7 @@ VAR i: INTEGER; p: tree;
 BEGIN 
   FOR i := 0 TO 7 DO
     p := Build(i);
-    GC.Collect;
+    SYSTEM.GC;
     Print(p); Out.Ln();
     Out.String("Count = "); Out.Int(count(p), 0); 
     Out.Ln(); Out.Ln();
@@ -88,7 +88,6 @@ END tFibTree07.
 !! 
 MODULE tFibTree07 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tFibTree07.Build 4 3 0x00010001
@@ -97,8 +96,8 @@ PROC tFibTree07.Build 4 3 0x00010001
 LDLW 12
 CONST 1
 JGT L4
-!     GC.Collect;
-GLOBAL GC.Collect
+!     SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !     t := NIL
 CONST 0
@@ -213,8 +212,8 @@ LDGW tFibTree07.i
 GLOBAL tFibTree07.Build
 CALLW 1
 STGW tFibTree07.p
-!     GC.Collect;
-GLOBAL GC.Collect
+!     SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !     Print(p); Out.Ln();
 LDGW tFibTree07.p

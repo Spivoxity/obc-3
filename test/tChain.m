@@ -14,7 +14,7 @@ MODULE tChain;
 2415
 >>*)
 
-IMPORT GC, Out;
+IMPORT Out;
 
 CONST N = 100000; P = 10007;
 
@@ -57,8 +57,10 @@ END Test;
 
 VAR i: INTEGER;
 
+PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
+
 BEGIN
-  GC.Debug('gs');
+  GcDebug('gs');
   FOR i := 1 TO 10 DO Test END;
   Out.Int((((((P+1) DIV 2) * (N MOD P)) MOD P) 
 			* ((N+1) MOD P)) MOD P, 0); Out.Ln;
@@ -70,7 +72,6 @@ END tChain.
 !! (CHKSUM STAMP)
 !! 
 MODULE tChain STAMP 0
-IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
@@ -182,11 +183,13 @@ CALL 0
 RETURN
 END
 
+PRIMDEF tChain.GcDebug gc_debug VX
+
 PROC tChain.%main 0 3 0
-!   GC.Debug('gs');
+!   GcDebug('gs');
 CONST 3
 GLOBAL tChain.%2
-GLOBAL GC.Debug
+GLOBAL tChain.GcDebug
 CALL 2
 !   FOR i := 1 TO 10 DO Test END;
 CONST 1

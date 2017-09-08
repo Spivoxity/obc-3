@@ -6,7 +6,7 @@ MODULE tGCBug07;
 OK
 >>*)
 
-IMPORT GC, Out;
+IMPORT SYSTEM, Out;
 
 TYPE blob = POINTER TO ARRAY 2044 OF CHAR;
   flab = POINTER TO ARRAY 4092 OF CHAR;
@@ -22,7 +22,7 @@ BEGIN
   NEW(t);
 
   t := NIL;
-  GC.Collect;
+  SYSTEM.GC;
 
   (* OK if we haven't segfaulted yet *)
   Out.String("OK"); Out.Ln
@@ -33,7 +33,6 @@ END tGCBug07.
 !! (CHKSUM STAMP)
 !! 
 MODULE tGCBug07 STAMP 0
-IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
@@ -64,8 +63,8 @@ STGW tGCBug07.t
 !   t := NIL;
 CONST 0
 STGW tGCBug07.t
-!   GC.Collect;
-GLOBAL GC.Collect
+!   SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !   Out.String("OK"); Out.Ln
 CONST 3

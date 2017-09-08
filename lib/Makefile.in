@@ -88,7 +88,6 @@ _Builtin.k: $(LIBDEP)
 $(STDMODS:%=%.k) $(CHECKMODS:%=%-b.k): $(LIBDEP) _Builtin.k
 In.k Out.k Err.k In-b.k : Files.k
 In.k In-b.k : Conv.k
-$(SHLMODS:%=%.k) : DynLink.k
 
 %.k: %.m
 	$(OBC1) -O -g -x $< >$@

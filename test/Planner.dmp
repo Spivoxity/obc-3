@@ -1,6 +1,6 @@
        |MODULE Planner;
        |
-       |IMPORT In, Out, M := MathL, Conv, GC;
+       |IMPORT In, Out, M := MathL, Conv, SYSTEM;
        |
        |TYPE R = LONGREAL;
        |
@@ -283,7 +283,7 @@
       1|  Init(src, dst, heur);
       1|  t := src;
        |
-      1|  GC.Collect;
+      1|  SYSTEM.GC;
        |
      46|  WHILE t # dst DO
      45|    IF t # src THEN

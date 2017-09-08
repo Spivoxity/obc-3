@@ -1,14 +1,16 @@
 MODULE tNewBug07;
 
-IMPORT GC, Out;
+IMPORT Out;
 
 TYPE ptr = POINTER TO blob;
   blob = RECORD data: INTEGER; next: ptr END;
 
 VAR p, q: ptr;
 
+PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
+
 BEGIN
-  GC.Debug("z");
+  GcDebug("z");
   NEW(p); NEW(q); p := NIL; NEW(q.next);
   IF q.next # NIL THEN
     Out.String("Pass")
@@ -27,15 +29,16 @@ Pass
 !! (CHKSUM STAMP)
 !! 
 MODULE tNewBug07 STAMP 0
-IMPORT GC STAMP
 IMPORT Out STAMP
 ENDHDR
 
+PRIMDEF tNewBug07.GcDebug gc_debug VX
+
 PROC tNewBug07.%main 0 3 0
-!   GC.Debug("z");
+!   GcDebug("z");
 CONST 2
 GLOBAL tNewBug07.%3
-GLOBAL GC.Debug
+GLOBAL tNewBug07.GcDebug
 CALL 2
 !   NEW(p); NEW(q); p := NIL; NEW(q.next);
 CONST 8
@@ -55,11 +58,11 @@ GLOBAL tNewBug07.blob
 GLOBAL NEW
 CALLW 2
 LDGW tNewBug07.q
-NCHECK 12
+NCHECK 14
 STNW 4
 !   IF q.next # NIL THEN
 LDGW tNewBug07.q
-NCHECK 13
+NCHECK 15
 LDNW 4
 JEQZ L6
 !     Out.String("Pass")

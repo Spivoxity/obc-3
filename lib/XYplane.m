@@ -31,7 +31,7 @@
 (** Very simple black-and-white graphics for X windows *)
 MODULE XYplane;
 
-IMPORT DynLink;
+IMPORT SYSTEM;
 
 CONST 
   (** erase -- bit value to write in white *)
@@ -59,7 +59,7 @@ PROCEDURE Key*(): CHAR IS "XYplane_key";
 PROCEDURE Open* IS "XYplane_open";
 
 BEGIN
-  DynLink.Load("@XYplane");
+  SYSTEM.LOADLIB("@XYplane");
 END XYplane.
 
 --CODE--

@@ -3,7 +3,7 @@ MODULE tParamGC07;
 (* The local copies of aggregate value parameters must be included in
    the GC map of a procedure. *)
 
-IMPORT Out, GC;
+IMPORT Out, SYSTEM;
 
 TYPE ptr = POINTER TO blob; blob = RECORD val: INTEGER; lnk: ptr END;
 
@@ -13,7 +13,7 @@ VAR x: ptr; b: arr;
 
 PROCEDURE P(a: arr);
 BEGIN
-  GC.Collect;
+  SYSTEM.GC;
   x.val := 3;
   Out.Int(a[0].val, 0); Out.Ln  
 END P;
@@ -35,13 +35,12 @@ END tParamGC07.
 !! 
 MODULE tParamGC07 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tParamGC07.P 0 4 0x00100001
 ! PROCEDURE P(a: arr);
-!   GC.Collect;
-GLOBAL GC.Collect
+!   SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !   x.val := 3;
 CONST 3

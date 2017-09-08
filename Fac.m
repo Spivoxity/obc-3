@@ -30,7 +30,7 @@
 
 MODULE Fac;
 
-IMPORT Args, Conv, Out, Files, GC, Math;
+IMPORT Args, Conv, Out, Files, Math, SYSTEM;
 
 VAR n: SHORTINT;
   buf: ARRAY 10 OF CHAR;
@@ -65,9 +65,7 @@ BEGIN
   out := Files.stdout; Files.WriteInt(out, n, 0); 
   Out.String(" is "); Out.LongInt(Fac(n, 1), 0); Out.Ln;
 
-  GC.Collect;
+  SYSTEM.GC;
 
-  ASSERT(ABS(Math.Sin(Math.pi / 6.0) - 0.5) < 1.0E-6);
-
-  ASSERT(GC.HeapSize() > 0);
+  ASSERT(ABS(Math.Sin(Math.pi / 6.0) - 0.5) < 1.0E-6)
 END Fac.

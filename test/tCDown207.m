@@ -3,7 +3,7 @@ MODULE tCDown207;
 (* CountDown in Oberon.  From an idea by Stephen Williams;
    re-implementation in Oberon and tuning by Mike Spivey *)
 
-IMPORT Out, Conv, Strings, Bit, GC;
+IMPORT Out, Conv, Strings, Bit, SYSTEM;
 
 CONST 
   MAX = 10;			(* Maximum number of inputs *)
@@ -293,12 +293,14 @@ BEGIN
   Out.Ln; Out.Ln
 END Main;
 
+PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
+
 BEGIN
-  GC.Debug("gs");
+  GcDebug("gs");
   NEW(htable);
   Main;
   htable := NIL;
-  GC.Collect;
+  SYSTEM.GC;
   Out.Ln
 END tCDown207.
 
@@ -319,7 +321,6 @@ IMPORT Out STAMP
 IMPORT Conv STAMP
 IMPORT Strings STAMP
 IMPORT Bit STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tCDown207.%11.Put 4 5 0
@@ -1099,11 +1100,13 @@ CALL 0
 RETURN
 END
 
+PRIMDEF tCDown207.GcDebug gc_debug VX
+
 PROC tCDown207.%main 0 6 0
-!   GC.Debug("gs");
+!   GcDebug("gs");
 CONST 3
 GLOBAL tCDown207.%9
-GLOBAL GC.Debug
+GLOBAL tCDown207.GcDebug
 CALL 2
 !   NEW(htable);
 CONST 80000
@@ -1117,8 +1120,8 @@ CALL 0
 !   htable := NIL;
 CONST 0
 STGW tCDown207.htable
-!   GC.Collect;
-GLOBAL GC.Collect
+!   SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !   Out.Ln
 GLOBAL Out.Ln

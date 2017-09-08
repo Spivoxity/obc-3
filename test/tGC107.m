@@ -4,17 +4,19 @@ MODULE tGC107;
 Done 2097152
 >>*)
 
-IMPORT Out, GC;
+IMPORT Out;
 
 TYPE ptr = POINTER TO ARRAY 256 OF INTEGER;
 
 VAR i: INTEGER; p: ptr;
 
+PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
+
 BEGIN
   FOR i := 1 TO 128 * 1024 DO
     NEW(p)
   END;
-  Out.String("Done "); Out.Int(GC.HeapSize(), 0); Out.Ln
+  Out.String("Done "); Out.Int(GcHeapSize(), 0); Out.Ln
 END tGC107.
 
 (*[[
@@ -23,8 +25,9 @@ END tGC107.
 !! 
 MODULE tGC107 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
+
+PRIMDEF tGC107.GcHeapSize gc_heap_size I
 
 PROC tGC107.%main 0 3 0
 !   FOR i := 1 TO 128 * 1024 DO
@@ -46,13 +49,13 @@ INC
 STGW tGC107.i
 JUMP L2
 LABEL L3
-!   Out.String("Done "); Out.Int(GC.HeapSize(), 0); Out.Ln
+!   Out.String("Done "); Out.Int(GcHeapSize(), 0); Out.Ln
 CONST 6
 GLOBAL tGC107.%1
 GLOBAL Out.String
 CALL 2
 CONST 0
-GLOBAL GC.HeapSize
+GLOBAL tGC107.GcHeapSize
 CALLW 0
 GLOBAL Out.Int
 CALL 2

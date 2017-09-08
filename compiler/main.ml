@@ -31,10 +31,6 @@
 open Print
 open Tree
 
-let error_token lexbuf =
-  let tok = Lexing.lexeme lexbuf in
-  if tok.[0] = '\000' then "EOF" else tok
-
 let export (Module (m, _, _, defs, doc)) =
   Symfile.export (get_def m) doc !defs
 

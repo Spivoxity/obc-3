@@ -4,7 +4,7 @@ MODULE tDigits07;
 381654729
 >>*)
 
-IMPORT Out, GC;
+IMPORT Out, SYSTEM;
 
 TYPE SetRec = ABSTRACT RECORD END;
   Set = POINTER TO SetRec;
@@ -23,7 +23,7 @@ PROCEDURE Search(k, n: INTEGER; s: Set);
   VAR d, nn: INTEGER; s1: DelSet; b: BOOLEAN;
 BEGIN
   IF k = 10 THEN
-    GC.Collect;
+    SYSTEM.GC;
     Out.Int(n, 0); Out.Ln
   ELSE
     FOR d := 1 TO 9 DO
@@ -54,7 +54,6 @@ END tDigits07.
 !! 
 MODULE tDigits07 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tDigits07.%1.Avail 0 1 0x00100001
@@ -93,8 +92,8 @@ PROC tDigits07.Search 16 4 0x00404001
 LDLW 12
 CONST 10
 JNE L18
-!     GC.Collect;
-GLOBAL GC.Collect
+!     SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !     Out.Int(n, 0); Out.Ln
 CONST 0

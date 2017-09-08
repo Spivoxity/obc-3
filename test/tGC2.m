@@ -5,7 +5,7 @@ MODULE tGC2;
 2097152
 >>*)
 
-IMPORT Out, GC;
+IMPORT Out;
 
 TYPE ptr = POINTER TO cell;
   cell = RECORD hd: INTEGER; tl: ptr END;
@@ -42,11 +42,13 @@ END Sum;
 
 VAR n: INTEGER; a: ptr;
 
+PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
+
 BEGIN
   a := NIL;
   FOR n := 1 TO 1000 DO a := Snoc(a, n) END;
   Out.Int(Sum(Reverse(a)), 0); Out.Ln;
-  Out.Int(GC.HeapSize(), 0); Out.Ln
+  Out.Int(GcHeapSize(), 0); Out.Ln
 END tGC2.
 
 (*[[
@@ -55,7 +57,6 @@ END tGC2.
 !! 
 MODULE tGC2 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tGC2.Reverse 0 3 0x00100001
@@ -147,6 +148,8 @@ PLUS
 RETURNW
 END
 
+PRIMDEF tGC2.GcHeapSize gc_heap_size I
+
 PROC tGC2.%main 0 3 0
 !   a := NIL;
 CONST 0
@@ -179,9 +182,9 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   Out.Int(GC.HeapSize(), 0); Out.Ln
+!   Out.Int(GcHeapSize(), 0); Out.Ln
 CONST 0
-GLOBAL GC.HeapSize
+GLOBAL tGC2.GcHeapSize
 CALLW 0
 GLOBAL Out.Int
 CALL 2

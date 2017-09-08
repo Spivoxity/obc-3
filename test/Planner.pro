@@ -47,7 +47,7 @@ Execution profile:
          0     0.0%   100.0%     196   Files.fputc
          0     0.0%   100.0%    8355   Files.obgetc
          0     0.0%   100.0%    4177   Files.ungetc
-         0     0.0%   100.0%       1   GC.Collect
+         0     0.0%   100.0%       1   GC
          0     0.0%   100.0%      97   MathL.Sqrt
          0     0.0%   100.0%     395   NEW
 
@@ -117,7 +117,7 @@ index  total   self children   calls        name
                 0.1%   0.0%      45/45          Planner.Delmin [26]
                 0.0%   0.0%       2/196         Planner.Lookup [17]
                 0.0%   0.0%       1/1           Out.Fixed [28]
-                0.0%   0.0%       1/1           GC.Collect [44]
+                0.0%   0.0%       1/1           GC [44]
 ----------------------------------------------------------------
                 0.6%   3.5%      55/105         Planner.VisitNeighbours [14]
                 0.3%   2.2%      50/105         Planner.Search [10]
@@ -257,7 +257,7 @@ index  total   self children   calls        name
 [43]     0.0%   0.0%   0.0%       1         Files.Init [43]
 ----------------------------------------------------------------
                 0.0%   0.0%       1/1           Planner.Search [10]
-[44]     0.0%   0.0%   0.0%       1         GC.Collect [44]
+[44]     0.0%   0.0%   0.0%       1         GC [44]
 ----------------------------------------------------------------
 
 Procedure index:
@@ -279,7 +279,7 @@ Procedure index:
   Files.obgetc [34]              Planner.InitQueue [31]       
   Files.raw [7]                  Planner.Lookup [17]          
   Files.ungetc [35]              Planner.Main [3]             
-  GC.Collect [44]                Planner.Requeue [27]         
+  GC [44]                        Planner.Requeue [27]         
   In.%main [33]                  Planner.Search [10]          
   In.Char [5]                    Planner.ShowLink [11]        
   In.Line [4]                    Planner.Split [9]            

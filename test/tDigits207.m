@@ -4,7 +4,7 @@ MODULE tDigits207;
 381654729
 >>*)
 
-IMPORT Out, GC;
+IMPORT Out, SYSTEM;
 
 PROCEDURE Search(k, n: INTEGER; s: PROCEDURE (d1: INTEGER): BOOLEAN);
   VAR d, nn: INTEGER;
@@ -14,7 +14,7 @@ PROCEDURE Search(k, n: INTEGER; s: PROCEDURE (d1: INTEGER): BOOLEAN);
 
 BEGIN
   IF k = 10 THEN
-    GC.Collect;
+    SYSTEM.GC;
     Out.Int(n, 0); Out.Ln
   ELSE
     FOR d := 1 TO 9 DO
@@ -41,7 +41,6 @@ END tDigits207.
 !! 
 MODULE tDigits207 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tDigits207.%1.s1 4 3 0
@@ -72,8 +71,8 @@ PROC tDigits207.Search 8 5 0
 LDLW 12
 CONST 10
 JNE L13
-!     GC.Collect;
-GLOBAL GC.Collect
+!     SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !     Out.Int(n, 0); Out.Ln
 CONST 0

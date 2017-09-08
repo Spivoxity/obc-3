@@ -107,7 +107,10 @@ EXTERN int stack_size;		/* Size of main stack */
 EXTERN char *libpath;		/* Path to dynamic library */
 EXTERN value *entry;		/* Program entry point */
 EXTERN value *gcmap;		/* Global pointer map */
-EXTERN word interpreter, dyntrap, dynstub;
+EXTERN word interpreter, dyntrap;
+#ifdef USEFFI
+EXTERN word dynstub;
+#endif
 
 #define interpreted(p) ((p)[CP_PRIM].a == interpreter)
 

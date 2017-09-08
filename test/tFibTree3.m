@@ -36,7 +36,7 @@ Count = 89
 
 >>*)
 
-IMPORT Out, GC, Random;
+IMPORT Out, SYSTEM, Random;
 
 TYPE 
   tree = POINTER TO node;
@@ -48,7 +48,7 @@ BEGIN
   (* Trash the array b *)
   FOR i := 0 TO LEN(b)-1 DO b[i] := NIL END;
   
-  GC.Collect;
+  SYSTEM.GC;
 
   NEW(p, LEN(a) + Random.Roll(10));
   FOR i := 0 TO LEN(a)-1 DO p[i] := a[i] END;
@@ -95,12 +95,14 @@ END count;
 
 VAR i: INTEGER; p: tree;
 
+PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
+
 BEGIN 
-  GC.Debug("s");
+  GcDebug("s");
 
   FOR i := 0 TO 10 DO
     p := Build(i);
-    GC.Collect;
+    SYSTEM.GC;
     Print(p); Out.Ln();
     Out.String("Count = "); Out.Int(count(p), 0); 
     Out.Ln(); Out.Ln();
@@ -113,7 +115,6 @@ END tFibTree3.
 !! 
 MODULE tFibTree3 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 IMPORT Random STAMP
 ENDHDR
 
@@ -143,8 +144,8 @@ STIW
 INCL -4
 JUMP L3
 LABEL L4
-!   GC.Collect;
-GLOBAL GC.Collect
+!   SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !   NEW(p, LEN(a) + Random.Roll(10));
 LDLW 16
@@ -318,11 +319,13 @@ PLUS
 RETURNW
 END
 
+PRIMDEF tFibTree3.GcDebug gc_debug VX
+
 PROC tFibTree3.%main 0 5 0
-!   GC.Debug("s");
+!   GcDebug("s");
 CONST 2
 GLOBAL tFibTree3.%2
-GLOBAL GC.Debug
+GLOBAL tFibTree3.GcDebug
 CALL 2
 !   FOR i := 0 TO 10 DO
 CONST 0
@@ -336,8 +339,8 @@ LDGW tFibTree3.i
 GLOBAL tFibTree3.Build
 CALLW 1
 STGW tFibTree3.p
-!     GC.Collect;
-GLOBAL GC.Collect
+!     SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !     Print(p); Out.Ln();
 LDGW tFibTree3.p

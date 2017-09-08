@@ -526,7 +526,9 @@ int main(int ac, char *av[]) {
      interpreter = wrap_prim(interp);
 #endif
      dyntrap = wrap_prim(dltrap);
+#ifdef USEFFI
      dynstub = wrap_prim(dlstub);
+#endif
 
 #ifdef M64X32
      /* Allocate ob_res and statlink in 32-bit addressible storage */

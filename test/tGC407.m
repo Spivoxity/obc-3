@@ -6,7 +6,7 @@ MODULE tGC407;
 53
 >>*)
 
-IMPORT Out, GC;
+IMPORT Out, SYSTEM;
 
 TYPE foo = POINTER TO RECORD a, b: INTEGER END;
 TYPE bar = POINTER TO ARRAY OF INTEGER;
@@ -20,7 +20,7 @@ PROCEDURE baz(VAR x: INTEGER);
 BEGIN
   p := NIL; q := NIL;
   x := 42;
-  GC.Collect;
+  SYSTEM.GC;
   Out.Int(x, 0); Out.Ln
 END baz;
 
@@ -29,7 +29,7 @@ END baz;
 PROCEDURE bop(CONST x: qux);
 BEGIN
   r := NIL;
-  GC.Collect;
+  SYSTEM.GC;
   Out.Int(x[0], 0); Out.Ln
 END bop;
 
@@ -49,7 +49,6 @@ END tGC407.
 !! 
 MODULE tGC407 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tGC407.baz 0 3 0x00100001
@@ -63,8 +62,8 @@ STGW tGC407.q
 CONST 42
 LDLW 12
 STOREW
-!   GC.Collect;
-GLOBAL GC.Collect
+!   SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !   Out.Int(x, 0); Out.Ln
 CONST 0
@@ -82,8 +81,8 @@ PROC tGC407.bop 0 4 0x00100001
 !   r := NIL;
 CONST 0
 STGW tGC407.r
-!   GC.Collect;
-GLOBAL GC.Collect
+!   SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !   Out.Int(x[0], 0); Out.Ln
 CONST 0

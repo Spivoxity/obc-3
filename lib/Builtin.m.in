@@ -122,6 +122,12 @@ BEGIN
   x := SYSTEM.VAL(LONGREAL, xx - LONG(n) * two52)
 END UNPKLONG;
 
+PROCEDURE LOADLIB(name: ARRAY OF CHAR) IS "load_lib";
+
+PROCEDURE GC IS "*GC";
+PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
+PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
+
 END Builtin.
 
 --CODE--
@@ -278,4 +284,8 @@ void UNPKLONG(void *xx, int *n) {
      int k = (y>>52) - 1023;
      *n = k; * (uint64_t *) &x = y - ((int64_t) k << 52);
      put_double(xx, x);
+}
+
+void P_GC(void *bp) {
+     gc_collect(bp);
 }

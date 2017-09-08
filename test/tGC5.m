@@ -1,6 +1,6 @@
 MODULE tGC5;
 
-IMPORT Out, GC;
+IMPORT Out;
 
 CONST N = 1000;
 
@@ -65,8 +65,11 @@ VAR
 
 CONST K = 50000;
 
+PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
+PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
+
 BEGIN
-  GC.Debug("s");
+  GcDebug("s");
 
   t := NIL;
   FOR i := 1 TO K DO
@@ -74,7 +77,7 @@ BEGIN
   END;
   Out.Int(Size(t), 0); Out.Ln;
   IF Ordered(t, 0, 100) THEN Out.String("ordered"); Out.Ln END;
-  Out.Int(GC.HeapSize(), 0); Out.Ln
+  Out.Int(GcHeapSize(), 0); Out.Ln
 END tGC5.
 
 (*<<
@@ -89,7 +92,6 @@ ordered
 !! 
 MODULE tGC5 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tGC5.Random 0 2 0
@@ -301,11 +303,15 @@ CALLW 3
 RETURNW
 END
 
+PRIMDEF tGC5.GcDebug gc_debug VX
+
+PRIMDEF tGC5.GcHeapSize gc_heap_size I
+
 PROC tGC5.%main 0 5 0
-!   GC.Debug("s");
+!   GcDebug("s");
 CONST 2
 GLOBAL tGC5.%2
-GLOBAL GC.Debug
+GLOBAL tGC5.GcDebug
 CALL 2
 !   t := NIL;
 CONST 0
@@ -355,9 +361,9 @@ CALL 2
 GLOBAL Out.Ln
 CALL 0
 LABEL L26
-!   Out.Int(GC.HeapSize(), 0); Out.Ln
+!   Out.Int(GcHeapSize(), 0); Out.Ln
 CONST 0
-GLOBAL GC.HeapSize
+GLOBAL tGC5.GcHeapSize
 CALLW 0
 GLOBAL Out.Int
 CALL 2

@@ -1,6 +1,6 @@
 MODULE tFibTree2;
 
-IMPORT Out, GC;
+IMPORT Out, SYSTEM;
 
 TYPE 
   tree = POINTER TO node;
@@ -20,7 +20,7 @@ PROCEDURE Right(t: tree): tree; BEGIN RETURN t[6].b[2] END Right;
 PROCEDURE Build(n: INTEGER): tree;
 BEGIN
   IF n <= 1 THEN
-    GC.Collect;
+    SYSTEM.GC;
     RETURN NIL
   ELSE
     RETURN Cons(Build(n-2), Build(n-1))
@@ -50,12 +50,14 @@ END count;
 
 VAR i: INTEGER; p: tree;
 
+PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
+
 BEGIN 
-  GC.Debug("gs");
+  GcDebug("gs");
 
   FOR i := 0 TO 7 DO
     p := Build(i);
-    GC.Collect;
+    SYSTEM.GC;
     Print(p); Out.Ln();
     Out.String("Count = "); Out.Int(count(p), 0); 
     Out.Ln(); Out.Ln();
@@ -95,7 +97,6 @@ Count = 21
 !! 
 MODULE tFibTree2 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tFibTree2.Cons 4 4 0x00310001
@@ -142,8 +143,8 @@ PROC tFibTree2.Build 0 4 0
 LDLW 12
 CONST 1
 JGT L6
-!     GC.Collect;
-GLOBAL GC.Collect
+!     SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !     RETURN NIL
 CONST 0
@@ -226,11 +227,13 @@ PLUS
 RETURNW
 END
 
+PRIMDEF tFibTree2.GcDebug gc_debug VX
+
 PROC tFibTree2.%main 0 4 0
-!   GC.Debug("gs");
+!   GcDebug("gs");
 CONST 3
 GLOBAL tFibTree2.%1
-GLOBAL GC.Debug
+GLOBAL tFibTree2.GcDebug
 CALL 2
 !   FOR i := 0 TO 7 DO
 CONST 0
@@ -244,8 +247,8 @@ LDGW tFibTree2.i
 GLOBAL tFibTree2.Build
 CALLW 1
 STGW tFibTree2.p
-!     GC.Collect;
-GLOBAL GC.Collect
+!     SYSTEM.GC;
+GLOBAL GC
 CALL 0
 !     Print(p); Out.Ln();
 LDGW tFibTree2.p

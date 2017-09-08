@@ -5,7 +5,7 @@ MODULE tGC307;
 2097152
 >>*)
 
-IMPORT Out, GC;
+IMPORT Out;
 
 CONST N = 1000;
 
@@ -61,9 +61,11 @@ END Print;
 
 CONST K = 500000;
 
+PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
+
 BEGIN
   Build(K); Print;
-  Out.Int(GC.HeapSize(), 0); Out.Ln
+  Out.Int(GcHeapSize(), 0); Out.Ln
 END tGC307.
 
 (*[[
@@ -72,7 +74,6 @@ END tGC307.
 !! 
 MODULE tGC307 STAMP 0
 IMPORT Out STAMP
-IMPORT GC STAMP
 ENDHDR
 
 PROC tGC307.Random 0 2 0
@@ -270,6 +271,8 @@ CALL 0
 RETURN
 END
 
+PRIMDEF tGC307.GcHeapSize gc_heap_size I
+
 PROC tGC307.%main 0 4 0
 !   Build(K); Print;
 CONST 500000
@@ -277,9 +280,9 @@ GLOBAL tGC307.Build
 CALL 1
 GLOBAL tGC307.Print
 CALL 0
-!   Out.Int(GC.HeapSize(), 0); Out.Ln
+!   Out.Int(GcHeapSize(), 0); Out.Ln
 CONST 0
-GLOBAL GC.HeapSize
+GLOBAL tGC307.GcHeapSize
 CALLW 0
 GLOBAL Out.Int
 CALL 2

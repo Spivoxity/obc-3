@@ -1,6 +1,6 @@
 MODULE Planner;
 
-IMPORT In, Out, M := MathL, Conv, GC;
+IMPORT In, Out, M := MathL, Conv, SYSTEM;
 
 TYPE R = LONGREAL;
 
@@ -283,7 +283,7 @@ BEGIN
   Init(src, dst, heur);
   t := src;
 
-  GC.Collect;
+  SYSTEM.GC;
 
   WHILE t # dst DO
     IF t # src THEN

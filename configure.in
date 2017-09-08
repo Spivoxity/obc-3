@@ -332,17 +332,17 @@ AC_SUBST(DEB_LIBS)
 # Module list
 
 # Standard modules
-AC_SUBST(STDMODS, "DynLink Files Conv In Out Err Args Bit Timer GC \
+AC_SUBST(STDMODS, "Files Conv In Out Err Args Bit Timer \
 Strings Random Math MathL")
 
-AC_SUBST(STDMODS_B, "DynLink Files Conv In-b Out Err Args Bit Timer GC \
+AC_SUBST(STDMODS_B, "Files Conv In-b Out Err Args Bit Timer \
 Strings-b Random-b Math MathL")
 
 # Modules that contain runtime checks -- recompile with -b
 AC_SUBST(CHECKMODS, "In Random Strings")
 
 # Modules containing C code
-AC_SUBST(PRIMMODS, "Args Timer Files Conv Random GC Strings")
+AC_SUBST(PRIMMODS, "Args Timer Files Conv Random")
 
 # Modules with primitives in separate shared libraries:
 AC_SUBST(SHLMODS, "$XYPLANE")
