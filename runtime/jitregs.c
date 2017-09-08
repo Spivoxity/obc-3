@@ -46,21 +46,21 @@ static reg def_reg(vmreg r, int c) {
 }
 
 void setup_regs(void) {
-     int totregs = nireg + nfreg + 1;
-     assert(nireg >= 5 && nvreg >= 2);
+     int totregs = vm_nireg + vm_nfreg + 1;
+     assert(vm_nireg >= 5 && vm_nvreg >= 2);
 
      regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg));
 
      nregs = 0;
-     for (int i = nvreg; i < nireg; i++)
-          def_reg(ireg[i], INT);
-     for (int i = 0; i < nvreg; i++)
-          def_reg(ireg[i], INT);
-     for (int i = 0; i < nfreg; i++)
-          def_reg(freg[i], FLO);
+     for (int i = vm_nvreg; i < vm_nireg; i++)
+          def_reg(vm_ireg[i], INT);
+     for (int i = 0; i < vm_nvreg; i++)
+          def_reg(vm_ireg[i], INT);
+     for (int i = 0; i < vm_nfreg; i++)
+          def_reg(vm_freg[i], FLO);
 
      rI0 = &regs[0]; rI1 = &regs[1]; rI2 = &regs[2];
-     rSP = &regs[nireg-2]; rBP = &regs[nireg-1]; 
+     rSP = &regs[vm_nireg-2]; rBP = &regs[vm_nireg-1]; 
      rBP->r_class = 0;
 }
 

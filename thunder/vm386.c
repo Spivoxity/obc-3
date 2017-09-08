@@ -87,8 +87,8 @@ struct _vmreg
      reg_v3 = { "V3", rBP };
 
 /* Register layout for use by JIT client */
-const int nvreg = 4, nireg = 7;
-const vmreg ireg[] = {
+const int vm_nvreg = 4, vm_nireg = 7;
+const vmreg vm_ireg[] = {
      &reg_v0, &reg_v1, &reg_v2, &reg_v3,  /* Callee-save */
      &reg_i0, &reg_i1, &reg_i2            /* Caller-save */
 };
@@ -129,8 +129,8 @@ struct _vmreg
      reg_v0 = { "V0", rBX },
      reg_v1 = { "V1", rBP };
 
-const int nvreg = 2, nireg = 11;
-const vmreg ireg[] = {
+const int vm_nvreg = 2, vm_nireg = 11;
+const vmreg vm_ireg[] = {
      &reg_v0, &reg_v1,          /* Callee-save */
      &reg_i0, &reg_i1, &reg_i2, /* Caller-save */
      &reg_i3, &reg_i4, &reg_i5, &reg_i6, &reg_i7, &reg_i8
@@ -138,13 +138,13 @@ const vmreg ireg[] = {
 
 #endif
 
-const int nfreg = 6;
-const vmreg freg[] = {
+const int vm_nfreg = 6;
+const vmreg vm_freg[] = {
      &reg_f0, &reg_f1, &reg_f2, /* Floating point for all variants */
      &reg_f3, &reg_f4, &reg_f5
 };
 
-const vmreg ret = &reg_i0, base = &reg_sp;
+const vmreg vm_ret = &reg_i0, vm_base = &reg_sp;
 
 #define register(r) ((r)&0x7)
 

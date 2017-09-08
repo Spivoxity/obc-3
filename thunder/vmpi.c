@@ -90,16 +90,16 @@ struct _vmreg
      reg_rr = { "RET", R0 },
      reg_sp = { "BASE", SP };
 
-const int nvreg = 7, nireg = 8, nfreg = 7;
-const vmreg ireg[] = {
+const int vm_nvreg = 7, vm_nireg = 8, vm_nfreg = 7;
+const vmreg vm_ireg[] = {
      &reg_v0, &reg_v1, &reg_v2, &reg_v3, &reg_v4, &reg_v5, &reg_v6,
      &reg_i0
 };
-const vmreg freg[] = {
+const vmreg vm_freg[] = {
      &reg_f0, &reg_f1, &reg_f2, &reg_f3,
      &reg_f4, &reg_f5, &reg_f6
 };
-const vmreg ret = &reg_rr, base = &reg_sp;
+const vmreg vm_ret = &reg_rr, vm_base = &reg_sp;
 
 #define isfloat(r) (((r)&0x10) != 0)
 
