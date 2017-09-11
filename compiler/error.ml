@@ -148,6 +148,7 @@ let headline loc fmt args =
     break "" (sprintf "\"$\", line $: $" [fStr f; fNum n; fMeta fmt args])
   end
 
+(* Space from b to c in a line that begins at a *)
 let space text a b c =
   for i = b to c - 1 do
     if i < a + String.length text && text.[i-a] = '\t' then
@@ -194,12 +195,12 @@ let err_message2 fmt args loc1 loc2 =
   space text1 beg1 beg1 x;
   mark x y;
   if line1 = line2 then
-    space text2 beg2 v x
+    space text1 beg1 y u
   else begin
     fprintf stderr "\n" [];
     fprintf stderr "> $\n" [fStr text2];
     fprintf stderr "> " [];
-    space text2 beg2 beg2 x
+    space text2 beg2 beg2 u
   end;
   mark u v;
   fprintf stderr "\n" [];

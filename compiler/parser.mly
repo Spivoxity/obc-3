@@ -419,7 +419,7 @@ factor :
   | NOT factor			{ exp (Monop (Not, $factor)) }
   | LPAR expr RPAR		{ $expr } 
   | LPAR expr %prec error	{ parse_error2 
-				    "unmatched left parenthesis" (rloc 1);
+				    "unmatched parenthesis" (rloc 1);
 				  raise Parse_error } ;
 
 desig :
@@ -437,7 +437,7 @@ actuals :
     LPAR RPAR			{ [] }
   | LPAR exprs RPAR		{ $exprs }
   | LPAR exprs %prec error	{ parse_error2 
-				    "unmatched left parenthesis" (rloc 1);
+				    "unmatched parenthesis" (rloc 1);
 				  raise Parse_error } ;
 
 desigs :
