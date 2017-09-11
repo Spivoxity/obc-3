@@ -10,15 +10,15 @@ BEGIN
 END eSyntax
 
 (*<<
-"foo.m", line 8: unmatched left parenthesis at token ';'
+"foo.m", line 8: unmatched parenthesis at token ';'
 >   f(1, ...
 >    ^
 >     4;
-> ^
+>      ^
 
-"foo.m", line 9: unmatched left parenthesis at token ';'
+"foo.m", line 9: unmatched parenthesis at token ';'
 >   g(1, 2, 3;
->    ^^
+>    ^       ^
 
 "foo.m", line 30: unterminated comment
 > (* Unterminated
