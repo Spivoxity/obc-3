@@ -54,7 +54,7 @@ open Print
 %token			FOR MODULE PROCEDURE RECORD REPEAT RETURN THEN TO TYPE 
 %token			UNTIL VAR WHILE NOT POINTER NIL WITH
 %token			CASE LOOP EXIT BY 
-%token			ABSTRACT RETURN07 TRUE FALSE
+%token			ABSTRACT RETURN07 RECORD07 TRUE FALSE
 
 /* operator priorities -- most needed only because of error productions */
 %right			error
@@ -197,6 +197,8 @@ texpr :
         List.fold_right array $exprs $texpr }
   | abstract RECORD parent fields END
       { typexp (Record ($abstract, $parent, $fields)) }
+  | abstract RECORD07 parent fields07 END
+      { typexp (Record ($abstract, $parent, $fields07)) }
   | PROCEDURE params		{ typexp (Proc $params) } ;
 
 tname :
@@ -210,24 +212,32 @@ parent :
     /* empty */			{ None }
   | LPAR tname RPAR		{ Some $tname } ;
 
+/* Wirth says  fields = [ fdecl ] { ; [ fdecl ] }  in Oberon, but changes
+to  fields = [ fdecl { ; fdecl } ]  in Oberon-07, so forbidding stray
+semicolons.  The lexer returns either RECORD or RECORD07 so as to select
+the correct productions here.  There's a special production to catch
+a common error in Oberon-07. */
+
 fields :
-    /* empty */			{ [] }
-  | fdecls			{ $fdecls }
-  | stray fields		{ $fields } ;
+    /* empty */                 { [] }
+  | fdecl			{ [$fdecl] }
+  | fields SEMI 		{ $fields }
+  | fields SEMI fdecl		{ $fields @ [$fdecl] } ;
     
+fields07 :
+    /* empty */			{ [] }
+  | fdecls			{ $fdecls } ;
+
 fdecls :
     fdecl			{ [$fdecl] }
-  | fdecls stray 		{ $fdecls }
-  | fdecls SEMI fdecl		{ $fdecls @ [$fdecl] } ;
+  | fdecls SEMI fdecl		{ $fdecls @ [$fdecl] }
+  | fdecls SEMI
+      { syn_error "Oberon-07 forbids a semicolon here" [] (rloc 2);
+        $fdecls } ;
 
 fdecl :	
     doc defids COLON texpr
       { VarDecl (FieldDef, $defids, $texpr, $doc) } ;
-
-stray :
-    SEMI
-      { if !Config.ob07flag then
-          syn_error "Oberon-07 forbids a semicolon here" [] (rloc 1) } ;
 
 proc :
     doc PROCEDURE procid params semi pblock semi	

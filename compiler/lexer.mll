@@ -55,11 +55,12 @@ let init () =
 
   (* Ordinary Oberon-2 *)
   if not !Config.ob07flag then
-    List.iter add [ "RETURN", RETURN; "WITH", WITH ];
+    List.iter add [ "RETURN", RETURN; "WITH", WITH; "RECORD", RECORD ];
 
   (* Oberon-07 *)
   if !Config.ob07flag then
-    List.iter add [ "RETURN", RETURN07; "TRUE", TRUE; "FALSE", FALSE ];
+    List.iter add
+      [ "RETURN", RETURN07; "RECORD", RECORD07; "TRUE", TRUE; "FALSE", FALSE ];
 
   (* Extensions to Oberon-07 *)
   if not !Config.ob07flag || !Config.extensions then
