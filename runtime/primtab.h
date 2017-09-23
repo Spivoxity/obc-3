@@ -82,45 +82,46 @@ typedef void type_V;
    type letters for the result and arguments. */
 
 #define DIRECT(name)  void name(value *bp);
-#define WRAPPER(...)  WRAP(_WRAP, __VA_ARGS__)
-#define INDIRECT(...) WRAP(_INDIR, __VA_ARGS__)
+#define WRAPPER(...)  WRAP(_WRAP, 0, __VA_ARGS__)
+#define INDIRECT(...) WRAP(_INDIR, 0, __VA_ARGS__)
 
-/* WRAP(mac, name, res, a1, ..., an) is
+/* WRAP(mac, base, name, res, a1, ..., an) is
 
    mac(name, res, 
        (type_a1, ..., type_an), 
-       (arg_a1(0), arg_a2(s1), arg_a3(s1+s2), ..., arg_an(s1+s2+...s(n-1))))
+       (arg_a1(base), arg_a2(base+s1), arg_a3(base+s1+s2), ..., 
+           arg_an(base+s1+s2+...s(n-1))))
    
    where si = size_ai. */
 
-#define WRAP(mac, ...) \
+#define WRAP(mac, base, ...)                          \
      SELECT(__VA_ARGS__, WRAP6, WRAP5, WRAP4, WRAP3, \
-            WRAP2, WRAP1, WRAP0)(mac, __VA_ARGS__)
+                 WRAP2, WRAP1, WRAP0)(mac, base, __VA_ARGS__)
 
 #define SELECT(n, r, a1, a2, a3, a4, a5, a6, t, ...) t
 
-#define WRAP0(mac, name, res) \
+#define WRAP0(mac, base, name, res)              \
      mac(name, res, (void), ())
-#define WRAP1(mac, name, res, a1) \
-     mac(name, res, (type_##a1), (arg_##a1(0)))
-#define WRAP2(mac, name, res, a1, a2) \
-     mac(name, res, (type_##a1, type_##a2), (args2(0, a1, a2)))
-#define WRAP3(mac, name, res, a1, a2, a3) \
+#define WRAP1(mac, base, name, res, a1)          \
+     mac(name, res, (type_##a1), (arg_##a1(base)))
+#define WRAP2(mac, base, name, res, a1, a2)                      \
+     mac(name, res, (type_##a1, type_##a2), (args2(base, a1, a2)))
+#define WRAP3(mac, base, name, res, a1, a2, a3)  \
      mac(name, res, \
          (type_##a1, type_##a2, type_##a3), \
-         (args3(0, a1, a2, a3)))
-#define WRAP4(mac, name, res, a1, a2, a3, a4) \
+         (args3(base, a1, a2, a3)))
+#define WRAP4(mac, base, name, res, a1, a2, a3, a4)      \
      mac(name, res, \
          (type_##a1, type_##a2, type_##a3, type_##a4), \
-         (args4(0, a1, a2, a3, a4)))
-#define WRAP5(mac, name, res, a1, a2, a3, a4, a5) \
+         (args4(base, a1, a2, a3, a4)))
+#define WRAP5(mac, base, name, res, a1, a2, a3, a4, a5)  \
      mac(name, res, \
          (type_##a1, type_##a2, type_##a3, type_##a4, type_##a5), \
-         (args5(0, a1, a2, a3, a4, a5)))
-#define WRAP6(mac, name, res, a1, a2, a3, a4, a5, a6) \
+         (args5(base, a1, a2, a3, a4, a5)))
+#define WRAP6(mac, base, name, res, a1, a2, a3, a4, a5, a6)      \
      mac(name, res, \
          (type_##a1, type_##a2, type_##a3, type_##a4, type_##a5, type_##a6), \
-         (args6(0, a1, a2, a3, a4, a5, a6)))
+         (args6(base, a1, a2, a3, a4, a5, a6)))
 
 #define args2(j, a1, a2) \
      arg_##a1(j), arg_##a2(j+size_##a1)
@@ -164,3 +165,17 @@ typedef void type_V;
 #else
 #define PRIMTAB(prims) WRAPPERS(prims) TABLE(prims)
 #endif
+
+/* Variation for the compilers course with offset to compensate for
+   dummy static link */
+
+#define PWRAPPER(...)  WRAP(_WRAP, 1, __VA_ARGS__)
+#define PINDIRECT(...) WRAP(_INDIR, 1, __VA_ARGS__)
+#define PWRAPPERS(prims) prims(DIRECT, PINDIRECT, PWRAPPER)
+
+#ifdef DYNLINK
+#define PPRIMTAB(prims) PWRAPPERS(prims)
+#else
+#define PPRIMTAB(prims) PWRAPPERS(prims) TABLE(prims)
+#endif
+

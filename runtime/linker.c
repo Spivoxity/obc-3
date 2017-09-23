@@ -713,6 +713,18 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 
 	  break;
 
+#ifdef SPECIALS
+     case D_PCALL:
+          check_inproc(dir);
+          gen_inst("CALL %d", atoi(rands[0])+1);
+          break;
+
+     case D_PCALLW:
+          check_inproc(dir);
+          gen_inst("CALLW %d", atoi(rands[0])+1);
+          break;
+#endif
+
      default:
 	  panic("*unknown directive %s (%d)", dir, n);
      }

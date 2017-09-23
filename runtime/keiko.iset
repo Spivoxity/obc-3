@@ -632,6 +632,33 @@ inst UNPACK 0		S0 {sp--; sp[0].a = address(getcode(sp[1].i));
      	    		   	   sp[1].a = address(getenvt(sp[1].i));}
 }
 
+if {[info exists SPECIALS]} {
+
+# SPECIALS FOR COMPILERS COURSE
+
+defs {
+#define casejump(x, n0)					\
+     {							\
+	  int n = n0;					\
+	  pc0 = pc; pc += 4*n;				\
+	  while (n > 0) {				\
+	       if (x == get2(pc0)) {			\
+		    jump(get2(pc0+2));			\
+		    break;				\
+	       }					\
+	       pc0 += 4; n--;				\
+	  }						\
+     }
+}
+
+inst CASEJUMP 1   	S1  {casejump($1.i, $a);}
+zinst CASEARM 2R
+
+inst PACK 0		B.i {pack(valptr($2), pointer($1))}
+inst UNPACK 0		S0 {sp--; sp[0].a = address(getcode(sp[1].i)); 
+     	    		   	   sp[1].a = address(getenvt(sp[1].i));}
+}
+
 zinst REG 0
 zinst ADDR 0
 zinst STACKW 0
@@ -659,6 +686,11 @@ dir ENDHDR 0
 dir IMPORT ??
 dir STKMAP ?
 dir LINE ?
+
+if {[info exists SPECIALS]} {
+   dir PCALL ?
+   dir PCALLW ?
+}
 
 if {[info exists SPECIALS]} {
    dir PCALL ?

@@ -259,6 +259,11 @@ void put_long(value *v, longint w);
 double flo_conv(int);
 double flo_convq(longint);
 
+#ifdef SPECIALS
+int pack(value *code, uchar *env);
+value *getcode(int word);
+uchar *getenvt(int word);
+#endif
 
 /* gc.c */
 
