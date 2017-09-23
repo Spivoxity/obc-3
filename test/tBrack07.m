@@ -397,7 +397,7 @@ CONST 3
 BOUND 111
 PLUS
 LDIW
-JLEZ L31
+JLEQZ L31
 !       FOR y := 0 TO 2 DO
 CONST 0
 STLW -8
@@ -423,7 +423,7 @@ CONST 3
 BOUND 113
 PLUS
 LDIW
-JLEZ L36
+JLEQZ L36
 ! 	  z := op[x,y];
 GLOBAL tBrack07.op
 LDLW -4
@@ -513,7 +513,7 @@ CONST 3
 BOUND 116
 PLUS
 LDIW
-JNEZ L36
+JNEQZ L36
 ! 	    exp[i,k][z] := MakeExp(STAR, exp[i,j][x], exp[j,k][y])
 GLOBAL tBrack07.exp
 LDLW 16
@@ -657,7 +657,7 @@ LDLW 12
 NCHECK 143
 LOADW
 CONST 3
-JNE L48
+JNEQ L48
 !     res := op[Eval(e.left), Eval(e.right)]
 GLOBAL tBrack07.op
 LDLW 12
@@ -699,7 +699,7 @@ LDLW 12
 NCHECK 153
 LOADW
 CONST 3
-JNE L51
+JNEQ L51
 !     Out.Char('('); Print(e.left); Print(e.right); Out.Char(')')
 CONST 40
 ALIGNC
@@ -769,7 +769,7 @@ CONST 3
 BOUND 166
 PLUS
 LDIW
-JLEZ L56
+JLEQZ L56
 !       Out.String("  "); Out.Char(CHR(x + ORD('A'))); Out.String(" = ");
 CONST 3
 GLOBAL tBrack07.%1
@@ -844,7 +844,7 @@ LDIW
 GLOBAL tBrack07.Eval
 CALLW 1
 LDLW -4
-JNE L59
+JNEQ L59
 !         Out.String(" OK")
 CONST 4
 GLOBAL tBrack07.%5

@@ -43,7 +43,7 @@ count of a jump table that covers it, because a range is very compact
 representation of a list of contiguous cases.
 
 Unaggregated: 
-  one split CONST n / TESTGE = 4 bytes or more, 
+  one split CONST n / TESTGEQ = 4 bytes or more, 
   range test CONST a / CONST b / JRANGE = 6bytes or more, 
   total = 10 bytes or more
 
@@ -169,7 +169,7 @@ let rec gen_tree lob hib tables deflab =
 	let n = List.length tables in
 	let k = (n+1) / 2 in
 	let m = (List.nth tables k).lowest in
-	SEQ [CONST m; TESTGE lab;
+	SEQ [CONST m; TESTGEQ lab;
 	  gen_tree lob (integer_sub m (integer 1)) (Util.take k tables) deflab;
 	  LABEL lab;
 	  gen_tree m hib (Util.drop k tables) deflab]

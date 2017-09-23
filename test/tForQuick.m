@@ -97,7 +97,7 @@ PROC tForQuick.Sort 16 5 0x00100001
 LDLW 20
 INC
 LDLW 24
-JGE L3
+JGEQ L3
 !     pivot := a[lo];
 LDLW 12
 LDLW 20

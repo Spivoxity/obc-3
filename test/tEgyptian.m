@@ -61,7 +61,7 @@ LABEL L4
 LDLQ -8
 CONST 0
 CONVNQ
-QJLE L6
+QJLEQ L6
 !     m := (q-1) DIV p + 1;
 LDLQ -16
 CONST 1
@@ -144,7 +144,7 @@ LDLW -4
 JGT L8
 !     IF i > 0 THEN Out.String(" + ") END;
 LDGW tEgyptian.i
-JLEZ L11
+JLEQZ L11
 CONST 4
 GLOBAL tEgyptian.%2
 GLOBAL Out.String

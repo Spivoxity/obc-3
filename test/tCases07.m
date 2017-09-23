@@ -58,7 +58,7 @@ LABEL L2
 !   WHILE i < 10 DO
 LDGW tCases07.i
 CONST 10
-JGE L4
+JGEQ L4
 !     CASE i OF
 LDGW tCases07.i
 DEC

@@ -66,7 +66,7 @@ PROC tGC207.Reverse 0 3 0x00100001
 ! PROCEDURE Reverse(a: ptr): ptr;
 !   IF a = NIL THEN
 LDLW 12
-JNEZ L3
+JNEQZ L3
 !     a := NIL
 CONST 0
 STLW 12
@@ -100,7 +100,7 @@ CALLW 2
 STLW -4
 !   IF a = NIL THEN
 LDLW 12
-JNEZ L6
+JNEQZ L6
 !     r.hd := x; r.tl := NIL
 LDLW 16
 LDLW -4
@@ -138,7 +138,7 @@ PROC tGC207.Sum 4 3 0x00100001
 ! PROCEDURE Sum(a: ptr): INTEGER;
 !   IF a = NIL THEN
 LDLW 12
-JNEZ L9
+JNEQZ L9
 ! s :=  0
 CONST 0
 STLW -4

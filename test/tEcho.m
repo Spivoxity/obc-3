@@ -72,7 +72,7 @@ CALL 3
 !     IF i > 1 THEN Out.Char(' ') END;
 LDLW -4
 CONST 1
-JLE L5
+JLEQ L5
 CONST 32
 ALIGNC
 GLOBAL Out.Char

@@ -127,7 +127,7 @@ CONST 10
 BOUND 30
 LDIW
 LDLW 16
-JGE L5
+JGEQ L5
 !     INC(arg[0]); val[0] := arg[0] + 1;
 INCL -44
 LDLW -44
@@ -152,7 +152,7 @@ INC
 CONST 10
 BOUND 33
 LDIW
-JNE L2
+JNEQ L2
 !       INC(arg[m+1]); val[m+1] := val[m]; m := m+1
 LOCAL -44
 LDLW -4
@@ -218,7 +218,7 @@ RETURNW
 LABEL L12
 !   IF M = 0 THEN val := N+1
 LDLW 12
-JNEZ L15
+JNEQZ L15
 LDLW 16
 INC
 STLW -4
@@ -226,7 +226,7 @@ JUMP L13
 LABEL L15
 !   ELSIF N = 0 THEN val := Ack2(M-1, 1)
 LDLW 16
-JNEZ L17
+JNEQZ L17
 CONST 1
 LDLW 12
 DEC

@@ -319,7 +319,7 @@ LDIW
 STLW -8
 !     IF k = Const THEN
 LDLW -8
-JNEZ L19
+JNEQZ L19
 !       Conv.ConvInt(val[e], cbuf);
 CONST 10
 LOCAL -30
@@ -375,7 +375,7 @@ STLW -20
 !       IF kp < p THEN Put('(') END;
 LDLW -16
 LDLW 16
-JGE L14
+JGEQ L14
 CONST 40
 ALIGNC
 LDLW -4
@@ -429,7 +429,7 @@ CALL 2
 !       IF kp < p THEN Put(')') END
 LDLW -16
 LDLW 16
-JGE L17
+JGEQ L17
 CONST 41
 ALIGNC
 LDLW -4
@@ -467,7 +467,7 @@ PROC tCDown107.Try 20 5 0
 !   IF d = 1 THEN
 LDLW 16
 CONST 1
-JNE L25
+JNEQ L25
 !     dist := ABS(val[i-1] - target);
 GLOBAL tCDown107.val
 LDLW 12
@@ -502,7 +502,7 @@ CONST 80
 GLOBAL tCDown107.best
 GLOBAL Strings.Length
 CALLW 2
-JGE L25
+JGEQ L25
 LABEL L30
 ! 	bestval := val[i-1];
 GLOBAL tCDown107.val
@@ -687,7 +687,7 @@ CONST 40
 BOUND 151
 LDIW
 CONST 1
-JNE L43
+JNEQ L43
 GLOBAL tCDown107.val
 GLOBAL tCDown107.lnk
 LDLW 12
@@ -734,7 +734,7 @@ LABEL L44
 !     IF (a > b) & (exp[i-1] # Plus) & (exp[i-1] # Minus)
 LDLW -12
 LDLW -16
-JLE L52
+JLEQ L52
 GLOBAL tCDown107.exp
 LDLW 12
 DEC
@@ -762,7 +762,7 @@ CONST 40
 BOUND 158
 LDIW
 CONST 2
-JNE L51
+JNEQ L51
 GLOBAL tCDown107.val
 GLOBAL tCDown107.lnk
 LDLW 12
@@ -809,10 +809,10 @@ LABEL L52
 !     IF (a > 1) & (b > 1) & (a >= b)
 LDLW -12
 CONST 1
-JLE L59
+JLEQ L59
 LDLW -16
 CONST 1
-JLE L59
+JLEQ L59
 LDLW -12
 LDLW -16
 JLT L59
@@ -855,7 +855,7 @@ CONST 40
 BOUND 167
 LDIW
 CONST 3
-JNE L58
+JNEQ L58
 GLOBAL tCDown107.val
 GLOBAL tCDown107.lnk
 LDLW 12
@@ -902,12 +902,12 @@ LABEL L59
 !     IF (b > 1) & (a MOD b = 0) & (exp[i-1] # Divide)
 LDLW -16
 CONST 1
-JLE L41
+JLEQ L41
 LDLW -12
 LDLW -16
 ZCHECK 174
 MOD
-JNEZ L41
+JNEQZ L41
 GLOBAL tCDown107.exp
 LDLW 12
 DEC
@@ -1024,7 +1024,7 @@ LABEL L77
 !     WHILE (j > 1) & (t > draw[j-1]) DO
 LDLW -8
 CONST 1
-JLE L79
+JLEQ L79
 LDLW -12
 GLOBAL tCDown107.draw
 LDLW -8
@@ -1032,7 +1032,7 @@ DEC
 CONST 21
 BOUND 198
 LDIW
-JLE L79
+JLEQ L79
 !       draw[j] := draw[j-1]; j := j-1
 GLOBAL tCDown107.draw
 LDLW -8
@@ -1119,7 +1119,7 @@ GLOBAL Out.Int
 CALL 2
 !   IF bestdist > 0 THEN 
 LDGW tCDown107.bestdist
-JLEZ L85
+JLEQZ L85
 !     Out.String(" (off by "); Out.Int(bestdist, 0); Out.Char(')')
 CONST 10
 GLOBAL tCDown107.%8

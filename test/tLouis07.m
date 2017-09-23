@@ -51,14 +51,14 @@ LOADW
 DUP 0
 LDNW 4
 CONST 1
-JGE L6
+JGEQ L6
 POP 1
 JUMP L4
 LABEL L6
 LDNW 8
 LDNW 4
 GLOBAL xTypes07.Ext1Cell
-JNE L4
+JNEQ L4
 POP 1
 !         Out.String("One "); Out.Int(x.stuff1, 0); Out.Ln
 CONST 5
@@ -80,14 +80,14 @@ LOADW
 DUP 0
 LDNW 4
 CONST 1
-JGE L9
+JGEQ L9
 POP 1
 JUMP L7
 LABEL L9
 LDNW 8
 LDNW 4
 GLOBAL xTypes07.Ext2Cell
-JNE L7
+JNEQ L7
 POP 1
 !         Out.String("Two "); Out.Real(x.stuff2); Out.Ln
 CONST 5

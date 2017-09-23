@@ -76,7 +76,7 @@ CALL 2
 !   b := (nan # nan); Out.Int(ORD(b), 0);
 LDGF tNan.nan
 LDGF tNan.nan
-FNE
+FNEQ
 STGC tNan.b
 CONST 0
 LDGC tNan.b
@@ -97,7 +97,7 @@ LABEL L17
 !   IF nan <= 0 THEN Out.String("F2") END;
 LDGF tNan.nan
 FCONST 0.0
-FJNLE L20
+FJNLEQ L20
 CONST 3
 GLOBAL tNan.%3
 GLOBAL Out.String
@@ -106,7 +106,7 @@ LABEL L20
 !   IF nan = 0 THEN Out.String("F3") END;
 LDGF tNan.nan
 FCONST 0.0
-FJNE L23
+FJNEQ L23
 CONST 3
 GLOBAL tNan.%4
 GLOBAL Out.String
@@ -115,7 +115,7 @@ LABEL L23
 !   IF nan >= 0 THEN Out.String("F4") END;
 LDGF tNan.nan
 FCONST 0.0
-FJNGE L26
+FJNGEQ L26
 CONST 3
 GLOBAL tNan.%5
 GLOBAL Out.String
@@ -142,7 +142,7 @@ LABEL L32
 !   IF ~ (nan <= 0) THEN Out.String("S2") END;
 LDGF tNan.nan
 FCONST 0.0
-FJLE L35
+FJLEQ L35
 CONST 3
 GLOBAL tNan.%8
 GLOBAL Out.String
@@ -160,7 +160,7 @@ LABEL L38
 !   IF ~ (nan >= 0) THEN Out.String("S4") END;
 LDGF tNan.nan
 FCONST 0.0
-FJGE L41
+FJGEQ L41
 CONST 3
 GLOBAL tNan.%10
 GLOBAL Out.String

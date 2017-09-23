@@ -64,7 +64,7 @@ LABEL L1
 !   WHILE i < n DO
 LDLW -4
 CONST 10
-JGE L3
+JGEQ L3
 !     a[i, 0] := 1; j := 1;
 CONST 1
 LDLW -12

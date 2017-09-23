@@ -429,7 +429,7 @@ STLW -4
 !   UNTIL q = p;
 LDLW -4
 LDLW 12
-JNE L11
+JNEQ L11
 !   n := 0; q := p.column.head;
 CONST 0
 STLW -8
@@ -499,7 +499,7 @@ STLW -4
 !   IF p = NIL THEN
 LDLW 16
 LOADW
-JNEZ L18
+JNEQZ L18
 !     q.right := q; q.left := q; p := q
 LDLW -4
 LDLW -4
@@ -1102,7 +1102,7 @@ LDNW 12
 LDLW -8
 NCHECK 194
 LDNW 12
-JGE L46
+JGEQ L46
 LDLW -4
 STLW -8
 LABEL L46
@@ -1262,7 +1262,7 @@ LDGW tSudoku.root
 NCHECK 228
 LDNW 24
 LDGW tSudoku.root
-JNE L60
+JNEQ L60
 !     Out.String("Solution:"); Out.Ln;
 CONST 10
 GLOBAL tSudoku.%4
@@ -1284,7 +1284,7 @@ STLW -4
 LDLW -4
 NCHECK 234
 LDNW 12
-JNEZ L63
+JNEQZ L63
 RETURN
 LABEL L63
 !   Cover(col);
@@ -1439,7 +1439,7 @@ STLW -4
 !   UNTIL q = p
 LDLW -4
 LDLW 16
-JNE L73
+JNEQ L73
 RETURN
 END
 

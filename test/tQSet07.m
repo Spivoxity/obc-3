@@ -71,7 +71,7 @@ PROC tQSet07.queens 4 6 0x00200001
 !   IF k = N THEN
 LDLW 12
 CONST 8
-JNE L12
+JNEQ L12
 !     print(choice); done := TRUE
 LDLW 16
 GLOBAL tQSet07.print
@@ -87,9 +87,9 @@ LABEL L2
 !     WHILE (y < N) & ~done DO
 LDLW -4
 CONST 8
-JGE L4
+JGEQ L4
 LDGC tQSet07.done
-JNEZ L4
+JNEQZ L4
 !       IF (y IN rows) & (k+y IN diagdown) & (y-k+7 IN diagup) THEN 
 CONST 1
 LDLW -4
@@ -181,10 +181,10 @@ LABEL L13
 !   WHILE x < N DO
 LDLW -4
 CONST 8
-JGE L15
+JGEQ L15
 !     IF x > 0 THEN Out.Char(' ') END;
 LDLW -4
-JLEZ L18
+JLEQZ L18
 CONST 32
 ALIGNC
 GLOBAL Out.Char

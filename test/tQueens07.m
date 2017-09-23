@@ -66,7 +66,7 @@ PROC tQueens07.queens 16 4 0x00200001
 !   IF k = N THEN
 LDLW 12
 CONST 8
-JNE L14
+JNEQ L14
 !     print(choice); done := TRUE
 LDLW 16
 GLOBAL tQueens07.print
@@ -82,9 +82,9 @@ LABEL L2
 !     WHILE (y < N) & ~done DO
 LDLW -4
 CONST 8
-JGE L4
+JGEQ L4
 LDGC tQueens07.done
-JNEZ L4
+JNEQZ L4
 !       j := 0; ok := TRUE;
 CONST 0
 STLW -8
@@ -96,7 +96,7 @@ LDLC -13
 JEQZ L7
 LDLW -8
 LDLW 12
-JGE L7
+JGEQ L7
 !         q := choice[j];
 LDLW 16
 LDLW -8
@@ -107,14 +107,14 @@ STLW -12
 !         ok := (q # y) & (q+j # y+k) & (q-j # y-k);
 LDLW -12
 LDLW -4
-NE
+NEQ
 LDLW -12
 LDLW -8
 PLUS
 LDLW -4
 LDLW 12
 PLUS
-NE
+NEQ
 AND
 LDLW -12
 LDLW -8
@@ -122,7 +122,7 @@ MINUS
 LDLW -4
 LDLW 12
 MINUS
-NE
+NEQ
 AND
 STLC -13
 !         j := j+1
@@ -163,10 +163,10 @@ LABEL L15
 !   WHILE x < N DO
 LDLW -4
 CONST 8
-JGE L17
+JGEQ L17
 !     IF x > 0 THEN Out.Char(' ') END;
 LDLW -4
-JLEZ L20
+JLEQZ L20
 CONST 32
 ALIGNC
 GLOBAL Out.Char

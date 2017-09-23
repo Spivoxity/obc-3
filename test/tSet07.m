@@ -97,7 +97,7 @@ LSL
 LDGW tSet07.s
 BITAND
 CONST 0
-NE
+NEQ
 STLC -5
 !     IF b THEN Out.Int(i, 3) END
 LDLC -5

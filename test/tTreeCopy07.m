@@ -147,7 +147,7 @@ CONST 10
 GLOBAL Random.Roll
 CALLW 1
 LDLW 12
-JGE L3
+JGEQ L3
 !     p := NIL
 CONST 0
 STLW -4
@@ -186,7 +186,7 @@ PROC tTreeCopy07.PrintTree 0 3 0x00100001
 ! PROCEDURE PrintTree(t: Tree);
 !   IF t = NIL THEN
 LDLW 12
-JNEZ L6
+JNEQZ L6
 !     Out.Char('.')
 CONST 46
 ALIGNC
@@ -218,7 +218,7 @@ PROC tTreeCopy07.Copy 8020 4 tTreeCopy07.Copy.%map
 ! PROCEDURE Copy(t: Tree): Tree;
 !   IF t = NIL THEN
 LDLW 12
-JNEZ L19
+JNEQZ L19
 !     u := NIL
 CONST 0
 STLW -16
@@ -260,9 +260,9 @@ STLW -8
 LABEL L8
 !     WHILE (p # NIL) OR (sp > 0) DO
 LDLW -4
-JNEZ L9
+JNEQZ L9
 LDLW -20
-JLEZ L10
+JLEQZ L10
 LABEL L9
 !       WHILE p # NIL DO
 LDLW -4
@@ -401,7 +401,7 @@ JEQZ L25
 LDLW 12
 NCHECK 84
 LDNW 4
-JNEZ L28
+JNEQZ L28
 !       Out.Int(t.data, 0);
 CONST 0
 LDLW 12

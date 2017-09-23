@@ -43,7 +43,7 @@ CALL 2
 LABEL L7
 !     IF b = FALSE THEN Out.String("B") END;
 LDGC tSuck07.b
-JNEZ L11
+JNEQZ L11
 CONST 2
 GLOBAL tSuck07.%2
 GLOBAL Out.String
@@ -55,7 +55,7 @@ NOT
 STGC tSuck07.b
 !   UNTIL b # TRUE;
 LDGC tSuck07.b
-JNEZ L3
+JNEQZ L3
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

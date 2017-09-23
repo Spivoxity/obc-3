@@ -81,7 +81,7 @@ let do_refs f =
     | JUMPC (t, w, x) -> f (ref_count x)
     | JUMPN (t, w, x) -> f (ref_count x)
     | JUMPCZ (w, x) -> f (ref_count x)
-    | TESTGE x -> f (ref_count x)
+    | TESTGEQ x -> f (ref_count x)
     | JCASE labs ->
 	List.iter (function x -> f (ref_count x)) labs
     | JRANGE x -> f (ref_count x)
@@ -94,7 +94,7 @@ let rename_labs =
     | JUMPC (t, w, x) -> JUMPC (t, w, rename x)
     | JUMPN (t, w, x) -> JUMPN (t, w, rename x)
     | JUMPCZ (w, x) -> JUMPCZ (w, rename x)
-    | TESTGE x -> TESTGE (rename x)
+    | TESTGEQ x -> TESTGEQ (rename x)
     | JCASE labs -> JCASE (List.map rename labs)
     | JRANGE x -> JRANGE (rename x)
     | i -> i

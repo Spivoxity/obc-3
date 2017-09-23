@@ -154,7 +154,7 @@ LABEL L3
 !   WHILE r < N DO
 LDLW -4
 LDLW 20
-JGE L5
+JGEQ L5
 !     j := r; t := u[r];
 LDLW -4
 STLW -8
@@ -167,7 +167,7 @@ STLW -12
 LABEL L6
 !     WHILE (j > 0) & (u[j-1] > t) DO
 LDLW -8
-JLEZ L8
+JLEQZ L8
 LDLW 12
 LDLW -8
 DEC
@@ -175,7 +175,7 @@ LDLW 16
 BOUND 23
 LDIW
 LDLW -12
-JLE L8
+JLEQ L8
 !       u[j] := u[j-1]; j := j-1
 LDLW 12
 LDLW -8
@@ -260,7 +260,7 @@ LABEL L10
 !   WHILE i < j DO
 LDLW -4
 LDLW -8
-JGE L12
+JGEQ L12
 !     IF a[i] < pivot THEN
 GLOBAL tSelect07.a
 LDLW -4
@@ -268,7 +268,7 @@ CONST 100
 BOUND 45
 LDIW
 LDLW -12
-JGE L15
+JGEQ L15
 !       i := i+1
 INCL -4
 JUMP L10
@@ -320,7 +320,7 @@ LDLW 20
 LDLW 16
 MINUS
 CONST 1
-JNE L23
+JNEQ L23
 !     ASSERT(k = 0); s := a[m]
 LDLW 12
 JEQZ L25
@@ -346,7 +346,7 @@ LDLW -4
 LDLW 16
 LDLW 12
 PLUS
-JNE L19
+JNEQ L19
 !       s := a[r]
 GLOBAL tSelect07.a
 LDLW -4
@@ -361,7 +361,7 @@ LDLW -4
 LDLW 16
 LDLW 12
 PLUS
-JLE L21
+JLEQ L21
 !       s := Select(k, m, r)
 LDLW -4
 LDLW 16
@@ -398,13 +398,13 @@ STLC -9
 LABEL L26
 !   WHILE ~done DO
 LDLC -9
-JNEZ L28
+JNEQZ L28
 !     IF n - m = 1 THEN
 LDLW 20
 LDLW 16
 MINUS
 CONST 1
-JNE L36
+JNEQ L36
 !       s := a[m]; done := TRUE
 GLOBAL tSelect07.a
 LDLW 16
@@ -425,7 +425,7 @@ STLW -4
 !       IF r = k THEN
 LDLW -4
 LDLW 12
-JNE L32
+JNEQ L32
 ! 	s := a[r]; done := TRUE
 GLOBAL tSelect07.a
 LDLW -4
@@ -440,7 +440,7 @@ LABEL L32
 !       ELSIF r > k THEN
 LDLW -4
 LDLW 12
-JLE L34
+JLEQ L34
 ! 	n := r
 LDLW -4
 STLW 20

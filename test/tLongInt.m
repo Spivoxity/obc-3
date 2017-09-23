@@ -95,7 +95,7 @@ LABEL L3
 !   WHILE m < n DO 
 LDGQ tLongInt.m
 LDGQ tLongInt.n
-QJGE L5
+QJGEQ L5
 !     m := r * m;
 LDGW tLongInt.r
 CONVNQ

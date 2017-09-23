@@ -46,7 +46,7 @@ STGW tPeep.k
 !   b := ~(x = 0.0);
 LDGF tPeep.x
 FCONST 0.0
-FNE
+FNEQ
 STGC tPeep.b
 !   a[2] := k
 LDGW tPeep.k

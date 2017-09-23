@@ -170,7 +170,7 @@ PROC tFibTree2.Print 0 4 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
-JNEZ L10
+JNEQZ L10
 !     Out.Char('.')
 CONST 46
 ALIGNC
@@ -207,7 +207,7 @@ PROC tFibTree2.count 0 4 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
-JNEZ L13
+JNEQZ L13
 !     RETURN 1
 CONST 1
 RETURNW

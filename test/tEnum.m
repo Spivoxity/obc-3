@@ -45,7 +45,7 @@ PROC tEnum.Print 0 3 0
 ! PROCEDURE Print(c: X.colour);
 !   IF c = X.red THEN
 LDLW 12
-JNEZ L10
+JNEQZ L10
 !     Out.String("red")
 CONST 4
 GLOBAL tEnum.%1
