@@ -212,11 +212,19 @@ parent :
     /* empty */			{ None }
   | LPAR tname RPAR		{ Some $tname } ;
 
-/* Wirth says  fields = [ fdecl ] { ; [ fdecl ] }  in Oberon, but changes
-to  fields = [ fdecl { ; fdecl } ]  in Oberon-07, so forbidding stray
-semicolons.  The lexer returns either RECORD or RECORD07 so as to select
-the correct productions here.  There's a special production to catch
-a common error in Oberon-07. */
+/* Wirth says
+
+    fields = fdeclopt { ; fdeclopt }
+    fdeclopt = [ idents : type ]
+
+in Oberon, but changes to
+
+    fields = [ fdecl { ; fdecl } ]
+    fdecl = idents : type
+
+in Oberon-07, so forbidding stray semicolons. The lexer returns either
+RECORD or RECORD07 so as to select the correct productions here.
+There's a special production to catch a common error in Oberon-07. */
 
 fields :
     /* empty */                 { [] }
