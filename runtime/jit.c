@@ -188,6 +188,29 @@ static void gbinop(operation op, int ty, int s) {
 #define fbinop(op) gbinop(op, FLO, 1)
 #define dbinop(op) gbinop(op, FLO, 2)
 
+void show_value(ctvalue v);
+
+static void multiply() {
+     ctvalue v2 = peek(1);
+     int shift = -1;
+
+     if (v2->v_op == I_CON) {
+          for (int i = 1; i < 32; i++) {
+               if (v2->v_val == 1<<i) {
+                    shift = i; break;
+               }
+          }
+     }
+
+     if (shift < 0)
+          ibinop(MUL);
+     else {
+          pop(1);
+          push(I_CON, INT, NULL, shift, 1);
+          ibinop(LSH);
+     }
+}
+
 static mybool is_zero(ctvalue v) {
      return (v->v_op == I_CON && v->v_val == 0);
 }
@@ -394,7 +417,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_PLUS:	ibinop(ADD); break;
      case I_MINUS: 	ibinop(SUB); break;
-     case I_TIMES:	ibinop(MUL); break;
+     case I_TIMES:	multiply(); break;
      case I_DIV:	callout(INT_DIV, 2, INT, 1); break;
      case I_MOD:	callout(INT_MOD, 2, INT, 1); break;
      case I_AND: case I_BITAND:
