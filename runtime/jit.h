@@ -142,7 +142,7 @@ void spill(reg r);
 
 void deref(int op, int ty, int size);
 void store(int ldop, int s);
-void plusa();
+void add_offset();
 
 void save_stack(codepoint lab);
 void restore_stack(codepoint lab);

@@ -492,10 +492,14 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case I_ADDR:
-	  rfree(v->v_reg); rlock(v->v_reg);
-          r = ralloc_suggest(INT, v->v_reg);
-          runlock(v->v_reg);
-	  vm_gen(ADD, r->r_reg, v->v_reg->r_reg, v->v_val);
+          if (v->v_val == 0)
+               r = rfree(v->v_reg);
+          else {
+               rfree(v->v_reg); rlock(v->v_reg);
+               r = ralloc_suggest(INT, v->v_reg);
+               runlock(v->v_reg);
+               vm_gen(ADD, r->r_reg, v->v_reg->r_reg, v->v_val);
+          }
 	  break;
 
      case I_LOADW:	
@@ -662,8 +666,8 @@ void store(int ldop, int s) {
      if (cache && v->v_reg != r1) set_cache(r1, v);
 }
 
-/* plusa -- add address and offset */
-void plusa() {
+/* add_offset -- add address and offset */
+void add_offset() {
      ctvalue v1, v2;
      reg r1, r2;
 

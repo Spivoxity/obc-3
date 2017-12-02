@@ -336,12 +336,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_PUSH:
           push(I_CON, INT, NULL, arg1, 1);
           break;
-
      case I_LOCAL:
-          if (arg1 == 0)
-               push(I_REG, INT, rBP, 0, 1);
-          else
-               push(I_ADDR, INT, rBP, arg1, 1); 
+          push(I_ADDR, INT, rBP, arg1, 1); 
           break;
 
      case I_LDKW:	
@@ -409,7 +405,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_ASR:	ibinop(RSH); break;
      case I_LSR:	ibinop(RSHu); break;
      case I_ROR:	ibinop(ROR); break;
-     case I_OFFSET:	plusa(); break;
+     case I_OFFSET:	add_offset(); break;
 
      case I_LSL:        
 	  v = peek(2); v2 = peek(1);
