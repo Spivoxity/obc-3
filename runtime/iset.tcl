@@ -344,15 +344,15 @@ proc make_body {key action argv} {
     switch -glob -- $key {
 	B.d {
 	    # Double from two doubles
-	    regsub -all {\$1\.d} $body {getdbl(\&sp[0])} body
-	    regsub -all {\$2\.d} $body {getdbl(\&sp[-2])} body
-	    return "sp += 2; putdbl(&sp\[0\], $body);"
+	    regsub -all {\$1\.d} $body {getdbl(\&sp[2])} body
+	    regsub -all {\$2\.d} $body {getdbl(\&sp[0])} body
+	    return "putdbl(&sp\[2\], $body); sp += 2;"
 	}
 	B.?dd {
 	    # Value from two doubles
-	    regsub -all {\$1\.d} $body {getdbl(\&sp[-1])} body
-	    regsub -all {\$2\.d} $body {getdbl(\&sp[-3])} body
-	    return "sp += 3; sp\[0\].$suffix = $body;"
+	    regsub -all {\$1\.d} $body {getdbl(\&sp[2])} body
+	    regsub -all {\$2\.d} $body {getdbl(\&sp[0])} body
+	    return "sp\[3\].$suffix = $body; sp += 3;"
 	}	    
 	B.d?? {
 	    # Double from two values
@@ -362,15 +362,15 @@ proc make_body {key action argv} {
 	}
 	B.q {
 	    # Long from two longs
-	    regsub -all {\$1\.q} $body {getlong(\&sp[0])} body
-	    regsub -all {\$2\.q} $body {getlong(\&sp[-2])} body
-	    return "sp += 2; putlong(&sp\[0\], $body);"
+	    regsub -all {\$1\.q} $body {getlong(\&sp[2])} body
+	    regsub -all {\$2\.q} $body {getlong(\&sp[0])} body
+	    return "putlong(&sp\[2\], $body); sp += 2;"
 	}
 	B.?qq {
 	    # Value from two longs
-	    regsub -all {\$1\.q} $body {getlong(\&sp[-1])} body
-	    regsub -all {\$2\.q} $body {getlong(\&sp[-3])} body
-	    return "sp += 3; sp\[0\].$suffix = $body;"
+	    regsub -all {\$1\.q} $body {getlong(\&sp[2])} body
+	    regsub -all {\$2\.q} $body {getlong(\&sp[0])} body
+	    return "sp\[3\].$suffix = $body; sp += 3;"
 	}	    
 	B.q?? {
 	    # Long from two values
@@ -379,14 +379,14 @@ proc make_body {key action argv} {
     	    return "putlong(&sp\[0\], $body);"
 	}
         B.x {
-	    regsub -all {\$1} $body {sp[0]} body
-	    regsub -all {\$2} $body {sp[-1]} body
- 	    return "sp++; sp\[0\].a = address($body);"
+	    regsub -all {\$1} $body {sp[1]} body
+	    regsub -all {\$2} $body {sp[0]} body
+ 	    return "sp\[1\].a = address($body); sp++;"
         }
 	B.? {
-	    regsub -all {\$1} $body {sp[0]} body
-	    regsub -all {\$2} $body {sp[-1]} body
- 	    return "sp++; sp\[0\].$suffix = $body;"
+	    regsub -all {\$1} $body {sp[1]} body
+	    regsub -all {\$2} $body {sp[0]} body
+ 	    return "sp\[1\].$suffix = $body; sp++;"
 	}
 	M.dq {
 	    regsub -all {\$1\.q} $body {getlong(\&sp[0])} body
@@ -407,8 +407,8 @@ proc make_body {key action argv} {
 	}
 	M.?d {
 	    # Value from double
-	    regsub -all {\$1\.d} $body {getdbl(\&sp[-1])} body
-	    return "sp++; sp\[0\].$suffix = $body;"
+	    regsub -all {\$1\.d} $body {getdbl(\&sp[0])} body
+	    return "sp\[1\].$suffix = $body; sp++;"
 	}	    
 	M.q {
 	    regsub -all {\$1\.q} $body {getlong(\&sp[0])} body
@@ -421,8 +421,8 @@ proc make_body {key action argv} {
 	}
 	M.?q {
 	    # Value from long
-	    regsub -all {\$1\.q} $body {getlong(\&sp[-1])} body
-	    return "sp++; sp\[0\].$suffix = $body;"
+	    regsub -all {\$1\.q} $body {getlong(\&sp[0])} body
+	    return "sp\[1\].$suffix = $body; sp++;"
 	}	    
         M.x {
 	    regsub -all {\$1} $body {sp[0]} body
@@ -449,46 +449,51 @@ proc make_body {key action argv} {
 	}
 	S[123] {
 	    regexp {S(.)} $key _ x
-	    for {set i 1} {$i < $x} {incr i} {
-		regsub -all "\\\$$i" $body "sp\[-$i\]" body
+	    for {set i 1} {$i <= $x} {incr i} {
+                set j [expr {$x-$i}]
+		regsub -all "\\\$$i" $body "sp\[$j\]" body
 	    }
-	    regsub -all "\\\$$x" $body "sp\[-$x\]" body
-	    return "sp += $x; { $body }"
+	    return "{ $body } sp += $x;"
 	}
 	S1d {
-    	    regsub -all {\$1\.d} $body {getdbl(\&sp[-2])} body
-	    return "sp += 2; { $body }"
+    	    regsub -all {\$1\.d} $body {getdbl(\&sp[0])} body
+	    return "{ $body } sp += 2;"
 	}
 	S2d? {
-    	    regsub -all {\$1\.d} $body {getdbl(\&sp[-2])} body
-	    regsub -all {\$2} $body {sp[-3]} body
-	    return "sp += 3; { $body }"
+    	    regsub -all {\$1\.d} $body {getdbl(\&sp[1])} body
+	    regsub -all {\$2} $body {sp[0]} body
+	    return "{ $body } sp += 3;"
 	}
 	S3d?? {
-    	    regsub -all {\$1\.d} $body {getdbl(\&sp[-2])} body
-	    regsub -all {\$2} $body {sp[-3]} body
-	    regsub -all {\$3} $body {sp[-4]} body
-	    return "sp += 4; { $body }"
+    	    regsub -all {\$1\.d} $body {getdbl(\&sp[2])} body
+	    regsub -all {\$2} $body {sp[1]} body
+	    regsub -all {\$3} $body {sp[0]} body
+	    return "{ $body } sp += 4;"
 	}
 	S1q {
-    	    regsub -all {\$1\.q} $body {getlong(\&sp[-2])} body
-	    return "sp += 2; { $body }"
+    	    regsub -all {\$1\.q} $body {getlong(\&sp[0])} body
+	    return "{ $body } sp += 2;"
 	}
 	S2q? {
-    	    regsub -all {\$1\.q} $body {getlong(\&sp[-2])} body
-	    regsub -all {\$2} $body {sp[-3]} body
-	    return "sp += 3; { $body }"
+    	    regsub -all {\$1\.q} $body {getlong(\&sp[1])} body
+	    regsub -all {\$2} $body {sp[0]} body
+	    return "{ $body } sp += 3;"
 	}
 	S3q?? {
-    	    regsub -all {\$1\.q} $body {getlong(\&sp[-2])} body
-	    regsub -all {\$2} $body {sp[-3]} body
-	    regsub -all {\$3} $body {sp[-4]} body
-	    return "sp += 4; { $body }"
+    	    regsub -all {\$1\.q} $body {getlong(\&sp[2])} body
+	    regsub -all {\$2} $body {sp[1]} body
+	    regsub -all {\$3} $body {sp[0]} body
+	    return "{ $body } sp += 4;"
 	}
 	T2 {
-	    regsub -all {\$1} $body {sp[0]} body
-	    regsub -all {\$2} $body {sp[-1]} body
-	    return "sp++; { $body }"
+	    regsub -all {\$1} $body {sp[1]} body
+	    regsub -all {\$2} $body {sp[0]} body
+	    return "{ $body } sp++;"
+	}
+	T2q {
+	    regsub -all {\$1\.q} $body {get_long(\&sp[2])} body
+	    regsub -all {\$2\.q} $body {get_long(\&sp[0])} body
+	    return "{ $body } sp += 2;"
 	}
 	default {
 	    error "Bad key $key for $err_op"

@@ -160,15 +160,6 @@ EXTERN int qflag;
 EXTERN char *debug_socket;
 #endif
 
-#define divop_decl(t) \
-     t t##_divop(t a, t b, int div) {		\
-	  t quo = a / b, rem = a % b;		\
-	  if (rem != 0 && (rem ^ b) < 0) {	\
-	       rem += b; quo--;			\
-	  }					\
-	  return (div ? quo : rem);		\
-     }
-
 
 /* profile.c */
 #ifdef PROFILE

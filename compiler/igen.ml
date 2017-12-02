@@ -705,9 +705,9 @@ and gen_builtin q args =
 	let t = op_kind e1.e_type in
 	begin match t with
 	    IntT -> SEQ [gen_expr e1; call_proc "ABSINT" 1 inttype]
-          | LongT -> SEQ [gen_expr e1; call_proc "ABSQUAD" 2 longint]
-	  | FloatT -> SEQ [gen_expr e1; call_proc "ABSREAL" 1 realtype]
-	  | DoubleT -> SEQ [gen_expr e1; call_proc "ABSLONG" 2 longreal]
+          | LongT -> SEQ [gen_expr e1; call_proc "ABSLONG" 2 longint]
+	  | FloatT -> SEQ [gen_expr e1; call_proc "ABSFLOAT" 1 realtype]
+	  | DoubleT -> SEQ [gen_expr e1; call_proc "ABSDOUBLE" 2 longreal]
 	  | _ -> failwith "ABS"
 	end
 

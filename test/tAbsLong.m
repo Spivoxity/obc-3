@@ -29,7 +29,7 @@ QCONST -123456789012345678
 STGQ tAbsLong.x
 !   x := ABS(x);
 LDGQ tAbsLong.x
-GLOBAL ABSQUAD
+GLOBAL ABSLONG
 CALLQ 2
 STGQ tAbsLong.x
 !   Out.LongInt(x, 0);

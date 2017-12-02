@@ -55,25 +55,38 @@ void panic(const char *msg, ...) {
 }
 
 
-/* Division operators for jit code */
-
-static inline divop_decl(int)
-static inline divop_decl(longint)
+/* The DIV and MOD instructions must give the correct results, even if 
+   C is wrong.  Correct means that b * (a DIV b) + a MOD b = a, and 
+   (-a) DIV (-b) = a DIV b, and if b > 0 then 0 <= a MOD b < b. */
 
 void int_div(value *sp) {
-     sp[1].i = int_divop(sp[1].i, sp[0].i, 1);
+     int a = sp[1].i, b = sp[0].i;
+     int quo = a / b;
+     int rem = a - b * quo;
+     if (rem != 0 && (rem ^ b) < 0) quo--;
+     sp[1].i = quo;
 }
 
 void int_mod(value *sp) {
-     sp[1].i = int_divop(sp[1].i, sp[0].i, 0);
+     int a = sp[1].i, b = sp[0].i;
+     int rem = a % b;
+     if (rem != 0 && (rem ^ b) < 0) rem += b;
+     sp[1].i = rem;
 }
 
 void long_div(value *sp) {
-     put_long(sp+2, longint_divop(get_long(sp+2), get_long(sp), 1));
+     longint a = get_long(&sp[2]), b = get_long(&sp[0]);
+     longint quo = a / b;
+     longint rem = a - b * quo;
+     if (rem != 0 && (rem ^ b) < 0) quo--;
+     put_long(&sp[2], quo);
 }
 
 void long_mod(value *sp) {
-     put_long(sp+2, longint_divop(get_long(sp+2), get_long(sp), 0));
+     longint a = get_long(&sp[2]), b = get_long(&sp[0]);
+     longint rem = a % b;
+     if (rem != 0 && (rem ^ b) < 0) rem += b;
+     put_long(&sp[2], rem);
 }
 
 void long_flo(value *sp) {
