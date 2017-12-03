@@ -120,13 +120,14 @@ $(OBX) $(JIT) gc.o trace.o profile.o debug.o : %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -DJIT -c $< -o $@
 
 
-keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl iskel.c
+keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl
 	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset \
-		keiko.h template.c interp.c
+		keiko.h template.c action.c
 
-template.c interp.c: keiko.h
+template.c action.c: keiko.h
 	touch $@
 
+interp.o interp-t.o interp-p.o interp-d.o: action.c
 
 ## Cleanup
 
@@ -135,7 +136,7 @@ clean:
 	rm -f oblink *.[ao]
 
 quiteclean: clean
-	rm -f interp.c keiko.h template.c .gen
+	rm -f action.c keiko.h template.c
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean

@@ -120,7 +120,6 @@ obxjd
 revid
 runtime/Makefile
 runtime/decode.c
-runtime/interp.c
 runtime/keiko.h
 runtime/oblink
 runtime/template.c
@@ -221,3 +220,13 @@ build*
 armtest/regress
 winport/.stripmllib/Depend
 mllib/Depend
+Makefile
+armtest/Makefile
+lib/Strings.c
+lib/XYstubs.c
+mipstest/Makefile
+mipstest/obxj-mips
+mipstest/regress
+mllib/Makefile
+runtime/action.c
+thunder/Makefile

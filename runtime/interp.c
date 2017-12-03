@@ -1,5 +1,5 @@
 /*
- * iskel.c
+ * interp.c
  * 
  * This file is part of the Oxford Oberon-2 compiler
  * Copyright (c) 2006--2016 J. M. Spivey
@@ -61,7 +61,40 @@
 #undef JTABLE
 #endif
 
-$$ macro definitions
+#ifdef UNALIGNED_MEM
+#define getdbl get_double
+#define putdbl put_double
+#define getlong get_long
+#define putlong put_long
+#else
+static inline double getdbl(value *v) {
+     dblbuf dd;
+     dd.n.lo = v[0].i;
+     dd.n.hi = v[1].i;
+     return dd.d;
+}
+
+static inline void putdbl(value *v, double x) {
+     dblbuf dd;
+     dd.d = x;
+     v[0].i = dd.n.lo;
+     v[1].i = dd.n.hi;
+}
+
+static inline longint getlong(value *v) {
+     dblbuf dd;
+     dd.n.lo = v[0].i;
+     dd.n.hi = v[1].i;
+     return dd.q;
+}
+
+static inline void putlong(value *v, longint x) {
+     dblbuf dd;
+     dd.q = x;
+     v[0].i = dd.n.lo;
+     v[1].i = dd.n.hi;
+}
+#endif
 
 /* interp -- main loop of the interpreter */
 void interp(value *sp0) {
@@ -81,9 +114,8 @@ void interp(value *sp0) {
 
 #ifdef JTABLE
      /* Save time by using gcc's label array feature */
-     static void *jtable[256] = {
-$$ jump table
-     };
+#define __o__(op, inst, patt, arg, len) &&lbl_ ## op,
+     static void *jtable[256] = { __OPCODES__(__o__) };
 #endif
 
 #ifdef JTABLE
@@ -100,14 +132,21 @@ $$ jump table
 #define NEXT       break
 #endif
 
+#define error(msg, n) runtime_error(msg, n, bp, pc0)
+
      level++;
+
+enter:
      do_find_proc;
 
 #ifdef PROFILE
-     prof_enter(cp, 0, PROF_CALL);
+     prof_enter(cp, ticks, PROF_CALL);
 #endif
 
-     frame();
+     bp = sp;								
+     sp = (value *) ((uchar *) bp - cp[CP_FRAME].i);			
+     if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);		
+     memset(sp, 0, cp[CP_FRAME].i);
 
 #ifdef JTABLE
      NEXT;
@@ -134,7 +173,7 @@ $$ jump table
 	  switch (ir = *(pc0 = pc)) {
 #endif
 
-$$ action routines
+#include "action.c"
 
 	  ACTION(ILLEGAL)
 	  DEFAULT

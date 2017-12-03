@@ -254,17 +254,9 @@ inst FDIV 0		B.f {$1.f / $2.f}
 inst FUMINUS 0		M.f {- $1.f}
 
 defs {
-static inline int fcmpl(double a, double b) {
-     return (a > b ? 1 : a == b ? 0 : -1);
-}
-
-static inline int fcmpg(double a, double b) {
-     return (a < b ? -1 : a == b ? 0 : 1);
-}
-
-static inline int lcmp(longint a, longint b) {
-     return (a < b ? -1 : a > b ? 1 : 0);
-}
+#define fcmpl(a, b) (a > b ? 1 : a == b ? 0 : -1)
+#define fcmpg(a, b) (a < b ? -1 : a == b ? 0 : 1)
+#define lcmp(a, b)  (a < b ? -1 : a > b ? 1 : 0)
 }
 
 inst FCMPL 0		B.i {fcmpl($1.f, $2.f)}
@@ -292,43 +284,6 @@ equiv FJNLEQ R		{FCMPG, JGTZ $a}
 equiv FJNGEQ R		{FCMPL, JLTZ $a}
 
 # DOUBLE-PRECISION OPERATORS
-
-defs {
-#ifdef UNALIGNED_MEM
-#define getdbl get_double
-#define putdbl put_double
-#define getlong get_long
-#define putlong put_long
-#else
-static inline double getdbl(value *v) {
-     dblbuf dd;
-     dd.n.lo = v[0].i;
-     dd.n.hi = v[1].i;
-     return dd.d;
-}
-
-static inline void putdbl(value *v, double x) {
-     dblbuf dd;
-     dd.d = x;
-     v[0].i = dd.n.lo;
-     v[1].i = dd.n.hi;
-}
-
-static inline longint getlong(value *v) {
-     dblbuf dd;
-     dd.n.lo = v[0].i;
-     dd.n.hi = v[1].i;
-     return dd.q;
-}
-
-static inline void putlong(value *v, longint x) {
-     dblbuf dd;
-     dd.q = x;
-     v[0].i = dd.n.lo;
-     v[1].i = dd.n.hi;
-}
-#endif
-}
 
 inst DPLUS 0		B.d {$1.d + $2.d}
 inst DMINUS 0		B.d {$1.d - $2.d}
@@ -395,38 +350,20 @@ inst CONVQD 0		M.dq {flo_convq($1.q)}
 # message.  God forbid people should make source files containing
 # more than 65536 lines
 
-defs {
-static inline int boundcheck(unsigned i, unsigned n, int line,		     
-			     value *bp, uchar *pc) {	     
-     if (i >= n) runtime_error(E_BOUND, line, bp, pc);
-     return i;						     
-}
-
-#define checkdef(name, type, arg, extra, test, msg)			\
-     static inline type name(type arg extra, int line, 		     	\
-			     value *bp, uchar *pc) {			\
-	  if (test) runtime_error(msg, line, bp, pc);	   		\
-	  return arg;						     	\
-     }
-
-checkdef(nullcheck, uchar *, p,, p == NULL, E_NULL)
-checkdef(zerocheck, int, n,, n == 0, E_DIV)
-checkdef(fzerocheck, double, x,, x == 0.0, E_FDIV)
-checkdef(lzerocheck, longint, n,, n == 0, E_DIV)
-checkdef(globcheck, value *, p,, p != NULL, E_GLOB)
-
-#define czech(chk, a, n) chk(a, n, bp, pc0)
-#define czech2(chk, a, b, n) chk(a, b, n, bp, pc0)
-#define error(msg, n) runtime_error(msg, n, bp, pc0);
-}
-
-inst BOUND 2		B.i {czech2(boundcheck, $1.i, $2.i, $a)}
-inst NCHECK 2		M.x {czech(nullcheck, pointer($1), $a)}
-inst GCHECK 2		S1  {czech(globcheck, valptr($1), $a);}
-inst ZCHECK 2		M.i {czech(zerocheck, $1.i, $a)}
-inst FZCHECK 2 		M.f {czech(fzerocheck, $1.f, $a)}
-inst DZCHECK 2 		M.d {czech(fzerocheck, $1.d, $a)}
-inst QZCHECK 2		M.q {czech(lzerocheck, $1.q, $a)}
+inst BOUND 2		T2 \
+     {if ((unsigned) $1.i > (unsigned) $2.i) error(E_BOUND, $a);}
+inst NCHECK 2		T1 \
+     {if (pointer($1) == NULL) error(E_NULL, $a);}
+inst GCHECK 2		S1  \
+     {if (valptr($1) != NULL) error(E_GLOB, $a);}
+inst ZCHECK 2		T1 \
+     {if ($1.i == 0) error(E_DIV, $a);}
+inst FZCHECK 2 		T1 \
+     {if ($1.f == 0.0) error(E_FDIV, $a);}
+inst DZCHECK 2 		T1d \
+     {if ($1.d == 0.0) error(E_FDIV, $a);}
+inst QZCHECK 2		T1q \
+     {if ($1.q == 0) error(E_DIV, $a);}
 inst ERROR 12		S0  {error($a, $b);}
 equiv EASSERT 2		{RESULTW, ERROR E_ASSERT $a}
 
@@ -487,12 +424,6 @@ inst LINK 0 		S1 {statlink = valptr($1);}
 inst SAVELINK 0		S0 {bp[SL].a = address(statlink);}
 
 defs {
-#define frame()								\
-     bp = sp;								\
-     sp = (value *) ((uchar *) bp - cp[CP_FRAME].i);			\
-     if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);		\
-     memset(sp, 0, cp[CP_FRAME].i);
-
 #ifdef OBXDEB
 #define cond_break() \
      if (one_shot && *pc != K_LNUM_2 && *pc != K_BREAK_2) \
@@ -505,27 +436,24 @@ defs {
 inst JPROC 0 S0 {
      value *p = valptr(sp[0]);
      sp -= HEAD-1; sp[BP].a = address(bp); sp[PC].a = address(pc);
-     if (! interpreted(p)) {
-#ifdef PROFILE
-	  /* Calling a native-code routine */
-	  prof_enter(p, ticks, PROF_PRIM);
-	  ticks = 0;
-#endif
-#ifdef OBXDEB
-	  prim_bp = sp;
-#endif
-	  primcall(p, sp);
-#ifdef OBXDEB
-	  prim_bp = NULL;
-#endif
-     } else {
-#ifdef PROFILE
-	  prof_enter(p, ticks, PROF_CALL);
-#endif
+
+     if (interpreted(p)) {
 	  cp = p; pc = pointer(cp[CP_CODE]);
-	  do_find_proc;
-	  frame();
+          goto enter;
      }
+
+#ifdef PROFILE
+     /* Calling a native-code routine */
+    prof_enter(p, ticks, PROF_PRIM);
+    ticks = 0;
+#endif
+#ifdef OBXDEB
+    prim_bp = sp;
+#endif
+    primcall(p, sp);
+#ifdef OBXDEB
+    prim_bp = NULL;
+#endif
 }
 
 defs {
