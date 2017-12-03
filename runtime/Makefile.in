@@ -122,12 +122,13 @@ $(OBX) $(JIT) gc.o trace.o profile.o debug.o : %.o : %.c
 
 keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl
 	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset \
-		keiko.h template.c action.c
+		keiko.h template.c action.c jitrules.c
 
-template.c action.c: keiko.h
+template.c action.c jitrules.c: keiko.h
 	touch $@
 
 interp.o interp-t.o interp-p.o interp-d.o: action.c
+jit.o: jitrules.c
 
 ## Cleanup
 

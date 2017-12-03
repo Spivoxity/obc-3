@@ -114,6 +114,16 @@ proc make_action {op base count inst key act argv length} {
     set action($op) [list $base $count $length $inst $key $act $argv]
 }
 
+proc make_jitrule {inst jrule} {
+    global jitrule
+    set jitrule($inst) $jrule
+}
+
+proc make_expand {inst equiv} {
+    global expand
+    set expand($inst) [map trim [split $equiv ","]]
+}
+
 proc make_opcode {op inst patt arg len} {
     global ncodes 
     global opcode
@@ -206,8 +216,13 @@ proc defs {text} {
 }
 
 # Create an instruction
-proc inst {inst patts key act} {
+proc inst {inst patts key act {jrule none}} {
     process $inst $patts $key $act
+    if {[regexp {^=(.*)$} $jrule _ exp]} {
+        make_expand $inst $exp
+    } elseif {$jrule != "none"} {
+        make_jitrule $inst $jrule
+    }
 }
 
 # Create a dummy instruction (used for CASE labels)

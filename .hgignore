@@ -230,3 +230,4 @@ mipstest/regress
 mllib/Makefile
 runtime/action.c
 thunder/Makefile
+runtime/jitrules.c

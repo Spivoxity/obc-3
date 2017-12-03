@@ -33,8 +33,8 @@
 fconfigure stdout -translation lf
 fconfigure stderr -translation lf
 
-if {[llength $argv] != 4} {
-    puts stderr "usage: iset input.iset header template interp"
+if {[llength $argv] != 5} {
+    puts stderr "Usage: iset input.iset header template action jitrule"
     exit 1
 }
 
@@ -44,7 +44,7 @@ source "$srcdir/iparse.tcl"
 
 if {[file exists "config.tcl"]} {source "config.tcl"}
 
-lsplit $argv infile hfile tfile ifile
+lsplit $argv infile hfile tfile ifile jfile
 
 # BUILD THE TRIE
 
@@ -524,6 +524,20 @@ proc gen_actions {f} {
 }
 
 
+# GENERATE JIT RULES
+
+proc gen_jitrules {f} {
+    global instrs jitrule
+
+    foreach i $instrs {
+        if {[info exists jitrule($i)]} {
+            set jrule $jitrule($i)
+            puts $f "case I_$i: $jrule break;"
+        }
+    }
+}
+
+
 # MAIN PROGRAM
 
 readfile $infile
@@ -542,6 +556,7 @@ proc gen_file {msg fname gen} {
 gen_file "Template file" $tfile gen_template
 gen_file "Action code" $ifile gen_actions
 gen_file "Header file" $hfile gen_header
+gen_file "Jit rules" $jfile gen_jitrules
 
 # Print statistics
 puts "Instr     Count  Opcodes"

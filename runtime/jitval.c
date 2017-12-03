@@ -658,7 +658,7 @@ void store(int ldop, int s) {
           op = STQ; break;
 
      default:
-	  panic("put %s", instrs[ldop].i_name);
+	  panic("store %s", instrs[ldop].i_name);
      }
 
      ldst(op, r1, v->v_reg, v->v_val);

@@ -206,7 +206,7 @@ static void multiply() {
           ibinop(MUL);
      else {
           pop(1);
-          push(I_CON, INT, NULL, shift, 1);
+          push_con(shift);
           ibinop(LSH);
      }
 }
@@ -247,6 +247,8 @@ static void compare1(operation op, operation opf, operation opd,
      ibinop(op);
 }
 
+#define fcompare(op) push(op, INT, NULL, 0, 0)
+
 /* icondj -- integer conditional jump */
 static void icondj(operation op, int lab) {
      flush(2); 
@@ -278,12 +280,12 @@ typedef struct jmptab {
 #define jtab(op, opl, opg) \
      { op, opl##f, opg##f, opl##d, opg##d, op##q }
 
-struct jmptab tab_jeq = jtab(BEQ, BEQ, BEQ);
-struct jmptab tab_jlt = jtab(BLT, BNGE, BLT);
-struct jmptab tab_jgt = jtab(BGT, BGT, BNLT);
-struct jmptab tab_jle = jtab(BLE, BNGT, BLE);
-struct jmptab tab_jge = jtab(BGE, BGE, BNLT);
-struct jmptab tab_jne = jtab(BNE, BNE, BNE);
+struct jmptab j_eq = jtab(BEQ, BEQ, BEQ);
+struct jmptab j_lt = jtab(BLT, BNGE, BLT);
+struct jmptab j_gt = jtab(BGT, BGT, BNLT);
+struct jmptab j_le = jtab(BLE, BNGT, BLE);
+struct jmptab j_ge = jtab(BGE, BGE, BNLT);
+struct jmptab j_ne = jtab(BNE, BNE, BNE);
 
 /* condj -- conditional jump */
 static void condj(jtable t, int lab) {
@@ -304,6 +306,11 @@ static void condj(jtable t, int lab) {
      }
 
      icondj(t->op, lab);
+}
+
+static void jump(int lab) {
+     flush(0); 
+     vm_gen(JUMP, target(lab)); 
 }
 
 /* callout -- call out-of-line stack operation */
@@ -327,8 +334,8 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
      reg r1, r2;
 
      r1 = move_to_reg(1, INT); 
-     push(I_CON, INT, NULL, stack_map(pc), 1); /* PC = stack map */
-     push(I_REG, INT, rBP, 0, 1);	       /* BP */
+     push_con(stack_map(pc));     /* PC = stack map */
+     push_reg(rBP);               /* BP */
      reserve(r1);
      flush_stack(0, nargs+3);
      killregs();
@@ -344,8 +351,30 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
 
 /* result -- store procedure result */
 static void result(int ldop, int size) {
-     push(I_CON, INT, NULL, address(&ob_res), 1);
+     push_con(address(&ob_res));
      store(ldop, size);
+}
+
+static void lsl(void) {
+     ctvalue v1 = peek(2), v2 = peek(1);
+     if (v1->v_op == I_CON && v2->v_op == I_CON) {
+          pop(2); push_con(v1->v_val << v2->v_val);
+     } else {
+          ibinop(LSH); 
+     }
+}
+
+static void loadq(void) {
+     /* LOADQ is dangerous, because it can't be flushed without
+        allocating at least one register.  So we're cautious about
+        letting it remain unevaluated on the stack if it uses an 
+        index register. */
+     deref(I_LOADQ, INT, 2); 
+#ifndef M64X32
+     v = peek(1);
+     if (v->v_reg != NULL && member(v->v_reg, INT) && n_reserved() > 3) 
+          move_to_frame(1); 
+#endif
 }
 
 /* instr -- translate one bytecode instruction */
@@ -356,51 +385,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      int a;
 
      switch (i) {
-     case I_PUSH:
-          push(I_CON, INT, NULL, arg1, 1);
-          break;
-     case I_LOCAL:
-          push(I_ADDR, INT, rBP, arg1, 1); 
-          break;
-
-     case I_LDKW:	
-	  push(I_LDKW, INT, NULL, address(&konst(arg1)), 1); 
-	  break;
-     case I_LDKQ:
-	  push(I_LDKQ, INT, NULL, address(&konst(arg1)), 2); 
-	  break;
-     case I_LDKF:
-	  push(I_LDKF, FLO, NULL, address(&konst(arg1)), 1); 
-	  break;
-     case I_LDKD:	
-	  push(I_LDKD, FLO, NULL, address(&konst(arg1)), 2); 
-	  break;
-
-     case I_LOADS:	deref(I_LOADS, INT, 1); break;
-     case I_LOADC:	deref(I_LOADC, INT, 1); break;
-     case I_LOADW: 	deref(I_LOADW, INT, 1); break;
-     case I_LOADF:	deref(I_LOADF, FLO, 1); break;
-     case I_LOADD:	deref(I_LOADD, FLO, 2); break;
-
-     case I_LOADQ:
-	  /* LOADQ is dangerous, because it can't be flushed without
-	     allocating at least one register.  So we're cautious about
-	     letting it remain unevaluated on the stack if it uses an 
-	     index register. */
-	  deref(I_LOADQ, INT, 2); 
-#ifndef M64X32
-	  v = peek(1);
-	  if (v->v_reg != NULL && member(v->v_reg, INT) && n_reserved() > 3) 
-	       move_to_frame(1); 
-#endif
-	  break;
-
-     case I_STOREW:	store(I_LOADW, 1); break;
-     case I_STOREF:	store(I_LOADF, 1); break;
-     case I_STORES:	store(I_LOADS, 1); break;
-     case I_STOREC:	store(I_LOADC, 1); break;
-     case I_STORED:	store(I_LOADD, 2); break;
-     case I_STOREQ:	store(I_LOADQ, 2); break;
+#include "jitrules.c"
 
      case I_DUP:
 	  v = move_from_frame(arg1+1);
@@ -410,73 +395,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
      case I_SWAP:
 	  v = move_from_frame(2); v2 = move_from_frame(1);
 	  { struct _ctvalue tmp = *v; *v = *v2; *v2 = tmp; }
-	  break;
-
-     case I_POP:
-	  pop(arg1); break;
-
-     case I_PLUS:	ibinop(ADD); break;
-     case I_MINUS: 	ibinop(SUB); break;
-     case I_TIMES:	multiply(); break;
-     case I_DIV:	callout(INT_DIV, 2, INT, 1); break;
-     case I_MOD:	callout(INT_MOD, 2, INT, 1); break;
-     case I_AND: case I_BITAND:
-			ibinop(AND); break;
-     case I_OR: case I_BITOR:	
-	  		ibinop(OR); break;
-     case I_BITXOR:	ibinop(XOR); break;
-     case I_ASR:	ibinop(RSH); break;
-     case I_LSR:	ibinop(RSHu); break;
-     case I_ROR:	ibinop(ROR); break;
-     case I_OFFSET:	add_offset(); break;
-
-     case I_LSL:        
-	  v = peek(2); v2 = peek(1);
-	  if (v->v_op == I_CON && v2->v_op == I_CON) {
-	       pop(2); push(I_CON, INT, NULL, v->v_val << v2->v_val, 1);
-	  } else {
-	       ibinop(LSH); 
-	  }
-	  break;
-
-     case I_UMINUS:	imonop(NEG); break;
-     case I_BITNOT:	imonop(NOT); break;
-
-     case I_CONVNF:	gmonop(CONVif, INT, FLO, 1); break;
-     case I_CONVND:	gmonop(CONVid, INT, FLO, 2); break;
-     case I_CONVFN:	gmonop(CONVfi, FLO, INT, 1); break;
-     case I_CONVDN:	gmonop(CONVdi, FLO, INT, 1); break;
-     case I_CONVDF:	gmonop(CONVdf, FLO, FLO, 1); break;
-     case I_CONVFD:	gmonop(CONVfd, FLO, FLO, 2); break;
-     case I_CONVNS:	gmonop(CONVis, INT, INT, 1); break;
-
-     case I_CONVNC:
-          push(I_CON, INT, NULL, 0xff, 1);
-          ibinop(AND);
-          break;
-  
-     case I_NOT:	
-	  push(I_CON, INT, NULL, 1, 1); 
-	  ibinop(XOR);
-	  break;
-
-     case I_EQ:		compare(EQ); break;
-     case I_LT:		compare(LT); break;
-     case I_GT:		compare(GT); break;
-     case I_LEQ:	compare(LE); break;
-     case I_GEQ:	compare(GE); break;
-     case I_NEQ:	compare(NE); break;
-
-     case I_JEQ:	condj(&tab_jeq, arg1); break;
-     case I_JLT:	condj(&tab_jlt, arg1); break;
-     case I_JGT:	condj(&tab_jgt, arg1); break;
-     case I_JLEQ:	condj(&tab_jle, arg1); break;
-     case I_JGEQ:	condj(&tab_jge, arg1); break;
-     case I_JNEQ:	condj(&tab_jne, arg1); break;
-	  
-     case I_JUMP:	
-	  flush(0); 
-	  vm_gen(JUMP, target(arg1)); 
 	  break;
 
      case I_JCASE:
@@ -518,28 +436,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  push(I_STACKW, INT, NULL, 0, 1);
 	  vm_gen(BGE, r1->r_reg, v->v_val, target(arg1));
 	  break;
-
-     case I_FPLUS:	fbinop(ADDf); break;
-     case I_FMINUS:	fbinop(SUBf); break;
-     case I_FTIMES:	fbinop(MULf); break;
-     case I_FDIV:	fbinop(DIVf); break;
-     case I_FUMINUS:    fmonop(NEGf); break;
-	  
-     case I_DPLUS:	dbinop(ADDd); break;
-     case I_DMINUS:	dbinop(SUBd); break;
-     case I_DTIMES:	dbinop(MULd); break;
-     case I_DDIV:	dbinop(DIVd); break;
-     case I_DUMINUS:	dmonop(NEGd); break;
-
-	  /* [FD]CMP[LG] must be followed by an integer 
-	     comparison, so we just set a flag and generate 
-	     the appropriate comparison instruction later */
-
-     case I_FCMPL:
-     case I_FCMPG:
-     case I_DCMPL:	
-     case I_DCMPG:	
-          push(i, INT, NULL, 0, 0); break;
 
      case I_BOUND:
           v = peek(2);
@@ -601,6 +497,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_ALIGNC:
      case I_ALIGNS:
+          /* All supported targets are little-endian */
 	  break;
 
      case I_FIXCOPY:
@@ -632,7 +529,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           break;
 
      case I_LINK:
-	  push(I_CON, INT, NULL, address(&statlink), 1);
+	  push_con(address(&statlink));
 	  store(I_LOADW, 1);
 	  break;
 
@@ -646,17 +543,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  /* Let the SLIDEs instruction do the work */
 	  break;
 
-     case I_SLIDE:	proc_call(pc, arg1, 0, 0, 0); break;
-     case I_SLIDEW:	proc_call(pc, arg1, INT, I_LOADW, 1); break;
-     case I_SLIDEQ:	proc_call(pc, arg1, INT, I_LOADQ, 2); break;
-     case I_SLIDEF:	proc_call(pc, arg1, FLO, I_LOADF, 1); break;
-     case I_SLIDED:	proc_call(pc, arg1, FLO, I_LOADD, 2); break;
-
-     case I_RESULTW:	result(I_LOADW, 1); break;
-     case I_RESULTQ:	result(I_LOADQ, 2); break;
-     case I_RESULTF:	result(I_LOADF, 1); break;
-     case I_RESULTD:    result(I_LOADD, 2); break;
-
      case I_RETURN:
           /* Elide the jump at end of procedure */
           if (pc+1 < pclimit)
@@ -665,13 +551,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_LNUM:
 	  break;
-
-     case I_QPLUS:      qbinop(ADDq, LONG_ADD); break;
-     case I_QMINUS:	qbinop(SUBq, LONG_SUB); break;
-     case I_QTIMES:	qbinop(MULq, LONG_MUL); break;
-     case I_QUMINUS:	qmonop(NEGq, LONG_NEG); break;
-     case I_QDIV:	callout(LONG_DIV, 2, INT, 2); break;
-     case I_QMOD:	callout(LONG_MOD, 2, INT, 2); break;
 
      case I_QCMP:
 #ifndef M64X32
@@ -702,10 +581,6 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           gmonop(MOV, INT, INT, 1);
 #endif
           break;
-
-     case I_CONVQD:
-	  callout(LONG_FLO, 1, FLO, 2);
-	  break;
 
      case I_QZCHECK:
 #ifndef M64X32
