@@ -137,7 +137,7 @@ void push(valkind vkind, int type, reg r, int val, int size);
 void pop(int n);
 void unlock(int n);
 ctvalue peek(int n);
-void ldst_item(valkind vkind, reg rs, int i);
+void ldst_item(int op, reg rs, int i);
      
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);

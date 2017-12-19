@@ -324,6 +324,9 @@ ctvalue move_from_frame(int i) {
 #define choose(size, opw, opd) \
      ((size) == 1 ? opw : (size) == 2 ? opd : (panic("choose"), 999))
 
+void ldst_item(int op, reg r, int i) {
+     vm_gen(op, r->r_reg, breg->r_reg, sbase+offset[sp-i]);
+}
 
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
@@ -347,9 +350,7 @@ void move_to_frame(int i) {
 #endif
           {
                r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
-	       vm_gen(choose(v->v_size, STW, STQ),
-		      r->r_reg, breg->r_reg, sbase+offset[sp-i]);
-
+	       ldst_item(choose(v->v_size, STW, STQ), r, i);
                if (v->v_op != V_REG && v->v_reg != r) 
                     set_cache(r, v);
           }
