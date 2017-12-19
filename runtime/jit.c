@@ -44,7 +44,7 @@
 
 /* Decoding table */
 
-/* Instructions: this table is indexed by instructions codes like I_LDLW.
+/* Instructions: this table is indexed by instruction codes like I_LDLW.
    Each complex instruction can be defined as equal to a sequence of simpler
    ones: for example, LDLW n = LOCAL n / LOADW.  This is encoded by having
    the i_equiv array contain I_LOCAL|IARG, I_LOADW.  Similarly INC = 
@@ -71,12 +71,12 @@ struct _decode decode[] = { __OPCODES__(__o2__) };
 static value *context;		/* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
 
-#define konst(i) context[CP_CONST+i]
-
 static vmlabel stack_oflo, retlab;
 
-#define push_con(k) push(I_CON, INT, NULL, k, 1)
-#define push_reg(r) push(I_REG, INT, r, 0, 1)
+#define push_con(k) push(V_CON, INT, NULL, k, 1)
+#define push_reg(r) push(V_REG, INT, r, 0, 1)
+#define konst(op, ty, i, s) \
+     push(op, ty, NULL, address(&context[CP_CONST+i]), s)
 
 /* prolog -- generate code for procedure prologue */
 static word prolog(const char *name, int frame, int map) {
@@ -133,7 +133,7 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
      r1 = move_to_reg(1, rclass1); pop(1); 
      r2 = ralloc_suggest(rclass2, r1); unlock(1);	
      vm_gen(op, r2->r_reg, r1->r_reg);
-     push(I_REG, rclass2, r2, 0, s);
+     push(V_REG, rclass2, r2, 0, s);
 }
 
 #define imonop(op) gmonop(op, INT, INT, 1)
@@ -160,11 +160,11 @@ static void binop(operation op, int size) {
      pop(2);				
      r2 = ralloc_suggest(INT, r1); 
      unlock(2);				
-     if (v->v_op == I_CON)						
+     if (v->v_op == V_CON)						
 	  vm_gen(op, r2->r_reg, r1->r_reg, v->v_val);
      else								
 	  vm_gen(op, r2->r_reg, r1->r_reg, v->v_reg->r_reg);
-     push(I_REG, INT, r2, 0, size);
+     push(V_REG, INT, r2, 0, size);
 }
 
 #define ibinop(op)  binop(op, 1)
@@ -182,7 +182,7 @@ static void gbinop(operation op, int ty, int s) {
      r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); pop(2);
      r3 = ralloc_suggest(ty, r1); unlock(2);				
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);				
-     push(I_REG, ty, r3, 0, s);
+     push(V_REG, ty, r3, 0, s);
 }
 
 #define fbinop(op) gbinop(op, FLO, 1)
@@ -194,7 +194,7 @@ static void multiply() {
      ctvalue v2 = peek(1);
      int shift = -1;
 
-     if (v2->v_op == I_CON) {
+     if (v2->v_op == V_CON) {
           for (int i = 1; i < 32; i++) {
                if (v2->v_val == 1<<i) {
                     shift = i; break;
@@ -212,7 +212,7 @@ static void multiply() {
 }
 
 static mybool is_zero(ctvalue v) {
-     return (v->v_op == I_CON && v->v_val == 0);
+     return (v->v_op == V_CON && v->v_val == 0);
 }
 
 /* fcomp -- float or double comparison */
@@ -223,7 +223,7 @@ static void fcomp(operation op, int ty) {
      r2 = move_to_reg(1, ty); pop(2);				
      r3 = ralloc(INT); unlock(2);				
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);	
-     push(I_REG, INT, r3, 0, 1);						
+     push_reg(r3);						
 }
 
 /* compare -- integer comparison */
@@ -233,14 +233,16 @@ static void compare1(operation op, operation opf, operation opd,
                      operation op64) {
      if (is_zero(peek(1))) {
           switch (peek(2)->v_op) {
-          case I_FCMPL:
-          case I_FCMPG:
+          case V_FCMPL:
+          case V_FCMPG:
                pop(2); fcomp(opf, FLO); return;
-          case I_DCMPL:
-          case I_DCMPG:
+          case V_DCMPL:
+          case V_DCMPG:
                pop(2); fcomp(opd, FLO); return;
-          case I_QCMP:
+          case V_QCMP:
                pop(2); ibinop(op64); return;
+	  default:
+	       break;
           }
      }
 
@@ -255,7 +257,7 @@ static void icondj(operation op, int lab) {
      ctvalue v = move_to_rc(1);
      reg r1 = move_to_reg(2, INT); 
      pop(2); unlock(2);	
-     if (v->v_op == I_CON)					
+     if (v->v_op == V_CON)					
           vm_gen(op, r1->r_reg, v->v_val, target(lab));
      else						
           vm_gen(op, r1->r_reg, v->v_reg->r_reg, target(lab));
@@ -292,16 +294,18 @@ static void condj(jtable t, int lab) {
      if (is_zero(peek(1))) {
           /* Check stack for comparison operator */
           switch (peek(2)->v_op) {
-          case I_FCMPL:
+          case V_FCMPL:
                pop(2); fcondj(t->oplf, lab); return;
-          case I_FCMPG:
+          case V_FCMPG:
                pop(2); fcondj(t->opgf, lab); return;
-          case I_DCMPL:
+          case V_DCMPL:
                pop(2); fcondj(t->opld, lab); return;
-          case I_DCMPG:
+          case V_DCMPG:
                pop(2); fcondj(t->opgd, lab); return;
-          case I_QCMP:
+          case V_QCMP:
                pop(2); icondj(t->opq, lab); return;
+	  default:
+	       break;
           }
      }
 
@@ -323,7 +327,7 @@ static void callout(func op, int nargs, int ty, int size) {
      push_reg(r);
      gcall(op, 1);
      pop(nargs);
-     push((size == 1 ? I_STACKW : I_STACKQ), ty, NULL, 0, size);
+     push((size == 1 ? V_STKW : V_STKQ), ty, NULL, 0, size);
 }
 
 /* proc_call -- procedure call */
@@ -357,7 +361,7 @@ static void result(int ldop, int size) {
 
 static void lsl(void) {
      ctvalue v1 = peek(2), v2 = peek(1);
-     if (v1->v_op == I_CON && v2->v_op == I_CON) {
+     if (v1->v_op == V_CON && v2->v_op == V_CON) {
           pop(2); push_con(v1->v_val << v2->v_val);
      } else {
           ibinop(LSH); 
@@ -369,7 +373,7 @@ static void loadq(void) {
         allocating at least one register.  So we're cautious about
         letting it remain unevaluated on the stack if it uses an 
         index register. */
-     deref(I_LOADQ, INT, 2); 
+     deref(V_MEMQ, INT, 2); 
 #ifndef M64X32
      v = peek(1);
      if (v->v_reg != NULL && member(v->v_reg, INT) && n_reserved() > 3) 
@@ -433,13 +437,13 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(2, INT);
 	  v = fix_const(1, FALSE);
 	  pop(2); unlock(2); killregs();
-	  push(I_STACKW, INT, NULL, 0, 1);
+	  push(V_STKW, INT, NULL, 0, 1);
 	  vm_gen(BGE, r1->r_reg, v->v_val, target(arg1));
 	  break;
 
      case I_BOUND:
           v = peek(2);
-          if (v->v_op == I_CON && peek(1)->v_op != I_CON) {
+          if (v->v_op == V_CON && peek(1)->v_op != V_CON) {
                // Handle a[2] when a has dynamic bound
                r1 = move_to_reg(1, INT);
                pop(1); unlock(1);
@@ -451,39 +455,39 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(2, INT); 
 	  v = move_to_rc(1); 
 	  pop(2); unlock(2);
-	  if (v->v_op == I_CON)
+	  if (v->v_op == V_CON)
 	       vm_gen(BGEu, r1->r_reg, v->v_val,
                       handler(E_BOUND, arg1));
 	  else
 	       vm_gen(BGEu, r1->r_reg, v->v_reg->r_reg,
                       handler(E_BOUND, arg1));
-	  push(I_REG, INT, r1, 0, 1);
+	  push_reg(r1);
 	  break;
      
      case I_NCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
 	  vm_gen(BEQ, r1->r_reg, 0, handler(E_NULL, arg1));
-	  push(I_REG, INT, r1, 0, 1);
+	  push_reg(r1);
 	  break;
 
      case I_ZCHECK:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1);
 	  vm_gen(BEQ, r1->r_reg, 0, handler(E_DIV, arg1));
-	  push(I_REG, INT, r1, 0, 1);
+	  push_reg(r1);
 	  break;
 
      case I_FZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
 	  vm_gen(ZEROf, r2->r_reg);
 	  vm_gen(BEQf, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
-	  push(I_REG, FLO, r1, 0, 1);
+	  push(V_REG, FLO, r1, 0, 1);
 	  break;
 
      case I_DZCHECK:
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
 	  vm_gen(ZEROd, r2->r_reg);
 	  vm_gen(BEQd, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
-	  push(I_REG, FLO, r1, 0, 2);
+	  push(V_REG, FLO, r1, 0, 2);
 	  break;
 
      case I_GCHECK:
@@ -530,13 +534,13 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_LINK:
 	  push_con(address(&statlink));
-	  store(I_LOADW, 1);
+	  store(V_MEMW, 1);
 	  break;
 
      case I_SAVELINK:
-	  push(I_LOADW, INT, NULL, address(&statlink), 1);
-	  push(I_ADDR, INT, rBP, 4*SL, 1);
-	  store(I_LOADW, 1);
+	  push(V_MEMW, INT, NULL, address(&statlink), 1);
+	  push(V_ADDR, INT, rBP, 4*SL, 1);
+	  store(V_MEMW, 1);
 	  break;
 
      case I_JPROC:
@@ -556,15 +560,15 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #ifndef M64X32
 	  callout(LONG_CMP, 2, INT, 1);
 #else
-          push(I_QCMP, INT, NULL, 0, 0);
+          push(V_QCMP, INT, NULL, 0, 0);
 #endif          
 	  break;
 
      case I_CONVNQ:
 	  v = peek(1);
-	  if (v->v_op == I_CON) {
+	  if (v->v_op == V_CON) {
 	       pop(1);
-	       push(I_CON, INT, NULL, v->v_val, 2);
+	       push(V_CON, INT, NULL, v->v_val, 2);
                break;
 	  }
           qmonop(SXTq, LONG_EXT);
@@ -576,7 +580,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           r1 = ralloc(INT);
           ldst_item(LDW, r1, 1);
           pop(1);
-          push(I_REG, INT, r1, 0, 1);
+          push(V_REG, INT, r1, 0, 1);
 #else
           gmonop(MOV, INT, INT, 1);
 #endif
@@ -590,7 +594,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #else
           r1 = move_to_reg(1, INT); pop(1); unlock(1);
           vm_gen(BEQq, r1->r_reg, 0, handler(E_DIV, arg1));
-          push(I_REG, INT, r1, 0, 2);
+          push(V_REG, INT, r1, 0, 2);
 #endif
 	  break;
 

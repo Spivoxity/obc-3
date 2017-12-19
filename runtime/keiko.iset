@@ -41,18 +41,15 @@ defs {
 # CONSTANTS
 
 inst PUSH {[-1,6,1] 1 2} V.i { $a } { push_con(arg1); }
-inst LDKW {1 2} V.i     { const($a).i } \
-    { push(I_LDKW, INT, NULL, address(&konst(arg1)), 1); }
-inst LDKF {1 2} V.f     {const($a).f} \
-    { push(I_LDKF, FLO, NULL, address(&konst(arg1)), 1); }
+inst LDKW {1 2} V.i     { const($a).i } { konst(V_KONW, INT, arg1, 1); }
+inst LDKF {1 2} V.f     { const($a).f } { konst(V_KONW, FLO, arg1, 1); }
 
 
 # ADDRESSING OPERATORS
 
 # Push address of local
 # LOCAL n :: --> bp+n
-inst LOCAL {1 2} V.x    { local($a) } \
-    { push(I_ADDR, INT, rBP, arg1, 1); }
+inst LOCAL {1 2} V.x    { local($a) }   { push(V_ADDR, INT, rBP, arg1, 1); }
 
 # Compute indexed address
 # INDEXs :: a, b --> a + s * b
@@ -74,14 +71,14 @@ defs {
 #define load(x, t) indir(pointer(x), t)
 #define store(x, y, t) indir(pointer(y), t) = x
 }
-inst LOADW 0 M.i        { load($1, int) }      { deref(I_LOADW, INT, 1); }
-inst LOADS 0 M.i        { load($1, short) }    { deref(I_LOADS, INT, 1); }
-inst LOADC 0 M.i        { load($1, uchar) }    { deref(I_LOADC, INT, 1); }
-inst LOADF 0 M.f        { load($1, float) }    { deref(I_LOADF, FLO, 1); }
-inst STOREW 0 S2        { store($1.i, $2, int); } { store(I_LOADW, 1); }
-inst STORES 0 S2        { store($1.i, $2, short); } { store(I_LOADS, 1); }
-inst STOREC 0 S2        { store($1.i, $2, uchar); } { store(I_LOADC, 1); }
-inst STOREF 0 S2        { store($1.f, $2, float); } { store(I_LOADF, 1); }
+inst LOADW 0 M.i        { load($1, int) }      { deref(V_MEMW, INT, 1); }
+inst LOADS 0 M.i        { load($1, short) }    { deref(V_MEMS, INT, 1); }
+inst LOADC 0 M.i        { load($1, uchar) }    { deref(V_MEMC, INT, 1); }
+inst LOADF 0 M.f        { load($1, float) }    { deref(V_MEMW, FLO, 1); }
+inst STOREW 0 S2        { store($1.i, $2, int); } { store(V_MEMW, 1); }
+inst STORES 0 S2        { store($1.i, $2, short); } { store(V_MEMS, 1); }
+inst STOREC 0 S2        { store($1.i, $2, uchar); } { store(V_MEMC, 1); }
+inst STOREF 0 S2        { store($1.f, $2, float); } { store(V_MEMW, 1); }
 
 # Load/store local
 # LDLs n :: --> mem_s[bp+n]
@@ -149,15 +146,13 @@ inst STIF 0 S3          { sti($1.f, $2, $3, float); } {=INDEXW, STOREF}
 # for example, LDLW n --> LDKW [n] / LOADW
 
 # Loads and stores for doubles
-inst LOADD 0 M.dp       { getdbl(valptr($1)) } { deref(I_LOADD, FLO, 2); }
-inst STORED 0 S2dp      { putdbl(valptr($2), $1.d); } { store(I_LOADD, 2); }
-inst LDKD {1 2}	V.d     { getdbl(&const($a)) } \
-    { push(I_LDKD, FLO, NULL, address(&konst(arg1)), 2); }
+inst LOADD 0 M.dp       { getdbl(valptr($1)) } { deref(V_MEMQ, FLO, 2); }
+inst STORED 0 S2dp      { putdbl(valptr($2), $1.d); } { store(V_MEMQ, 2); }
+inst LDKD {1 2}	V.d     { getdbl(&const($a)) } { konst(V_KONQ, FLO, arg1, 2); }
 
 inst LOADQ 0 M.qp       { getlong(valptr($1)) } { loadq(); }
-inst STOREQ 0 S2qp      { putlong(valptr($2), $1.q); } { store(I_LOADQ, 2); }
-inst LDKQ {1 2} V.q     { getlong(&const($a)) } \
-    { push(I_LDKQ, INT, NULL, address(&konst(arg1)), 2); }
+inst STOREQ 0 S2qp      { putlong(valptr($2), $1.q); } { store(V_MEMQ, 2); }
+inst LDKQ {1 2} V.q     { getlong(&const($a)) } { konst(V_KONQ, INT, arg1, 2); }
     
 equiv LDID 0  		{INDEXD, LOADD}
 equiv STID 0		{INDEXD, STORED}
@@ -179,15 +174,15 @@ defs {
 #define dup(n, sp) 	sp--; sp[0] = sp[n+1]
 #define swap(sp) 	sp[-1] = sp[1]; sp[1] = sp[0]; sp[0] = sp[-1]
 }
-inst INCL 1		S0 {indir(local($a), int)++;} {=LDLW $a, INC, STLW $a}
+inst INCL 1 S0 		{indir(local($a), int)++} {=LDLW $a, INC, STLW $a}
 equiv INCL 2		{LDLW $a, INC, STLW $a}
 
-inst DECL 1		S0 {indir(local($a), int)--;} {=LDLW $a, DEC, STLW $a}
+inst DECL 1 S0 		{indir(local($a), int)--} {=LDLW $a, DEC, STLW $a}
 equiv DECL 2		{LDLW $a, DEC, STLW $a}
 
-inst DUP {[0,2,1]}	S0 {dup($a, $s);}
-inst SWAP 0		S0 {swap($s);}
-inst POP 1		S0 { sp += $a; } { pop(arg1); }
+inst DUP {[0,2,1]} S0 	{dup($a, $s)}
+inst SWAP 0 S0 		{swap($s)}
+inst POP 1 S0 		{sp += $a} 		{pop(arg1)}
 
 
 # INTEGER OPERATORS
@@ -195,94 +190,110 @@ inst POP 1		S0 { sp += $a; } { pop(arg1); }
 defs {
 #define ror(a, b) ((((unsigned) a) >> b) | (((unsigned) a) << (32-b)))
 }
-inst PLUS 0 B.i 	{ $1.i + $2.i }       { ibinop(ADD); }
-inst MINUS 0 B.i 	{ $1.i - $2.i }       { ibinop(SUB); }
-inst TIMES 0 B.i 	{ $1.i * $2.i }       { multiply(); }
-inst UMINUS 0 M.i 	{ - $1.i }            { imonop(NEG); }
+inst PLUS 0 B.i 	{$1.i + $2.i}		{ibinop(ADD)}
+inst MINUS 0 B.i 	{$1.i - $2.i}       	{ibinop(SUB)}
+inst TIMES 0 B.i 	{$1.i * $2.i}       	{multiply()}
+inst UMINUS 0 M.i 	{- $1.i}            	{imonop(NEG)}
 
-inst AND 0 B.i 		{ $1.i && $2.i }      { ibinop(AND); }
-inst OR 0 B.i 		{ $1.i || $2.i }      { ibinop(OR); }
-inst NOT 0 M.i 		{ ! $1.i }            { push_con(1); ibinop(XOR); }
-inst INC 0 M.i 		{$1.i + 1}            {=PUSH 1, PLUS}
-inst DEC 0		M.i {$1.i - 1}        {=PUSH 1, MINUS}
-inst BITAND 0		B.i {$1.i & $2.i}     { ibinop(AND); }
-inst BITOR 0		B.i {$1.i | $2.i}     { ibinop(OR); }
-inst BITXOR 0		B.i {$1.i ^ $2.i}     { ibinop(XOR); }
-inst BITNOT 0		M.i {~ $1.i}          { imonop(NOT); }
+inst AND 0 B.i 		{$1.i && $2.i}      	{ibinop(AND)}
+inst OR 0 B.i 		{$1.i || $2.i}      	{ibinop(OR)}
+inst NOT 0 M.i 		{! $1.i}            	{push_con(1); ibinop(XOR)}
+inst INC 0 M.i 		{$1.i + 1}            	{=PUSH 1, PLUS}
+inst DEC 0 M.i 		{$1.i - 1}        	{=PUSH 1, MINUS}
+inst BITAND 0 B.i 	{$1.i & $2.i}     	{ibinop(AND)}
+inst BITOR 0 B.i 	{$1.i | $2.i}     	{ibinop(OR)}
+inst BITXOR 0 B.i 	{$1.i ^ $2.i}     	{ibinop(XOR)}
+inst BITNOT 0 M.i 	{~ $1.i}          	{imonop(NOT)}
 
-inst LSL 0 B.i 		{ $1.i << $2.i }      { lsl(); }
-inst LSR 0 B.i 		{ (unsigned) $1.i >> $2.i } { ibinop(RSHu); }
-inst ASR 0 B.i 		{ $1.i >> $2.i }      { ibinop(RSH); }
-inst ROR 0 B.i 		{ ror($1.i, $2.i) }   { ibinop(ROR); }
+inst LSL 0 B.i 		{$1.i << $2.i}      	{lsl()}
+inst LSR 0 B.i 		{(unsigned) $1.i>>$2.i} {ibinop(RSHu)}
+inst ASR 0 B.i 		{$1.i >> $2.i}      	{ibinop(RSH)}
+inst ROR 0 B.i 		{ror($1.i, $2.i)}   	{ibinop(ROR)}
 
-inst DIV 0 T2 		{ int_div(sp); }      { callout(INT_DIV, 2, INT, 1); }
-inst MOD 0 T2 		{ int_mod(sp); }      { callout(INT_MOD, 2, INT, 1); }
+inst DIV 0 T2 		{int_div(sp)}      	{callout(INT_DIV, 2, INT, 1)}
+inst MOD 0 T2 		{int_mod(sp)}      	{callout(INT_MOD, 2, INT, 1)}
 
-inst EQ 0		B.i { $1.i == $2.i }  { compare(EQ); }
-inst LT 0		B.i { $1.i < $2.i }   { compare(LT); }
-inst GT 0		B.i { $1.i > $2.i }   { compare(GT); }
-inst LEQ 0		B.i { $1.i <= $2.i }  { compare(LE); }
-inst GEQ 0		B.i { $1.i >= $2.i }  { compare(GE); }
-inst NEQ 0		B.i { $1.i != $2.i }  { compare(NE); }
+inst EQ 0 B.i 		{$1.i == $2.i}  	{compare(EQ)}
+inst LT 0 B.i 		{$1.i < $2.i}   	{compare(LT)}
+inst GT 0 B.i 		{$1.i > $2.i}   	{compare(GT)}
+inst LEQ 0 B.i 		{$1.i <= $2.i}  	{compare(LE)}
+inst GEQ 0 B.i 		{$1.i >= $2.i}  	{compare(GE)}
+inst NEQ 0 B.i 		{$1.i != $2.i}  	{compare(NE)}
 
-inst JEQ {S R} S2 	{ if ($1.i == $2.i) jump($a); } { condj(&j_eq, arg1); }
-inst JLT {S R} S2 	{ if ($1.i < $2.i) jump($a); }  { condj(&j_lt, arg1); }
-inst JGT {S R} S2 	{ if ($1.i > $2.i) jump($a); }  { condj(&j_gt, arg1); }
-inst JLEQ {S R} S2      { if ($1.i <= $2.i) jump($a); } { condj(&j_le, arg1); }
-inst JGEQ {S R} S2 	{ if ($1.i >= $2.i) jump($a); } { condj(&j_ge, arg1); }
-inst JNEQ {S R} S2 	{ if ($1.i != $2.i) jump($a); } { condj(&j_ne, arg1); }
+inst JEQ {S R} S2 	{if ($1.i == $2.i) jump($a)} {condj(&j_eq, arg1)}
+inst JLT {S R} S2 	{if ($1.i < $2.i) jump($a)}  {condj(&j_lt, arg1)}
+inst JGT {S R} S2 	{if ($1.i > $2.i) jump($a)}  {condj(&j_gt, arg1)}
+inst JLEQ {S R} S2      {if ($1.i <= $2.i) jump($a)} {condj(&j_le, arg1)}
+inst JGEQ {S R} S2 	{if ($1.i >= $2.i) jump($a)} {condj(&j_ge, arg1)}
+inst JNEQ {S R} S2 	{if ($1.i != $2.i) jump($a)} {condj(&j_ne, arg1)}
 
-inst JLTZ S S1 		{if ($1.i < 0) jump($a);} {=PUSH 0, JLT $a}
-inst JGTZ S S1 		{if ($1.i > 0) jump($a);} {=PUSH 0, JGT $a}
-inst JLEQZ S S1 	{if ($1.i <= 0) jump($a);} {=PUSH 0, JLEQ $a}
-inst JGEQZ S S1 	{if ($1.i >= 0) jump($a);} {=PUSH 0, JGEQ $a}
+inst JLTZ S S1 		{if ($1.i < 0) jump($a)} {=PUSH 0, JLT $a}
+inst JGTZ S S1 		{if ($1.i > 0) jump($a)} {=PUSH 0, JGT $a}
+inst JLEQZ S S1 	{if ($1.i <= 0) jump($a)} {=PUSH 0, JLEQ $a}
+inst JGEQZ S S1 	{if ($1.i >= 0) jump($a)} {=PUSH 0, JGEQ $a}
 
 equiv JLTZ R		{PUSH 0, JLT $a}
 equiv JGTZ R		{PUSH 0, JGT $a}
 equiv JLEQZ R		{PUSH 0, JLEQ $a}
 equiv JGEQZ R		{PUSH 0, JGEQ $a}
 
-inst JNEQZ {S R}	S1 {if ($1.i != 0) jump($a);} {=PUSH 0, JNEQ $a}
-inst JEQZ {S R}		S1 {if ($1.i == 0) jump($a);} {=PUSH 0, JEQ $a}
-inst JUMP {S R}		S0 { jump($a); } { jump(arg1); }
+inst JNEQZ {S R}	S1 {if ($1.i != 0) jump($a)} {=PUSH 0, JNEQ $a}
+inst JEQZ {S R}		S1 {if ($1.i == 0) jump($a)} {=PUSH 0, JEQ $a}
+inst JUMP {S R}		S0 {jump($a)} {jump(arg1)}
 
 
 # LONGINT OPERATORS
 
-inst QPLUS 0		B.q {$1.q + $2.q} { qbinop(ADDq, LONG_ADD); }
-inst QMINUS 0		B.q {$1.q - $2.q} { qbinop(SUBq, LONG_SUB); }
-inst QTIMES 0		B.q {$1.q * $2.q} { qbinop(MULq, LONG_MUL); }
-inst QUMINUS 0		M.q {- $1.q}      { qmonop(NEGq, LONG_NEG); }
-inst QDIV 0		T2q {long_div(sp);} { callout(LONG_DIV, 2, INT, 2); }
-inst QMOD 0		T2q {long_mod(sp);} { callout(LONG_MOD, 2, INT, 2); }
+inst QPLUS 0 B.q 	{$1.q + $2.q} 		{qbinop(ADDq, LONG_ADD)}
+inst QMINUS 0 B.q 	{$1.q - $2.q} 		{qbinop(SUBq, LONG_SUB)}
+inst QTIMES 0 B.q 	{$1.q * $2.q} 		{qbinop(MULq, LONG_MUL)}
+inst QUMINUS 0 M.q 	{- $1.q}      		{qmonop(NEGq, LONG_NEG)}
+inst QDIV 0 T2q 	{long_div(sp)}		{callout(LONG_DIV, 2, INT, 2)}
+inst QMOD 0 T2q 	{long_mod(sp)}		{callout(LONG_MOD, 2, INT, 2)}
 
 equiv QINC 0		{PUSH 1, CONVNQ, QPLUS}
 equiv QDEC 0		{PUSH 1, CONVNQ, QMINUS}
+
+inst QCMP 0		B.iqq {lcmp($1.q, $2.q)}
+
+equiv QEQ 0		{QCMP, PUSH 0, EQ}
+equiv QLT 0		{QCMP, PUSH 0, LT}
+equiv QGT 0		{QCMP, PUSH 0, GT}
+equiv QLEQ 0		{QCMP, PUSH 0, LEQ}
+equiv QGEQ 0		{QCMP, PUSH 0, GEQ}
+equiv QNEQ 0		{QCMP, PUSH 0, NEQ}
+
+equiv QJEQ R		{QCMP, JEQZ $a}
+equiv QJLT R		{QCMP, JLTZ $a}
+equiv QJGT R		{QCMP, JGTZ $a}
+equiv QJLEQ R		{QCMP, JLEQZ $a}
+equiv QJGEQ R		{QCMP, JGEQZ $a}
+equiv QJNEQ R		{QCMP, JNEQZ $a}
 
 
 # CASE STATEMENTS
 
 defs {
 #define jcase(x, n) \
-     if ((unsigned) x < (unsigned) n) { pc0 = pc + 2*x; jump(get2(pc0)); } \
-     else pc += 2*n
+     if ((unsigned) x < (unsigned) n) \
+          pc0 = pc + 2*x, jump(get2(pc0)); else pc += 2*n
 }
-inst JCASE 1		S1  {jcase($1.i, $a);}
+inst JCASE 1 S1  	{jcase($1.i, $a)}
 zinst CASEL R
 
-inst JRANGE {S R}	S3  {if ($1.i >= $2.i && $1.i <= $3.i) jump($a);}
+inst JRANGE {S R} S3  	{if ($1.i >= $2.i && $1.i <= $3.i) jump($a)}
 
 # The "T2" means take two arguments, but leave one of them on the stack
-inst TESTGEQ {S R}	T2  {if ($1.i >= $2.i) jump($a);}
+inst TESTGEQ {S R} T2  	{if ($1.i >= $2.i) jump($a)}
 
 
 # FLOATING-POINT OPERATORS
 
-inst FPLUS 0 B.f 	{ $1.f + $2.f }       { fbinop(ADDf); }
-inst FMINUS 0 B.f 	{$1.f - $2.f}         { fbinop(SUBf); }
-inst FTIMES 0 B.f 	{$1.f * $2.f}         { fbinop(MULf); }
-inst FDIV 0 B.f 	{$1.f / $2.f}         { fbinop(DIVf); }
-inst FUMINUS 0 M.f 	{- $1.f}              { fmonop(NEGf); }
+inst FPLUS 0 B.f 	{$1.f + $2.f}       	{fbinop(ADDf)}
+inst FMINUS 0 B.f 	{$1.f - $2.f}         	{fbinop(SUBf)}
+inst FTIMES 0 B.f 	{$1.f * $2.f}         	{fbinop(MULf)}
+inst FDIV 0 B.f 	{$1.f / $2.f}         	{fbinop(DIVf)}
+inst FUMINUS 0 M.f 	{- $1.f}              	{fmonop(NEGf)}
 
 defs {
 #define fcmpl(a, b) (a > b ? 1 : a == b ? 0 : -1)
@@ -290,8 +301,8 @@ defs {
 #define lcmp(a, b)  (a < b ? -1 : a > b ? 1 : 0)
 }
 
-inst FCMPL 0 B.i 	{ fcmpl($1.f, $2.f) } { fcompare(I_FCMPL); }
-inst FCMPG 0 B.i 	{ fcmpg($1.f, $2.f) } { fcompare(I_FCMPG); }
+inst FCMPL 0 B.i 	{fcmpl($1.f, $2.f)} 	{fcompare(V_FCMPL)}
+inst FCMPG 0 B.i 	{fcmpg($1.f, $2.f)} 	{fcompare(V_FCMPG)}
 
 equiv FEQ 0		{FCMPL, PUSH 0, EQ}
 equiv FNEQ 0		{FCMPL, PUSH 0, NEQ}
@@ -314,16 +325,17 @@ equiv FJNGT R		{FCMPL, JLEQZ $a}
 equiv FJNLEQ R		{FCMPG, JGTZ $a}
 equiv FJNGEQ R		{FCMPL, JLTZ $a}
 
+
 # DOUBLE-PRECISION OPERATORS
 
-inst DPLUS 0 B.d 	{ $1.d + $2.d }       { dbinop(ADDd); }
-inst DMINUS 0 B.d 	{ $1.d - $2.d }	      { dbinop(SUBd); }
-inst DTIMES 0 B.d 	{ $1.d * $2.d }       { dbinop(MULd); }
-inst DDIV 0 B.d 	{ $1.d / $2.d }       { dbinop(DIVd); }
-inst DUMINUS 0 M.d 	{ - $1.d }            { dmonop(NEGd); }
+inst DPLUS 0 B.d 	{$1.d + $2.d}       	{dbinop(ADDd)}
+inst DMINUS 0 B.d 	{$1.d - $2.d}	      	{dbinop(SUBd)}
+inst DTIMES 0 B.d 	{$1.d * $2.d}       	{dbinop(MULd)}
+inst DDIV 0 B.d 	{$1.d / $2.d}       	{dbinop(DIVd)}
+inst DUMINUS 0 M.d 	{- $1.d}            	{dmonop(NEGd)}
 
-inst DCMPL 0 B.idd 	{ fcmpl($1.d, $2.d) } { fcompare(I_DCMPL); }
-inst DCMPG 0 B.idd 	{ fcmpg($1.d, $2.d) } { fcompare(I_DCMPG); }
+inst DCMPL 0 B.idd 	{fcmpl($1.d, $2.d)} 	{fcompare(V_DCMPL)}
+inst DCMPG 0 B.idd 	{fcmpg($1.d, $2.d)} 	{fcompare(V_DCMPG)}
 
 equiv DEQ 0		{DCMPL, PUSH 0, EQ}
 equiv DNEQ 0		{DCMPL, PUSH 0, NE}
@@ -343,36 +355,20 @@ equiv DJNGT R		{DCMPL, JLEQZ $a}
 equiv DJNLEQ R		{DCMPG, JGTZ $a}
 equiv DJNGEQ R		{DCMPL, JLTZ $a}
 
-inst QCMP 0		B.iqq {lcmp($1.q, $2.q)}
-
-equiv QEQ 0		{QCMP, PUSH 0, EQ}
-equiv QLT 0		{QCMP, PUSH 0, LT}
-equiv QGT 0		{QCMP, PUSH 0, GT}
-equiv QLEQ 0		{QCMP, PUSH 0, LEQ}
-equiv QGEQ 0		{QCMP, PUSH 0, GEQ}
-equiv QNEQ 0		{QCMP, PUSH 0, NEQ}
-
-equiv QJEQ R		{QCMP, JEQZ $a}
-equiv QJLT R		{QCMP, JLTZ $a}
-equiv QJGT R		{QCMP, JGTZ $a}
-equiv QJLEQ R		{QCMP, JLEQZ $a}
-equiv QJGEQ R		{QCMP, JGEQZ $a}
-equiv QJNEQ R		{QCMP, JNEQZ $a}
-
 
 # CONVERSIONS
 
-inst CONVNF 0 M.f	{ flo_conv($1.i) } { gmonop(CONVif, INT, FLO, 1); }
-inst CONVND 0 M.di 	{ flo_conv($1.i) } { gmonop(CONVid, INT, FLO, 2); }
-inst CONVFN 0 M.i  	{ (int) $1.f }     { gmonop(CONVfi, FLO, INT, 1); }
-inst CONVDN 0 M.id 	{ (int) $1.d }     { gmonop(CONVdi, FLO, INT, 1); }
-inst CONVFD 0 M.df 	{ $1.f }           { gmonop(CONVfd, FLO, FLO, 2); }
-inst CONVDF 0 M.fd 	{ (float) $1.d }   { gmonop(CONVdf, FLO, FLO, 1); }
-inst CONVNC 0 M.i  	{ $1.i & 0xff }    { push_con(0xff); ibinop(AND); }
-inst CONVNS 0 M.i  	{ (short) $1.i }   { gmonop(CONVis, INT, INT, 1); }
-inst CONVNQ 0 M.qi 	{ $1.i }
-inst CONVQN 0 M.iq 	{ (int) $1.q }
-inst CONVQD 0 M.dq 	{ flo_convq($1.q) } { callout(LONG_FLO, 1, FLO, 2); }
+inst CONVNF 0 M.f	{flo_conv($1.i)} 	{gmonop(CONVif, INT, FLO, 1)}
+inst CONVND 0 M.di 	{flo_conv($1.i)} 	{gmonop(CONVid, INT, FLO, 2)}
+inst CONVFN 0 M.i  	{(int) $1.f}     	{gmonop(CONVfi, FLO, INT, 1)}
+inst CONVDN 0 M.id 	{(int) $1.d}     	{gmonop(CONVdi, FLO, INT, 1)}
+inst CONVFD 0 M.df 	{$1.f}           	{gmonop(CONVfd, FLO, FLO, 2)}
+inst CONVDF 0 M.fd 	{(float) $1.d}   	{gmonop(CONVdf, FLO, FLO, 1)}
+inst CONVNC 0 M.i  	{$1.i & 0xff}    	{push_con(0xff); ibinop(AND)}
+inst CONVNS 0 M.i  	{(short) $1.i}   	{gmonop(CONVis, INT, INT, 1)}
+inst CONVNQ 0 M.qi 	{$1.i}
+inst CONVQN 0 M.iq 	{(int) $1.q}
+inst CONVQD 0 M.dq 	{flo_convq($1.q)} 	{callout(LONG_FLO, 1, FLO, 2)}
 
 
 # RUN-TIME CHECKS
@@ -382,21 +378,21 @@ inst CONVQD 0 M.dq 	{ flo_convq($1.q) } { callout(LONG_FLO, 1, FLO, 2); }
 # more than 65536 lines
 
 inst BOUND 2 T2 \
-    { if ((unsigned) $1.i > (unsigned) $2.i) error(E_BOUND, $a); }
+    {if ((unsigned) $1.i > (unsigned) $2.i) error(E_BOUND, $a)}
 inst NCHECK 2 T1 \
-    { if (pointer($1) == NULL) error(E_NULL, $a); }
+    {if (pointer($1) == NULL) error(E_NULL, $a)}
 inst GCHECK 2 S1  \
-    { if (valptr($1) != NULL) error(E_GLOB, $a); }
+    {if (valptr($1) != NULL) error(E_GLOB, $a)}
 inst ZCHECK 2 T1 \
-    { if ($1.i == 0) error(E_DIV, $a); }
+    {if ($1.i == 0) error(E_DIV, $a)}
 inst FZCHECK 2 T1 \
-    { if ($1.f == 0.0) error(E_FDIV, $a); }
+    {if ($1.f == 0.0) error(E_FDIV, $a)}
 inst DZCHECK 2 T1d \
-    { if ($1.d == 0.0) error(E_FDIV, $a); }
+    {if ($1.d == 0.0) error(E_FDIV, $a)}
 inst QZCHECK 2 T1q \
-    { if ($1.q == 0) error(E_DIV, $a); }
-inst ERROR 12 S0  	{ error($a, $b); }
-equiv EASSERT 2		{ RESULTW, ERROR E_ASSERT $a }
+    {if ($1.q == 0) error(E_DIV, $a)}
+inst ERROR 12 S0  	{error($a, $b)}
+equiv EASSERT 2		{RESULTW, ERROR E_ASSERT $a}
 
 
 # MORE BITS AND PIECES
@@ -410,8 +406,8 @@ defs {
 #define alignx(a, n)	a
 #endif
 }
-inst ALIGNC 0 M.i 	{ alignx($1.i, 8) }
-inst ALIGNS 0 M.i 	{ alignx($1.i, 16) }
+inst ALIGNC 0 M.i 	{alignx($1.i, 8)}
+inst ALIGNS 0 M.i 	{alignx($1.i, 16)}
 
 defs {
 #ifdef PROFILE
@@ -450,8 +446,8 @@ equiv CALLQ 1 		{JPROC, SLIDEQ $a}
 equiv CALLF 1 		{JPROC, SLIDEF $a}
 equiv CALLD 1		{JPROC, SLIDED $a}
 
-inst LINK 0 S1 		{ statlink = valptr($1); }
-inst SAVELINK 0 S0 	{ bp[SL].a = address(statlink); }
+inst LINK 0 S1 		{statlink = valptr($1)}
+inst SAVELINK 0 S0 	{bp[SL].a = address(statlink)}
 
 defs {
 #ifdef OBXDEB
@@ -489,28 +485,28 @@ inst JPROC 0 S0 {
 defs {
 #define slide(nargs) sp += HEAD + nargs; cond_break();
 }
-inst SLIDE 1 S0 	{ slide($a); } \
-    { proc_call(pc, arg1, 0, 0, 0); }
-inst SLIDEW 1 S0 	{slide($a); sp--; sp[0].i = ob_res.i;} \
-    { proc_call(pc, arg1, INT, I_LOADW, 1); }
+inst SLIDE 1 S0 	{slide($a)} \
+    {proc_call(pc, arg1, 0, 0, 0)}
+inst SLIDEW 1 S0 	{slide($a); sp--; sp[0].i = ob_res.i} \
+    {proc_call(pc, arg1, INT, V_MEMW, 1)}
+inst SLIDEF 1 S0 {slide($a); sp--; sp[0].f = ob_res.f} \
+    {proc_call(pc, arg1, FLO, V_MEMW, 1)}
 inst SLIDED 1 S0 \
-    {slide($a); sp -= 2; putdbl(&sp[0], getdbl(&ob_res));} \
-    { proc_call(pc, arg1, FLO, I_LOADD, 2); }
-inst SLIDEF 1 S0 {slide($a); sp--; sp[0].f = ob_res.f;} \
-    { proc_call(pc, arg1, FLO, I_LOADF, 1); }
+    {slide($a); sp -= 2; putdbl(&sp[0], getdbl(&ob_res))} \
+    {proc_call(pc, arg1, FLO, V_MEMQ, 2)}
 inst SLIDEQ 1 S0 \
-    {slide($a); sp -= 2; putlong(&sp[0], getlong(&ob_res));} \
-    { proc_call(pc, arg1, INT, I_LOADQ, 2); }
+    {slide($a); sp -= 2; putlong(&sp[0], getlong(&ob_res))} \
+    {proc_call(pc, arg1, INT, V_MEMQ, 2)}
     
 equiv RETURNW 0		{RESULTW, RETURN}
 equiv RETURNF 0		{RESULTF, RETURN}
 equiv RETURND 0		{RESULTD, RETURN}
 equiv RETURNQ 0		{RESULTQ, RETURN}
 
-inst RESULTW 0 S1 	{ ob_res = $1; }            { result(I_LOADW, 1); }
-inst RESULTD 0 S1d 	{ putdbl(&ob_res, $1.d);}   { result(I_LOADD, 2); }
-inst RESULTF 0 S1 	{ ob_res.f = $1.f; }        { result(I_LOADF, 1); }
-inst RESULTQ 0 S1q 	{ putlong(&ob_res, $1.q); } { result(I_LOADQ, 2); }
+inst RESULTW 0 S1 	{ob_res = $1}       	{result(V_MEMW, 1)}
+inst RESULTF 0 S1 	{ob_res.f = $1.f}       {result(V_MEMW, 1)}
+inst RESULTQ 0 S1q 	{putlong(&ob_res, $1.q)} {result(V_MEMQ, 2)}
+inst RESULTD 0 S1d 	{putdbl(&ob_res, $1.d)} {result(V_MEMQ, 2)}
 
 inst RETURN 0 S0 {
      if (bp == base) {
@@ -532,13 +528,13 @@ inst RETURN 0 S0 {
 
 inst LNUM 2 S0 {
 #ifdef PROFILE
-     if (lflag) { 
+     if (lflag) {
 	  static module m = NULL; /* Cache most recent module */
 	  ticks--;
 	  if (m == NULL || cp < (value *) m->m_addr 
 		|| cp >= (value *) (m->m_addr + m->m_length)) {
 	       m = find_module(cp);
-	  }
+	 }
 	  m->m_lcount[$a-1]++; 
      }
 #endif
@@ -575,20 +571,13 @@ defs {
      }
 }
 
-inst CASEJUMP 1   	S1  {casejump($1.i, $a);}
+inst CASEJUMP 1	S1 {casejump($1.i, $a)}
 zinst CASEARM 2R
 
-inst PACK 0		B.i {pack(valptr($2), pointer($1))}
-inst UNPACK 0		S0 {sp--; sp[0].a = address(getcode(sp[1].i)); 
-     	    		   	   sp[1].a = address(getenvt(sp[1].i));}
+inst PACK 0 B.i {pack(valptr($2), pointer($1))}
+inst UNPACK 0 S0 {sp--; sp[0].a = address(getcode(sp[1].i)); 
+     	    		   	   sp[1].a = address(getenvt(sp[1].i))}
 }
-
-zinst REG 0
-zinst ADDR 0
-zinst STACKW 0
-zinst STACKQ 0
-zinst CON 0
-
 
 # DIRECTIVES
 
@@ -610,11 +599,6 @@ dir ENDHDR 0
 dir IMPORT ??
 dir STKMAP ?
 dir LINE ?
-
-if {[info exists SPECIALS]} {
-   dir PCALL ?
-   dir PCALLW ?
-}
 
 if {[info exists SPECIALS]} {
    dir PCALL ?

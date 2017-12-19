@@ -66,8 +66,17 @@ typedef struct _reg *reg;
 extern int nregs;
 extern reg rBP, rSP, rI0, rI1, rI2;
 
+#define __VALKINDS__(v) \
+     v(CON) v(REG) v(KONW) v(KONQ) \
+     v(ADDR) v(MEMC) v(MEMS) v(MEMW) v(MEMQ) \
+     v(FCMPL) v(FCMPG) v(DCMPL) v(DCMPG) v(QCMP) \
+     v(STKW) v(STKQ)
+
+#define __v1__(sym) V_##sym,
+typedef enum { __VALKINDS__(__v1__) } valkind;
+
 typedef struct _ctvalue {
-     int v_op;			/* Operation to fetch value */
+     valkind v_op;		/* Operation to fetch value */
      int v_type;		/* INT or FLO */
      int v_val;			/* Constant or offset */
      reg v_reg;			/* Register */
@@ -124,11 +133,11 @@ void flex_space(reg nreg);
 void dumpregs(void);
 
 void init_stack(int frame);
-void push(int op, int type, reg r, int val, int size);
+void push(valkind vkind, int type, reg r, int val, int size);
 void pop(int n);
 void unlock(int n);
 ctvalue peek(int n);
-void ldst_item(int op, reg rs, int i);
+void ldst_item(valkind vkind, reg rs, int i);
      
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);
@@ -140,8 +149,8 @@ void flush_stack(int a, int b);
 #define flush(a) flush_stack(a, STACK)
 void spill(reg r);
 
-void deref(int op, int ty, int size);
-void store(int ldop, int s);
+void deref(valkind vkind, int ty, int size);
+void store(valkind vkind, int s);
 void add_offset();
 
 void save_stack(codepoint lab);

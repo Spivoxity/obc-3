@@ -35,49 +35,52 @@
 
 /* Possible compile-time values
 
-     OP            FIELDS      MEANING
+     OP    FIELDS      MEANING
                                 
-     REG           reg         reg
-     CON               val     val
-     STACKW            val     mem_4[BP + val]
-     STACKQ            val     mem_8[BP + val]
-     ADDR          reg val     reg + val
-     LDKW, LDKF        val     konst_4[val]
-     LDKD, LDKQ        val     konst_8[val]
-     LOADs         reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
-     [FD]CMP[LG], QCMP         comparison of two previous values
+     REG   reg         reg
+     CON       val     val
+     STKW      val     mem_4[BP + val]
+     STKQ      val     mem_8[BP + val]
+     ADDR  reg val     reg + val
+     KONW      val     konst_4[val]
+     KONQ      val     konst_8[val]
+     MEMs  reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
+     [FD]CMP[LG], QCMP comparison of two previous values
 
-LDKW and LDKD refer to the pool of constants for the procedure
+KONW and KONQ refer to the pool of constants for the procedure
 being compiled.  */
+
+#define __v2__(sym) #sym,
+static char *vkind_name[] = { __VALKINDS__(__v2__) };
 
 #ifdef DEBUG
 /* show -- print a value for debugging */
 static void show(ctvalue v) {
      switch (v->v_op) {
-     case I_REG: 
+     case V_REG: 
 	  printf("reg %s", (v->v_reg == NULL ? "*null*"
                             : vm_regname(v->v_reg->r_reg)));
           break;
 
-     case I_CON:
+     case V_CON:
 	  printf("const %d", v->v_val); break;
 
-     case I_STACKW: 
+     case V_STKW: 
 	  printf("stackw %d", v->v_val); break;
 
-     case I_STACKQ: 
+     case V_STKQ: 
 	  printf("stackq %d", v->v_val); break;
 
-     case I_FCMPL:
-     case I_FCMPG:
-     case I_DCMPL:
-     case I_DCMPG:
-     case I_QCMP:
-          printf("compare %s", instrs[v->v_op].i_name);
+     case V_FCMPL:
+     case V_FCMPG:
+     case V_DCMPL:
+     case V_DCMPG:
+     case V_QCMP:
+          printf("compare %s", vkind_name[v->v_op]);
           break;
 
      default:
-	  printf("[%s %d", instrs[v->v_op].i_name, v->v_val);
+	  printf("[%s %d", vkind_name[v->v_op], v->v_val);
 	  if (v->v_reg != NULL) printf("(%s)", vm_regname(v->v_reg->r_reg));
 	  printf("]");
      }
@@ -125,12 +128,10 @@ static mybool alias(ctvalue v, ctvalue w) {
      /* Assume v is a LOAD */
 
      switch (w->v_op) {
-     case I_LOADC:
-     case I_LOADS:
-     case I_LOADW:
-     case I_LOADD:
-     case I_LOADF:
-     case I_LOADQ:
+     case V_MEMC:
+     case V_MEMS:
+     case V_MEMW:
+     case V_MEMQ:
 	  return (v->v_reg != NULL || w->v_reg != NULL || same(v, w));
 
      default:
@@ -220,13 +221,13 @@ void get_sp(reg r) {
 }
 
 /* set -- assign to a stack slot */
-static void set(int i, int op, int type, int val, reg r, int s) {
+static void set(int i, valkind vkind, int type, int val, reg r, int s) {
      ctvalue v = &vstack[i];
      reserve(r);
 
-     if (op == I_STACKW || op == I_STACKQ) val = offset[i];
+     if (vkind == V_STKW || vkind == V_STKQ) val = offset[i];
 
-     v->v_op = op; v->v_type = type; v->v_val = val; 
+     v->v_op = vkind; v->v_type = type; v->v_val = val; 
      v->v_reg = r; v->v_size = s;
 
 #ifdef DEBUG
@@ -239,10 +240,10 @@ static void set(int i, int op, int type, int val, reg r, int s) {
 }
 
 /* push -- push a value onto the eval stack */
-void push(int op, int type, reg r, int val, int size) {
+void push(valkind vkind, int type, reg r, int val, int size) {
      pdepth += 4*size;
      offset[sp] = -pdepth;
-     set(sp++, op, type, val, r, size);
+     set(sp++, vkind, type, val, r, size);
 }
 
 /* pop -- pop one or more values from the eval stack */
@@ -292,9 +293,9 @@ void restore_stack(codepoint lab) {
      sp = 0; pdepth = 0;
      for (int i = 0; i < n; i++) {
 	  if (map & (1 << i))
-	       push(I_STACKQ, INT, NULL, 0, 2);
+	       push(V_STKQ, INT, NULL, 0, 2);
 	  else
-	       push(I_STACKW, INT, NULL, 0, 1);	       
+	       push(V_STKW, INT, NULL, 0, 1);	       
      }
 }
 
@@ -312,7 +313,7 @@ vmlabel target(int addr) {
 ctvalue move_from_frame(int i) {
      ctvalue v = &vstack[sp-i];
 
-     if (v->v_op == I_STACKW) {
+     if (v->v_op == V_STKW) {
 	  reg r = move_to_reg(i, INT);
 	  runlock(r);
      }
@@ -323,9 +324,6 @@ ctvalue move_from_frame(int i) {
 #define choose(size, opw, opd) \
      ((size) == 1 ? opw : (size) == 2 ? opd : (panic("choose"), 999))
 
-void ldst_item(int op, reg r, int i) {
-     vm_gen(op, r->r_reg, breg->r_reg, sbase+offset[sp-i]);
-}
 
 /* move_to_frame -- force vstack[sp-i] into the runtime stack */
 void move_to_frame(int i) {
@@ -340,7 +338,7 @@ void move_to_frame(int i) {
      }
 #endif
 
-     if (v->v_op != I_STACKW && v->v_op != I_STACKQ) {
+     if (v->v_op != V_STKW && v->v_op != V_STKQ) {
 #ifndef M64X32
 	  if (v->v_type == INT && v->v_size == 2) {
                move_longval(v, breg, sbase+offset[sp-i]);
@@ -349,12 +347,14 @@ void move_to_frame(int i) {
 #endif
           {
                r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
-               ldst_item(choose(v->v_size, STW, STQ), r, i);
-               if (v->v_op != I_REG && v->v_reg != r) 
+	       vm_gen(choose(v->v_size, STW, STQ),
+		      r->r_reg, breg->r_reg, sbase+offset[sp-i]);
+
+               if (v->v_op != V_REG && v->v_reg != r) 
                     set_cache(r, v);
           }
 
-	  set(sp-i, choose(v->v_size, I_STACKW, I_STACKQ), 
+	  set(sp-i, choose(v->v_size, V_STKW, V_STKQ), 
 	      v->v_type, 0, NULL, v->v_size);
      }
 }
@@ -365,10 +365,8 @@ static mybool transient(ctvalue v) {
 	  return TRUE;
 
      switch (v->v_op) {
-     case I_LOADW:
-     case I_LOADF:
-     case I_LOADQ:
-     case I_LOADD:
+     case V_MEMW:
+     case V_MEMQ:
 	  return (v->v_val == address(&ob_res));
      default:
 	  return FALSE;
@@ -399,7 +397,7 @@ void spill(reg r) {
      for (int i = sp; i > 0 && *rc > 0; i--) {
           ctvalue v = &vstack[sp-i];
 	  if (vstack[sp-i].v_reg == r) {
-               if (*rc == 1 || v->v_op == I_REG)
+               if (*rc == 1 || v->v_op == V_REG)
                     move_to_frame(i);
                else {
                     /* If r is a least-used register and has multiple
@@ -452,25 +450,25 @@ reg move_to_reg(int i, int ty) {
      }
 #endif
 
-     if (v->v_op != I_REG) {
+     if (v->v_op != V_REG) {
 	  for_regs (r) {
 	       if (cached(r) && same(&r->r_value, v) && member(r, ty)) {
 #ifdef DEBUG
 		    if (dflag >= 4) printf("Hit %s\n", vm_regname(r->r_reg));
 #endif
 		    rfree(v->v_reg);
-		    set(sp-i, I_REG, ty, 0, r, v->v_size);
+		    set(sp-i, V_REG, ty, 0, r, v->v_size);
 		    return rlock(r);
 	       }
 	  }
      }
 
      switch (v->v_op) {
-     case I_REG:
+     case V_REG:
 	  r = rfree(v->v_reg);
 	  break;
 
-     case I_CON:
+     case V_CON:
 	  r = ralloc(INT);
 	  vm_gen(MOV, r->r_reg, v->v_val);
 #ifdef M64X32
@@ -479,19 +477,17 @@ reg move_to_reg(int i, int ty) {
 #endif
 	  break;
 
-     case I_LDKW:
-     case I_LDKF:
+     case V_KONW:
 	  r = ralloc(ty);
           vm_gen(LDKW, r->r_reg, v->v_val);
 	  break;
 	  
-     case I_LDKQ:
-     case I_LDKD:
+     case V_KONQ:
 	  r = ralloc(ty);
 	  vm_gen(LDQ, r->r_reg, v->v_val);
 	  break;
 
-     case I_ADDR:
+     case V_ADDR:
           if (v->v_val == 0)
                r = rfree(v->v_reg);
           else {
@@ -502,34 +498,32 @@ reg move_to_reg(int i, int ty) {
           }
 	  break;
 
-     case I_LOADW:	
-     case I_LOADF:
+     case V_MEMW:	
 	  r = load(LDW, ty, v->v_reg, v->v_val);
 	  break;
 
-     case I_LOADS:	
+     case V_MEMS:	
 	  r = load(LDS, INT, v->v_reg, v->v_val); 
 	  break;
 
-     case I_LOADC:	
+     case V_MEMC:	
 	  r = load(LDBu, INT, v->v_reg, v->v_val); 
 	  break;
 
-     case I_LOADD: 
-     case I_LOADQ:
+     case V_MEMQ:
 	  r = load(LDQ, ty, v->v_reg, v->v_val); 
 	  break;
 
-     case I_STACKW:
+     case V_STKW:
 	  r = load(LDW, ty, reserve(breg), sbase + v->v_val);
 	  break;
 
-     case I_STACKQ:
+     case V_STKQ:
 	  r = load(LDQ, ty, reserve(breg), sbase + v->v_val);
 	  break;
 
      default:
-	  panic("move_to_reg %s\n", instrs[v->v_op].i_name);
+	  panic("move_to_reg %s\n", vkind_name[v->v_op]);
      }
 
      /* Unusually, e.g. in SYSTEM.VAL(REAL, n+1), a floating point
@@ -541,10 +535,10 @@ reg move_to_reg(int i, int ty) {
 	  r = r2;
      }
 
-     if (v->v_op != I_STACKW && v->v_op != I_STACKQ && v->v_reg != r)
+     if (v->v_op != V_STKW && v->v_op != V_STKQ && v->v_reg != r)
 	  set_cache(r, v);
 
-     set(sp-i, I_REG, ty, 0, r, v->v_size);
+     set(sp-i, V_REG, ty, 0, r, v->v_size);
      return rlock(r);
 }
 
@@ -553,11 +547,11 @@ ctvalue fix_const(int i, mybool rflag) {
      ctvalue v = &vstack[sp-i];
 
      switch (v->v_op) {
-     case I_CON:
+     case V_CON:
 	  break;
 
-     case I_LDKW:
-	  set(sp-i, I_CON, INT, *ptrcast(int, v->v_val), NULL, 1);
+     case V_KONW:
+	  set(sp-i, V_CON, INT, *ptrcast(int, v->v_val), NULL, 1);
 	  break;
 
      default:
@@ -570,25 +564,25 @@ ctvalue fix_const(int i, mybool rflag) {
 }
 
 /* deref -- perform load operation on top of stack */
-void deref(int op, int ty, int size) {
+void deref(valkind vkind, int ty, int size) {
      ctvalue v = &vstack[sp-1];
      reg r1;
 
      switch (v->v_op) {
-     case I_ADDR:
+     case V_ADDR:
 	  pop(1);
-	  push(op, ty, v->v_reg, v->v_val, size);
+	  push(vkind, ty, v->v_reg, v->v_val, size);
 	  break;
 
-     case I_CON:
-     case I_LDKW:
+     case V_CON:
+     case V_KONW:
 	  fix_const(1, FALSE); pop(1); unlock(1);
-	  push(op, ty, NULL, v->v_val, size);
+	  push(vkind, ty, NULL, v->v_val, size);
 	  break;
 
      default:
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1); 
-	  push(op, ty, r1, 0, size); 
+	  push(vkind, ty, r1, 0, size); 
 	  break;
      }
 }
@@ -599,7 +593,7 @@ static void unalias(int a, ctvalue v) {
 	  ctvalue w = &vstack[sp-i];
 	  if (alias(v, w)) {
 #ifndef M64X32
-	       if (w->v_op == I_LOADQ)
+	       if (w->v_op == V_MEMQ)
 		    move_to_frame(i);
                else
 #endif
@@ -612,13 +606,13 @@ static void unalias(int a, ctvalue v) {
 }
 
 /* store -- perform store operation on top of stack */
-void store(int ldop, int s) {
+void store(valkind vkind, int s) {
      reg r1;
      ctvalue v;
      int op = -1;
      mybool cache = TRUE;
 
-     deref(ldop, vstack[sp-2].v_type, s);							
+     deref(vkind, vstack[sp-2].v_type, s);							
      v = &vstack[sp-1];
      if (same(v, &vstack[sp-2])) {
 	  /* Store into same location as load: mostly for
@@ -632,33 +626,31 @@ void store(int ldop, int s) {
      int ty = v->v_type;
 
 #ifndef M64X32
-     if (ldop == I_LOADQ) {
+     if (vkind == V_MEMQ) {
 	  move_longval(&vstack[sp-2], vstack[sp-1].v_reg, vstack[sp-1].v_val);
 	  pop(2);
 	  return;
      }
 
-     if (ldop == I_LOADD) ty = FLO;
+     if (vkind == V_MEMD) ty = FLO;
 #endif
      
      rlock(v->v_reg);
      r1 = move_to_reg(2, ty); 
      pop(2); unlock(2);						
 
-     switch (ldop) {
-     case I_LOADW:
-     case I_LOADF:
+     switch (vkind) {
+     case V_MEMW:
           op = STW; break;
-     case I_LOADC:
+     case V_MEMC:
           op = STB; cache = FALSE; break;
-     case I_LOADS:
+     case V_MEMS:
           op = STS; cache = FALSE; break;
-     case I_LOADD:
-     case I_LOADQ:
+     case V_MEMQ:
           op = STQ; break;
 
      default:
-	  panic("store %s", instrs[ldop].i_name);
+	  panic("store %s", vkind_name[vkind]);
      }
 
      ldst(op, r1, v->v_reg, v->v_val);
@@ -672,31 +664,31 @@ void add_offset() {
      reg r1, r2;
 
      switch (vstack[sp-2].v_op) {
-     case I_CON:
-     case I_LDKW:
+     case V_CON:
+     case V_KONW:
 	  v1 = fix_const(2, FALSE); 
 	  v2 = move_to_rc(1); 
 	  pop(2); unlock(2);
-	  if (v2->v_op == I_CON)
-	       push(I_CON, INT, NULL, v1->v_val + v2->v_val, 1);
+	  if (v2->v_op == V_CON)
+	       push(V_CON, INT, NULL, v1->v_val + v2->v_val, 1);
 	  else {
                r2 = v2->v_reg;
-	       push(I_ADDR, INT, r2, v1->v_val, 1);
+	       push(V_ADDR, INT, r2, v1->v_val, 1);
           }
 	  break;
 
-     case I_ADDR:
+     case V_ADDR:
 	  v1 = &vstack[sp-2];
 	  v2 = move_to_rc(1); 
 	  pop(2);
-	  if (v2->v_op == I_CON)
-	       push(I_ADDR, INT, v1->v_reg, v1->v_val + v2->v_val, 1);
+	  if (v2->v_op == V_CON)
+	       push(V_ADDR, INT, v1->v_reg, v1->v_val + v2->v_val, 1);
 	  else {
 	       r1 = ralloc_suggest(INT, v1->v_reg); 
                r2 = v2->v_reg;
 	       runlock(v2->v_reg);
 	       vm_gen(ADD, r1->r_reg, v1->v_reg->r_reg, r2->r_reg);
-	       push(I_ADDR, INT, r1, v1->v_val, 1);
+	       push(V_ADDR, INT, r1, v1->v_val, 1);
 	  }
 	  break;
 
@@ -704,15 +696,15 @@ void add_offset() {
 	  r1 = move_to_reg(2, INT); 
 	  v2 = move_to_rc(1); 
 	  pop(2);
-	  if (v2->v_op == I_CON) {
+	  if (v2->v_op == V_CON) {
                // No need to sign extend as r1 is an address
 	       unlock(2);
-	       push(I_ADDR, INT, r1, v2->v_val, 1);
+	       push(V_ADDR, INT, r1, v2->v_val, 1);
 	  } else {
 	       r2 = ralloc_suggest(INT, r1); 
 	       unlock(2);
 	       vm_gen(ADD, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);
-	       push(I_REG, INT, r2, 0, 1);
+	       push(V_REG, INT, r2, 0, 1);
 	  }
      }
 }
@@ -726,10 +718,10 @@ static void gen_args(int n) {
      for (int i = n; i > 0; i--) {
           ctvalue arg = &vstack[sp-i];
           switch (arg->v_op) {
-          case I_REG:
+          case V_REG:
                vm_gen(ARG, arg->v_reg->r_reg);
                break;
-          case I_CON:
+          case V_CON:
                vm_gen(ARG, arg->v_val);
                break;
           default:
@@ -782,17 +774,17 @@ static void move_long(reg rs, int offs, reg rd, int offd) {
 /* half_const -- fetch one or other half of a 64-bit constant */
 static int half_const(ctvalue v, int off) {
      switch (v->v_op) {
-     case I_CON:
+     case V_CON:
 	  if (off == 0)
 	       return v->v_val;
 	  else
 	       return (v->v_val < 0 ? -1 : 0);
 
-     case I_LDKQ:
+     case V_KONQ:
 	  return ptrcast(int, v->v_val)[off];
 
      default:
-	  panic("half_const %s", instrs[v->v_op].i_name);
+	  panic("half_const %s", vkind_name[v->v_op]);
 	  return 0;
      }
 }     
@@ -816,25 +808,23 @@ void move_longval(ctvalue src, reg rd, int offd) {
      /* Move from src to offd(rd) */
 
      switch (src->v_op) {
-     case I_LOADQ:
-     case I_LOADD:
-          /* Could be LOADD if the result of SYSTEM.VAL(LONGINT, ...) */
+     case V_MEMQ:
 	  move_long(src->v_reg, src->v_val, rd, offd);
 	  break;
-     case I_STACKQ:
+     case V_STKQ:
 	  move_long(breg, sbase + src->v_val, rd, offd);
 	  break;
-     case I_LDKQ:
-     case I_CON:
+     case V_KONQ:
+     case V_CON:
           move_longconst(src, rd, offd);
 	  break;
-     case I_REG:
+     case V_REG:
           /* Must be result of SYSTEM.VAL(LONGINT, x) */
           assert(src->v_type == FLO);
           ldst(STQ, src->v_reg, rd, offd);
           break;
      default:
-	  panic("move_longval %s", instrs[src->v_op].i_name);
+	  panic("move_longval %s", vkind_name[src->v_op]);
      }
 }
 #endif
