@@ -91,6 +91,10 @@ case $host in
   *-*-darwin*)
     AC_SUBST(MACOS, 1)
     AC_DEFINE(MACOS, 1, [Define to enable hacks for MacOS X]);;
+
+  *-*-freebsd*)
+    AC_SUBST(FREEBSD, 1)
+    AC_DEFINE(FREEBSD, 1, [Define to enable hacks for FreeBSD]);;
 esac    
 
 AC_DEFINE_UNQUOTED(DIRSEP, "$DIRSEP", [Directory separator in file names])

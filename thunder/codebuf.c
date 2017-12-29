@@ -76,6 +76,10 @@ void *vm_literal_align(int n, int a) {
      return limit;
 }
 
+#ifdef FREEBSD
+#define USE_MPROTECT 1
+#endif
+
 #ifdef USE_MPROTECT
 #include <sys/mman.h>
 
