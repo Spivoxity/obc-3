@@ -401,7 +401,7 @@ equiv EASSERT 2		{RESULTW, ERROR E_ASSERT $a}
 # to ensure that CHAR and SHORT parameters appear at the right address.
 defs {
 #ifdef WORDS_BIGENDIAN
-#define alignx(a, n) 	(a <<= (32-n))
+#define alignx(a, n) 	(a << (32-n))
 #else
 #define alignx(a, n)	a
 #endif
