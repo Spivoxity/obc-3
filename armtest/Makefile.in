@@ -48,7 +48,7 @@ LIBDIR = /usr/arm-linux-gnueabihf/lib
 OBXJ = jit.o jitlab.o jitregs.o jitval.o xmain-j.o \
 	support.o loader.o dynlink.o gc.o primtab.o
 THUNDER = vmpi.o labels.o vmdebug.o codebuf.o 
-PRIMS = Builtin Args Timer Files Conv Random GC
+PRIMS = Builtin Args Timer Files Conv Random
 TCLSH = tclsh
 AR = arm-linux-gnueabihf-ar
 RANLIB = arm-linux-gnueabihf-ranlib
