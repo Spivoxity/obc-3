@@ -491,6 +491,10 @@ int main(int ac, char *av[]) {
      FILE *fp;
      char *codefile;
 
+#ifndef M64X32
+     if (sizeof(uchar *) != 4) panic("Bad pointer size");
+#endif
+
      argc = ac; argv = av;
      progname = argv[0];
 

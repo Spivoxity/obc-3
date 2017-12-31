@@ -1149,7 +1149,7 @@ void gc_collect(value *sp) {
 void gc_init(void) {
      unsigned i;
 
-     ASSERT(sizeof(page_index) == PAGESIZE);
+     if (sizeof(page_index) != PAGESIZE) panic("Bad page index size");
 
      empty_index = (page_index *) scratch_alloc(sizeof(page_index));
      for (i = 0; i < TOP_SIZE; i++) page_table[i] = address(empty_index);
