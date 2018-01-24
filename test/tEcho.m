@@ -1,11 +1,6 @@
 MODULE tEcho;
 
 (*<<
-Runtime error: string copy overflows destination in module Args
-In procedure Args.GetArg
-   called from tEcho.Echo
-   called from tEcho.%main
-   called from MAIN
 dummy arguments
 dummy arguments
 >>*)
@@ -26,8 +21,7 @@ END Echo;
 
 BEGIN
   Echo(20);
-  Echo(10);
-  Echo(5)
+  Echo(10)
 END tEcho.
 
 (*[[
@@ -61,7 +55,7 @@ LDLW -12
 JGT L2
 !     Args.GetArg(i, s^);
 LDLW -8
-NCHECK 20
+NCHECK 15
 DUP 0
 LDNW -4
 LDNW 4
@@ -80,7 +74,7 @@ CALL 1
 LABEL L5
 !     Out.String(s^)
 LDLW -8
-NCHECK 22
+NCHECK 17
 DUP 0
 LDNW -4
 LDNW 4
@@ -102,12 +96,8 @@ PROC tEcho.%main 0 5 0
 CONST 20
 GLOBAL tEcho.Echo
 CALL 1
-!   Echo(10);
+!   Echo(10)
 CONST 10
-GLOBAL tEcho.Echo
-CALL 1
-!   Echo(5)
-CONST 5
 GLOBAL tEcho.Echo
 CALL 1
 RETURN
