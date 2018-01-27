@@ -273,7 +273,7 @@ END
 
 PRIMDEF tGC307.GcHeapSize gc_heap_size I
 
-PROC tGC307.%main 0 4 0
+PROC tGC307.%main 0 3 0
 !   Build(K); Print;
 CONST 500000
 GLOBAL tGC307.Build

@@ -72,7 +72,7 @@ CALL 0
 RETURN
 END
 
-PROC tNestFunc.%1.Q 4 3 0
+PROC tNestFunc.%1.Q 4 2 0
 !   PROCEDURE Q(F: PROCEDURE (x: INTEGER)); 
 SAVELINK
 !     F(y) 
@@ -116,7 +116,7 @@ CALL 1
 RETURN
 END
 
-PROC tNestFunc.R 0 3 0
+PROC tNestFunc.R 0 1 0
 ! PROCEDURE R(F: PROCEDURE (x: INTEGER));
 !   S
 LOCAL 0
@@ -156,7 +156,7 @@ CALL 0
 RETURN
 END
 
-PROC tNestFunc.%main 0 3 0
+PROC tNestFunc.%main 0 1 0
 !   P;
 GLOBAL tNestFunc.P
 CALL 0

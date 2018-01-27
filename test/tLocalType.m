@@ -183,7 +183,7 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType.First 4 3 0x00010001
+PROC tLocalType.First 4 2 0x00010001
 ! PROCEDURE First;
 !   p := Build(7);
 CONST 7
@@ -307,7 +307,7 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType.Second 4 3 0x00010001
+PROC tLocalType.Second 4 2 0x00010001
 ! PROCEDURE Second;
 !   p := Build(7);
 CONST 7
@@ -327,7 +327,7 @@ CALL 0
 RETURN
 END
 
-PROC tLocalType.%main 0 3 0
+PROC tLocalType.%main 0 1 0
 !   First;
 GLOBAL tLocalType.First
 CALL 0

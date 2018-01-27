@@ -136,7 +136,7 @@ CALL 0
 RETURN
 END
 
-PROC tCast.%main 0 5 0
+PROC tCast.%main 0 3 0
 !   NEW(a); 
 CONST 4
 GLOBAL tCast.Node

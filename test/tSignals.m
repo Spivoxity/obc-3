@@ -317,7 +317,7 @@ LABEL L11
 RETURN
 END
 
-PROC tSignals.MakeSig 4 5 0x00610001
+PROC tSignals.MakeSig 4 4 0x00610001
 ! PROCEDURE MakeSig(op: CHAR; left, right: Sig; value: INTEGER);
 !   IF signal[value] # NIL THEN RETURN END;
 GLOBAL tSignals.signal
@@ -448,7 +448,7 @@ CONST 1
 RETURNW
 END
 
-PROC tSignals.Closure 8 5 0
+PROC tSignals.Closure 8 4 0
 ! PROCEDURE Closure(lo: INTEGER);
 !   i := lo;
 LDLW 12
@@ -518,7 +518,7 @@ LABEL L25
 RETURN
 END
 
-PROC tSignals.OutName 0 5 0x00100001
+PROC tSignals.OutName 0 3 0x00100001
 ! PROCEDURE OutName(p: Sig);
 !   Out.Char('s'); Out.Int(p.id, 0)
 CONST 115
@@ -534,7 +534,7 @@ CALL 2
 RETURN
 END
 
-PROC tSignals.OutArc 0 5 0x00300001
+PROC tSignals.OutArc 0 3 0x00300001
 ! PROCEDURE OutArc(p, q: Sig);
 !   OutName(p); Out.String(" -> "); OutName(q); Out.Ln
 LDLW 12
@@ -552,7 +552,7 @@ CALL 0
 RETURN
 END
 
-PROC tSignals.Print 0 5 0x00100001
+PROC tSignals.Print 0 3 0x00100001
 ! PROCEDURE Print(p: Sig);
 !   OutName(p); Out.String('[label="'); 
 LDLW 12
@@ -712,7 +712,7 @@ ERROR E_CASE 94
 RETURN
 END
 
-PROC tSignals.Mark 0 5 0x00100001
+PROC tSignals.Mark 0 3 0x00100001
 ! PROCEDURE Mark(s: Sig);
 !   IF (s # NIL) & ~s.marked THEN
 LDLW 12
@@ -743,7 +743,7 @@ LABEL L34
 RETURN
 END
 
-PROC tSignals.PrintMarked 8 5 0
+PROC tSignals.PrintMarked 8 4 0
 ! PROCEDURE PrintMarked;
 !   FOR i := 0 TO sp-1 DO
 LDGW tSignals.sp
@@ -791,7 +791,7 @@ LABEL L37
 RETURN
 END
 
-PROC tSignals.Check 12 5 0
+PROC tSignals.Check 12 3 0
 ! PROCEDURE Check;
 !   notx := Bit.Xor(xxx, 0FFH); 
 CONST 255
@@ -982,7 +982,7 @@ LABEL L47
 RETURN
 END
 
-PROC tSignals.%main 0 5 0
+PROC tSignals.%main 0 2 0
 !   sp := 0;
 CONST 0
 STGW tSignals.sp

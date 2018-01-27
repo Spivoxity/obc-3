@@ -497,7 +497,7 @@ CALL 0
 RETURN
 END
 
-PROC tSystolic07.Max 4 3 0
+PROC tSystolic07.Max 4 2 0
 ! PROCEDURE Max(x, y: INTEGER): INTEGER;
 !   IF x >= y THEN r := x ELSE r := y END
 LDLW 12
@@ -515,7 +515,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSystolic07.Min 4 3 0
+PROC tSystolic07.Min 4 2 0
 ! PROCEDURE Min(x, y: INTEGER): INTEGER;
 !   IF x <= y THEN r := x ELSE r := y END
 LDLW 12
@@ -845,7 +845,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSystolic07.StepInj 4 7 0x00110001
+PROC tSystolic07.StepInj 4 4 0x00110001
 ! PROCEDURE StepInj(self0: Process);
 !   self := self0(Injector);
 LDLW 12
@@ -970,7 +970,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSystolic07.StepComp 4 7 0x00110001
+PROC tSystolic07.StepComp 4 4 0x00110001
 ! PROCEDURE StepComp(self0: Process);
 !   self := self0(Comparator);
 LDLW 12
@@ -1118,7 +1118,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tSystolic07.StepColl 4 7 0x00110001
+PROC tSystolic07.StepColl 4 4 0x00110001
 ! PROCEDURE StepColl(self0: Process);
 !   self := self0(Collector);
 LDLW 12
@@ -1196,7 +1196,7 @@ LABEL L69
 RETURN
 END
 
-PROC tSystolic07.Build 4 7 0
+PROC tSystolic07.Build 4 4 0
 ! PROCEDURE Build;
 !   FOR i := 0 TO N DO chan[i] := MakeChannel(i) END;
 CONST 0
@@ -1262,7 +1262,7 @@ STNW 44
 RETURN
 END
 
-PROC tSystolic07.RunSim 4 7 0
+PROC tSystolic07.RunSim 4 3 0
 ! PROCEDURE RunSim;
 !   t := 0;
 CONST 0
@@ -1315,7 +1315,7 @@ LABEL L83
 RETURN
 END
 
-PROC tSystolic07.%main 0 7 0
+PROC tSystolic07.%main 0 1 0
 !   Build;
 GLOBAL tSystolic07.Build
 CALL 0

@@ -118,7 +118,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tTypeCase07.%main 0 4 0
+PROC tTypeCase07.%main 0 3 0
 !   NEW(p); NEW(q);
 CONST 0
 GLOBAL tTypeCase07.Empty

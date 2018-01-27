@@ -133,7 +133,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tFibTree07.Print 0 3 0x00100001
+PROC tFibTree07.Print 0 2 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
 LDLW 12

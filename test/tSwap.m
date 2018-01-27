@@ -122,7 +122,7 @@ CALL 0
 RETURN
 END
 
-PROC tSwap.two 20 6 0
+PROC tSwap.two 20 5 0
 ! PROCEDURE two;
 !   i := 2;
 CONST 2
@@ -178,7 +178,7 @@ CALL 0
 RETURN
 END
 
-PROC tSwap.three 12 6 0x0001c001
+PROC tSwap.three 12 4 0x0001c001
 ! PROCEDURE three;
 !   NEW(p); NEW(q);
 CONST 8
@@ -257,7 +257,7 @@ CALL 0
 RETURN
 END
 
-PROC tSwap.%main 0 6 0
+PROC tSwap.%main 0 1 0
 !   one; two; three
 GLOBAL tSwap.one
 CALL 0

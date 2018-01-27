@@ -208,7 +208,7 @@ STNW 4
 RETURN
 END
 
-PROC tIter07.Length 4 4 0x00110001
+PROC tIter07.Length 4 3 0x00110001
 ! PROCEDURE Length(p: List): INTEGER;
 !   NEW(c); c.visit := CVisit; c.count := 0;
 CONST 8
@@ -281,7 +281,7 @@ STNW 4
 RETURN
 END
 
-PROC tIter07.Reverse 4 4 0x00110001
+PROC tIter07.Reverse 4 3 0x00110001
 ! PROCEDURE Reverse(p: List): List;
 !   NEW(r); r.visit := RVisit; r.list := NIL;
 CONST 8
@@ -309,7 +309,7 @@ LDNW 4
 RETURNW
 END
 
-PROC tIter07.PVisit 0 4 0x00100001
+PROC tIter07.PVisit 0 3 0x00100001
 ! PROCEDURE PVisit(self: Visitor; n: INTEGER);
 !   Out.Int(n, 0)
 CONST 0
@@ -319,7 +319,7 @@ CALL 2
 RETURN
 END
 
-PROC tIter07.Print 4 4 0x00110001
+PROC tIter07.Print 4 3 0x00110001
 ! PROCEDURE Print(p: List);
 !   NEW(v); v.visit := PVisit;
 CONST 4
@@ -339,7 +339,7 @@ CALL 2
 RETURN
 END
 
-PROC tIter07.Main 4 4 0x00010001
+PROC tIter07.Main 4 3 0x00010001
 ! PROCEDURE Main;
 !   p := MakeList("31415926");
 CONST 9
@@ -367,7 +367,7 @@ CALL 0
 RETURN
 END
 
-PROC tIter07.%main 0 4 0
+PROC tIter07.%main 0 1 0
 !   Main
 GLOBAL tIter07.Main
 CALL 0

@@ -172,7 +172,7 @@ LABEL L4
 RETURN
 END
 
-PROC tQSet.print 4 6 0x00100001
+PROC tQSet.print 4 4 0x00100001
 ! PROCEDURE print(VAR choice: board);
 !   x := 0;
 CONST 0

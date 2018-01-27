@@ -290,7 +290,7 @@ CALL 0
 RETURN
 END
 
-PROC tQuicksort.%main 0 4 0
+PROC tQuicksort.%main 0 1 0
 !   Test
 GLOBAL tQuicksort.Test
 CALL 0

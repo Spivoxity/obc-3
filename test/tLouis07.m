@@ -108,7 +108,7 @@ ERROR E_CASE 9
 RETURN
 END
 
-PROC tLouis07.test 8 4 0x00018001
+PROC tLouis07.test 8 3 0x00018001
 ! PROCEDURE test;
 !   NEW(p1); p1.stuff1 := 3; b(p1);
 CONST 4
@@ -139,7 +139,7 @@ CALL 1
 RETURN
 END
 
-PROC tLouis07.%main 0 4 0
+PROC tLouis07.%main 0 1 0
 !   test
 GLOBAL tLouis07.test
 CALL 0

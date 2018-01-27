@@ -340,7 +340,7 @@ CALL 0
 RETURN
 END
 
-PROC tSort.%main 0 3 0
+PROC tSort.%main 0 1 0
 !   Test 
 GLOBAL tSort.Test
 CALL 0

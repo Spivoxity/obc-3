@@ -388,7 +388,7 @@ LABEL L32
 RETURN
 END
 
-PROC tPower.%6.print 8 5 0x00008001
+PROC tPower.%6.print 8 3 0x00008001
 !   PROCEDURE print;
 SAVELINK
 !     p := ss;
@@ -688,7 +688,7 @@ CALL 0
 RETURN
 END
 
-PROC tPower.%main 0 9 0
+PROC tPower.%main 0 2 0
 !     n := 15;
 CONST 15
 STGW tPower.n

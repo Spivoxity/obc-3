@@ -342,7 +342,7 @@ STNW -4
 RETURN
 END
 
-PROC tCDown2.%12.Walk 28 5 0x00100001
+PROC tCDown2.%12.Walk 28 4 0x00100001
 !   PROCEDURE Walk(e: blobptr; p: INTEGER);
 SAVELINK
 !     IF e.op = Const THEN
@@ -472,7 +472,7 @@ LABEL L19
 RETURN
 END
 
-PROC tCDown2.Grind 4 5 0x00300001
+PROC tCDown2.Grind 4 3 0x00300001
 ! PROCEDURE Grind(e0: blobptr; VAR buf: ARRAY OF CHAR);
 !   pos := 0;
 CONST 0
@@ -979,7 +979,7 @@ LABEL L66
 RETURN
 END
 
-PROC tCDown2.Main 52 6 0
+PROC tCDown2.Main 52 4 0
 ! PROCEDURE Main;
 !   n := 6;
 CONST 6
@@ -1099,7 +1099,7 @@ END
 
 PRIMDEF tCDown2.GcDebug gc_debug VX
 
-PROC tCDown2.%main 0 6 0
+PROC tCDown2.%main 0 3 0
 !   GcDebug("gs");
 CONST 3
 GLOBAL tCDown2.%9

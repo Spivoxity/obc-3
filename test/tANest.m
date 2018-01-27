@@ -51,7 +51,7 @@ CALL 0
 RETURN
 END
 
-PROC tANest.f 40 4 0
+PROC tANest.f 40 3 0
 ! PROCEDURE f(i: INTEGER; a: row);
 LOCAL -40
 LDLW 16

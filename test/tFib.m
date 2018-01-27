@@ -67,7 +67,7 @@ CALL 0
 RETURN
 END
 
-PROC tFib.%main 0 3 0
+PROC tFib.%main 0 1 0
 !   Main
 GLOBAL tFib.Main
 CALL 0

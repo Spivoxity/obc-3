@@ -202,7 +202,7 @@ LABEL L5
 RETURN
 END
 
-PROC tSelect.Swap 4 4 0x00300001
+PROC tSelect.Swap 4 2 0x00300001
 ! PROCEDURE Swap(VAR a, b: INTEGER);
 !   t := a; a := b; b := t
 LDLW 12
@@ -380,7 +380,7 @@ CALLW 3
 RETURNW
 END
 
-PROC tSelect.Select2 4 4 0
+PROC tSelect.Select2 4 3 0
 ! PROCEDURE Select2(k, m, n: INTEGER): INTEGER;
 LABEL L26
 !     IF n - m = 1 THEN

@@ -270,7 +270,7 @@ CONST 1
 RETURNW
 END
 
-PROC tWild.Test 4 7 0
+PROC tWild.Test 4 5 0
 ! PROCEDURE Test(patt, text: ARRAY OF CHAR; exp: BOOLEAN);
 LOCAL 12
 LDLW 16
@@ -337,7 +337,7 @@ CALL 0
 RETURN
 END
 
-PROC tWild.%main 0 7 0
+PROC tWild.%main 0 6 0
 !   Test("foo", "foo", TRUE);
 CONST 1
 ALIGNC

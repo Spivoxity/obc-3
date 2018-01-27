@@ -69,7 +69,7 @@ CALL 0
 RETURN
 END
 
-PROC tOver07.%main 0 5 0
+PROC tOver07.%main 0 4 0
 !   s := 1; n := 2; f := FLT(3); d := FLT(4);
 CONST 1
 STGS tOver07.s

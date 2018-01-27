@@ -262,7 +262,7 @@ CALLD 2
 RETURND
 END
 
-PROC Planner.Hash 8 6 0x00100001
+PROC Planner.Hash 8 4 0x00100001
 ! PROCEDURE Hash(VAR name: word): INTEGER;
 LINE 93
 !   h := 0; i := 0;
@@ -307,7 +307,7 @@ LDLW -4
 RETURNW
 END
 
-PROC Planner.Lookup 8 6 0x00108001
+PROC Planner.Lookup 8 5 0x00108001
 ! PROCEDURE Lookup(VAR name: word): town;
 LINE 105
 !   h := Hash(name);
@@ -365,7 +365,7 @@ CONST 0
 RETURNW
 END
 
-PROC Planner.AddTown 8 6 0x00108001
+PROC Planner.AddTown 8 4 0x00108001
 ! PROCEDURE AddTown(VAR name: word; x, y: R);
 LINE 119
 !   h := Hash(name);
@@ -456,7 +456,7 @@ STIW
 RETURN
 END
 
-PROC Planner.AddRoad 16 6 0x0031e001
+PROC Planner.AddRoad 16 5 0x0031e001
 ! PROCEDURE AddRoad(VAR name1, name2: word; leng: R);
 LINE 135
 !   t1 := Lookup(name1); t2 := Lookup(name2);
@@ -569,7 +569,7 @@ STNW 24
 RETURN
 END
 
-PROC Planner.InitQueue 0 6 0
+PROC Planner.InitQueue 0 4 0
 ! PROCEDURE InitQueue();
 LINE 159
 !   NEW(qhead);
@@ -601,7 +601,7 @@ STNW 32
 RETURN
 END
 
-PROC Planner.ClearQueue 0 6 0
+PROC Planner.ClearQueue 0 3 0
 ! PROCEDURE ClearQueue();
 LINE 168
 !   qhead.Tnext := qhead;
@@ -619,7 +619,7 @@ STNW 32
 RETURN
 END
 
-PROC Planner.Enqueue 8 6 0x00118001
+PROC Planner.Enqueue 8 4 0x00118001
 ! PROCEDURE Enqueue(t: town);
 LINE 175
 !      p := qhead.Tprev;
@@ -675,7 +675,7 @@ STNW 32
 RETURN
 END
 
-PROC Planner.Delmin 8 6 0x00018001
+PROC Planner.Delmin 8 3 0x00018001
 ! PROCEDURE Delmin(): town;
 LINE 190
 !      p := qhead.Tnext;
@@ -714,7 +714,7 @@ LDLW -4
 RETURNW
 END
 
-PROC Planner.Requeue 8 6 0x00118001
+PROC Planner.Requeue 8 4 0x00118001
 ! PROCEDURE Requeue(t: town);
 LINE 201
 !      p := t.Tprev; q := t.Tnext;
@@ -784,7 +784,7 @@ STNW 32
 RETURN
 END
 
-PROC Planner.Init 8 6 0x00308001
+PROC Planner.Init 8 4 0x00308001
 ! PROCEDURE Init(src, dst: town; heur: BOOLEAN);
 LINE 217
 !   ClearQueue();
@@ -855,7 +855,7 @@ STGC Planner.hflag
 RETURN
 END
 
-PROC Planner.ShowLink 0 6 0x00100001
+PROC Planner.ShowLink 0 3 0x00100001
 ! PROCEDURE ShowLink(t: town; colour: ARRAY OF CHAR);
 LINE 237
 LOCAL 16
@@ -906,7 +906,7 @@ CALL 0
 RETURN
 END
 
-PROC Planner.VisitNeighbours 16 6 0x00118001
+PROC Planner.VisitNeighbours 16 5 0x00118001
 ! PROCEDURE VisitNeighbours(t: town);
 LINE 245
 !   r := t.Troads;
@@ -1041,7 +1041,7 @@ LABEL L69
 RETURN
 END
 
-PROC Planner.Search 20 6 0x0031c001
+PROC Planner.Search 20 5 0x0031c001
 ! PROCEDURE Search(VAR sname, dname: word; heur: BOOLEAN);
 LINE 277
 !   src := Lookup(sname);
@@ -1339,7 +1339,7 @@ LABEL L94
 RETURN
 END
 
-PROC Planner.%main 0 7 0
+PROC Planner.%main 0 1 0
 !   Main()
 LINE 346
 GLOBAL Planner.Main

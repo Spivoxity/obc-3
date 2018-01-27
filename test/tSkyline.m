@@ -441,7 +441,7 @@ CALL 0
 RETURN
 END
 
-PROC tSkyline.%main 0 6 0
+PROC tSkyline.%main 0 2 0
 !   Test1;
 GLOBAL tSkyline.Test1
 CALL 0

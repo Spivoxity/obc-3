@@ -62,7 +62,7 @@ CALL 0
 RETURN
 END
 
-PROC tDblAlign.%main 0 3 0
+PROC tDblAlign.%main 0 1 0
 !   P
 GLOBAL tDblAlign.P
 CALL 0

@@ -256,7 +256,7 @@ CALLW 4
 RETURNW
 END
 
-PROC tGC5.Ordered 0 5 0x00100001
+PROC tGC5.Ordered 0 4 0x00100001
 ! PROCEDURE Ordered(t: tree; lo, hi: INTEGER): BOOLEAN;
 !   IF t = NIL THEN
 LDLW 12
@@ -307,7 +307,7 @@ PRIMDEF tGC5.GcDebug gc_debug VX
 
 PRIMDEF tGC5.GcHeapSize gc_heap_size I
 
-PROC tGC5.%main 0 5 0
+PROC tGC5.%main 0 4 0
 !   GcDebug("s");
 CONST 2
 GLOBAL tGC5.%2

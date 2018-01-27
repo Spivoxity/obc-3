@@ -112,7 +112,7 @@ LABEL L2
 RETURN
 END
 
-PROC tLaminae.Solve 16 4 0
+PROC tLaminae.Solve 16 3 0
 ! PROCEDURE Solve(x: INTEGER): INTEGER;
 !   n := 0;
 CONST 0
@@ -164,7 +164,7 @@ LDLW -12
 RETURNW
 END
 
-PROC tLaminae.%main 0 4 0
+PROC tLaminae.%main 0 3 0
 !   Out.Int(Solve(8), 0); Out.Ln;
 CONST 0
 CONST 8

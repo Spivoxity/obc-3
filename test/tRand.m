@@ -475,7 +475,7 @@ PLUS
 RETURNW
 END
 
-PROC tRand.%main 0 5 0
+PROC tRand.%main 0 4 0
 !   u[3] := 0; u[2] := 0; u[1] := 3141; u[0] := 5926;
 CONST 0
 GLOBAL tRand.u

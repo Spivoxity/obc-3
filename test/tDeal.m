@@ -306,7 +306,7 @@ LABEL L18
 RETURN
 END
 
-PROC tDeal.%main 0 5 0
+PROC tDeal.%main 0 1 0
 !   Main
 GLOBAL tDeal.Main
 CALL 0

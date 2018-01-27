@@ -212,7 +212,7 @@ CALLW 4
 RETURNW
 END
 
-PROC tFibTree3.Build 0 5 0
+PROC tFibTree3.Build 0 3 0
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -238,7 +238,7 @@ CALLW 2
 RETURNW
 END
 
-PROC tFibTree3.Print 0 5 0x00100001
+PROC tFibTree3.Print 0 4 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
@@ -321,7 +321,7 @@ END
 
 PRIMDEF tFibTree3.GcDebug gc_debug VX
 
-PROC tFibTree3.%main 0 5 0
+PROC tFibTree3.%main 0 3 0
 !   GcDebug("s");
 CONST 2
 GLOBAL tFibTree3.%2

@@ -69,7 +69,7 @@ CALL 0
 RETURN
 END
 
-PROC tOver.%main 0 5 0
+PROC tOver.%main 0 4 0
 !   s := 1; n := 2; f := 3; d := 4;
 CONST 1
 STGS tOver.s

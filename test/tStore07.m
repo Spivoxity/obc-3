@@ -292,7 +292,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tStore07.Test 8 6 0
+PROC tStore07.Test 8 4 0
 ! PROCEDURE Test;
 !   Out.Int(Recall("mike"), 5); Out.Int(Recall("abel"), 5); Out.Ln;
 CONST 5
@@ -414,7 +414,7 @@ LABEL L26
 RETURN
 END
 
-PROC tStore07.%main 0 6 0
+PROC tStore07.%main 0 1 0
 !   Test
 GLOBAL tStore07.Test
 CALL 0

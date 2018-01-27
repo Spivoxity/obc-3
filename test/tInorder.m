@@ -156,7 +156,7 @@ LABEL L5
 RETURN
 END
 
-PROC tInorder.RandTree 4 4 0x00010001
+PROC tInorder.RandTree 4 3 0x00010001
 ! PROCEDURE RandTree(depth: INTEGER): Tree;
 !   IF Random.Roll(8) < depth THEN RETURN NIL END;
 CONST 8
@@ -201,7 +201,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tInorder.%main 0 4 0
+PROC tInorder.%main 0 2 0
 !   t := RandTree(0);
 CONST 0
 GLOBAL tInorder.RandTree

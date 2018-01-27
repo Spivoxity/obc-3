@@ -121,7 +121,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tFibTree2.Left 0 4 0x00100001
+PROC tFibTree2.Left 0 3 0x00100001
 ! PROCEDURE Left(t: tree): tree; BEGIN RETURN t[0].b[3] END Left;
 LDLW 12
 NCHECK 17
@@ -129,7 +129,7 @@ LDNW 16
 RETURNW
 END
 
-PROC tFibTree2.Right 0 4 0x00100001
+PROC tFibTree2.Right 0 3 0x00100001
 ! PROCEDURE Right(t: tree): tree; BEGIN RETURN t[6].b[2] END Right;
 LDLW 12
 NCHECK 18
@@ -137,7 +137,7 @@ LDNW 132
 RETURNW
 END
 
-PROC tFibTree2.Build 0 4 0
+PROC tFibTree2.Build 0 3 0
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -166,7 +166,7 @@ CALLW 2
 RETURNW
 END
 
-PROC tFibTree2.Print 0 4 0x00100001
+PROC tFibTree2.Print 0 2 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
@@ -203,7 +203,7 @@ CALL 1
 RETURN
 END
 
-PROC tFibTree2.count 0 4 0x00100001
+PROC tFibTree2.count 0 3 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
@@ -229,7 +229,7 @@ END
 
 PRIMDEF tFibTree2.GcDebug gc_debug VX
 
-PROC tFibTree2.%main 0 4 0
+PROC tFibTree2.%main 0 3 0
 !   GcDebug("gs");
 CONST 3
 GLOBAL tFibTree2.%1

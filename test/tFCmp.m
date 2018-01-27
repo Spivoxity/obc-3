@@ -74,7 +74,7 @@ LT
 RETURNW
 END
 
-PROC tFCmp.PBool 0 5 0
+PROC tFCmp.PBool 0 3 0
 ! PROCEDURE PBool(b: BOOLEAN);
 !   IF b THEN
 LDLC 12

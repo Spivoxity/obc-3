@@ -103,7 +103,7 @@ LDLD 12
 RETURND
 END
 
-PROC tPythag.%main 0 6 0
+PROC tPythag.%main 0 5 0
 !   Out.LongReal(Pythag(1, 1)); Out.Ln;
 DCONST 1.0
 DCONST 1.0

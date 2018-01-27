@@ -161,7 +161,7 @@ CONVQN
 RETURNW
 END
 
-PROC tRand64.%main 0 4 0
+PROC tRand64.%main 0 3 0
 !   u := 31415926;
 QCONST 31415926
 STGQ tRand64.u

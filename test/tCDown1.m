@@ -440,7 +440,7 @@ LABEL L17
 RETURN
 END
 
-PROC tCDown1.Grind 4 5 0x00200001
+PROC tCDown1.Grind 4 3 0x00200001
 ! PROCEDURE Grind(e0: INTEGER; VAR buf: buffer);
 !   pos := 0;
 CONST 0
@@ -958,7 +958,7 @@ LABEL L41
 RETURN
 END
 
-PROC tCDown1.Search 24 5 0
+PROC tCDown1.Search 24 4 0
 ! PROCEDURE Search(n: INTEGER);
 !   Out.String("To make "); Out.Int(target, 0); Out.String(" from");
 CONST 9
@@ -1144,7 +1144,7 @@ CALL 0
 RETURN
 END
 
-PROC tCDown1.Main 4 5 0
+PROC tCDown1.Main 4 4 0
 ! PROCEDURE Main;
 !   n := 6;
 CONST 6
@@ -1179,7 +1179,7 @@ CALL 1
 RETURN
 END
 
-PROC tCDown1.%main 0 5 0
+PROC tCDown1.%main 0 1 0
 !   Main
 GLOBAL tCDown1.Main
 CALL 0

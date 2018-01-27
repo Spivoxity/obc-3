@@ -334,7 +334,7 @@ CALL 0
 RETURN
 END
 
-PROC tSort07.%main 0 3 0
+PROC tSort07.%main 0 1 0
 !   Test 
 GLOBAL tSort07.Test
 CALL 0

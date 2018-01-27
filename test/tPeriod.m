@@ -176,7 +176,7 @@ MINUS
 RETURNW
 END
 
-PROC tPeriod.%main 0 5 0
+PROC tPeriod.%main 0 4 0
 !   Out.Int(Period("RUDOLFRUDOLRRUDO"), 0); Out.Ln
 CONST 0
 CONST 17

@@ -902,7 +902,7 @@ LABEL L24
 RETURN
 END
 
-PROC tSudoku.Cover 8 7 0x00118001
+PROC tSudoku.Cover 8 3 0x00118001
 ! PROCEDURE Cover(p: Column);
 !   p.covered := TRUE;
 CONST 1
@@ -994,7 +994,7 @@ LABEL L31
 RETURN
 END
 
-PROC tSudoku.Uncover 8 7 0x00118001
+PROC tSudoku.Uncover 8 3 0x00118001
 ! PROCEDURE Uncover(p: Column);
 !   p.prev.next := p; p.next.prev := p;
 LDLW 12
@@ -1078,7 +1078,7 @@ STIC
 RETURN
 END
 
-PROC tSudoku.ChooseColumn 8 7 0x00018001
+PROC tSudoku.ChooseColumn 8 3 0x00018001
 ! PROCEDURE ChooseColumn(): Column;
 !   col := root.next;
 LDGW tSudoku.root
@@ -1118,7 +1118,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tSudoku.PrintState 104 7 0x00002001
+PROC tSudoku.PrintState 104 5 0x00002001
 ! PROCEDURE PrintState(level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -1255,7 +1255,7 @@ LABEL L57
 RETURN
 END
 
-PROC tSudoku.Solve 12 7 0x0001c001
+PROC tSudoku.Solve 12 4 0x0001c001
 ! PROCEDURE Solve(level: INTEGER);
 !   IF root.next = root THEN
 LDGW tSudoku.root
@@ -1385,7 +1385,7 @@ CALL 1
 RETURN
 END
 
-PROC tSudoku.ChooseRow 4 7 0x00310001
+PROC tSudoku.ChooseRow 4 4 0x00310001
 ! PROCEDURE ChooseRow(VAR level: INTEGER; p: Cell);
 !   choice[level] := p; INC(level);
 LDLW 16
@@ -1443,7 +1443,7 @@ JNEQ L73
 RETURN
 END
 
-PROC tSudoku.Input 16 7 0x00100001
+PROC tSudoku.Input 16 4 0x00100001
 ! PROCEDURE Input(VAR level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -1520,7 +1520,7 @@ LABEL L79
 RETURN
 END
 
-PROC tSudoku.%main 0 7 0
+PROC tSudoku.%main 0 2 0
 !   MakePuzzle;
 GLOBAL tSudoku.MakePuzzle
 CALL 0

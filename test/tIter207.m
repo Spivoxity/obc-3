@@ -198,7 +198,7 @@ LABEL L6
 RETURN
 END
 
-PROC tIter207.CRec.Visit 0 4 0x00100001
+PROC tIter207.CRec.Visit 0 3 0x00100001
 ! PROCEDURE (self: Counter) Visit(n: INTEGER);
 !   self.count := self.count+1
 LDLW 12
@@ -211,7 +211,7 @@ STOREW
 RETURN
 END
 
-PROC tIter207.Length 4 4 0x00110001
+PROC tIter207.Length 4 3 0x00110001
 ! PROCEDURE Length(p: List): INTEGER;
 !   NEW(c); c.count := 0;
 CONST 4
@@ -235,7 +235,7 @@ LOADW
 RETURNW
 END
 
-PROC tIter207.RRec.Visit 4 4 0x00110001
+PROC tIter207.RRec.Visit 4 3 0x00110001
 ! PROCEDURE (self: Reverser) Visit(n: INTEGER);
 !   NEW(p); p.head := n; p.tail := self.list; self.list := p
 CONST 8
@@ -260,7 +260,7 @@ STOREW
 RETURN
 END
 
-PROC tIter207.Reverse 4 4 0x00110001
+PROC tIter207.Reverse 4 3 0x00110001
 ! PROCEDURE Reverse(p: List): List;
 !   NEW(r); r.list := NIL;
 CONST 4
@@ -284,7 +284,7 @@ LOADW
 RETURNW
 END
 
-PROC tIter207.Main 4 4 0x00010001
+PROC tIter207.Main 4 3 0x00010001
 ! PROCEDURE Main;
 !   p := MakeList("31415926");
 CONST 9
@@ -312,7 +312,7 @@ CALL 0
 RETURN
 END
 
-PROC tIter207.%main 0 4 0
+PROC tIter207.%main 0 1 0
 !   Main
 GLOBAL tIter207.Main
 CALL 0

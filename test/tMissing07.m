@@ -233,7 +233,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tMissing07.Swap 4 4 0x00300001
+PROC tMissing07.Swap 4 2 0x00300001
 ! PROCEDURE Swap(VAR x, y: INTEGER);
 !   t := x; x := y; y := t
 LDLW 12
@@ -516,7 +516,7 @@ CALL 0
 RETURN
 END
 
-PROC tMissing07.%main 0 4 0
+PROC tMissing07.%main 0 1 0
 !   Test
 GLOBAL tMissing07.Test
 CALL 0

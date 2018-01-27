@@ -266,7 +266,7 @@ END
 
 PRIMDEF tGC3.GcHeapSize gc_heap_size I
 
-PROC tGC3.%main 0 4 0
+PROC tGC3.%main 0 3 0
 !   Build(K); Print;
 CONST 500000
 GLOBAL tGC3.Build

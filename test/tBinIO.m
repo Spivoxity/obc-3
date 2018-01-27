@@ -125,7 +125,7 @@ LABEL L5
 RETURN
 END
 
-PROC tBinIO.WriteBin 0 5 0x00300001
+PROC tBinIO.WriteBin 0 4 0x00300001
 ! PROCEDURE WriteBin(f: Files.File; VAR x: ARRAY OF ARRAY OF INTEGER);
 !   Files.Write(f, x)
 LDLW 16
@@ -141,7 +141,7 @@ CALL 3
 RETURN
 END
 
-PROC tBinIO.ReadBin 0 5 0x00300001
+PROC tBinIO.ReadBin 0 4 0x00300001
 ! PROCEDURE ReadBin(f: Files.File; VAR x: ARRAY OF ARRAY OF INTEGER);
 !   Files.Read(f, x)
 LDLW 16

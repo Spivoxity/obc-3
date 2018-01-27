@@ -42,7 +42,7 @@ STGW tLocProc.p
 RETURN
 END
 
-PROC tLocProc.%1.R 4 2 0
+PROC tLocProc.%1.R 4 0 0
 !   PROCEDURE R; END R;
 SAVELINK
 RETURN
@@ -58,7 +58,7 @@ CALL 2
 RETURN
 END
 
-PROC tLocProc.%main 0 3 0
+PROC tLocProc.%main 0 1 0
 !   Q
 GLOBAL tLocProc.Q
 CALL 0

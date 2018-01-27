@@ -78,7 +78,7 @@ PLUS
 RETURNW
 END
 
-PROC tRecurse.Sumorial 0 5 0
+PROC tRecurse.Sumorial 0 3 0
 ! PROCEDURE Sumorial(n: INTEGER): INTEGER;
 !   IF n = 0 THEN
 LDLW 12

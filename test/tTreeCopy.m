@@ -362,7 +362,7 @@ LDLW -16
 RETURNW
 END
 
-PROC tTreeCopy.FlatPrint 0 4 0x00100001
+PROC tTreeCopy.FlatPrint 0 3 0x00100001
 ! PROCEDURE FlatPrint(t: Tree);
 !   IF t # NIL THEN
 LDLW 12
@@ -390,7 +390,7 @@ LABEL L22
 RETURN
 END
 
-PROC tTreeCopy.PrintFlat 4 4 0x00110001
+PROC tTreeCopy.PrintFlat 4 3 0x00110001
 ! PROCEDURE PrintFlat(t: Tree);
 LABEL L23
 !   WHILE t # NIL DO
@@ -440,7 +440,7 @@ LABEL L25
 RETURN
 END
 
-PROC tTreeCopy.Test 8 4 0x00018001
+PROC tTreeCopy.Test 8 2 0x00018001
 ! PROCEDURE Test;
 !   t := RandTree(0);
 CONST 0
@@ -479,7 +479,7 @@ CALL 0
 RETURN
 END
 
-PROC tTreeCopy.%main 0 4 0
+PROC tTreeCopy.%main 0 1 0
 !   Test
 GLOBAL tTreeCopy.Test
 CALL 0

@@ -46,7 +46,7 @@ CALL 0
 RETURN
 END
 
-PROC tFlexAss07.%main 0 7 0
+PROC tFlexAss07.%main 0 3 0
 !   Print("Hello world")
 CONST 12
 GLOBAL tFlexAss07.%1

@@ -205,7 +205,7 @@ LABEL L5
 RETURN
 END
 
-PROC tSelect07.Swap 4 4 0x00300001
+PROC tSelect07.Swap 4 2 0x00300001
 ! PROCEDURE Swap(VAR a, b: INTEGER);
 !   t := a; a := b; b := t
 LDLW 12
@@ -390,7 +390,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tSelect07.Select2 12 4 0
+PROC tSelect07.Select2 12 3 0
 ! PROCEDURE Select2(k, m, n: INTEGER): INTEGER;
 !   done := FALSE;
 CONST 0

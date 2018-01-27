@@ -63,7 +63,7 @@ STOREW
 RETURN
 END
 
-PROC tBomb.q1 0 3 0
+PROC tBomb.q1 0 2 0
 ! PROCEDURE q1(n: INTEGER);
 !   IF n = 0 THEN p ELSE q2(n-1) END
 LDLW 12
@@ -79,7 +79,7 @@ CALL 1
 RETURN
 END
 
-PROC tBomb.q2 0 3 0
+PROC tBomb.q2 0 2 0
 ! PROCEDURE q2(n: INTEGER);
 !   IF n = 0 THEN p ELSE q3(n-1) END
 LDLW 12
@@ -95,7 +95,7 @@ CALL 1
 RETURN
 END
 
-PROC tBomb.q3 0 3 0
+PROC tBomb.q3 0 2 0
 ! PROCEDURE q3(n: INTEGER);
 !   IF n = 0 THEN p ELSE q1(n-1) END
 LDLW 12
@@ -111,7 +111,7 @@ CALL 1
 RETURN
 END
 
-PROC tBomb.%main 0 3 0
+PROC tBomb.%main 0 2 0
 !   q1(100)
 CONST 100
 GLOBAL tBomb.q1

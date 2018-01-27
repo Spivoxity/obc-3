@@ -212,7 +212,7 @@ CALL 1
 RETURN
 END
 
-PROC tChange.PrintPiece 4 4 0
+PROC tChange.PrintPiece 4 3 0
 ! PROCEDURE PrintPiece(x: INTEGER);
 !   m := M;
 CONST 1000000000

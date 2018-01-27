@@ -199,7 +199,7 @@ CALL 3
 RETURN
 END
 
-PROC tDigits07.%main 0 4 0
+PROC tDigits07.%main 0 1 0
 !   Main
 GLOBAL tDigits07.Main
 CALL 0

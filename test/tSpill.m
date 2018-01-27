@@ -174,7 +174,7 @@ CALL 12
 RETURN
 END
 
-PROC tSpill.%main 0 13 0
+PROC tSpill.%main 0 7 0
 !   p := 3; q := 1; r := 2;
 CONST 3
 STGW tSpill.p

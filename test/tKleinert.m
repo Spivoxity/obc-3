@@ -87,7 +87,7 @@ STLW -8
 RETURN
 END
 
-PROC tKleinert.%main 0 5 0
+PROC tKleinert.%main 0 3 0
 !   Generate(tstArr);
 CONST 4
 GLOBAL tKleinert.tstArr

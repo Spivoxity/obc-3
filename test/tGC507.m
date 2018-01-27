@@ -267,7 +267,7 @@ LDLW 16
 RETURNW
 END
 
-PROC tGC507.Ordered 0 5 0x00100001
+PROC tGC507.Ordered 0 4 0x00100001
 ! PROCEDURE Ordered(t: tree; lo, hi: INTEGER): BOOLEAN;
 !   (t = NIL) OR ((lo <= t.key) & (t.key < hi) 
 LDLW 12
@@ -315,7 +315,7 @@ PRIMDEF tGC507.GcDebug gc_debug VX
 
 PRIMDEF tGC507.GcHeapSize gc_heap_size I
 
-PROC tGC507.%main 0 5 0
+PROC tGC507.%main 0 4 0
 !   GcDebug("s");
 CONST 2
 GLOBAL tGC507.%2

@@ -581,7 +581,7 @@ LABEL L28
 RETURN
 END
 
-PROC tBrack07.Tabulate 28 7 0x00100001
+PROC tBrack07.Tabulate 28 4 0x00100001
 ! PROCEDURE Tabulate(s: ARRAY OF CHAR);
 !   Init(s);
 LDLW 16
@@ -650,7 +650,7 @@ LABEL L41
 RETURN
 END
 
-PROC tBrack07.Eval 4 7 0x00100001
+PROC tBrack07.Eval 4 4 0x00100001
 ! PROCEDURE Eval(e: Exp): INTEGER;
 !   IF e.rator = STAR THEN
 LDLW 12
@@ -692,7 +692,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tBrack07.Print 0 7 0x00100001
+PROC tBrack07.Print 0 2 0x00100001
 ! PROCEDURE Print(e: Exp);
 !   IF e.rator = STAR THEN
 LDLW 12
@@ -734,7 +734,7 @@ CALL 1
 RETURN
 END
 
-PROC tBrack07.Test 4 7 0x00100001
+PROC tBrack07.Test 4 5 0x00100001
 ! PROCEDURE Test(s: ARRAY OF CHAR);
 !   Out.String(s); Out.Ln;
 LDLW 16
@@ -869,7 +869,7 @@ LABEL L53
 RETURN
 END
 
-PROC tBrack07.%main 0 7 0
+PROC tBrack07.%main 0 5 0
 !   op[A,A] := B; op[A,B] := B; op[A,C] := A;
 CONST 1
 STGW tBrack07.op

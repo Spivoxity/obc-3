@@ -762,7 +762,7 @@ CALL 0
 RETURN
 END
 
-PROC tPermute07.Main 4 4 0
+PROC tPermute07.Main 4 2 0
 ! PROCEDURE Main;
 !   FOR n := 0 TO 99 DO Test END
 CONST 0
@@ -779,7 +779,7 @@ LABEL L42
 RETURN
 END
 
-PROC tPermute07.%main 0 4 0
+PROC tPermute07.%main 0 1 0
 !   Main
 GLOBAL tPermute07.Main
 CALL 0

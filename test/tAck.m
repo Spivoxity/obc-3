@@ -265,7 +265,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tAck.%main 0 5 0
+PROC tAck.%main 0 4 0
 !   Out.Int(Ack(4,1), 0); Out.Ln;
 CONST 0
 CONST 1

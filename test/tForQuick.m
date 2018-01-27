@@ -224,7 +224,7 @@ LABEL L12
 RETURN
 END
 
-PROC tForQuick.%main 0 5 0
+PROC tForQuick.%main 0 1 0
 !   Main
 GLOBAL tForQuick.Main
 CALL 0

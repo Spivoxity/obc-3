@@ -64,7 +64,7 @@ QPLUS
 RETURNQ
 END
 
-PROC tLongReg.%main 0 7 0
+PROC tLongReg.%main 0 5 0
 !   b[0] := 37;
 CONST 37
 CONVNQ

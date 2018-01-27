@@ -36,7 +36,7 @@ MODULE tForLong07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tForLong07.%main 0 6 0
+PROC tForLong07.%main 0 4 0
 !   FOR i := -2 TO 2 BY 2 DO
 CONST -2
 CONVNQ

@@ -108,14 +108,14 @@ CALL 0
 RETURN
 END
 
-PROC tLimits.SetMax 0 4 0
+PROC tLimits.SetMax 0 3 0
 ! PROCEDURE SetMax; BEGIN mymax := MAX(LONGREAL) END SetMax;
 DCONST 1.79769313486e+308
 STGD tLimits.mymax
 RETURN
 END
 
-PROC tLimits.MaxReal 12 4 0
+PROC tLimits.MaxReal 12 2 0
 ! PROCEDURE MaxReal(): REAL;
 !   i := 0FFFFFFH; j := 800000H;
 CONST 16777215

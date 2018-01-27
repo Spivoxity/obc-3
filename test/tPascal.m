@@ -184,7 +184,7 @@ LABEL L3
 RETURN
 END
 
-PROC tPascal.%main 0 5 0
+PROC tPascal.%main 0 1 0
 !   pascal2()
 GLOBAL tPascal.pascal2
 CALL 0

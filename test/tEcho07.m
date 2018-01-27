@@ -91,7 +91,7 @@ CALL 0
 RETURN
 END
 
-PROC tEcho07.%main 0 5 0
+PROC tEcho07.%main 0 2 0
 !   Echo(20);
 CONST 20
 GLOBAL tEcho07.Echo

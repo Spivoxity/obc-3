@@ -96,7 +96,7 @@ LDLW -8
 RETURNW
 END
 
-PROC tFlexAsgn.%main 0 7 0
+PROC tFlexAsgn.%main 0 4 0
 !   u[0] := 3; u[1] := 1; u[2] := 4; u[3] := 1;
 CONST 3
 STGW tFlexAsgn.u

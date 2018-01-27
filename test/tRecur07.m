@@ -189,7 +189,7 @@ CALL 0
 RETURN
 END
 
-PROC tRecur07.%main 0 4 0
+PROC tRecur07.%main 0 2 0
 !   Recip(2);
 CONST 2
 GLOBAL tRecur07.Recip

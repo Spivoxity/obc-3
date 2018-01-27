@@ -192,7 +192,7 @@ CALL 0
 RETURN
 END
 
-PROC tQueens.%main 0 4 0
+PROC tQueens.%main 0 3 0
 !   queens(0, choice)
 GLOBAL tQueens.choice
 CONST 0

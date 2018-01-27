@@ -81,7 +81,7 @@ CALL 0
 RETURN
 END
 
-PROC tBigLocal07.%main 0 4 0
+PROC tBigLocal07.%main 0 1 0
 !   P
 GLOBAL tBigLocal07.P
 CALL 0

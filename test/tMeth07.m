@@ -65,7 +65,7 @@ CALL 2
 RETURN
 END
 
-PROC tMeth07.Main 0 4 0
+PROC tMeth07.Main 0 3 0
 ! PROCEDURE Main;
 !   it.doit
 GLOBAL tMeth07.foo

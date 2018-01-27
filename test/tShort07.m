@@ -100,7 +100,7 @@ CALL 0
 RETURN
 END
 
-PROC tShort07.%main 0 3 0
+PROC tShort07.%main 0 1 0
 !   Main
 GLOBAL tShort07.Main
 CALL 0

@@ -290,7 +290,7 @@ CALL 0
 RETURN
 END
 
-PROC tQuicksort07.%main 0 4 0
+PROC tQuicksort07.%main 0 1 0
 !   Test
 GLOBAL tQuicksort07.Test
 CALL 0
