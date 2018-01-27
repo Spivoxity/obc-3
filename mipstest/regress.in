@@ -37,10 +37,10 @@ top_srcdir=@top_srcdir@
 srcdir=@srcdir@
 testsrc=$top_srcdir/test
 lib=../lib
-LIBDIR=/usr/arm-linux-gnueabihf/lib
+LIBDIR=/usr/mipsel-linux-gnu/lib
 compiler="../compiler/obc1 -I $lib"
-interp="env OBC_LIB=. qemu-arm -B 0x100000 $LIBDIR/ld-linux.so.3 \
-    --library-path $LIBDIR ./obxj-arm"
+interp="env OBC_LIB=. qemu-mipsel $LIBDIR/ld.so.1 \
+	--library-path $LIBDIR ./obx-mips"
 # End of config
 
 status=0
