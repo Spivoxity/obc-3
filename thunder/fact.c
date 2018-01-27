@@ -1,3 +1,4 @@
+#include "config.h"
 #include "vm.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -8,7 +9,7 @@ typedef int (*funcp)(int);
 funcp compile(void) {
      int entry;
      vmlabel lab1 = vm_newlab(), lab2 = vm_newlab();
-     vmreg r0 = ireg[0], r1 = ireg[1];
+     vmreg r0 = vm_ireg[0], r1 = vm_ireg[1];
 
      entry = vm_begin("fact", 1);
      vm_gen(GETARG, r0, 0);
@@ -21,7 +22,7 @@ funcp compile(void) {
      vm_gen(JUMP, lab1);
 
      vm_label(lab2);
-     vm_gen(MOV, ret, r1);
+     vm_gen(MOV, vm_ret, r1);
      vm_gen(RET);
 
      vm_end();
@@ -33,24 +34,24 @@ funcp compile2(void) {
      int entry;
 
      vmlabel lab1 = vm_newlab(), lab2 = vm_newlab();
-     vmreg r0 = ireg[0], r1 = ireg[1];
+     vmreg r0 = vm_ireg[0], r1 = vm_ireg[1];
 
      // Use a local to save r0 across the call.
      entry = vm_begin_locals("fact", 1, 4);
      vm_gen(GETARG, r0, 0);
 
      vm_gen(BNE, r0, 0, lab1);
-     vm_gen(MOV, ret, 1);
+     vm_gen(MOV, vm_ret, 1);
      vm_gen(JUMP, lab2);
 
      vm_label(lab1);
-     vm_gen(STW, r0, base, 0);
+     vm_gen(STW, r0, vm_base, 0);
      vm_gen(SUB, r1, r0, 1);
      vm_gen(PREP, 1);
      vm_gen(ARG, r1);
      vm_gen(CALL, (int) entry);
-     vm_gen(LDW, r0, base, 0);
-     vm_gen(MUL, ret, r0, ret);
+     vm_gen(LDW, r0, vm_base, 0);
+     vm_gen(MUL, vm_ret, r0, vm_ret);
      
      vm_label(lab2);
      vm_gen(RET);
@@ -72,8 +73,8 @@ void (*compile3(void))(int, float *) {
 
      int entry;
      vmlabel lab1 = vm_newlab(), lab2 = vm_newlab();
-     vmreg n = ireg[0], i = ireg[1], t = ireg[2], y = ireg[3];
-     vmreg s = freg[0], x = freg[1];
+     vmreg n = vm_ireg[0], i = vm_ireg[1], t = vm_ireg[2], y = vm_ireg[3];
+     vmreg s = vm_freg[0], x = vm_freg[1];
 
      entry = vm_begin("sum", 2);
      vm_gen(GETARG, n, 0);
@@ -98,13 +99,13 @@ void (*compile3(void))(int, float *) {
  
 int (*compile4(void))(void) {
      int entry;
-     vmreg x = ireg[2], y = ireg[0];
+     vmreg x = vm_ireg[2], y = vm_ireg[0];
 
      entry = vm_begin_locals("foo", 0, 4);
      vm_gen(MOV, x, (int) 'A');
-     vm_gen(STB, x, base, 0);
-     vm_gen(LDB, y, base, 0);
-     vm_gen(MOV, ret, y);
+     vm_gen(STB, x, vm_base, 0);
+     vm_gen(LDB, y, vm_base, 0);
+     vm_gen(MOV, vm_ret, y);
      vm_gen(RET);
      return (int (*)(void)) vm_func(entry);
 }
@@ -135,7 +136,7 @@ int main(int argc, char *argv[]) {
      return 0;
 }
 
-#if 0
+#ifndef M64X32
 
 void *vm_alloc(int size) {
      void *mem = NULL;

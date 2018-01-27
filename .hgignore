@@ -231,3 +231,7 @@ mllib/Makefile
 runtime/action.c
 thunder/Makefile
 runtime/jitrules.c
+mipstest/obx-mips
+mipstest/regress
+oniontest
+thunder/fact

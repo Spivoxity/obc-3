@@ -1218,22 +1218,27 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
 	  br_reg(opBLS, ra, rb, lab); break;
 
 /*
-Result of FCMP
-	<	=	>	Unord
-NZCV =	1000	0110	0010	0011
+In this table, the four central columns correspond to the four
+outcomes of a floating-point comparison, shown with their encodings in
+the status bits of the ARM.  On the left are the ten conditional
+branches supported by Thunder, and on the right the corresponding ARM
+instructions.
 
-Keiko						ARM
------						---
-BEQ     F       T       F       F       Z	BEQ
-BLT     T       F       F       F       !C	BLO (or BMI)
-BLE     T       T       F       F       Z|!C    BLS
-BGT     F       F       T       F       !Z&N=V  BGT
-BGE     F       T       T       F       N=V	BGE
-BNE     T       F       T       T       !Z	BNE
-BNLT    F       T       T       T       C	BHS (or BPL)
-BNLE    F       F       T       T       !Z&C    BHI
-BNGT    T       T       F       T       Z|N!=V  BLE
-BNGE    T       F       F       T       N!=V	BLT
+FCMP result:| <     =     >    Unord|
+NZCV bits:  |1000  0110  0010  0011 |
+------------+-----------------------+-------------
+  Thunder   |                       |         ARM
+            |                       |
+  BEQ       |  F     T     F     F  | Z       BEQ
+  BLT       |  T     F     F     F  | !C      BLO (or BMI)
+  BLE       |  T     T     F     F  | Z|!C    BLS
+  BGT       |  F     F     T     F  | !Z&N=V  BGT
+  BGE       |  F     T     T     F  | N=V     BGE
+  BNE       |  T     F     T     T  | !Z      BNE
+  BNLT      |  F     T     T     T  | C       BHS (or BPL)
+  BNLE      |  F     F     T     T  | !Z&C    BHI
+  BNGT      |  T     T     F     T  | Z|N!=V  BLE
+  BNGE      |  T     F     F     T  | N!=V    BLT
 */
 
      case BEQf:
