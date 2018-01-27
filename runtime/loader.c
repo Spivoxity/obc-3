@@ -107,17 +107,18 @@ static int read_int() {
    time, and assembled into native order immediately before doing
    arithmetic. */
 
-#define REL_BLOCK 1024
+#define REL_BLOCK 4096
 
 /* relocate -- read relocation data */
 static void relocate(int size) {
-     unsigned reloc[REL_BLOCK];
-     int n;
+     uchar reloc[REL_BLOCK];
+     int n, m;
+     value *p;
 
      for (int base = 0; base < size; base += n) {
-	  n = min(size - base, REL_BLOCK * CODES_PER_WORD * WORD_SIZE);
-	  int nwords = (n/WORD_SIZE+CODES_PER_WORD-1)/CODES_PER_WORD;
-	  binread(reloc, nwords * sizeof(unsigned));
+	  n = min(size - base, REL_BLOCK * CODES_PER_BYTE * WORD_SIZE);
+	  int nbytes = (n/WORD_SIZE+CODES_PER_BYTE-1)/CODES_PER_BYTE;
+	  binread(reloc, nbytes);
 
 	  for (int i = 0; i < n; i += WORD_SIZE) {
 	       int rbits = reloc_bits(reloc, i/WORD_SIZE);
@@ -127,25 +128,27 @@ static void relocate(int size) {
 		    printf("Reloc %d %d\n", base+i, rbits);
 #endif
 
-	       int m = get_int(&dmem[base+i]);
-	       value *p = (value *) &dmem[base+i];
+               if (rbits == R_NONE) continue;
+
+	       p = (value *) &dmem[base+i];
+	       m = get_int((uchar *) p);
 
 	       switch (rbits) {
 	       case R_WORD:
 		    (*p).i = m;
 		    break;
-	       case R_DATA:
-		    (*p).a = address(dmem + m);
-		    break;
-	       case R_CODE:
-		    (*p).a = address(imem + m);
+	       case R_ADDR:
+                    if ((m & IBIT) == 0)
+                         (*p).a = address(dmem + m);
+                    else
+                         (*p).a = address(imem + (m & ~IBIT));
 		    break;
 	       case R_SUBR:
 		    switch (m) {
 		    case INTERP: (*p).a = interpreter; break;
                     case DLTRAP: (*p).a = dyntrap; break;
 		    default:
-			 panic("bad subr code");
+			 panic("bad subr code %x\n", m);
 		    }
 		    break;
 	       }

@@ -98,7 +98,7 @@ static growdecl(dbuf);
 #define dloc growsize(dbuf)
 
 static growdecl(rbuf);
-#define rbuf growbuf(rbuf, unsigned)
+#define rbuf growbuf(rbuf, uchar)
 #define rloc growsize(rbuf)
 
 static growdecl(prims);
@@ -108,14 +108,14 @@ static growdecl(prims);
 /* relocate -- record relocation bits */
 void relocate(int loc, int bits) {
      /* Each byte of relocation info covers CODES_PER_BYTE words */
-     int index = loc/(WORD_SIZE * CODES_PER_WORD);
-     int shift = loc/WORD_SIZE % CODES_PER_WORD * BITS_PER_CODE;
+     int index = loc/(WORD_SIZE * CODES_PER_BYTE);
+     int shift = loc/WORD_SIZE % CODES_PER_BYTE * BITS_PER_CODE;
 
      if (rloc < index+1) rloc = index+1;
      buf_grow(rbuf);
      rbuf[index] = (rbuf[index] & ~(CODE_MASK << shift)) | (bits << shift);
 #ifdef DEBUG
-     if (dflag) printf("Reloc %d %d %#08x\n", loc, bits, rbuf[index]);
+     if (dflag > 0) printf("Reloc %d %d %#02x\n", loc, bits, rbuf[index]);
 #endif
 }
 
@@ -142,13 +142,23 @@ static int const_value(char *s) {
 	  return strtoul(s, NULL, 0);
 }
 
+#ifdef DEBUG
+static char *reltag[] = { "NONE", "WORD", "ADDR", "SUBR" };
+#endif
+
 static void data_value(int value, int reloc) {
+#ifdef DEBUG
+     if (dflag > 0) printf("%d: Value %u (%s)\n", dloc, value, reltag[reloc]);
+#endif
      buf_grow(dbuf);
      put_value(dloc, value, reloc);
      dloc += 4;
 }
 
 static void data_word(char *s) {
+#ifdef DEBUG
+     if (dflag > 0) printf("%d: Word %s\n", dloc, s);
+#endif
      buf_grow(dbuf);
      if (s == NULL || isdigit((int) s[0]) || s[0] == '-')
 	  put_value(dloc, const_value(s), R_WORD);
@@ -158,6 +168,9 @@ static void data_word(char *s) {
 }
 
 static void put_string(char *str) {
+#ifdef DEBUG
+     if (dflag > 0) printf("%d: String %s\n", dloc, str);
+#endif
      char *s = str;
      do { 
 	  buf_grow(dbuf); 
@@ -188,6 +201,15 @@ static int find_const(int value, symbol sym) {
      buf_grow(const_sym);
      const_sym[i] = sym;
      buf_grow(dbuf);
+
+#ifdef DEBUG
+     if (dflag > 0) {
+          if (sym == NULL)
+               printf("%d: constant %d\n", dloc, value);
+          else
+               printf("%d: constant %s\n", dloc, sym_name(sym));
+     }
+#endif
 
      if (sym == NULL)
 	  put_value(dloc, value, R_WORD);
@@ -543,7 +565,7 @@ static void fix_stackmaps(void) {
      if (smp == 0) return;
 
      /* Fill in the address of the table in the constant pool */
-     put_value(proc_start + 4*CP_STKMAP, dloc, R_DATA);
+     put_value(proc_start + 4*CP_STKMAP, dloc, R_ADDR);
 
      /* Create the table itself */
      for (int i = 0; i < smp; i++) {
@@ -551,7 +573,7 @@ static void fix_stackmaps(void) {
 
 	  /* The return address for the call: '+1' to allow for the space
 	     occupied by the JPROC instruction */
-	  data_value(iloc + sm->sm_addr->q_addr + 1, R_CODE);
+	  data_value(IBIT | (iloc + sm->sm_addr->q_addr + 1), R_ADDR);
 
 	  /* The stack map */
 	  data_word(sm->sm_text);
@@ -586,6 +608,9 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  break;
 
      case D_STRING:
+#ifdef DEBUG
+          if (dflag > 0) printf("%d: string const\n", dloc);
+#endif
 	  for (int i = 0; rands[0][2*i] != '\0'; i++) {
 	       buf_grow(dbuf);
 	       dbuf[dloc++] = hexchar(&rands[0][2*i]);
@@ -647,8 +672,11 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
           dloc = align(dloc, 8);
           buf_grow(prims);
           prims[nprims++] = dloc;
+#ifdef DEBUG
+          if (dflag > 0) printf("Prim %s\n", rands[0]);
+#endif
           def_global(find_symbol(rands[0]), DATA, dloc, X_PROC);
-          const_head(DLTRAP, dloc + 4*CP_CONST + 4, R_DATA, 0, 0, NULL);
+          const_head(DLTRAP, dloc + 4*CP_CONST + 4, R_ADDR, 0, 0, NULL);
           data_value(0, R_WORD); // Pointer to access block
           put_string(rands[2]);  // Type descriptor
           put_string(rands[1]);  // Symbol name
@@ -660,8 +688,11 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 	  dloc = align(dloc, 8);
 	  this_proc = find_symbol(rands[0]);
           proc_start = dloc;
+#ifdef DEBUG
+          if (dflag > 0) printf("Proc %s\n", rands[0]);
+#endif
 	  def_global(this_proc, DATA, proc_start, X_PROC);
-	  const_head(INTERP, iloc, R_CODE, atoi(rands[1]), 
+	  const_head(INTERP, IBIT | iloc, R_ADDR, atoi(rands[1]), 
 		     atoi(rands[2]), rands[3]);
 
           init_abuf();
@@ -782,8 +813,8 @@ static int start;		/* Starting offset of binary */
 
 void init_linker(char *outname, char *interp) {
      buf_init(dbuf, INIT_XMEM, 4, uchar, "data");
-     buf_init(rbuf, INIT_XMEM/(WORD_SIZE * CODES_PER_WORD), 
-	      1, unsigned, "relocation");
+     buf_init(rbuf, INIT_XMEM/(WORD_SIZE * CODES_PER_BYTE), 
+	      1, uchar, "relocation");
      buf_init(smbuf, 16, 1, stackmap, "stack maps");
      buf_init(const_sym, 256, 1, symbol, "constant pool");
      buf_init(prims, 256, 1, int, "primitives");
@@ -806,6 +837,11 @@ void end_linking(void) {
      int fsize, csize, symcount = 0, nwritten;
      const char *magic = MAGIC;
 
+     while (iloc % 4 != 0) {
+          write_int(1, 0);
+          iloc++;
+     }
+
      csize = ftell(binfp) - start;
      if (csize != iloc) {
 	  fprintf(stderr, "csize = %d, iloc = %d\n", csize, iloc);
@@ -813,11 +849,11 @@ void end_linking(void) {
      }
 
      fix_data(dbuf, dloc);
-     rloc = (dloc/WORD_SIZE+CODES_PER_WORD-1)/CODES_PER_WORD;
+     rloc = (dloc/WORD_SIZE+CODES_PER_BYTE-1)/CODES_PER_BYTE;
      buf_grow(rbuf);
 
      binwrite(dbuf, dloc);
-     binwrite(rbuf, rloc * sizeof(unsigned));
+     binwrite(rbuf, rloc);
      if (!sflag) symcount = write_symtab();
 
      fsize = ftell(binfp) + sizeof(trailer);
@@ -849,9 +885,11 @@ void end_linking(void) {
 
 /* Routines for writing values in machine-independent byte order */
 
-void put_int(int n, uchar *buf, int x) {
-     for (int i = 0; i < n; i++)
-	  buf[i] = (x >> (8*i)) & 0xff;
+void put4(uchar *buf, int x) {
+     buf[0] = x;
+     buf[1] = x >> 8;
+     buf[2] = x >> 16;
+     buf[3] = x >> 24;
 }
 
 int get4(uchar *buf) {
@@ -862,9 +900,9 @@ void write_string(const char *s) {
      binwrite((void *) s, strlen(s)+1);
 }
 
-void write_int(int n, int x) { 
-     uchar buf[4]; 
-     put_int(n, buf, x); 
+void write_int(int n, int x) {
+     uchar buf[4];
+     put4(buf, x);
      binwrite(buf, n);
 }
 

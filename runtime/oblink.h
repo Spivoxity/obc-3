@@ -78,10 +78,6 @@ struct _template {		/* An encoding of an instruction */
      const char *t_macro[MAXMAC]; /* Macro expansion */
 };
 
-#define put1(buf, x) put_int(1, buf, x)
-#define put2(buf, x) put_int(2, buf, x)
-#define put4(buf, x) put_int(4, buf, x)
-
 EXTERN int dflag;
 EXTERN int zflag;		/* Whether to compress the bytecode */
 EXTERN mybool sflag;		/* Whether to suppress symbol table */
@@ -126,7 +122,7 @@ void dump_prims(void);
 
 void relocate(int loc, int bits);
 
-void put_int(int n, uchar *buf, int x);
+void put4(uchar *buf, int x);
 int get4(uchar *buf);
 void write_string(const char *s);
 void write_int(int n, int x);

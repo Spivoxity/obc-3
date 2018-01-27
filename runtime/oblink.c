@@ -210,11 +210,11 @@ static void trace_imports(void) {
 
 #ifdef DEBUG
      if (dflag) {
-	  fprintf(stderr, "Needed:");
+	  printf("Needed:");
 	  for (int i = 0; i < nmodules; i++)
 	       if (module[i].m_needed)
-		    fprintf(stderr, " %s", module[i].m_name);
-	  fprintf(stderr, "\n");
+		    printf(" %s", module[i].m_name);
+	  printf("\n");
      }
 #endif
 }

@@ -145,8 +145,8 @@ void def_global(symbol s, segment seg, int off, int kind) {
 
 #ifdef DEBUG
      if (dflag)
-	  fprintf(stderr, "Symbol %s = %d(%s)\n", 
-		  s->s_name, s->s_value, seg_name[s->s_seg]);
+	  printf("Symbol %s = %d(%s)\n", 
+                 s->s_name, s->s_value, seg_name[s->s_seg]);
 #endif
 }
 
@@ -185,7 +185,7 @@ void fix_data(uchar *base, int bss) {
 	  for (int u = s->s_uchain, v; u != -1; u = v) {
 	       v = *((int *) &base[u]);
 	       put4(&base[u], val);
-	       relocate(u, (s->s_seg == ABS ? R_WORD : R_DATA));
+	       relocate(u, (s->s_seg == ABS ? R_WORD : R_ADDR));
 	  }
      }
 }

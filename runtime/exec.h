@@ -70,17 +70,19 @@ typedef struct {
 
 /* Layout of relocation data */
 #define WORD_SIZE 4
-#define CODES_PER_WORD 16
+#define CODES_PER_BYTE 4
 #define BITS_PER_CODE 2
 #define CODE_MASK ((1 << BITS_PER_CODE) - 1)
 
-#define reloc_bits(buf, i) (buf[(i)/CODES_PER_WORD] >> \
-	((i) % CODES_PER_WORD * BITS_PER_CODE) & CODE_MASK)
+#define reloc_bits(buf, i) (buf[(i)/CODES_PER_BYTE] >> \
+	((i) % CODES_PER_BYTE * BITS_PER_CODE) & CODE_MASK)
+
+#define IBIT 0x80000000
 
 /* Relocation codes */
-#define R_WORD 0
-#define R_DATA 1
-#define R_CODE 2
+#define R_NONE 0
+#define R_WORD 1
+#define R_ADDR 2
 #define R_SUBR 3
 
 /* Symbol tags */
