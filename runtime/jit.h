@@ -64,11 +64,11 @@ vmlabel handler(int code, int line);
 typedef struct _reg *reg;
 
 extern int nregs;
-extern reg rBP, rSP, rI0, rI1, rI2;
+extern reg rBP, rSP, rCP, rI0, rI1, rI2;
 
 #define __VALKINDS__(v) \
-     v(CON) v(REG) v(KONW) v(KONQ) \
-     v(ADDR) v(MEMC) v(MEMS) v(MEMW) v(MEMQ) \
+     v(CON) v(REG) v(ADDR)                       \
+     v(MEMC) v(MEMS) v(MEMW) v(MEMQ)             \
      v(FCMPL) v(FCMPG) v(DCMPL) v(DCMPG) v(QCMP) \
      v(STKW) v(STKQ)
 

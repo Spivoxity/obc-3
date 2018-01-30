@@ -56,6 +56,8 @@ typedef intptr_t address;
 #define r9		9
 #define r10		10
 #define r11		11
+#define r14		14
+#define r15		15
 #define NOREG		-1
 
 /* And these are the floating point registers */
@@ -92,6 +94,7 @@ const vmreg vm_ireg[] = {
      &reg_v0, &reg_v1, &reg_v2, &reg_v3,  /* Callee-save */
      &reg_i0, &reg_i1, &reg_i2            /* Caller-save */
 };
+
 #else
 
 /* This version includes a native amd64 port (enabled with M64X32) that 
@@ -112,9 +115,8 @@ const vmreg vm_ireg[] = {
      It's up to the host software to create and manage these indirection
      cells. 
 
-   Registers 12 and 13 are hard to encode as index registers, and
-   registers 12 to 15 are callee save, so would cost us in every
-   prelude: so we don't bother with them.  On Windows, rSI and rDI are
+   Registers 12 and 13 are hard to encode as index registers, so we 
+   don't bother with them.  On Windows, rSI and rDI are
    preserved across calls, so we could have made nvreg = 4; it makes
    no difference to the Kieko JIT.  We do, however, respect the
    calling convention by saving those registers in the frame. */
@@ -126,14 +128,16 @@ struct _vmreg
      reg_i6 = { "I6", r9 },
      reg_i7 = { "I7", r10 },
      reg_i8 = { "I8", r11 },
-     reg_v0 = { "V0", rBX },
-     reg_v1 = { "V1", rBP };
+     reg_v0 = { "V0", r14 },
+     reg_v1 = { "V1", r15 },
+     reg_v2 = { "V2", rBX },
+     reg_v3 = { "V3", rBP };
 
-const int vm_nvreg = 2, vm_nireg = 11;
+const int vm_nvreg = 4, vm_nireg = 13;
 const vmreg vm_ireg[] = {
-     &reg_v0, &reg_v1,          /* Callee-save */
-     &reg_i0, &reg_i1, &reg_i2, /* Caller-save */
-     &reg_i3, &reg_i4, &reg_i5, &reg_i6, &reg_i7, &reg_i8
+     &reg_v0, &reg_v1, &reg_v2, &reg_v3,   /* Callee-save */
+     &reg_i0, &reg_i1, &reg_i2, &reg_i3,   /* Caller-save */
+     &reg_i4, &reg_i5, &reg_i6, &reg_i7, &reg_i8
 }; 
 
 #endif
@@ -1104,6 +1108,8 @@ old sp:
         return address
         saved rbp
         saved rbx
+        saved r15
+        saved r14
         saved args if n > 1
         blank space
 sp:     locals
@@ -1124,6 +1130,8 @@ old sp: 32-byte shadow area
         return address
         saved rbp
         saved rbx
+        saved r15
+        saved r14
 	saved rsi
 	saved rdi
         blank space
@@ -1236,7 +1244,7 @@ static void call_i(int a) {
 int vm_prelude(int n, int locs) {
      code_addr entry = pc;
      inargs = n;
-     push_r(rBP); push_r(rBX);
+     push_r(rBP); push_r(rBX); push_r(r15); push_r(r14);
 #ifdef WINDOWS     
      if (n > 1) vm_panic("sorry, only one parameter allowed today");
      if (locs > 0) vm_panic("sorry, no local variables allowed");
@@ -1262,11 +1270,11 @@ int vm_prelude(int n, int locs) {
 static void retn(void) {
 #ifdef WINDOWS
           add64_i(rSP, 40);
-	  pop(rDI); pop(rSI); pop(rBX); pop(rBP);
+	  pop(rDI); pop(rSI);
 #else
 	  add64_i(rSP, locals);
-	  pop(rBX); pop(rBP);
 #endif
+	  pop(r14); pop(r15); pop(rBX); pop(rBP);
           instr(opRET);
 }
 #endif
@@ -1441,13 +1449,6 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 	  move(ra, rCX);
 #endif
 #endif
-          break;
-
-     case LDKW:
-          if (isfloat(ra))
-               floads(ra, NOREG, b);
-          else
-               instr_regi32(opMOVL_i, ra, * (int *) (address) b);
           break;
 
      default:

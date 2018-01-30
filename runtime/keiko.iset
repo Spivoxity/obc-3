@@ -41,8 +41,8 @@ defs {
 # CONSTANTS
 
 inst PUSH {[-1,6,1] 1 2} V.i { $a } { push_con(arg1); }
-inst LDKW {1 2} V.i     { const($a).i } { konst(V_KONW, INT, arg1, 1); }
-inst LDKF {1 2} V.f     { const($a).f } { konst(V_KONW, FLO, arg1, 1); }
+inst LDKW {1 2} V.i     { const($a).i } { konst(V_MEMW, INT, arg1, 1); }
+inst LDKF {1 2} V.f     { const($a).f } { konst(V_MEMW, FLO, arg1, 1); }
 
 
 # ADDRESSING OPERATORS
@@ -148,11 +148,11 @@ inst STIF 0 S3          { sti($1.f, $2, $3, float); } {=INDEXW, STOREF}
 # Loads and stores for doubles
 inst LOADD 0 M.dp       { getdbl(valptr($1)) } { deref(V_MEMQ, FLO, 2); }
 inst STORED 0 S2dp      { putdbl(valptr($2), $1.d); } { store(V_MEMQ, 2); }
-inst LDKD {1 2}	V.d     { getdbl(&const($a)) } { konst(V_KONQ, FLO, arg1, 2); }
+inst LDKD {1 2}	V.d     { getdbl(&const($a)) } { konst(V_MEMQ, FLO, arg1, 2); }
 
 inst LOADQ 0 M.qp       { getlong(valptr($1)) } { loadq(); }
 inst STOREQ 0 S2qp      { putlong(valptr($2), $1.q); } { store(V_MEMQ, 2); }
-inst LDKQ {1 2} V.q     { getlong(&const($a)) } { konst(V_KONQ, INT, arg1, 2); }
+inst LDKQ {1 2} V.q     { getlong(&const($a)) } { konst(V_MEMQ, INT, arg1, 2); }
     
 equiv LDID 0  		{INDEXD, LOADD}
 equiv STID 0		{INDEXD, STORED}

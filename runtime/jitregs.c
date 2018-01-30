@@ -34,7 +34,7 @@
 
 struct _reg *regs = NULL;
 int nregs;
-reg rBP, rSP, rI0, rI1, rI2;
+reg rBP, rCP, rSP, rI0, rI1, rI2;
 
 static reg def_reg(vmreg r, int c) {
      reg p = &regs[nregs++];
@@ -48,13 +48,13 @@ static reg def_reg(vmreg r, int c) {
 void setup_regs(void) {
 #ifdef GCOV
      /* Restrict register set to force use of spill code */
-     int nireg = 5, nvreg = 2;
+     int nireg = 6, nvreg = 3;
 #else
      int nireg = vm_nireg, nvreg = vm_nvreg;
 #endif
 
      int totregs = nireg + vm_nfreg + 1;
-     assert(nireg >= 5 && nvreg >= 2);
+     assert(nireg >= 6 && nvreg >= 3);
 
      regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg));
 
@@ -67,8 +67,8 @@ void setup_regs(void) {
           def_reg(vm_freg[i], FLO);
 
      rI0 = &regs[0]; rI1 = &regs[1]; rI2 = &regs[2];
-     rSP = &regs[nireg-2]; rBP = &regs[nireg-1]; 
-     rBP->r_class = 0;
+     rSP = &regs[nireg-3]; rCP = &regs[nireg-2]; rBP = &regs[nireg-1]; 
+     rCP->r_class = rBP->r_class = 0;
 }
 
 /* Each register has a reference count, and may also be locked -- this

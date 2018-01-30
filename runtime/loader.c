@@ -124,7 +124,7 @@ static void relocate(int size) {
 	       int rbits = reloc_bits(reloc, i/WORD_SIZE);
 
 #ifdef DEBUG
-	       if (dflag >= 2)
+	       if (dflag > 3)
 		    printf("Reloc %d %d\n", base+i, rbits);
 #endif
 

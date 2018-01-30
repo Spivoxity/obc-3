@@ -478,16 +478,6 @@ reg move_to_reg(int i, int ty) {
 #endif
 	  break;
 
-     case V_KONW:
-	  r = ralloc(ty);
-          vm_gen(LDKW, r->r_reg, v->v_val);
-	  break;
-	  
-     case V_KONQ:
-	  r = ralloc(ty);
-	  vm_gen(LDQ, r->r_reg, v->v_val);
-	  break;
-
      case V_ADDR:
           if (v->v_val == 0)
                r = rfree(v->v_reg);
@@ -547,15 +537,7 @@ reg move_to_reg(int i, int ty) {
 ctvalue fix_const(int i, mybool rflag) {
      ctvalue v = &vstack[sp-i];
 
-     switch (v->v_op) {
-     case V_CON:
-	  break;
-
-     case V_KONW:
-	  set(sp-i, V_CON, INT, *ptrcast(int, v->v_val), NULL, 1);
-	  break;
-
-     default:
+     if (v->v_op != V_CON) {
 	  if (!rflag)
 	       panic("fix_const %s", instrs[v->v_op].i_name);
 	  move_to_reg(i, INT);
@@ -576,7 +558,6 @@ void deref(valkind vkind, int ty, int size) {
 	  break;
 
      case V_CON:
-     case V_KONW:
 	  fix_const(1, FALSE); pop(1); unlock(1);
 	  push(vkind, ty, NULL, v->v_val, size);
 	  break;
@@ -666,7 +647,6 @@ void add_offset() {
 
      switch (vstack[sp-2].v_op) {
      case V_CON:
-     case V_KONW:
 	  v1 = fix_const(2, FALSE); 
 	  v2 = move_to_rc(1); 
 	  pop(2); unlock(2);
@@ -772,36 +752,18 @@ static void move_long(reg rs, int offs, reg rd, int offd) {
      ldst(STW, r2, rd, offd+4);
 }
      
-/* half_const -- fetch one or other half of a 64-bit constant */
-static int half_const(ctvalue v, int off) {
-     switch (v->v_op) {
-     case V_CON:
-	  if (off == 0)
-	       return v->v_val;
-	  else
-	       return (v->v_val < 0 ? -1 : 0);
-
-     case V_KONQ:
-	  return ptrcast(int, v->v_val)[off];
-
-     default:
-	  panic("half_const %s", vkind_name[v->v_op]);
-	  return 0;
-     }
-}     
-
 /* move_longconst -- move 64-bit constant */
 static void move_longconst(ctvalue src, reg rd, int offd) {
-     reg r1, r2;
+     reg r1;
 
      rlock(rd);
-     r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
+     r1 = ralloc(INT);
      runlock(rd);
 
-     vm_gen(MOV, r1->r_reg, half_const(src, 0));
-     vm_gen(MOV, r2->r_reg, half_const(src, 1));
+     vm_gen(MOV, r1->r_reg, src->v_val);
      ldst(STW, r1, rd, offd);
-     ldst(STW, r2, rd, offd+4);
+     vm_gen(MOV, r1->r_reg, (src->v_val < 0 ? -1 : 0));
+     ldst(STW, r1, rd, offd+4);
 }
 
 /* move_longval -- move a long value into memory */
@@ -815,7 +777,6 @@ void move_longval(ctvalue src, reg rd, int offd) {
      case V_STKQ:
 	  move_long(breg, sbase + src->v_val, rd, offd);
 	  break;
-     case V_KONQ:
      case V_CON:
           move_longconst(src, rd, offd);
 	  break;

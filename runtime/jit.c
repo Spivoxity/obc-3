@@ -76,13 +76,14 @@ static vmlabel stack_oflo, retlab;
 #define push_con(k) push(V_CON, INT, NULL, k, 1)
 #define push_reg(r) push(V_REG, INT, r, 0, 1)
 #define konst(op, ty, i, s) \
-     push(op, ty, NULL, address(&context[CP_CONST+i]), s)
+     push(op, ty, rCP, 4*(CP_CONST+i), s)
 
 /* prolog -- generate code for procedure prologue */
 static word prolog(const char *name, int frame, int map) {
      vmlabel lab = vm_newlab();
      word entry = vm_begin(name, 1);
      vm_gen(GETARG, rBP->r_reg, 0);
+     vm_gen(LDW, rCP->r_reg, rBP->r_reg, 4*CP);
 
      /* Check for stack overflow */
      vm_gen(BGEu, rBP->r_reg, address(stack + SLIMIT + frame), lab);

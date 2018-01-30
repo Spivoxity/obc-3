@@ -611,7 +611,7 @@ void vm_patch(code_addr loc, code_addr lab) {
      /* I hope that if a branch crosses between code segments, the segments 
 	have been allocated close enough to each other. */
 
-     int off = lab - loc - 8;; // in bytes
+     int off = lab - loc - 8; // in bytes
      assert((off & 0x3) == 0);
      off >>= 2;
      if (off < -0x800000 || off >= 0x800000)
@@ -927,16 +927,6 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
           write_reg(ra);
 	  move_reg(ra, R(b));
           break;
-
-     case LDKW:
-          write_reg(ra);
-          // Floating-point loads only have a 1024-byte range,
-          // so we use an integer register as a staging post.
-	  if (isfloat(ra))
-	       fmsr(ra, const_reg(* (int *) b));
-	  else
-	       move_immed(ra, * (int *) b);
-	  break;
 
      default:
           vm_load_store(op, ra, NOREG, b);
@@ -1321,7 +1311,6 @@ void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
      }
 }
 
-static code_addr cploc;
 static code_addr entry;
 static int locals;
 
@@ -1329,9 +1318,7 @@ int vm_prelude(int n, int locs) {
      nlits = 0;
      regmap = 0;
      retchain = NULL;
-     cploc = pc;
      locals = (locs+7)&~7;
-     word(0);
 
      entry = pc;
      move_reg(IP, SP);

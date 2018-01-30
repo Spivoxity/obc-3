@@ -54,7 +54,6 @@
      /* Load and store */                                           \
      p(LDB) p(LDBu) p(LDS) p(LDSu) p(LDW) p(LDQ)                    \
      p(STW) p(STB) p(STQ) p(STS)                                    \
-     p(LDKW) p(SXTOFF) p(ADDOFF)                                    \
      /* Call and return */                                          \
      p(PREP) p(ARG) p(CALL) p(GETARG) p(RET) p(JUMP)                \
      /* 64-bit arithmetic (M64X32 only) */                          \
@@ -123,8 +122,6 @@ LDQ/STQ ra/fa, rb, imm
   -- load/store double
 ZEROf/ZEROd fa
   -- set float/double register to zero
-LDKW ra/fa, imm
-  -- load register with constant from specified address
 SXTOFF ra, rb
   -- sign extend an addressing offset (typically from 32 to 64 bits)
 ADDOFF ra, rb, rc
