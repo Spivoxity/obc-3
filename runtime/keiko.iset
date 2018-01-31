@@ -41,8 +41,8 @@ defs {
 # CONSTANTS
 
 inst PUSH {[-1,6,1] 1 2} V.i { $a } { push_con(arg1); }
-inst LDKW {1 2} V.i     { const($a).i } { konst(V_MEMW, INT, arg1, 1); }
-inst LDKF {1 2} V.f     { const($a).f } { konst(V_MEMW, FLO, arg1, 1); }
+inst LDKW {1 2} V.i     { const($a).i } { konst(V_KONW, INT, arg1, 1); }
+inst LDKF {1 2} V.f     { const($a).f } { konst(V_KONW, FLO, arg1, 1); }
 
 
 # ADDRESSING OPERATORS

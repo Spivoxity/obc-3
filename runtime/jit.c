@@ -376,8 +376,9 @@ static void loadq(void) {
         index register. */
      deref(V_MEMQ, INT, 2); 
 #ifndef M64X32
-     v = peek(1);
-     if (v->v_reg != NULL && member(v->v_reg, INT) && n_reserved() > 3) 
+     ctvalue v = peek(1);
+     if (v->v_reg != NULL && member(v->v_reg, INT)
+         && n_reserved() > vm_nireg - 5) 
           move_to_frame(1); 
 #endif
 }

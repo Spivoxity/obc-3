@@ -505,6 +505,10 @@ reg move_to_reg(int i, int ty) {
 	  r = load(LDQ, ty, v->v_reg, v->v_val); 
 	  break;
 
+     case V_KONW:
+          r = load(LDW, ty, v->v_reg, v->v_val);
+          break;
+
      case V_STKW:
 	  r = load(LDW, ty, reserve(breg), sbase + v->v_val);
 	  break;
