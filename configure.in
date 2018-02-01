@@ -261,6 +261,7 @@ if test "$enable_ffi" != no && test "$HAVE_FFI_H" = 1; then
 fi
 
 # Option jit
+CODEPAGE=16384
 AC_ARG_ENABLE(jit,
   AS_HELP_STRING([--disable-jit], [disable JIT translator]))
 if test "$enable_jit" != no; then
@@ -269,12 +270,14 @@ if test "$enable_jit" != no; then
       ENABLE_JIT=1; VM=vm386.o
       AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive]);;
     armv6l-*|armv7l-*|arm-*)
-      ENABLE_JIT=1; VM=vmpi.o
+      ENABLE_JIT=1; VM=vmpi.o; CODEPAGE=4096
       AC_DEFINE(USE_FLUSH, 1, [Whether to flush the cache]);;
   esac
 fi
 AC_SUBST(VM)
 AC_SUBST(ENABLE_JIT)
+AC_DEFINE_UNQUOTED([CODEPAGE], $CODEPAGE,
+  [Size of block allocated for JIT code])
 
 # Option debugger
 AC_ARG_ENABLE(debugger,

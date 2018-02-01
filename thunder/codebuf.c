@@ -126,9 +126,9 @@ unsigned vm_begin_locals(const char *name, int n, int locs) {
 /* vm_space -- ensure space in code buffer */
 void vm_space(int space) {
      if (codebuf == NULL || pc + space > limit - MARGIN) {
-	  code_addr p = (code_addr) vm_alloc(PAGESIZE);
+	  code_addr p = (code_addr) vm_alloc(CODEPAGE);
 #ifdef USE_MPROTECT
-	  if (mprotect(p, PAGESIZE, PROT_READ|PROT_WRITE|PROT_EXEC) < 0) {
+	  if (mprotect(p, CODEPAGE, PROT_READ|PROT_WRITE|PROT_EXEC) < 0) {
 	       perror("mprotect failed");
 	       exit(2);
 	  }
@@ -142,7 +142,7 @@ void vm_space(int space) {
 	  fragbeg[nfrags] = p;
 #endif
 
-	  codebuf = p; limit = p + PAGESIZE;
+	  codebuf = p; limit = p + CODEPAGE;
 	  pc = codebuf;
      }
 }
