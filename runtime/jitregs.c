@@ -123,6 +123,10 @@ reg ralloc_avoid(int s, reg r2) {
      reg r, best = NULL;
      int min = 2, cost;
 
+#ifndef FLOATOPS
+     if (s == FLO) panic("No floats allowed");
+#endif
+
      static mybool spilling = FALSE;
 
      /* See if there is an unused register */

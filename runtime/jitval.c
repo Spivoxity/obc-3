@@ -241,6 +241,9 @@ static void set(int i, valkind vkind, int type, int val, reg r, int s) {
 
 /* push -- push a value onto the eval stack */
 void push(valkind vkind, int type, reg r, int val, int size) {
+#ifndef FLOATOPS
+     type = INT;
+#endif
      pdepth += 4*size;
      offset[sp] = -pdepth;
      set(sp++, vkind, type, val, r, size);
@@ -314,7 +317,7 @@ ctvalue move_from_frame(int i) {
      ctvalue v = &vstack[sp-i];
 
      if (v->v_op == V_STKW) {
-	  reg r = move_to_reg(i, INT);
+	  reg r = move_to_reg(i, v->v_type);
 	  runlock(r);
      }
 
@@ -557,12 +560,12 @@ void deref(valkind vkind, int ty, int size) {
 
      switch (v->v_op) {
      case V_ADDR:
-	  pop(1);
-	  push(vkind, ty, v->v_reg, v->v_val, size);
-	  break;
+	  pop(1); r1 = v->v_reg;
+	  push(vkind, ty, r1, v->v_val, size);
+          break;
 
      case V_CON:
-	  fix_const(1, FALSE); pop(1); unlock(1);
+	  fix_const(1, FALSE); pop(1); unlock(1); r1 = NULL;
 	  push(vkind, ty, NULL, v->v_val, size);
 	  break;
 
@@ -571,6 +574,20 @@ void deref(valkind vkind, int ty, int size) {
 	  push(vkind, ty, r1, 0, size); 
 	  break;
      }
+
+#ifndef M64X32
+     /* Long integer loads are dangerous, because they can't be
+        flushed without allocating at least one register.  So we're
+        cautious about letting one remain unevaluated on the stack if
+        it uses an index register. */
+     if (vkind == V_MEMQ
+#ifdef FLOATOPS
+         && ty == INT
+#endif
+         && r1 != NULL && member(r1, INT)
+         && n_reserved() > vm_nireg - 5)
+          move_to_frame(1);
+#endif
 }
 
 /* unalias -- execute load operations that might alias v */
@@ -612,13 +629,11 @@ void store(valkind vkind, int s) {
      int ty = v->v_type;
 
 #ifndef M64X32
-     if (vkind == V_MEMQ) {
+     if (ty == INT && vkind == V_MEMQ) {
 	  move_longval(&vstack[sp-2], vstack[sp-1].v_reg, vstack[sp-1].v_val);
 	  pop(2);
 	  return;
      }
-
-     if (vkind == V_MEMD) ty = FLO;
 #endif
      
      rlock(v->v_reg);

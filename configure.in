@@ -276,6 +276,7 @@ if test "$enable_jit" != no; then
 fi
 AC_SUBST(VM)
 AC_SUBST(ENABLE_JIT)
+AC_DEFINE(FLOATOPS, 1, [Whether to use thunder for floating point])
 AC_DEFINE_UNQUOTED([CODEPAGE], $CODEPAGE,
   [Size of block allocated for JIT code])
 

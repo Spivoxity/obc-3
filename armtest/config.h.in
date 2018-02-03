@@ -168,3 +168,5 @@
 #define PACKAGE_TRACKER "https://bitbucket.org/Spivey/obc-3/issues"
 
 #define CODEPAGE 4096
+
+#define FLOATOPS 1

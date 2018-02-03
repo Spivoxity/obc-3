@@ -124,6 +124,19 @@ static int stack_map(uchar *pc) {
      return 0;
 }
 
+/* callout -- call out-of-line stack operation */
+static void callout(func op, int nargs, int ty, int size) {
+     reg r;
+     flush_stack(0, nargs);
+     killregs();
+     r = ralloc(INT);
+     get_sp(r);
+     push_reg(r);
+     gcall(op, 1);
+     pop(nargs);
+     push((size == 1 ? V_STKW : V_STKQ), ty, NULL, 0, size);
+}
+
 /* gmonop -- generic unary operation */
 static void gmonop(operation op, int rclass1, int rclass2, int s) {
      reg r1, r2;
@@ -137,14 +150,30 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
      push(V_REG, rclass2, r2, 0, s);
 }
 
+#ifdef FLOATOPS
+#define fdmonop(op, c1, c2, s) gmonop(op, c1, c2, s)
+#else
+#define fdmonop(op, c1, c2, s) callout(fn##op, 1, c2, s)
+#define fnNEGf FLO_NEG
+#define fnCONVif FLO_FLOAT
+#define fnCONVfi FLO_FIX
+#define fnCONVdf FLO_TRUNC
+#define fnNEGd DBL_NEG
+#define fnCONVid DBL_FLOAT
+#define fnCONVdi DBL_FIX
+#define fnCONVfd DBL_WIDEN
+#endif
+
 #define imonop(op) gmonop(op, INT, INT, 1)
-#define fmonop(op) gmonop(op, FLO, FLO, 1)
-#define dmonop(op) gmonop(op, FLO, FLO, 2)
+#define fmonop(op) fdmonop(op, FLO, FLO, 1)
+#define dmonop(op) fdmonop(op, FLO, FLO, 2)
 
 #ifdef M64X32
-#define qmonop(op, fn) gmonop(op, INT, INT, 2)
+#define qmonop(op) gmonop(op, INT, INT, 2)
 #else
-#define qmonop(op, fn) callout(fn, 1, INT, 2)
+#define qmonop(op) callout(fn##op, 1, INT, 2)
+#define fnNEGq LONG_NEG
+#define fnSXTq LONG_EXT
 #endif
 
 /* binop -- binary integer operation */
@@ -171,23 +200,41 @@ static void binop(operation op, int size) {
 #define ibinop(op)  binop(op, 1)
 
 #ifdef M64X32
-#define qbinop(op, fn)  binop(op, 2)
+#define qbinop(op)  binop(op, 2)
 #else
-#define qbinop(op, fn)  callout(fn, 2, INT, 2)
+#define qbinop(op)  callout(fn##op, 2, INT, 2)
+#define fnADDq LONG_ADD
+#define fnSUBq LONG_SUB
+#define fnMULq LONG_MUL
+#define fnDIVq LONG_DIV
 #endif
 
-/* gbinop -- general binary operation */
-static void gbinop(operation op, int ty, int s) {
+#ifndef FLOATOPS
+#define fdbinop(op, s) callout(fn##op, 2, FLO, s)
+#define fnADDf FLO_ADD
+#define fnSUBf FLO_SUB
+#define fnMULf FLO_MUL
+#define fnDIVf FLO_DIV
+#define fnADDd DBL_ADD
+#define fnSUBd DBL_SUB
+#define fnMULd DBL_MUL
+#define fnDIVd DBL_DIV
+#else
+
+/* fdbinop -- floating point binary operation */
+static void fdbinop(operation op, int s) {
      reg r1, r2, r3;
 
-     r1 = move_to_reg(2, ty); r2 = move_to_reg(1, ty); pop(2);
-     r3 = ralloc_suggest(ty, r1); unlock(2);				
+     r1 = move_to_reg(2, FLO); r2 = move_to_reg(1, FLO); pop(2);
+     r3 = ralloc_suggest(FLO, r1); unlock(2);				
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);				
-     push(V_REG, ty, r3, 0, s);
+     push(V_REG, FLO, r3, 0, s);
 }
 
-#define fbinop(op) gbinop(op, FLO, 1)
-#define dbinop(op) gbinop(op, FLO, 2)
+#endif
+
+#define fbinop(op) fdbinop(op, 1)
+#define dbinop(op) fdbinop(op, 2)
 
 void show_value(ctvalue v);
 
@@ -216,16 +263,22 @@ static mybool is_zero(ctvalue v) {
      return (v->v_op == V_CON && v->v_val == 0);
 }
 
+#ifndef FLOATOPS
+#define fcomp(op) callout(fn##op, 2, INT, 1)
+#else
+
 /* fcomp -- float or double comparison */
-static void fcomp(operation op, int ty) {
+static void fcomp(operation op) {
      reg r1, r2, r3;
 
-     r1 = move_to_reg(2, ty); 
-     r2 = move_to_reg(1, ty); pop(2);				
+     r1 = move_to_reg(2, FLO); 
+     r2 = move_to_reg(1, FLO); pop(2);				
      r3 = ralloc(INT); unlock(2);				
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);	
      push_reg(r3);						
 }
+
+#endif
 
 /* compare -- integer comparison */
 #define compare(op) compare1(op, op##f, op##d, op##q)
@@ -234,12 +287,14 @@ static void compare1(operation op, operation opf, operation opd,
                      operation op64) {
      if (is_zero(peek(1))) {
           switch (peek(2)->v_op) {
+#ifdef FLOATOPS
           case V_FCMPL:
           case V_FCMPG:
-               pop(2); fcomp(opf, FLO); return;
+               pop(2); fcomp(opf); return;
           case V_DCMPL:
           case V_DCMPG:
-               pop(2); fcomp(opd, FLO); return;
+               pop(2); fcomp(opd); return;
+#endif
           case V_QCMP:
                pop(2); ibinop(op64); return;
 	  default:
@@ -250,7 +305,15 @@ static void compare1(operation op, operation opf, operation opd,
      ibinop(op);
 }
 
-#define fcompare(op) push(op, INT, NULL, 0, 0)
+#ifdef FLOATOPS
+#define fcompare(op) push(V_##op, INT, NULL, 0, 0)
+#else
+#define fcompare(op) callout(fn##op, 2, INT, 1)
+#define fnFCMPL FLO_CMPL
+#define fnFCMPG FLO_CMPG
+#define fnDCMPL DBL_CMPL
+#define fnDCMPG DBL_CMPG
+#endif
 
 /* icondj -- integer conditional jump */
 static void icondj(operation op, int lab) {
@@ -264,6 +327,7 @@ static void icondj(operation op, int lab) {
           vm_gen(op, r1->r_reg, v->v_reg->r_reg, target(lab));
 }
 
+#ifdef FLOATOPS
 /* fcondj -- float or double conditional jump */
 static void fcondj(operation op, int lab) {
      flush(2); 
@@ -272,6 +336,7 @@ static void fcondj(operation op, int lab) {
      pop(2); unlock(2);		
      vm_gen(op, r1->r_reg, r2->r_reg, target(lab));
 }
+#endif
 
 typedef struct jmptab {
      operation op;              /* Integer */
@@ -295,6 +360,7 @@ static void condj(jtable t, int lab) {
      if (is_zero(peek(1))) {
           /* Check stack for comparison operator */
           switch (peek(2)->v_op) {
+#ifdef FLOATOPS
           case V_FCMPL:
                pop(2); fcondj(t->oplf, lab); return;
           case V_FCMPG:
@@ -303,6 +369,7 @@ static void condj(jtable t, int lab) {
                pop(2); fcondj(t->opld, lab); return;
           case V_DCMPG:
                pop(2); fcondj(t->opgd, lab); return;
+#endif
           case V_QCMP:
                pop(2); icondj(t->opq, lab); return;
 	  default:
@@ -316,19 +383,6 @@ static void condj(jtable t, int lab) {
 static void jump(int lab) {
      flush(0); 
      vm_gen(JUMP, target(lab)); 
-}
-
-/* callout -- call out-of-line stack operation */
-static void callout(func op, int nargs, int ty, int size) {
-     reg r;
-     flush_stack(0, nargs);
-     killregs();
-     r = ralloc(INT);
-     get_sp(r);
-     push_reg(r);
-     gcall(op, 1);
-     pop(nargs);
-     push((size == 1 ? V_STKW : V_STKQ), ty, NULL, 0, size);
 }
 
 /* proc_call -- procedure call */
@@ -383,6 +437,11 @@ static void loadq(void) {
 #endif
 }
 
+static void dupe(int n) {
+     ctvalue v = move_from_frame(n);
+     push(v->v_op, v->v_type, v->v_reg, v->v_val, v->v_size);
+}
+
 /* instr -- translate one bytecode instruction */
 static void instr(uchar *pc, int i, int arg1, int arg2) {
      reg r1, r2, r3;
@@ -394,8 +453,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #include "jitrules.c"
 
      case I_DUP:
-	  v = move_from_frame(arg1+1);
-	  push(v->v_op, v->v_type, v->v_reg, v->v_val, v->v_size);
+          dupe(arg1+1);
 	  break;
 	  
      case I_SWAP:
@@ -479,17 +537,29 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_FZCHECK:
+#ifdef FLOATOPS
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
 	  vm_gen(ZEROf, r2->r_reg);
 	  vm_gen(BEQf, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(V_REG, FLO, r1, 0, 1);
+#else
+          push_reg(rBP);
+          push_con(arg1);
+          callout(FLO_ZCHECK, 3, FLO, 1);
+#endif
 	  break;
 
      case I_DZCHECK:
+#ifdef FLOATOPS
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
 	  vm_gen(ZEROd, r2->r_reg);
 	  vm_gen(BEQd, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
 	  push(V_REG, FLO, r1, 0, 2);
+#else
+          push_reg(rBP);
+          push_con(arg1);
+          callout(DBL_ZCHECK, 3, FLO, 2);
+#endif          
 	  break;
 
      case I_GCHECK:
@@ -573,7 +643,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	       push(V_CON, INT, NULL, v->v_val, 2);
                break;
 	  }
-          qmonop(SXTq, LONG_EXT);
+          qmonop(SXTq);
 	  break;
 
      case I_CONVQN:

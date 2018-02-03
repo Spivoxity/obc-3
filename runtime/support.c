@@ -125,6 +125,82 @@ void long_ext(value *sp) {
 }
 #endif
 
+#ifndef FLOATOPS
+void flo_add(value *sp) { sp[1].f = sp[1].f + sp[0].f; }
+void flo_sub(value *sp) { sp[1].f = sp[1].f - sp[0].f; }
+void flo_mul(value *sp) { sp[1].f = sp[1].f * sp[0].f; }
+void flo_div(value *sp) { sp[1].f = sp[1].f / sp[0].f; }
+void flo_neg(value *sp) { sp[0].f = - sp[0].f; }
+void flo_float(value *sp) { sp[0].f = (float) sp[0].i; }
+void flo_fix(value *sp) { sp[0].i = (int) sp[0].f; }
+
+void flo_cmpl(value *sp) {
+     float a = sp[1].f, b = sp[0].f;
+     sp[1].i = (a > b ? 1 : a == b ? 0 : -1);
+}
+
+void flo_cmpg(value *sp) {
+     float a = sp[1].f, b = sp[0].f;
+     sp[1].i = (a < b ? -1 : a == b ? 0 : 1);
+}     
+     
+void dbl_add(value *sp) {
+     put_double(sp+2, get_double(sp+2) + get_double(sp));
+}
+
+void dbl_sub(value *sp) {
+     put_double(sp+2, get_double(sp+2) - get_double(sp));
+}
+
+void dbl_mul(value *sp) {
+     put_double(sp+2, get_double(sp+2) * get_double(sp));
+}
+
+void dbl_div(value *sp) {
+     put_double(sp+2, get_double(sp+2) / get_double(sp));
+}
+
+void dbl_neg(value *sp) {
+     put_double(sp, - get_double(sp));
+}
+
+void dbl_float(value *sp) {
+     put_double(sp-1, (double) sp[0].i);
+}
+
+void dbl_fix(value *sp) {
+     sp[1].i = (int) get_double(sp);
+}
+
+void dbl_cmpl(value *sp) {
+     double a = get_double(sp+2), b = get_double(sp);
+     sp[3].i = (a > b ? 1 : a == b ? 0 : -1);
+}
+
+void dbl_cmpg(value *sp) {
+     double a = get_double(sp+2), b = get_double(sp);
+     sp[3].i = (a < b ? -1 : a == b ? 0 : 1);
+}
+
+void dbl_widen(value *sp) {
+     put_double(sp-1, (double) sp[0].f);
+}
+
+void flo_trunc(value *sp) {
+     sp[1].f = (float) get_double(sp);
+}
+
+void flo_zcheck(value *sp) {
+     if (sp[2].f == 0.0f)
+          rterror(E_FDIV, sp[0].i, ptrcast(value, sp[1].a));
+}
+
+void dbl_zcheck(value *sp) {
+     if (get_double(sp+2) == 0.0)
+          rterror(E_FDIV, sp[0].i, ptrcast(value, sp[1].a));
+}
+#endif
+
 
 /* Conversions between int and floating point */
 

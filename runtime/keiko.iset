@@ -244,10 +244,10 @@ inst JUMP {S R}		S0 {jump($a)} {jump(arg1)}
 
 # LONGINT OPERATORS
 
-inst QPLUS 0 B.q 	{$1.q + $2.q} 		{qbinop(ADDq, LONG_ADD)}
-inst QMINUS 0 B.q 	{$1.q - $2.q} 		{qbinop(SUBq, LONG_SUB)}
-inst QTIMES 0 B.q 	{$1.q * $2.q} 		{qbinop(MULq, LONG_MUL)}
-inst QUMINUS 0 M.q 	{- $1.q}      		{qmonop(NEGq, LONG_NEG)}
+inst QPLUS 0 B.q 	{$1.q + $2.q} 		{qbinop(ADDq)}
+inst QMINUS 0 B.q 	{$1.q - $2.q} 		{qbinop(SUBq)}
+inst QTIMES 0 B.q 	{$1.q * $2.q} 		{qbinop(MULq)}
+inst QUMINUS 0 M.q 	{- $1.q}      		{qmonop(NEGq)}
 inst QDIV 0 T2q 	{long_div(sp)}		{callout(LONG_DIV, 2, INT, 2)}
 inst QMOD 0 T2q 	{long_mod(sp)}		{callout(LONG_MOD, 2, INT, 2)}
 
@@ -301,8 +301,8 @@ defs {
 #define lcmp(a, b)  (a < b ? -1 : a > b ? 1 : 0)
 }
 
-inst FCMPL 0 B.i 	{fcmpl($1.f, $2.f)} 	{fcompare(V_FCMPL)}
-inst FCMPG 0 B.i 	{fcmpg($1.f, $2.f)} 	{fcompare(V_FCMPG)}
+inst FCMPL 0 B.i 	{fcmpl($1.f, $2.f)} 	{fcompare(FCMPL)}
+inst FCMPG 0 B.i 	{fcmpg($1.f, $2.f)} 	{fcompare(FCMPG)}
 
 equiv FEQ 0		{FCMPL, PUSH 0, EQ}
 equiv FNEQ 0		{FCMPL, PUSH 0, NEQ}
@@ -334,8 +334,8 @@ inst DTIMES 0 B.d 	{$1.d * $2.d}       	{dbinop(MULd)}
 inst DDIV 0 B.d 	{$1.d / $2.d}       	{dbinop(DIVd)}
 inst DUMINUS 0 M.d 	{- $1.d}            	{dmonop(NEGd)}
 
-inst DCMPL 0 B.idd 	{fcmpl($1.d, $2.d)} 	{fcompare(V_DCMPL)}
-inst DCMPG 0 B.idd 	{fcmpg($1.d, $2.d)} 	{fcompare(V_DCMPG)}
+inst DCMPL 0 B.idd 	{fcmpl($1.d, $2.d)} 	{fcompare(DCMPL)}
+inst DCMPG 0 B.idd 	{fcmpg($1.d, $2.d)} 	{fcompare(DCMPG)}
 
 equiv DEQ 0		{DCMPL, PUSH 0, EQ}
 equiv DNEQ 0		{DCMPL, PUSH 0, NE}
@@ -358,12 +358,12 @@ equiv DJNGEQ R		{DCMPL, JLTZ $a}
 
 # CONVERSIONS
 
-inst CONVNF 0 M.f	{flo_conv($1.i)} 	{gmonop(CONVif, INT, FLO, 1)}
-inst CONVND 0 M.di 	{flo_conv($1.i)} 	{gmonop(CONVid, INT, FLO, 2)}
-inst CONVFN 0 M.i  	{(int) $1.f}     	{gmonop(CONVfi, FLO, INT, 1)}
-inst CONVDN 0 M.id 	{(int) $1.d}     	{gmonop(CONVdi, FLO, INT, 1)}
-inst CONVFD 0 M.df 	{$1.f}           	{gmonop(CONVfd, FLO, FLO, 2)}
-inst CONVDF 0 M.fd 	{(float) $1.d}   	{gmonop(CONVdf, FLO, FLO, 1)}
+inst CONVNF 0 M.f	{flo_conv($1.i)} 	{fdmonop(CONVif, INT, FLO, 1)}
+inst CONVND 0 M.di 	{flo_conv($1.i)} 	{fdmonop(CONVid, INT, FLO, 2)}
+inst CONVFN 0 M.i  	{(int) $1.f}     	{fdmonop(CONVfi, FLO, INT, 1)}
+inst CONVDN 0 M.id 	{(int) $1.d}     	{fdmonop(CONVdi, FLO, INT, 1)}
+inst CONVFD 0 M.df 	{$1.f}           	{fdmonop(CONVfd, FLO, FLO, 2)}
+inst CONVDF 0 M.fd 	{(float) $1.d}   	{fdmonop(CONVdf, FLO, FLO, 1)}
 inst CONVNC 0 M.i  	{$1.i & 0xff}    	{push_con(0xff); ibinop(AND)}
 inst CONVNS 0 M.i  	{(short) $1.i}   	{gmonop(CONVis, INT, INT, 1)}
 inst CONVNQ 0 M.qi 	{$1.i}

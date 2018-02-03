@@ -203,6 +203,29 @@ void long_flo(value *sp);
 void long_ext(value *sp);
 void long_zcheck(value *sp);
 
+void flo_add(value *sp);
+void flo_sub(value *sp);
+void flo_mul(value *sp);
+void flo_div(value *sp);
+void flo_neg(value *sp);
+void flo_float(value *sp);
+void flo_fix(value *sp);
+void flo_cmpl(value *sp);
+void flo_cmpg(value *sp);
+void flo_trunc(value *sp);
+void dbl_add(value *sp);
+void dbl_sub(value *sp);
+void dbl_mul(value *sp);
+void dbl_div(value *sp);
+void dbl_neg(value *sp);
+void dbl_float(value *sp);
+void dbl_fix(value *sp);
+void dbl_cmpl(value *sp);
+void dbl_cmpg(value *sp);
+void dbl_widen(value *sp);
+void flo_zcheck(value *sp);
+void dbl_zcheck(value *sp);
+
 word wrap_prim(primitive *prim);
 
 /* dynlink.c */
