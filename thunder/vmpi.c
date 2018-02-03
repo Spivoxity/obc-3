@@ -277,6 +277,7 @@ Rough instruction layout:
 #define opFLDD   MNEM("fldd",   opf(0xd1, cpDBL))
 #define opFLDS   MNEM("flds",   opf(0xd1, cpSGL))
 #define opFMOVD  MNEM("fmovd",  opf3(0xeb, 0x4, 0, cpDBL))
+#define opFMOVS  MNEM("fmovs",  opf3(0xeb, 0x4, 0, cpSGL))
 #define opFMRS   MNEM("fmrs",   opf2(0xe1, 0x1, cpSGL))
 #define opFMSR   MNEM("fmsr",   opf2(0xe0, 0x1, cpSGL))
 #define opFMSTAT MNEM("fmstat", opf3(0xef, 0x1, 0x1, cpSGL))
@@ -853,7 +854,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      case MOV:
           write_reg(ra);
 	  if (isfloat(ra) && isfloat(rb))
-	       op_rr(opFMOVD, ra, rb);
+	       op_rr(opFMOVS, ra, rb);
           else if (isfloat(ra))
 	       fmsr(ra, rb);	// Can only happen via SYSTEM.VAL etc.
           else if (isfloat(rb))
@@ -861,6 +862,10 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  else
                move_reg(ra, rb); 
 	  break;
+
+     case MOVq:
+          op_rr(opFMOVD, ra, rb);
+          break;
 
      case NEG:    
           write_reg(ra);

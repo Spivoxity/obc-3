@@ -71,9 +71,9 @@ void word(int x) {
 }
 
 /* vm_literal -- allocate space in code buffer */
-code_addr vm_literal(int n) {
-     vm_space(n);
-     limit -= n;
+code_addr vm_literal_align(int n, int a) {
+     vm_space(n+a);
+     limit = (code_addr) (((ptr) limit - n) & ~(a-1));
      return limit;
 }
 
