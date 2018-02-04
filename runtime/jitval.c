@@ -37,18 +37,14 @@
 
      OP    FIELDS      MEANING
                                 
-     REG   reg         reg
      CON       val     val
-     STKW      val     mem_4[BP + val]
-     STKQ      val     mem_8[BP + val]
+     REG   reg         reg
      ADDR  reg val     reg + val
      KONW      val     konst_4[val]
-     KONQ      val     konst_8[val]
      MEMs  reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
-     [FD]CMP[LG], QCMP comparison of two previous values
-
-KONW and KONQ refer to the pool of constants for the procedure
-being compiled.  */
+     STKW      val     mem_4[BP + val]
+     STKQ      val     mem_8[BP + val]
+     *CMP*             comparison of two previous values */
 
 #define __v2__(sym) #sym,
 static char *vkind_name[] = { __VALKINDS__(__v2__) };
@@ -543,10 +539,21 @@ reg move_to_reg(int i, int ty) {
 /* fix_const -- check a stack item is a constant or move it to a register */
 ctvalue fix_const(int i, mybool rflag) {
      ctvalue v = &vstack[sp-i];
+     extern value *jit_cxt;
 
-     if (v->v_op != V_CON) {
+     switch (v->v_op) {
+     case V_CON:
+          break;
+
+     case V_KONW:
+          v->v_op = V_CON;
+          v->v_reg = NULL;
+          v->v_val = * (word *) ((uchar *) jit_cxt + v->v_val);
+          break;
+
+     default:
 	  if (!rflag)
-	       panic("fix_const %s", instrs[v->v_op].i_name);
+	       panic("fix_const %s", vkind_name[v->v_op]);
 	  move_to_reg(i, INT);
      }
 
@@ -565,7 +572,7 @@ void deref(valkind vkind, int ty, int size) {
           break;
 
      case V_CON:
-	  fix_const(1, FALSE); pop(1); unlock(1); r1 = NULL;
+	  pop(1); unlock(1); r1 = NULL;
 	  push(vkind, ty, NULL, v->v_val, size);
 	  break;
 

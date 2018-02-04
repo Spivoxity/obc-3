@@ -68,7 +68,7 @@ struct _decode decode[] = { __OPCODES__(__o2__) };
 
 /* Translator */
 
-static value *context;		/* CP for the current procedure */
+value *jit_cxt;                 /* CP for the current procedure */
 static uchar *pcbase, *pclimit;	/* Code addresses */
 
 static vmlabel stack_oflo, retlab;
@@ -115,7 +115,7 @@ static word prolog(const char *name, int frame, int map) {
 
 /* stack_map -- find pointer map for eval stack at procedure call */
 static int stack_map(uchar *pc) {
-     value *r = valptr(context[CP_STKMAP]);
+     value *r = valptr(jit_cxt[CP_STKMAP]);
      if (r == NULL) return 0;
      while (pointer(r[0]) != NULL) {
 	  if (pointer(r[0]) == pc) return r[1].i;
@@ -838,11 +838,11 @@ void jit_compile(value *cp) {
 	  printf("JIT: %s\n", (p != NULL ? p->p_name : "???"));
 #endif
 
-     context = cp; 
-     int frame = context[CP_FRAME].i;
-     pcbase = pointer(context[CP_CODE]);
-     pclimit = pcbase + context[CP_SIZE].i;
-     int map = context[CP_MAP].i;
+     jit_cxt = cp; 
+     int frame = jit_cxt[CP_FRAME].i;
+     pcbase = pointer(jit_cxt[CP_CODE]);
+     pclimit = pcbase + jit_cxt[CP_SIZE].i;
+     int map = jit_cxt[CP_MAP].i;
 
      init_regs();
      init_labels();
