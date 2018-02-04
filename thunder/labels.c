@@ -181,7 +181,7 @@ static unsigned *caseptr;
 int vm_jumptable(int n) {
      code_addr table = vm_literal(n * sizeof(unsigned));
      caseptr = (unsigned *) table;
-     return vm_addr(*table);
+     return vm_addr(table);
 }
 
 /* vm_caselab -- add an address to the current jump table */

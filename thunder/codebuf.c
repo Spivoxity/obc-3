@@ -70,14 +70,14 @@ void word(int x) {
      pc += 4;
 }
 
-/* vm_literal -- allocate space in code buffer */
-code_addr vm_literal_align(int n, int a) {
+/* vm_literal_align -- allocate aligned space in code buffer */
+void *vm_literal_align(int n, int a) {
      vm_space(n+a);
      limit = (code_addr) (((ptr) limit - n) & ~(a-1));
      return limit;
 }
 
-int _vm_addr(void *p) {
+int vm_addr(void *p) {
      int r = (int) (ptr) p;
      if (p != (void *) (ptr) r)
           vm_panic("address overflow");
@@ -88,11 +88,7 @@ int vm_wrap(funptr fun) {
 #ifndef M64X32     
      return (int) fun;
 #else
-     /* Use a trampoline */
-     vm_space(12);
-     limit = (code_addr) (((ptr) limit - 8) & ~0x7);
-     * (funptr *) limit = fun;
-     return vm_addr(*limit);
+     return vm_tramp(fun);
 #endif
 }
 
@@ -100,7 +96,7 @@ funptr vm_func(int fun) {
 #ifndef M64X32
      return (funptr) fun;
 #else
-     return * (funptr *) (ptr) fun;
+     return (funptr) (ptr) fun;
 #endif
 }
 

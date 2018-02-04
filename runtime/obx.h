@@ -117,7 +117,11 @@ EXTERN word dynstub;
 #ifndef M64X32
 #define primcall(p, sp)  ((primitive *) p[CP_PRIM].a)(sp)
 #else
+#ifdef JIT
+#define primcall(p, sp)  (ptrcast(primitive, p[CP_PRIM].a))(sp)
+#else
 #define primcall(p, sp)  (*ptrcast(primitive *, p[CP_PRIM].a))(sp)
+#endif
 #endif
 
 #define get1(p)  ((int) ((signed char) (p)[0]))

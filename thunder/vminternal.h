@@ -67,11 +67,10 @@ void vm_chain(code_addr p);
 void vm_reset(void);
 void vm_patch(code_addr loc, code_addr lab);
 void vm_branch(int kind, code_addr loc, vmlabel lab);
-code_addr vm_literal_align(int n, int almt);
-#define vm_literal(n) vm_literal_align(n, 4);
 void vm_panic(const char *fmt, ...);
 void vm_unknown(const char *where, operation op);
 int vm_print(code_addr p);
+int vm_tramp(funptr fun);
 
 #ifdef DEBUG
 void vm_debug1(int op, int nrands, ...);

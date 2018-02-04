@@ -109,11 +109,9 @@ const vmreg vm_ireg[] = {
 
    * All addresses that are passed to the code generation interface must
      fit in 32 bits.  That means global data storage needs to be in the bottom
-     4GB of memory.  For function addresses, we use wrappers, so that the
-     CALL instruction is in effect an indirect call, receiving the 32-bit
-     address of cell that contains the 64-bit address of the function.
-     It's up to the host software to create and manage these indirection
-     cells. 
+     4GB of memory.  For function addresses, we use trampolines, so that the
+     CALL instruction needs only a 32-bit address.  It's up to the host 
+     software to create and manage these trampolines.
 
    Registers 12 and 13 are hard to encode as index registers, so we 
    don't bother with them.  On Windows, rSI and rDI are
@@ -378,6 +376,7 @@ static char *fmt_addr(int rs, int imm) {
 #define opJMP		MNEM2("jmp", 0xff, 4)
 #define opJMP_i		MNEM("jmp", 0xe9)
 #define opCALL		MNEM2("call", 0xff, 2)
+#define opCALL32	MNEM2("call32", pfx(ADDR32, 0xff), 2)
 #define opCALL_i	MNEM("call", 0xe8)
 #define opTEST		MNEM("test", 0x85)
 #define opTESTq		MNEM("testq", pfx(REX_W, 0x85))
@@ -657,15 +656,6 @@ static void instr2_ri8(OPDECL2, int rm, int imm) {
      opcode(op), addr(3, op2, rm), byte(imm);
      vm_done();
 }
-
-#ifdef M64X32
-/* instruction with 2 opcodes, memory operand */
-static void instr2_m(OPDECL2, int rs, int imm) {
-     vm_debug2("%s *%s", mnem, fmt_addr(rs, imm));
-     opcode(op), memory(op2, rs, imm);
-     vm_done();
-}
-#endif
 
 /* instruction with 2 opcodes and 8/32 bit immediate */
 static void instr2_ri(OPDECL2, int rm, int imm) {
@@ -1407,13 +1397,14 @@ static void move_args() {
 static void call_r(int ra) {
      funreg = ra;
      move_args();
-     instr2_m(opCALL, funreg, 0);
+     // instr2_m(opCALL, funreg, 2);
+     instr2_r(opCALL32, funreg);
 }
 
 static void call_i(int a) {
-     /* Indirect call via trampoline */
      move_args();
-     instr2_m(opCALL, NOREG, a);
+     // instr2_m(opCALL, NOREG, a+2);
+     instr_tgt(opCALL_i, (code_addr) (address) a);
 }     
 
 int vm_prelude(int n, int locs) {
@@ -1439,7 +1430,7 @@ int vm_prelude(int n, int locs) {
      if (locals > argsp)
           sub64_i(rSP, locals - argsp);
 #endif
-     return vm_wrap((funptr) entry);
+     return (int) (address) entry;
 }
 
 static void retn(void) {
@@ -1458,19 +1449,6 @@ static void retn(void) {
 /* TRANSLATION ROUTINES */
 
 #define badop() vm_unknown(__FUNCTION__, op)
-
-void vm_gen0(operation op) {
-     vm_debug1(op, 0);
-     vm_space(0);
-
-     switch (op) {
-     case RET: 
-          retn(); break;
-
-     default:
-	  badop();
-     }
-}
 
 void vm_gen1r(operation op, vmreg rega) {
      int ra = rega->vr_reg;
@@ -2156,7 +2134,26 @@ void vm_patch(code_addr loc, code_addr lab) {
      *p = lab - loc - 4;
 }
 
+#ifdef M64X32
+int vm_tramp(funptr f) {
+     uint64 a = (uint64) f;
+     code_addr p = vm_literal(12);
+     code_addr q = p;
+
+     // mov ax, #addr64
+     *q++ = 0x48; *q++ = 0xb8;
+     for (int i = 0; i < 8; i++) {
+          *q++ = a & 0xff; a >>= 8;
+     }
+     // jmp ax
+     *q++ = 0xff; *q++ = 0xe0;
+
+     return (int) (ptr) p;
+}
+#endif
+
 void vm_postlude(void) {
+     retn();
 }
 
 void vm_chain(code_addr p) {

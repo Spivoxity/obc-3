@@ -326,10 +326,6 @@ Rough instruction layout:
 #define opSUB    MNEM("sub",    opn(aluSUB))
 #define opSXTH   MNEM("sxth",   opn3(0x6b, 0x7, 0xf))
 
-#ifndef CODEPAGE
-#define CODEPAGE 4096	      /* Size of each code buffer */
-#endif
-#define MARGIN 32	      /* Safety margin for switching buffers */
 
 // ---------------- INSTRUCTION FORMATTING ----------------
 
@@ -421,7 +417,7 @@ static void ldst_ri(OPDECL, int rd, int rn, int off) {
 
 // rd :=: mem[rn + rm]
 static void ldst_rr(OPDECL, int rd, int rn, int rm) {
-     vm_debug2("%s, %s, [%s, %s]", mnem, regname[rd], regname[rn], regname[rm]);
+     vm_debug2("%s %s, [%s, %s]", mnem, regname[rd], regname[rn], regname[rm]);
      instr(op|RRBIT|UBIT, reg(rd), reg(rn), reg(rm));
      vm_done();
 }
@@ -543,12 +539,14 @@ static int immediate(int imm) {
           val = (val >> 2) | (val << 30); shift++;
      }
 
-     /* Compute immediate field; nonsense if val >= 256. Encoded using ROR. */
+     /* Compute immediate field; nonsense if val >= 256. Decoded using ROR. */
      imm_field = (((16-shift)&0xf) << 8) | val;
-     // if (val < 256 && shift > 0) printf("Bingo! %u %d\n", val, shift);
+
+     /* Return true on success */
      return (val < 256);
 }
  
+/* move_immed -- move constant into specified register */
 static void move_immed(int r, int imm) {
      if (immediate(imm))
           op_ri(opMOV, r, imm_field);
@@ -558,11 +556,13 @@ static void move_immed(int r, int imm) {
           load_literal(r, imm);
 }
 
+/* const_reg -- move constant into scratch register */
 static int const_reg(int imm) {
      move_immed(IP, imm);
      return IP;
 }
 
+/* compare_immed -- CMP instruction with immediate operand */
 void compare_immed(int rn, int imm) {
      if (immediate(imm))
 	  cmp_i(opCMP, rn, imm_field);
@@ -585,8 +585,8 @@ static void arith_signed(OPDECL, OPDECL2, int rd, int rn, int imm) {
      }
 }
 
-#define arith_immed(ispec, rd, rn, imm)	\
-     arith_signed(ispec, NULLOP, rd, rn, imm)
+#define arith_immed(op, rd, rn, imm)	\
+     arith_signed(op, NULLOP, rd, rn, imm)
 
 #define add_immed(ra, rb, c) \
      arith_signed(opADD, opSUB, ra, rb, c)
@@ -609,8 +609,8 @@ static void boolcond(OPDECL, int r) {
 
 /* vm_patch -- patch offset into a branch */
 void vm_patch(code_addr loc, code_addr lab) {
-     /* I hope that if a branch crosses between code segments, the segments 
-	have been allocated close enough to each other. */
+     /* Let's hope that if a branch crosses between code segments, 
+        the segments have been allocated close enough to each other. */
 
      int off = lab - loc - 8; // in bytes
      assert((off & 0x3) == 0);
@@ -627,29 +627,29 @@ static void branch(OPDECL, vmlabel lab) {
      vm_branch(BRANCH, loc, lab);
 }
 
-#define bool_reg(ispec, ra, rb, rc) \
-     cmp_r(opCMP, rb, rc), boolcond(ispec, ra)
+#define bool_reg(op, ra, rb, rc) \
+     cmp_r(opCMP, rb, rc), boolcond(op, ra)
 
-#define bool_immed(ispec, ra, rb, c) \
-     compare_immed(rb, c), boolcond(ispec, ra)
+#define bool_immed(op, ra, rb, c) \
+     compare_immed(rb, c), boolcond(op, ra)
 
-#define bool_reg_f(ispec, ra, rb, rc) \
-     op_rr(opFCMPS, rb, rc), fmstat(), boolcond(ispec, ra)
+#define bool_reg_f(op, ra, rb, rc) \
+     op_rr(opFCMPS, rb, rc), fmstat(), boolcond(op, ra)
 
-#define bool_reg_d(ispec, ra, rb, rc) \
-     op_rr(opFCMPD, rb, rc), fmstat(), boolcond(ispec, ra)
+#define bool_reg_d(op, ra, rb, rc) \
+     op_rr(opFCMPD, rb, rc), fmstat(), boolcond(op, ra)
 
-#define br_reg(ispec, ra, rb, lab) \
-     cmp_r(opCMP, ra, rb), branch(ispec, lab)
+#define br_reg(op, ra, rb, lab) \
+     cmp_r(opCMP, ra, rb), branch(op, lab)
 
-#define br_reg_f(ispec, ra, rb, lab) \
-     op_rr(opFCMPS, ra, rb), fmstat(), branch(ispec, lab)
+#define br_reg_f(op, ra, rb, lab) \
+     op_rr(opFCMPS, ra, rb), fmstat(), branch(op, lab)
  
-#define br_reg_d(ispec, ra, rb, lab) \
-     op_rr(opFCMPD, ra, rb), fmstat(), branch(ispec, lab)
+#define br_reg_d(op, ra, rb, lab) \
+     op_rr(opFCMPD, ra, rb), fmstat(), branch(op, lab)
  
-#define br_immed(ispec, ra, b, lab) \
-     compare_immed(ra, b), branch(ispec, lab)
+#define br_immed(op, ra, b, lab) \
+     compare_immed(ra, b), branch(op, lab)
 
 /* Loads and stores for word and unsigned byte */
 static void load_store(OPDECL, int ra, int rb, int c) {
@@ -737,7 +737,7 @@ static void proc_call(int ra) {
      jump_r(opBLX, ra);
 }
 
-// Register map and patch chain for RET locations
+// Register map
 
 static unsigned regmap = 0;
 
@@ -745,33 +745,9 @@ static void write_reg(int r) {
      if (! isfloat(r)) regmap |= bit(r);
 }
 
-static code_addr retchain = NULL;
-
-static void retlink() {
-     code_addr p = pc;
-     word((int) retchain);
-     retchain = p;
-}
-
-
 // ---------------- CODE GENERATION INTERFACE ----------------
 
 #define badop() vm_unknown(__FUNCTION__, op)
-
-void vm_gen0(operation op) {
-     vm_debug1(op, 0);
-     vm_space(0);
-
-     switch (op) {
-     case RET: 
-          vm_debug2("ldmfd fp, ...\n");
-          retlink();
-	  break;
-
-     default:
-	  badop();
-     }
-}
 
 void vm_gen1r(operation op, vmreg rega) {
      int ra = rega->vr_reg;
@@ -864,6 +840,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  break;
 
      case MOVq:
+          assert(isfloat(ra) && isfloat(rb));
           op_rr(opFMOVD, ra, rb);
           break;
 
@@ -1322,7 +1299,6 @@ static int locals;
 int vm_prelude(int n, int locs) {
      nlits = 0;
      regmap = 0;
-     retchain = NULL;
      locals = (locs+7)&~7;
 
      entry = pc;
@@ -1342,12 +1318,12 @@ void vm_chain(code_addr p) {
      nlits = 0;
 }
 
-int parity(short x) {
-     x = (x ^ (x >> 8)) & 0xff;
-     x = (x ^ (x >> 4)) & 0xf;
-     x = (x ^ (x >> 2)) & 0x3;
-     x = (x ^ (x >> 1)) & 0x1;
-     return x;
+int parity(unsigned short x) {
+     x ^= x >> 8;               // These are single instructions on the ARM
+     x ^= x >> 4;
+     x ^= x >> 2;
+     x ^= x >> 1;
+     return x&1;
 }
 
 /* vm_postlude -- finish compiling procedure */
@@ -1362,12 +1338,9 @@ void vm_postlude(void) {
           fmt_instr(GETOP(opSTMFDw), 0, reg(SP),
 		    regmap|bit(FP)|bit(IP)|bit(LR));
 
-     for (code_addr p = retchain, q; p != NULL; p = q) {
-          q = * (code_addr *) p;
-          * (int *) p =
-   	       fmt_instr(GETOP(opLDMFD), 0, reg(FP),
-			 regmap|bit(FP)|bit(SP)|bit(PC));
-     }
+     vm_debug2("ldmfd fp, ...\n");
+     instr(GETOP(opLDMFD), 0, reg(FP),
+           regmap|bit(FP)|bit(SP)|bit(PC));
 }
 
 #ifdef DEBUG

@@ -101,11 +101,8 @@ $(REVDEP): CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
 # Cancel default rule
 %.o: %.c
 
-$(OBX) $(JIT) gc.o trace.o profile.o debug.o : %.o : %.c
+$(OBX) gc.o trace.o profile.o debug.o : %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
-
-%-n.o : %.c
-	$(CC) $(ALL_RTFLAGS) -DNATIVE -c $< -o $@
 
 %-t.o : %.c
 	$(CC) $(ALL_RTFLAGS) -DTRACE -c $< -o $@
@@ -116,9 +113,11 @@ $(OBX) $(JIT) gc.o trace.o profile.o debug.o : %.o : %.c
 %-d.o : %.c
 	$(CC) $(ALL_RTFLAGS) -DOBXDEB -c $< -o $@
 
-%-j.o : %.c
+$(JIT): %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -DJIT -c $< -o $@
 
+%-j.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DJIT -c $< -o $@
 
 keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl
 	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset \

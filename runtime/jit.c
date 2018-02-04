@@ -620,9 +620,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_RETURN:
-          /* Elide the jump at end of procedure */
-          if (pc+1 < pclimit)
-               vm_gen(JUMP, retlab);
+          vm_gen(JUMP, retlab);
 	  break;
 
      case I_LNUM:
@@ -814,9 +812,6 @@ static void translate(void) {
 	       pc += d->d_len;
 	  }
      }
-
-     vm_label(retlab);
-     vm_gen(RET);
 }
 
 static void make_error(vmlabel lab, int code, int line) {
@@ -863,6 +858,7 @@ void jit_compile(value *cp) {
      word entry = prolog(pname, frame, map);
      translate();
      do_errors(make_error);
+     vm_label(retlab);
      vm_end();
      cp[CP_PRIM].a = entry;
 

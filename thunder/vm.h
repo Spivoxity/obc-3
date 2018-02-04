@@ -54,8 +54,8 @@
      /* Load and store */                                           \
      p(LDB) p(LDBu) p(LDS) p(LDSu) p(LDW) p(LDQ)                    \
      p(STW) p(STB) p(STQ) p(STS)                                    \
-     /* Call and return */                                          \
-     p(PREP) p(ARG) p(CALL) p(GETARG) p(RET) p(JUMP)                \
+     /* Call and jump */                                            \
+     p(PREP) p(ARG) p(CALL) p(GETARG) p(JUMP)                       \
      /* 64-bit arithmetic (M64X32 only) */                          \
      p(ADDq) p(SUBq) p(MULq) p(NEGq) p(MOVq) p(SXTq)                \
      p(LTq) p(LEq) p(EQq) p(GEq) p(GTq) p(NEq)                      \
@@ -237,8 +237,7 @@ void vm_gen3rri(operation op, vmreg a, vmreg b, int c);
 void vm_gen3rrj(operation op, vmreg a, vmreg b, vmlabel lab);
 void vm_gen3rij(operation op, vmreg a, int b, vmlabel lab);
 
-#define vm_addr(x) _vm_addr(&(x))
-int _vm_addr(void *x);
+int vm_addr(void *x);
 
 unsigned vm_begin_locals(const char *name, int n, int locs);
 #define vm_begin(name, n) vm_begin_locals(name, n, 0);
@@ -252,6 +251,9 @@ void *vm_scratch(int size);
 typedef void (*funptr)(void);
 
 int vm_wrap(funptr fun);
+
+void *vm_literal_align(int n, int almt);
+#define vm_literal(n) vm_literal_align(n, 4);
 
 funptr vm_func(int fun);
 
@@ -273,7 +275,7 @@ extern int vm_aflag;
 #define _SELECT(p, q, r, s, t, ...) t
 
 #define vm_gen(...) \
-     _SELECT(__VA_ARGS__, vm_gen3, vm_gen2, vm_gen1, vm_gen0)(__VA_ARGS__)
+     _SELECT(__VA_ARGS__, vm_gen3, vm_gen2, vm_gen1)(__VA_ARGS__)
 
 #define intcases(r) int: r, unsigned: r, char: r
 
