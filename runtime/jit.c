@@ -89,7 +89,7 @@ static word prolog(const char *name, int frame, int map) {
      vm_gen(BGEu, rBP->r_reg, address(stack + SLIMIT + frame), lab);
      vm_label(stack_oflo);
      push_reg(rBP);
-     gcall(STKOFLO, 1);
+     gcall(stkoflo, 1);
      vm_label(lab);
 
      if (map != 0 && (map & 0x1) == 0) {
@@ -98,7 +98,7 @@ static word prolog(const char *name, int frame, int map) {
           push_con(frame);
           push_con(0);
           push_reg(rI0);
-	  gcall(MEMSET, 3);
+	  gcall(memset, 3);
      } else if (map != 0) {
           // A bitmap -- clear specified words
           map >>= 1;
@@ -125,7 +125,7 @@ static int stack_map(uchar *pc) {
 }
 
 /* callout -- call out-of-line stack operation */
-static void callout(func op, int nargs, int ty, int size) {
+static void callout(void *op, int nargs, int ty, int size) {
      reg r;
      flush_stack(0, nargs);
      killregs();
@@ -154,14 +154,14 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
 #define fdmonop(op, c1, c2, s) gmonop(op, c1, c2, s)
 #else
 #define fdmonop(op, c1, c2, s) callout(fn##op, 1, c2, s)
-#define fnNEGf FLO_NEG
-#define fnCONVif FLO_FLOAT
-#define fnCONVfi FLO_FIX
-#define fnCONVdf FLO_TRUNC
-#define fnNEGd DBL_NEG
-#define fnCONVid DBL_FLOAT
-#define fnCONVdi DBL_FIX
-#define fnCONVfd DBL_WIDEN
+#define fnNEGf flo_neg
+#define fnCONVif flo_float
+#define fnCONVfi flo_fix
+#define fnCONVdf flo_trunc
+#define fnNEGd dbl_neg
+#define fnCONVid dbl_float
+#define fnCONVdi dbl_fix
+#define fnCONVfd dbl_widen
 #endif
 
 #define imonop(op) gmonop(op, INT, INT, 1)
@@ -172,8 +172,8 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
 #define qmonop(op) gmonop(op, INT, INT, 2)
 #else
 #define qmonop(op) callout(fn##op, 1, INT, 2)
-#define fnNEGq LONG_NEG
-#define fnSXTq LONG_EXT
+#define fnNEGq long_neg
+#define fnSXTq long_ext
 #endif
 
 /* binop -- binary integer operation */
@@ -203,22 +203,22 @@ static void binop(operation op, int size) {
 #define qbinop(op)  binop(op, 2)
 #else
 #define qbinop(op)  callout(fn##op, 2, INT, 2)
-#define fnADDq LONG_ADD
-#define fnSUBq LONG_SUB
-#define fnMULq LONG_MUL
-#define fnDIVq LONG_DIV
+#define fnADDq long_add
+#define fnSUBq long_sub
+#define fnMULq long_mul
+#define fnDIVq long_div
 #endif
 
 #ifndef FLOATOPS
 #define fdbinop(op, s) callout(fn##op, 2, FLO, s)
-#define fnADDf FLO_ADD
-#define fnSUBf FLO_SUB
-#define fnMULf FLO_MUL
-#define fnDIVf FLO_DIV
-#define fnADDd DBL_ADD
-#define fnSUBd DBL_SUB
-#define fnMULd DBL_MUL
-#define fnDIVd DBL_DIV
+#define fnADDf flo_add
+#define fnSUBf flo_sub
+#define fnMULf flo_mul
+#define fnDIVf flo_div
+#define fnADDd dbl_add
+#define fnSUBd dbl_sub
+#define fnMULd dbl_mul
+#define fnDIVd dbl_div
 #else
 
 /* fdbinop -- floating point binary operation */
@@ -263,10 +263,7 @@ static mybool is_zero(ctvalue v) {
      return (v->v_op == V_CON && v->v_val == 0);
 }
 
-#ifndef FLOATOPS
-#define fcomp(op) callout(fn##op, 2, INT, 1)
-#else
-
+#ifdef FLOATOPS
 /* fcomp -- float or double comparison */
 static void fcomp(operation op) {
      reg r1, r2, r3;
@@ -277,7 +274,6 @@ static void fcomp(operation op) {
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);	
      push_reg(r3);						
 }
-
 #endif
 
 /* compare -- integer comparison */
@@ -309,10 +305,10 @@ static void compare1(operation op, operation opf, operation opd,
 #define fcompare(op) push(V_##op, INT, NULL, 0, 0)
 #else
 #define fcompare(op) callout(fn##op, 2, INT, 1)
-#define fnFCMPL FLO_CMPL
-#define fnFCMPG FLO_CMPG
-#define fnDCMPL DBL_CMPL
-#define fnDCMPG DBL_CMPG
+#define fnFCMPL flo_cmpl
+#define fnFCMPG flo_cmpg
+#define fnDCMPL dbl_cmpl
+#define fnDCMPG dbl_cmpg
 #endif
 
 /* icondj -- integer conditional jump */
@@ -545,7 +541,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #else
           push_reg(rBP);
           push_con(arg1);
-          callout(FLO_ZCHECK, 3, FLO, 1);
+          callout(flo_zcheck, 3, FLO, 1);
 #endif
 	  break;
 
@@ -558,7 +554,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #else
           push_reg(rBP);
           push_con(arg1);
-          callout(DBL_ZCHECK, 3, FLO, 2);
+          callout(dbl_zcheck, 3, FLO, 2);
 #endif          
 	  break;
 
@@ -583,7 +579,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  move_to_rc(1); 
           push_reg(r2);
           push_reg(r1);
-          gcall(MEMCPY, 3);
+          gcall(memcpy, 3);
 	  pop(2); killregs();
 	  break;
 	  
@@ -600,7 +596,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           push_reg(r2);
           push_reg(r3);
           push_reg(rSP);
-	  gcall(MEMCPY, 3);
+	  gcall(memcpy, 3);
           killregs();
           break;
 
@@ -628,7 +624,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_QCMP:
 #ifndef M64X32
-	  callout(LONG_CMP, 2, INT, 1);
+	  callout(long_cmp, 2, INT, 1);
 #else
           push(V_QCMP, INT, NULL, 0, 0);
 #endif          
@@ -660,7 +656,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #ifndef M64X32
           push_reg(rBP);
           push_con(arg1);
-          callout(LONG_ZCHECK, 3, INT, 2);
+          callout(long_zcheck, 3, INT, 2);
 #else
           r1 = move_to_reg(1, INT); pop(1); unlock(1);
           vm_gen(BEQq, r1->r_reg, 0, handler(E_DIV, arg1));
@@ -819,7 +815,7 @@ static void make_error(vmlabel lab, int code, int line) {
      push_reg(rBP);
      push_con(line);
      push_con(code);
-     gcall(RTERROR, 3);
+     gcall(rterror, 3);
 }
 
 static int serial;              /* Serial number for anonymous procedures */

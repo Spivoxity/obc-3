@@ -160,40 +160,7 @@ vmlabel target(int lab);
 void move_longval(ctvalue src, reg rd, int offd);
 void get_halflong(ctvalue src, int off, reg dst);
 
-#define __FUNC0__(p) \
-     p(MEMCPY, memcpy) p(STKOFLO, stkoflo) p(MEMSET, memset) \
-     p(RTERROR, rterror) p(INT_DIV, int_div) p(INT_MOD, int_mod) \
-     p(LONG_DIV, long_div) p(LONG_MOD, long_mod) p(LONG_FLO, long_flo)
-
-#ifdef M64X32
-#define __FUNC1__(p) __FUNC0__(p)
-#else
-#define __FUNC1__(p) __FUNC0__(p) \
-     p(LONG_ADD, long_add) p(LONG_SUB, long_sub) p(LONG_MUL, long_mul) \
-     p(LONG_NEG, long_neg) p(LONG_CMP, long_cmp) p(LONG_EXT, long_ext) \
-     p(LONG_ZCHECK, long_zcheck)
-#endif     
-
-#ifdef FLOATOPS
-#define __FUNC__(p) __FUNC1__(p)
-#else
-#define __FUNC__(p) __FUNC1__(p) \
-     p(FLO_ADD, flo_add) p(FLO_SUB, flo_sub) p(FLO_MUL, flo_mul) \
-     p(FLO_DIV, flo_div) p(FLO_NEG, flo_neg) p(FLO_FLOAT, flo_float)    \
-     p(FLO_FIX, flo_fix) p(FLO_CMPL, flo_cmpl) p(FLO_CMPG, flo_cmpg)     \
-     p(DBL_ADD, dbl_add) p(DBL_SUB, dbl_sub) p(DBL_MUL, dbl_mul) \
-     p(DBL_DIV, dbl_div) p(DBL_NEG, dbl_neg) p(DBL_FLOAT, dbl_float)    \
-     p(DBL_FIX, dbl_fix) p(DBL_CMPL, dbl_cmpl) p(DBL_CMPG, dbl_cmpg) \
-     p(DBL_WIDEN, dbl_widen) p(FLO_TRUNC, flo_trunc) \
-     p(FLO_ZCHECK, flo_zcheck) p(DBL_ZCHECK, dbl_zcheck)
-#endif
-
-#define __func1__(name, fun) name,
-typedef enum {
-     __FUNC__(__func1__) NFUNC
-} func;
-
-void gcall(func f, int n);
+void gcall(void *f, int n);
 void gcallr(reg r, int n);
 
 

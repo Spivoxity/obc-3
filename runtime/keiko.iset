@@ -210,8 +210,8 @@ inst LSR 0 B.i 		{(unsigned) $1.i>>$2.i} {ibinop(RSHu)}
 inst ASR 0 B.i 		{$1.i >> $2.i}      	{ibinop(RSH)}
 inst ROR 0 B.i 		{ror($1.i, $2.i)}   	{ibinop(ROR)}
 
-inst DIV 0 T2 		{int_div(sp)}      	{callout(INT_DIV, 2, INT, 1)}
-inst MOD 0 T2 		{int_mod(sp)}      	{callout(INT_MOD, 2, INT, 1)}
+inst DIV 0 T2 		{int_div(sp)}      	{callout(int_div, 2, INT, 1)}
+inst MOD 0 T2 		{int_mod(sp)}      	{callout(int_mod, 2, INT, 1)}
 
 inst EQ 0 B.i 		{$1.i == $2.i}  	{compare(EQ)}
 inst LT 0 B.i 		{$1.i < $2.i}   	{compare(LT)}
@@ -248,8 +248,8 @@ inst QPLUS 0 B.q 	{$1.q + $2.q} 		{qbinop(ADDq)}
 inst QMINUS 0 B.q 	{$1.q - $2.q} 		{qbinop(SUBq)}
 inst QTIMES 0 B.q 	{$1.q * $2.q} 		{qbinop(MULq)}
 inst QUMINUS 0 M.q 	{- $1.q}      		{qmonop(NEGq)}
-inst QDIV 0 T2q 	{long_div(sp)}		{callout(LONG_DIV, 2, INT, 2)}
-inst QMOD 0 T2q 	{long_mod(sp)}		{callout(LONG_MOD, 2, INT, 2)}
+inst QDIV 0 T2q 	{long_div(sp)}		{callout(long_div, 2, INT, 2)}
+inst QMOD 0 T2q 	{long_mod(sp)}		{callout(long_mod, 2, INT, 2)}
 
 equiv QINC 0		{PUSH 1, CONVNQ, QPLUS}
 equiv QDEC 0		{PUSH 1, CONVNQ, QMINUS}
@@ -368,7 +368,7 @@ inst CONVNC 0 M.i  	{$1.i & 0xff}    	{push_con(0xff); ibinop(AND)}
 inst CONVNS 0 M.i  	{(short) $1.i}   	{gmonop(CONVis, INT, INT, 1)}
 inst CONVNQ 0 M.qi 	{$1.i}
 inst CONVQN 0 M.iq 	{(int) $1.q}
-inst CONVQD 0 M.dq 	{flo_convq($1.q)} 	{callout(LONG_FLO, 1, FLO, 2)}
+inst CONVQD 0 M.dq 	{flo_convq($1.q)} 	{callout(long_flo, 1, FLO, 2)}
 
 
 # RUN-TIME CHECKS
