@@ -40,7 +40,7 @@
 
 // ---------------- REGISTERS ----------------
 
-/* Register numbers */
+/* Register numbers -- agree with binary encoding */
 #define R0  0
 #define R1  1
 #define R2  2
@@ -71,34 +71,42 @@
 #define F12  0x16
 #define F14  0x17
 
+/* vmreg structures for presentation in the interface */
 struct _vmreg
-     reg_i0 = { "I0", R3 },
-     reg_v0 = { "V0", R4 },
+     reg_i0 = { "I0", R3 }, // I registers are caller-save
+     reg_v0 = { "V0", R4 }, // V registers are callee-save
      reg_v1 = { "V1", R5 },
      reg_v2 = { "V2", R6 },
      reg_v3 = { "V3", R7 },
      reg_v4 = { "V4", R8 },
      reg_v5 = { "V5", R9 },
      reg_v6 = { "V6", R10 },
-     reg_f0 = { "F0", F0 },
+     reg_f0 = { "F0", F0 }, // F registers for floating point (caller-save)
      reg_f1 = { "F1", F2 },
      reg_f2 = { "F2", F4 },
      reg_f3 = { "F3", F6 },
      reg_f4 = { "F4", F8 },
      reg_f5 = { "F5", F10 },
      reg_f6 = { "F6", F12 },
-     reg_rr = { "RET", R0 },
-     reg_sp = { "BASE", SP };
+     reg_rr = { "RET", R0 }, // Result register -- may overlap with others
+     reg_sp = { "BASE", SP }; // Base register for locals
 
+/* Number of V registes, total int registers, number of F registers */
 const int vm_nvreg = 7, vm_nireg = 8, vm_nfreg = 7;
+
+/* The int registers, V followed by I */
 const vmreg vm_ireg[] = {
      &reg_v0, &reg_v1, &reg_v2, &reg_v3, &reg_v4, &reg_v5, &reg_v6,
      &reg_i0
 };
+
+/* The F registers */
 const vmreg vm_freg[] = {
      &reg_f0, &reg_f1, &reg_f2, &reg_f3,
      &reg_f4, &reg_f5, &reg_f6
 };
+
+/* The RET and BASE registers */
 const vmreg vm_ret = &reg_rr, vm_base = &reg_sp;
 
 #define isfloat(r) (((r)&0x10) != 0)
