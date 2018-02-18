@@ -92,10 +92,11 @@ static void mprot(void *p, int flags) {
 #endif
 
 #ifdef WINDOWS
+#undef byte
 #include <windows.h>
 
-static void vprot(void *p, int flags) {
-     int oldflags;
+static void vprot(void *p, long unsigned flags) {
+     long unsigned oldflags;
 
      if (VirtualProtect(p, CODEPAGE, flags, &oldflags) == 0)
           vm_panic("VirtualProtect failed");
