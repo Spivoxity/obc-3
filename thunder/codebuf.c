@@ -35,16 +35,15 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Define to forbid pages from being both writable and executable */
+// #define NO_WRITEXEC 1
+
 #ifdef LINUX
 #define USE_MPROTECT 1
 #endif
 
 #ifdef MACOS
 #define USE_MPROTECT 1
-#endif
-
-#ifdef USE_MPROTECT
-#include <sys/mman.h>
 #endif
 
 #define MARGIN 32	        /* Safety margin for swiching buffers */
@@ -77,73 +76,62 @@ void *vm_literal_align(int n, int a) {
      return limit;
 }
 
-int vm_addr(void *p) {
-     int r = (int) (ptr) p;
-     if (p != (void *) (ptr) r)
-          vm_panic("address overflow");
-     return r;
+#ifdef USE_MPROTECT
+#include <sys/mman.h>
+
+static void mprot(void *p, int flags) {
+     if (mprotect(p, CODEPAGE, flags) < 0) {
+          perror("mprotect failed");
+          exit(2);
+     }
 }
 
-int vm_wrap(funptr fun) {
-#ifndef M64X32     
-     return (int) fun;
-#else
-     return vm_tramp(fun);
+#define prot_write(p)    mprot(p, PROT_READ|PROT_WRITE)
+#define prot_exec(p)     mprot(p, PROT_READ|PROT_EXEC)
+#define prot_writexec(p) mprot(p, PROT_READ|PROT_WRITE|PROT_EXEC)
 #endif
+
+#ifdef WINDOWS
+#include <windows.h>
+
+static void vprot(void *p, int flags) {
+     int oldflags;
+
+     if (VirtualProtect(p, CODEPAGE, flags, &oldflags) == 0)
+          vm_panic("VirtualProtect failed");
 }
 
-funptr vm_func(int fun) {
-#ifndef M64X32
-     return (funptr) fun;
-#else
-     return (funptr) (ptr) fun;
+#define prot_write(p)    vprot(p, PAGE_READWRITE)
+#define prot_exec(p)     vprot(p, PAGE_EXECUTE_READ)
+#define prot_writexec(p) vprot(p, PAGE_EXECUTE_READWRITE)
 #endif
+
+#ifdef NO_WRITEXEC
+#define PAGES 8
+static code_addr page[PAGES];
+static int npages = -1;
+
+static void set_write(void) {
+     npages = 0;
+     if (codebuf != NULL) {
+          page[npages++] = codebuf;
+          prot_write(codebuf);
+     }
 }
+
+static void set_exec(void) {
+     for (int i = 0; i < npages; i++) {
+          prot_exec(page[i]);
+     }
+     npages = -1;
+}
+#endif
 
 #ifdef USE_FLUSH
 #define FRAGS 16
 static code_addr fragbeg[FRAGS], fragend[FRAGS];
 static int nfrags;
-#endif
 
-/* vm_begin -- begin new procedure */
-unsigned vm_begin_locals(const char *name, int n, int locs) {
-     proc_name = name;
-     vm_space(MIN);
-     proc_beg = pc;
-
-#ifdef USE_FLUSH
-     nfrags = 0; fragbeg[0] = pc;
-#endif
-
-     return vm_prelude(n, locs);
-}
-
-/* vm_space -- ensure space in code buffer */
-void vm_space(int space) {
-     if (codebuf == NULL || pc + space > limit - MARGIN) {
-	  code_addr p = (code_addr) vm_alloc(CODEPAGE);
-#ifdef USE_MPROTECT
-	  if (mprotect(p, CODEPAGE, PROT_READ|PROT_WRITE|PROT_EXEC) < 0) {
-	       perror("mprotect failed");
-	       exit(2);
-	  }
-#endif
-
-	  if (codebuf != NULL) vm_chain(p);
-
-#if USE_FLUSH
-	  fragend[nfrags++] = pc;
-	  if (nfrags >= FRAGS) vm_panic("too many frags");
-	  fragbeg[nfrags] = p;
-#endif
-
-	  codebuf = p; limit = p + CODEPAGE;
-	  pc = codebuf;
-     }
-}
-
-#ifdef USE_FLUSH
 /* vm_flush -- clear code from data cache */
 static void vm_flush(void) {
      // This is probably ARM-specific
@@ -151,6 +139,41 @@ static void vm_flush(void) {
 	  __clear_cache(fragbeg[i], fragend[i]);
 }
 #endif
+
+/* vm_begin -- begin new procedure */
+unsigned vm_begin_locals(const char *name, int n, int locs) {
+     proc_name = name;
+     vm_space(MIN);
+     proc_beg = pc;
+#ifdef NO_WRITEXEC
+     set_write();
+#endif
+#ifdef USE_FLUSH
+     nfrags = 0; fragbeg[0] = pc;
+#endif
+     return vm_prelude(n, locs);
+}
+
+/* vm_space -- ensure space in code buffer */
+void vm_space(int space) {
+     if (codebuf == NULL || pc + space > limit - MARGIN) {
+	  code_addr p = (code_addr) vm_alloc(CODEPAGE);
+	  if (codebuf != NULL) vm_chain(p);
+#ifdef NO_WRITEXEC
+          if (npages == PAGES) vm_panic("too many pages");
+          page[npages++] = p;
+#else
+          prot_writexec(p);
+#endif
+#if USE_FLUSH
+	  fragend[nfrags++] = pc;
+	  if (nfrags >= FRAGS) vm_panic("too many frags");
+	  fragbeg[nfrags] = p;
+#endif
+	  codebuf = p; limit = p + CODEPAGE;
+	  pc = codebuf;
+     }
+}
 
 /* vm_end -- finish a procedure */
 void vm_end(void) {
@@ -168,7 +191,9 @@ void vm_end(void) {
           fwrite(proc_beg, 1, pc-proc_beg, fp);
           fclose(fp);
      }
-
+#ifdef NO_WRITEXEC
+     set_exec();
+#endif
 #ifdef USE_FLUSH
      fragend[nfrags++] = pc;
      vm_flush();
@@ -178,3 +203,32 @@ void vm_end(void) {
 int vm_procsize(void) {
      return pc - proc_beg;
 }
+
+int vm_addr(void *p) {
+     int r = (int) (ptr) p;
+     if (p != (void *) (ptr) r)
+          vm_panic("address overflow");
+     return r;
+}
+
+#ifndef M64X32
+funptr vm_func(int fun) { return (funptr) fun; }
+int vm_wrap(funptr fun) { return (int) fun; }
+#else
+funptr vm_func(int fun) { return (funptr) (ptr) fun; }
+
+#ifndef NO_WRITEXEC
+int vm_wrap(funptr fun) { return vm_tramp(fun); }
+#else
+int vm_wrap(funptr fun) {
+     if (npages >= 0)
+          return vm_tramp(fun);
+     else {
+          set_write();
+          int r = vm_tramp(fun);
+          set_exec();
+          return r;
+     }
+}
+#endif
+#endif

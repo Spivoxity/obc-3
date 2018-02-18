@@ -170,13 +170,13 @@ static void *grab_chunk(unsigned size0) {
      void *p = NULL;
      size_t size = size0;
      ntavm(INVALID_HANDLE_VALUE, &p, NTAVM_ZEROBITS, &size,
-           MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+           MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
      return p;
 }
 #else 
 static void *grab_chunk(unsigned size) {
      return VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE,
-			 PAGE_EXECUTE_READWRITE);
+			 PAGE_READWRITE);
 }
 #endif
 #endif
