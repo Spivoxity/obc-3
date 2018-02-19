@@ -11,6 +11,17 @@ let caml_modules = [ ("List", "Liste") ]
   
 let is_not_uppercase = function | 'A' .. 'Z' -> false | _ -> true
   
+let toupper ch =
+  if ch >= 'a' && ch <= 'z' then Char.chr (Char.code ch - 32) else ch
+
+let tolower ch =
+  if ch >= 'A' && ch <= 'Z' then Char.chr (Char.code ch + 32) else ch
+
+let strupper str = String.map toupper str
+let strlower str = String.map tolower str
+let strcap str =
+  String.make 1 (toupper str.[0]) ^ String.sub str 1 (String.length str - 1)
+
 let camlize id =
   let b = Buffer.create ((String.length id) + 4)
   in
@@ -549,7 +560,7 @@ let ooutfile = ref ""
   
 let process_file f =
   let base = Filename.chop_extension f in
-  let baseM = String.capitalize base
+  let baseM = strcap base
   in
     (* Input *)
     (* Redefining saves space in bytecode! *)
@@ -741,7 +752,7 @@ let process_file f =
                               try List.assoc "tag" attrs
                               with
                               | Not_found ->
-                                  !tagprefix ^ (String.lowercase name)
+                                  !tagprefix ^ (strlower name)
                             in
                               (if props <> []
                                then
@@ -922,7 +933,7 @@ let process_file f =
                     in
                       (List.iter !oheaders ~f: (fun s -> out "%s@." s);
                        out "open %s@."
-                         (String.capitalize
+                         (strcap
                             (Filename.chop_extension !outfile));
                        out "@[<hv>";
                        let oprop ~name ~gtype ppf pname =
@@ -1051,7 +1062,7 @@ let process_file f =
                                                  ->
                                                  out
                                                    "@ @[<hv4>| `%s p ->@ param %a p@]"
-                                                   (String.uppercase mlname)
+                                                   (strupper mlname)
                                                    (oprop ~name ~gtype) pname);
                                           out "@]@ ")
                                        else ();

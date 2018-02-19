@@ -15,6 +15,18 @@ let hash_variant s =
      (* make it signed for 64 bits architectures *)
      if !accu > 0x3FFFFFFF then !accu - (1 lsl 31) else !accu)
   
+let toupper ch =
+  if ch >= 'a' && ch <= 'z' then Char.chr (Char.code ch - 32) else ch
+
+let tolower ch =
+  if ch >= 'A' && ch <= 'Z' then Char.chr (Char.code ch + 32) else ch
+
+let strupper str = String.map toupper str
+let strcap str =
+  String.make 1 (toupper str.[0]) ^ String.sub str 1 (String.length str - 1)
+let struncap str =
+  String.make 1 (tolower str.[0]) ^ String.sub str 1 (String.length str - 1)
+  
 let camlize id =
   let b = Buffer.create ((String.length id) + 4)
   in
@@ -217,20 +229,19 @@ let declaration ~hc ~cc (__strm : _ Stream.t) =
                                                     with
                                                     | (Some '#', prefix) ->
                                                         prefix ^
-                                                          ((String.
-                                                              uncapitalize
+                                                          ((struncap
                                                               tag)
                                                              ^ suffix)
                                                     | (Some '^', prefix) ->
                                                         prefix ^
-                                                          ((String.uppercase
+                                                          ((strupper
                                                               tag)
                                                              ^ suffix)
                                                     | _ ->
                                                         prefix ^
                                                           (tag ^ suffix))
                                              and cname =
-                                               String.capitalize name
+                                               strcap name
                                              in
                                                (all_convs :=
                                                   (name, mlname, tags, flags) ::
