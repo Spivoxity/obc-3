@@ -162,28 +162,3 @@ void get_halflong(ctvalue src, int off, reg dst);
 
 void gcall(void *f, int n);
 void gcallr(reg r, int n);
-
-
-/* Decoding tables */
-
-#define MAXEQ 6
-
-struct _inst {
-     const char *i_name;	/* Name of the instruction */
-     int i_equiv[MAXEQ];	/* Expansion into simpler instructions */
-};
-
-#define IMASK 0xffff
-#define IARG 0x10000
-#define ICON 0x20000
-
-extern struct _inst instrs[];
-
-struct _decode {
-     int d_inst;
-     const char *d_patt;
-     int d_arg;
-     int d_len;
-};
-
-extern struct _decode decode[];

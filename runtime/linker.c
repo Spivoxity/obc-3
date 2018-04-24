@@ -304,6 +304,8 @@ static mybool match(phrase q, template t) {
 	  { int val = a[n-1];
 	    return (val >= t->t_lo && val <= t->t_hi 
 		    && (val - t->t_lo) % t->t_step == 0); }
+     case 'V':
+          { int val = a[n-1]; return (val == t->t_lo); }
      case '1':
      case 'K':
 	  return fits(a[n-1], 8);
@@ -328,6 +330,7 @@ static void print_args(phrase q) {
 	  case '1':
 	  case '2':
 	  case 'N':
+          case 'V':
 	  case 'K':
 	  case 'L':
 	       printf(" %d", q->q_arg[j]); break;
@@ -349,6 +352,7 @@ static int get_arg(char tmpl, char *rand, template t, int cxt[]) {
      case '1':
      case '2':
      case 'N':
+     case 'V':
 	  if (isdigit((int) rand[0]) || rand[0] == '-')
 	       return const_value(rand);
 	  else
@@ -503,12 +507,15 @@ static void make_binary(void) {
 
 	  if (p[0] == 'N')
 	       write_int(1, t->t_op + (a[0] - t->t_lo)/t->t_step);
+          else if (p[0] == 'V')
+               write_int(1, t->t_op);
 	  else if (t->t_oplen > 0) 
 	       binwrite(&t->t_op, t->t_oplen);
 
 	  for (int j = 0; p[j] != '\0'; j++) {
 	       switch (p[j]) {
 	       case 'N':
+               case 'V':
 		    break;
 	       case '1': 
 	       case 'K':

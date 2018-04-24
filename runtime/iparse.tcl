@@ -157,6 +157,7 @@ proc map_args {patt bounds base vargs} {
     foreach p [split $patt {}] {
 	switch -glob $p {
 	    N       {lappend args [range_arg $bounds $base]}
+            V	    {lappend args [lindex $bounds 0]}
 	    [1SK]   {lappend args "get1(pc0+$off)"; incr off 1}
 	    [2RTL]  {lappend args "get2(pc0+$off)"; incr off 2}
 	    default {syntax "Bad pattern code $p"}
@@ -174,7 +175,15 @@ proc process {inst patts key action} {
 
     set j 0
     foreach patt $patts {
-	if {[regexp {^\[(.*),(.*),(.*)\]} $patt _ lo hi step]} {
+        if {[regexp {^\[([0-9]*)\]} $patt _ val]} {
+            set lo $val; set hi $val; set step 1
+	    regsub {^\[.*\]} $patt "V" patt
+	    if {[llength $patts] == 1} {
+		set op $inst
+	    } else {
+		set op "${inst}_x[incr j]"
+	    }
+        } elseif {[regexp {^\[(.*),(.*),(.*)\]} $patt _ lo hi step]} {
 	    regsub {^\[.*\]} $patt "N" patt
 	    if {[llength $patts] == 1} {
 		set op $inst
@@ -190,7 +199,7 @@ proc process {inst patts key action} {
 	    }
 	}	
 
-	if {![regexp {^[12RSTNKL]*$} $patt]} {
+	if {![regexp {^[12RSTNKLV]*$} $patt]} {
 	    syntax "Bad pattern $patt"
 	}
 

@@ -40,7 +40,7 @@ defs {
 
 # CONSTANTS
 
-inst PUSH {[-1,6,1] 1 2} V.i { $a } { push_con(arg1); }
+inst PUSH {[-1,10,1] 1 2} V.i { $a } { push_con(arg1); }
 inst LDKW {1 2} V.i     { const($a).i } { konst(V_KONW, INT, arg1, 1); }
 inst LDKF {1 2} V.f     { const($a).f } { konst(V_KONW, FLO, arg1, 1); }
 
@@ -49,7 +49,7 @@ inst LDKF {1 2} V.f     { const($a).f } { konst(V_KONW, FLO, arg1, 1); }
 
 # Push address of local
 # LOCAL n :: --> bp+n
-inst LOCAL {1 2} V.x    { local($a) }   { push(V_ADDR, INT, rBP, arg1, 1); }
+inst LOCAL {[0] 1 2} V.x  { local($a) }   { push(V_ADDR, INT, rBP, arg1, 1); }
 
 # Compute indexed address
 # INDEXs :: a, b --> a + s * b
@@ -121,8 +121,8 @@ defs {
 #define ldn(a, x) indir(pointer(x)+a, int)
 #define stn(a, x, y) indir(pointer(y)+a, int) = x
 }
-inst LDNW {[-16,40,4] 1 2} M.i { ldn($a, $1) } {=PUSH $a, OFFSET, LOADW}
-inst STNW {[-16,20,4] 1 2} S2 { stn($a, $1.i, $2); } {=PUSH $a, OFFSET, STOREW}
+inst LDNW {[-16,32,4] 1 2} M.i { ldn($a, $1) } {=PUSH $a, OFFSET, LOADW}
+inst STNW {[-16,32,4] 1 2} S2 { stn($a, $1.i, $2); } {=PUSH $a, OFFSET, STOREW}
 
 # Double indexed load/store
 # LDIs :: a, b --> mem_s[a+s*b]

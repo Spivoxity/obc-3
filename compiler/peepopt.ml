@@ -266,8 +266,8 @@ let width =
        CharT | BoolT | SysByteT -> 1 
      | ShortT -> 2
      | IntT | FloatT | PtrT -> 4
-     | LongT | DoubleT -> 8
-     | _ -> failwith "width"
+     | LongT | LongPtrT | DoubleT -> 8
+     | k -> failwith (sprintf "width $" [fType1 k])
 
 let divisible n s =
   integer_mod n (integer (width s)) = integer 0

@@ -198,15 +198,3 @@ int split_line(char *line, char **words) {
 
      return nwords;
 }
-
-/* squidge -- change Oberon-style name into C identifier */
-char *squidge(char *name) {
-     static char buf[128];
-     char *t = buf;
-
-     for (char *s = name; *s != '\0'; s++)
-	  *t++ = ((*s == '.' || *s == '%') ? '_' : *s);
-     *t = '\0';
-
-     return buf;
-}

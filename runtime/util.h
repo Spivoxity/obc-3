@@ -100,5 +100,3 @@ void pool_reset(mempool *pool);
 
 #define MAXWORDS 16
 int split_line(char *line, char **words);
-
-char *squidge(char *name);

@@ -43,25 +43,26 @@
 
 #define NPOOLS 10
 
-static unsigned char *zpool[NPOOLS], *zfree, *zlimit;
-static int pool;
+static unsigned char *pool[NPOOLS];
+static int cpool = -1;
 
 /* vm_scratch -- allocate memory for storing branch info, etc. */
 void *vm_scratch(int size) {
      void *p;
      int poolsize;
+     static unsigned char *freeptr, *limit;
 
-     while (pool < 0 || zfree + size > zlimit) {
-	  pool++;
-	  if (pool >= NPOOLS) vm_panic("patch memory overflow");
-	  poolsize = (1 << pool) * PAGESIZE;
-	  if (zpool[pool] == NULL)
-	       zpool[pool] = (unsigned char *) vm_alloc(poolsize);
-	  zfree = zpool[pool]; zlimit = zfree + poolsize;
+     while (cpool < 0 || freeptr + size > limit) {
+	  cpool++;
+	  if (cpool >= NPOOLS) vm_panic("patch memory overflow");
+	  poolsize = (1 << cpool) * PAGESIZE;
+	  if (pool[cpool] == NULL)
+	       pool[cpool] = (unsigned char *) vm_alloc(poolsize);
+	  freeptr = pool[cpool]; limit = freeptr + poolsize;
      }
 
-     p = (void *) zfree;
-     zfree += size;
+     p = (void *) freeptr;
+     freeptr += size;
      return p;
 }
 
@@ -169,7 +170,7 @@ void vm_branch(int kind, code_addr loc, vmlabel lab) {
 
 /* vm_reset -- discard branch information at end of procedure */
 void vm_reset(void) {
-     pool = -1;
+     cpool = -1;
      brfree = NULL;
 }
 

@@ -132,8 +132,6 @@ used only in special patterns.
 
 GETARG ra, imm
   -- fetch argument at offset imm (must be used first in the routine)
-RET
-  -- return from subroutine
 PREP imm
   -- prepare subroutine call with specified number of arguments
 ARG ra/imm
@@ -163,13 +161,12 @@ GETARG instructions:
 	GETARG rz, 2
 
 (any other instruction may destroy the arguments, so it is necessary
-to fetch them into registers immediately.)  The rest of the procedure
-body follows, and ends with a single RET instruction.
+to fetch them into registers immediately.)
 
 To return a result, the procedure code moves the result into a special
-register ret, then immediately branches to the RET instruction.  Since
-the ret register may be identical with one of the working registers,
-any other intervening code may destroy the return value.
+register ret, then immediately branches to the end of the procedure.
+Since the ret register may be identical with one of the working
+registers, any other intervening code may destroy the return value.
 
 Note that Keiko procedures are compiled into subroutines that accept
 one argument (the value of the Keiko stack pointer) and return no

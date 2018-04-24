@@ -53,6 +53,17 @@
    and if the first element is zero then there is no expansion for the
    instruction.  Expansions may be recursive. */
 
+#define MAXEQ 6
+
+struct _inst {
+     const char *i_name;	/* Name of the instruction */
+     int i_equiv[MAXEQ];	/* Expansion into simpler instructions */
+};
+
+#define IMASK 0xffff
+#define IARG 0x10000
+#define ICON 0x20000
+
 #define __i2__(sym, ...) { #sym, { __VA_ARGS__ } },
 struct _inst instrs[] = { __INSTRS__(__i2__) };
 
@@ -61,6 +72,13 @@ struct _inst instrs[] = { __INSTRS__(__i2__) };
    will have d_inst = I_LDLW, d_patt = "1" and d_len = 2.  For opcodes
    that use a pattern of "N" (opcode contains argument), the d_arg field
    contains the integer value of the argument. */
+
+struct _decode {
+     int d_inst;
+     const char *d_patt;
+     int d_arg;
+     int d_len;
+};
 
 #define __o2__(op, inst, patt, arg, len) { I_##inst, patt, arg, len },
 struct _decode decode[] = { __OPCODES__(__o2__) };
@@ -727,6 +745,7 @@ static void map_labels(void) {
 	       case 'S':
 		    mark_label(get1(pc1)+(pc-pcbase)); pc1 += 1; break;
 	       case 'N':
+               case 'V':
 		    break;
 	       default:
 		    panic("*bad pattern char %c for %s", *s, 
@@ -771,6 +790,7 @@ static void translate(void) {
 	       case 'S':
 		    args[nargs++] = get1(pc1)+(pc-pcbase); pc1 += 1; break;
 	       case 'N':
+               case 'V':
 		    args[nargs++] = d->d_arg; break;
 	       default:
 		    panic("*bad pattern char %c", *s);
