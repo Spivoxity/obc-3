@@ -81,7 +81,7 @@ all : revid subdirs build sanity
 PREDIRS = mllib yacc
 SUBDIRS = compiler runtime lib
 EXTRADIRS = test
-BUILD = obx obprof obc obb oblist
+BUILD = $(ALL_INTERPS) obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
 PRIMS = lib/oblib.o lib/primtab.o
 
@@ -101,11 +101,13 @@ endif
 ALL_LIBS = $(EXTRA_LIBS) $(LIBS) $(MATHLIB)
 obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS) $(MATHLIB)
 
+ALL_INTERPS = obx
+
 ifdef ENABLE_JIT
   PREDIRS += thunder
-  BUILD += obxj
   DEBUILD += obxjd dump
   INTERP = obxj
+  ALL_INTERPS += obxj
   runtime: thunder
 else
   INTERP = obx
@@ -196,7 +198,7 @@ macdebug : debugger force
 sanity : subdirs build force
 	compiler/obc1 -x -g -pl -I lib $(srcdir)/Fac.m >Fac.k
 	runtime/oblink -g -pl -L lib Fac.k -o Fac.x
-	./$(INTERP) ./Fac.x 20
+	for i in $(ALL_INTERPS); do ./$$i ./Fac.x 20; done
 	@echo "The factorial of 20 is 2432902008176640000"
 
 tartan : Tartan.m lib/XYplane.k force
