@@ -536,7 +536,7 @@ reg move_to_reg(int i, int ty) {
      return rlock(r);
 }
 
-/* fix_const -- check a stack item is a constant or move it to a register */
+/* fix_const -- check a stack item is a constant, or maybe move to a reg */
 ctvalue fix_const(int i, mybool rflag) {
      ctvalue v = &vstack[sp-i];
      extern value *jit_cxt;
@@ -552,9 +552,9 @@ ctvalue fix_const(int i, mybool rflag) {
           break;
 
      default:
-	  if (!rflag)
-	       panic("fix_const %s", vkind_name[v->v_op]);
-	  move_to_reg(i, INT);
+          if (!rflag)
+               panic("fix_const %s", vkind_name[v->v_op]);
+          move_to_reg(i, INT);
      }
 
      return v;
@@ -619,11 +619,8 @@ static void unalias(int a, ctvalue v) {
 void store(valkind vkind, int s) {
      reg r1;
      ctvalue v;
-     int op = -1;
-     mybool cache = TRUE;
 
-     deref(vkind, vstack[sp-2].v_type, s);							
-     v = &vstack[sp-1];
+     deref(vkind, vstack[sp-2].v_type, s);					     v = &vstack[sp-1];
      if (same(v, &vstack[sp-2])) {
 	  /* Store into same location as load: mostly for
 	     SLIDEW / RESULTW */
@@ -649,21 +646,20 @@ void store(valkind vkind, int s) {
 
      switch (vkind) {
      case V_MEMW:
-          op = STW; break;
+          ldst(STW, r1, v->v_reg, v->v_val); break;
      case V_MEMC:
-          op = STB; cache = FALSE; break;
+          ldst(STB, r1, v->v_reg, v->v_val); break;
      case V_MEMS:
-          op = STS; cache = FALSE; break;
+          ldst(STS, r1, v->v_reg, v->v_val); break;
      case V_MEMQ:
-          op = STQ; break;
-
+          ldst(STQ, r1, v->v_reg, v->v_val); break;
      default:
 	  panic("store %s", vkind_name[vkind]);
      }
 
-     ldst(op, r1, v->v_reg, v->v_val);
      kill_alias(v);
-     if (cache && v->v_reg != r1) set_cache(r1, v);
+     if ((vkind == V_MEMW || vkind == V_MEMQ) && v->v_reg != r1)
+          set_cache(r1, v);
 }
 
 /* add_offset -- add address and offset */
