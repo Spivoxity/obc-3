@@ -77,7 +77,9 @@ END Uniform;
 (** Roll -- a random integer uniformly distributed in [0..n) *)
 PROCEDURE Roll*(n: INTEGER): INTEGER;
 BEGIN
-  RETURN ENTIER(n * (Random() / (MAXRAND + LONG(1.0))))
+  (* Having implemented Random in INTEGER arithmetic, we now give up
+     and use LONGINT.  Shame! *)
+  RETURN SHORT(LONG(n) * Random() DIV (LONG(MAXRAND)+1))
 END Roll;
 
 PROCEDURE GetSeed(): INTEGER IS "GetSeed";

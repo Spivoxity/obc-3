@@ -2,7 +2,7 @@ MODULE tMemOflo;
 
 IMPORT Out;
 
-VAR string*: ARRAY 0FFFFFFFH OF CHAR;
+VAR string*: ARRAY 32*1024*1024 OF CHAR;
 
 BEGIN
   Out.String("OK"); Out.Ln
@@ -14,7 +14,7 @@ OK
 
 (*[[
 !! (SYMFILE #tMemOflo STAMP #tMemOflo.%main 1)
-!! (GLOBAL #string* #tMemOflo.string !1 (ARRAY 268435455 CHAR))
+!! (GLOBAL #string* #tMemOflo.string !1 (ARRAY 33554432 CHAR))
 !! (CHKSUM STAMP)
 !! 
 MODULE tMemOflo STAMP 0
@@ -33,7 +33,7 @@ RETURN
 END
 
 ! Global variables
-GLOVAR tMemOflo.string 268435455
+GLOVAR tMemOflo.string 33554432
 
 ! String "OK"
 DEFINE tMemOflo.%1

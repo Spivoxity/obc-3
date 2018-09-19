@@ -34,7 +34,9 @@ BEGIN
   s := (- s) * ({19..MAX(SET)}/(- {})); (* 0 1 2 3 8 9 12 14 16 18 *)
   Print;
   s := s - {1..2};			(* 0 3 8 9 12 14 16 18 *)
-  Print
+  Print;
+  s := {n+3..n, 27};                    (* 27 *)
+  Print                                 
 END tSet.
 
 (*<<
@@ -44,6 +46,7 @@ END tSet.
   4  5  6  7 10 11 13 15 17
   0  1  2  3  8  9 12 14 16 18
   0  3  8  9 12 14 16 18
+ 27
 >>*)
 
 (*[[
@@ -238,7 +241,28 @@ LDGW tSet.s
 CONST -7
 BITAND
 STGW tSet.s
-!   Print
+!   Print;
+GLOBAL tSet.Print
+CALL 0
+!   s := {n+3..n, 27};                    (* 27 *)
+CONST -1
+LDGW tSet.n
+CONST 3
+PLUS
+CONST 32
+BOUND 38
+LSL
+CONST -2
+LDGW tSet.n
+CONST 32
+BOUND 38
+LSL
+BITNOT
+BITAND
+CONST 134217728
+BITOR
+STGW tSet.s
+!   Print                                 
 GLOBAL tSet.Print
 CALL 0
 RETURN

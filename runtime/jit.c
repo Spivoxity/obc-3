@@ -157,13 +157,10 @@ static void callout(void *op, int nargs, int ty, int size) {
 
 /* gmonop -- generic unary operation */
 static void gmonop(operation op, int rclass1, int rclass2, int s) {
-     reg r1, r2;
-
      /* Try to reallocate the input register for the result of
 	unary operations, so as to save a move on some architectures. */
-
-     r1 = move_to_reg(1, rclass1); pop(1); 
-     r2 = ralloc_suggest(rclass2, r1); unlock(1);	
+     reg r1 = move_to_reg(1, rclass1); pop(1); 
+     reg r2 = ralloc_suggest(rclass2, r1); unlock(1);	
      vm_gen(op, r2->r_reg, r1->r_reg);
      push(V_REG, rclass2, r2, 0, s);
 }
@@ -196,17 +193,14 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
 
 /* binop -- binary integer operation */
 static void binop(operation op, int size) {
-     reg r1, r2;
-     ctvalue v;
-
      /* For binary operators, we try to reallocate the first operand
 	register for the result, because this saves a move if the target
 	has two-address instructions. */
 
-     r1 = move_to_reg(2, INT); 
-     v = move_to_rc(1); 
+     reg r1 = move_to_reg(2, INT); 
+     ctvalue v = move_to_rc(1); 
      pop(2);				
-     r2 = ralloc_suggest(INT, r1); 
+     reg r2 = ralloc_suggest(INT, r1); 
      unlock(2);				
      if (v->v_op == V_CON)						
 	  vm_gen(op, r2->r_reg, r1->r_reg, v->v_val);
@@ -241,10 +235,9 @@ static void binop(operation op, int size) {
 
 /* fdbinop -- floating point binary operation */
 static void fdbinop(operation op, int s) {
-     reg r1, r2, r3;
-
-     r1 = move_to_reg(2, FLO); r2 = move_to_reg(1, FLO); pop(2);
-     r3 = ralloc_suggest(FLO, r1); unlock(2);				
+     reg r1 = move_to_reg(2, FLO);
+     reg r2 = move_to_reg(1, FLO); pop(2);
+     reg r3 = ralloc_suggest(FLO, r1); unlock(2);				
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);				
      push(V_REG, FLO, r3, 0, s);
 }
@@ -284,11 +277,9 @@ static mybool is_zero(ctvalue v) {
 #ifdef FLOATOPS
 /* fcomp -- float or double comparison */
 static void fcomp(operation op) {
-     reg r1, r2, r3;
-
-     r1 = move_to_reg(2, FLO); 
-     r2 = move_to_reg(1, FLO); pop(2);				
-     r3 = ralloc(INT); unlock(2);				
+     reg r1 = move_to_reg(2, FLO); 
+     reg r2 = move_to_reg(1, FLO); pop(2);				
+     reg r3 = ralloc(INT); unlock(2);				
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);	
      push_reg(r3);						
 }
@@ -404,15 +395,14 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
      /* arg is the argument size in words, but we want the
 	count of stack items */
      int nargs = count_args(arg);
-     reg r1, r2;
 
-     r1 = move_to_reg(1, INT); 
+     reg r1 = move_to_reg(1, INT); 
      push_con(stack_map(pc));     /* PC = stack map */
      push_reg(rBP);               /* BP */
      reserve(r1);
      flush_stack(0, nargs+3);
      killregs();
-     r2 = ralloc(INT); rthaw(r1);
+     reg r2 = ralloc(INT); rthaw(r1);
      vm_gen(LDW, r1->r_reg, r1->r_reg, 4*CP_PRIM);
      get_sp(r2);
      push_reg(r2);
@@ -552,10 +542,11 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 
      case I_FZCHECK:
 #ifdef FLOATOPS
-	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
+	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO);
+          pop(1); unlock(1);
 	  vm_gen(ZEROf, r2->r_reg);
 	  vm_gen(BEQf, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
-	  push(V_REG, FLO, r1, 0, 1);
+          push(V_REG, FLO, r1, 0, 1);
 #else
           push_reg(rBP);
           push_con(arg1);
@@ -568,7 +559,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
 	  vm_gen(ZEROd, r2->r_reg);
 	  vm_gen(BEQd, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
-	  push(V_REG, FLO, r1, 0, 2);
+          push(V_REG, FLO, r1, 0, 2);
 #else
           push_reg(rBP);
           push_con(arg1);

@@ -40,9 +40,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h> 
-#endif
 #include "obcommon.h"
 
 #define SLIMIT 256		/* Min stack space space left (bytes) */

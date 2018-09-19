@@ -87,7 +87,7 @@ void vm_debug2(const char *fmt, ...) {
      if (vm_debug < 2) return;
 
      va_start(va, fmt);
-     printf("---   ");
+     printf("---   %#x: ", (unsigned) (ptr) pc);
      vprintf(fmt, va);
      va_end(va);
 
