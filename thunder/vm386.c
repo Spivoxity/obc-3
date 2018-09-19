@@ -633,12 +633,14 @@ static void instr_rr(OPDECL, int r1, int r2) {
      vm_done();
 }
 
+#ifdef USE_SSE
 /* instr_sr -- opcode plus two registers, swapped */
 static void instr_sr(OPDECL, int r1, int r2) {
      vm_debug2("%s %s, %s", mnem, regname[r2], regname[r1]);
      opcode(op), addr(3, r1, r2);
      vm_done();
 }
+#endif
 
 /* General form of instr2_r for shifts and floating point ops */
 static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
@@ -1165,11 +1167,11 @@ static void storef(OPDECL2, OPDECL2_(p), int rt, int rs, int imm) {
      push_r(rs), fload_s(rd, rSP, 0), pop(rs)
 #define move_from_f(rd, rs) \
      /* Make a stack slot, then overwrite it. */ \
-     push_r(rd), fstore_s(rs, rSP, 0), pop(rd);
+     push_r(rd), fstore_s(rs, rSP, 0), pop(rd)
 #define move_to_d(rd, rs) \
-     push_r(rs), fload_d(rd, rSP, 0), pop(rs);
+     push_r(rs), fload_d(rd, rSP, 0), pop(rs)
 #define move_from_d(rd, rs) \
-     push_r(rd), fstore_d(rs, rSP, 0), pop(rd);
+     push_r(rd), fstore_d(rs, rSP, 0), pop(rd)
 
 
 /* Floating point comparison, setting integer flags */

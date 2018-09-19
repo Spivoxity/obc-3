@@ -581,20 +581,6 @@ void deref(valkind vkind, int ty, int size) {
 	  push(vkind, ty, r1, 0, size); 
 	  break;
      }
-
-#ifndef M64X32
-     /* Long integer loads are dangerous, because they can't be
-        flushed without allocating at least one register.  So we're
-        cautious about letting one remain unevaluated on the stack if
-        it uses an index register. */
-     if (vkind == V_MEMQ
-#ifdef FLOATOPS
-         && ty == INT
-#endif
-         && r1 != NULL && member(r1, INT)
-         && n_reserved() > vm_nireg - 5)
-          move_to_frame(1);
-#endif
 }
 
 /* unalias -- execute load operations that might alias v */
