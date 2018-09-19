@@ -1,5 +1,4 @@
 #!/bin/sh
-#!/bin/sh
 #
 # @configure_input@
 #
@@ -40,7 +39,7 @@ lib=../lib
 LIBDIR=/usr/mipsel-linux-gnu/lib
 compiler="../compiler/obc1 -I $lib"
 interp="env OBC_LIB=. qemu-mipsel $LIBDIR/ld.so.1 \
-	--library-path $LIBDIR ./obx-mips"
+	--library-path $LIBDIR ./obxj-mips"
 # End of config
 
 status=0

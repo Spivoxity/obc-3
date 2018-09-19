@@ -54,6 +54,8 @@ struct _vmreg {
 #define BRANCH 1
 #define CASELAB 2
 #define ABS 3
+#define HI16 4
+#define LO16 5
 
 extern code_addr pc;
 

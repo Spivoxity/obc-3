@@ -235,6 +235,13 @@ mipstest/obx-mips
 mipstest/regress
 oniontest
 thunder/fact
+mipstest/obxj-mips
+mipstest/mgrep
+mipstest/a.out
+mipstest/code
+mipstest/data
+mipstest/out
+mipstest/out.0
 mipstest/a.out
 mipstest/code
 mipstest/data

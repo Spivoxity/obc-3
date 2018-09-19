@@ -282,6 +282,9 @@ if test "$enable_jit" != no; then
       ENABLE_JIT=1; VM=vmpi.o; CODEPAGE=4096
       AC_DEFINE(USE_FLUSH, 1, [Whether to flush the cache])
       AC_DEFINE(FLOATOPS, 1);;
+    mipsel-*)
+      ENABLE_JIT=1; VM=vmomega.o
+      AC_DEFINE(USE_FLUSH, 1);;
   esac
 fi
 AC_SUBST(VM)
