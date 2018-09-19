@@ -84,8 +84,6 @@ BEGIN
   IF b >= 0 THEN RETURN LSL(a, b) ELSE RETURN ASR(a, -b) END
 END ASH;
 
-PROCEDURE LIBERROR(CONST msg: ARRAY OF CHAR) IS "*LIBERROR";
-
 (* These are very flaky, but they are what Wirth describes. *)
  
 PROCEDURE PACK(VAR x: REAL; n: INTEGER);
