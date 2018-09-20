@@ -570,6 +570,12 @@ static int const_reg(int imm) {
      return IP;
 }
 
+/* sum_reg -- sum two regs into scratch register */
+static int sum_reg(int ra, int rb) {
+     op_rrr(opADD, IP, ra, rb);
+     return IP;
+}
+
 /* compare_immed -- CMP instruction with immediate operand */
 void compare_immed(int rn, int imm) {
      if (immediate(imm))
@@ -753,6 +759,8 @@ static void write_reg(int r) {
      if (! isfloat(r)) regmap |= bit(r);
 }
 
+#define W(r) (write_reg(r), r)
+
 // ---------------- CODE GENERATION INTERFACE ----------------
 
 #define badop() vm_unknown(__FUNCTION__, op)
@@ -836,15 +844,14 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 
      switch (op) {
      case MOV:
-          write_reg(ra);
 	  if (isfloat(ra) && isfloat(rb))
 	       op_rr(opFMOVS, ra, rb);
           else if (isfloat(ra))
 	       fmsr(ra, rb);	// Can only happen via SYSTEM.VAL etc.
           else if (isfloat(rb))
-               fmrs(ra, rb);	// Ditto
+               fmrs(W(ra), rb);	// Ditto
 	  else
-               move_reg(ra, rb); 
+               move_reg(W(ra), rb); 
 	  break;
 
      case MOVq:
@@ -853,12 +860,10 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
           break;
 
      case NEG:    
-          write_reg(ra);
-	  arith_immed(opRSB, ra, rb, 0); break;
+	  arith_immed(opRSB, W(ra), rb, 0); break;
 
      case NOT:    
-          write_reg(ra);
-	  op_rr(opMVN, ra, rb); break;
+	  op_rr(opMVN, W(ra), rb); break;
 
      case NEGf:
 	  op_rr(opFNEGS, ra, rb); break;
@@ -893,8 +898,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  op_rr(opFCVTSD, ra, rb); break;
 
      case CONVis: 
-          write_reg(ra);
-	  op_rr(opSXTH, ra, rb); break;
+	  op_rr(opSXTH, W(ra), rb); break;
 
      default:
           vm_load_store(op, ra, rb, 0);
@@ -909,13 +913,11 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
      switch (op) {
      case MOV: 
-          write_reg(ra);
-          move_immed(ra, b);
+          move_immed(W(ra), b);
           break;
 
      case GETARG: 
-          write_reg(ra);
-	  move_reg(ra, R(b));
+	  move_reg(W(ra), R(b));
           break;
 
      default:
@@ -925,15 +927,15 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
 void vm_gen2rj(operation op, vmreg rega, vmlabel b) {
      int ra = rega->vr_reg;
+     code_addr r;
 
      vm_debug1(op, 2, rega->vr_name, fmt_lab(b));
      vm_space(0);
 
      switch (op) {
      case MOV:
-          write_reg(ra);
-          code_addr r = vm_literal(4);
-          load_store(opLDR, ra, PC, r - (pc+8));
+          r = vm_literal(4);
+          load_store(opLDR, W(ra), PC, r - (pc+8));
           vm_branch(ABS, r, b);
           break;
               
@@ -950,36 +952,26 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      switch (op) {
      case ADD: 
-          write_reg(ra);
-	  op_rrr(opADD, ra, rb, rc); break;
+	  op_rrr(opADD, W(ra), rb, rc); break;
      case AND: 
-          write_reg(ra);
-	  op_rrr(opAND, ra, rb, rc); break;
+	  op_rrr(opAND, W(ra), rb, rc); break;
      case XOR: 
-          write_reg(ra);
-	  op_rrr(opEOR, ra, rb, rc); break;
+	  op_rrr(opEOR, W(ra), rb, rc); break;
      case OR: 
-          write_reg(ra);
-	  op_rrr(opORR, ra, rb, rc); break;
+	  op_rrr(opORR, W(ra), rb, rc); break;
      case SUB: 
-          write_reg(ra);
-	  op_rrr(opSUB, ra, rb, rc); break;
+	  op_rrr(opSUB, W(ra), rb, rc); break;
      case MUL: 
-          write_reg(ra);
-	  op_mul(opMUL, ra, rb, rc); break;
+	  op_mul(opMUL, W(ra), rb, rc); break;
 
      case LSH: 
-          write_reg(ra);
-	  shift_r(opLSL, ra, rb, rc); break;
+	  shift_r(opLSL, W(ra), rb, rc); break;
      case RSH: 
-          write_reg(ra);
-	  shift_r(opASR, ra, rb, rc); break;
+	  shift_r(opASR, W(ra), rb, rc); break;
      case RSHu: 
-          write_reg(ra);
-	  shift_r(opLSR, ra, rb, rc); break;
+	  shift_r(opLSR, W(ra), rb, rc); break;
      case ROR:
-          write_reg(ra);
-          shift_r(opROR, ra, rb, rc); break;
+          shift_r(opROR, W(ra), rb, rc); break;
 
      case ADDf:
 	  op_rrr(opFADDS, ra, rb, rc); break;
@@ -1000,61 +992,78 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 	  op_rrr(opFDIVD, ra, rb, rc); break;
 
      case EQ: 
-          write_reg(ra);
-	  bool_reg(opMOVEQ, ra, rb, rc); break;
+	  bool_reg(opMOVEQ, W(ra), rb, rc); break;
      case GE:
-          write_reg(ra);
-	  bool_reg(opMOVGE, ra, rb, rc); break;
+	  bool_reg(opMOVGE, W(ra), rb, rc); break;
      case GT: 
-          write_reg(ra);
-	  bool_reg(opMOVGT, ra, rb, rc); break;
+	  bool_reg(opMOVGT, W(ra), rb, rc); break;
      case LE:
-          write_reg(ra);
-	  bool_reg(opMOVLE, ra, rb, rc); break;
+	  bool_reg(opMOVLE, W(ra), rb, rc); break;
      case LT: 
-          write_reg(ra);
-	  bool_reg(opMOVLT, ra, rb, rc); break;
+	  bool_reg(opMOVLT, W(ra), rb, rc); break;
      case NE:
-          write_reg(ra);
-	  bool_reg(opMOVNE, ra, rb, rc); break;
+	  bool_reg(opMOVNE, W(ra), rb, rc); break;
 
      case EQf:
-          write_reg(ra);
-	  bool_reg_f(opMOVEQ, ra, rb, rc); break;
+	  bool_reg_f(opMOVEQ, W(ra), rb, rc); break;
      case LTf:
-          write_reg(ra);
-	  bool_reg_f(opMOVLO, ra, rb, rc); break;
+	  bool_reg_f(opMOVLO, W(ra), rb, rc); break;
      case LEf:
-          write_reg(ra);
-	  bool_reg_f(opMOVLS, ra, rb, rc); break;
+	  bool_reg_f(opMOVLS, W(ra), rb, rc); break;
      case GTf:
-          write_reg(ra);
-	  bool_reg_f(opMOVGT, ra, rb, rc); break;
+	  bool_reg_f(opMOVGT, W(ra), rb, rc); break;
      case GEf:
-          write_reg(ra);
-	  bool_reg_f(opMOVGE, ra, rb, rc); break;
+	  bool_reg_f(opMOVGE, W(ra), rb, rc); break;
      case NEf:
-          write_reg(ra);
-	  bool_reg_f(opMOVNE, ra, rb, rc); break;
+	  bool_reg_f(opMOVNE, W(ra), rb, rc); break;
 
      case EQd:
-          write_reg(ra);
-	  bool_reg_d(opMOVEQ, ra, rb, rc); break;
+	  bool_reg_d(opMOVEQ, W(ra), rb, rc); break;
      case GEd:
-          write_reg(ra);
-	  bool_reg_d(opMOVGE, ra, rb, rc); break;
+	  bool_reg_d(opMOVGE, W(ra), rb, rc); break;
      case GTd:
-          write_reg(ra);
-	  bool_reg_d(opMOVGT, ra, rb, rc); break;
+	  bool_reg_d(opMOVGT, W(ra), rb, rc); break;
      case LEd:
-          write_reg(ra);
-	  bool_reg_d(opMOVLS, ra, rb, rc); break;
+	  bool_reg_d(opMOVLS, W(ra), rb, rc); break;
      case LTd:
-          write_reg(ra);
-	  bool_reg_d(opMOVLO, ra, rb, rc); break;
+	  bool_reg_d(opMOVLO, W(ra), rb, rc); break;
      case NEd:
-          write_reg(ra);
-	  bool_reg_d(opMOVNE, ra, rb, rc); break;
+	  bool_reg_d(opMOVNE, W(ra), rb, rc); break;
+
+     case LDW:
+	  if (isfloat(ra)) 
+               load_store_f(opFLDS, ra, sum_reg(rb, rc), 0); 
+          else 
+               ldst_rr(opLDR, W(ra), rb, rc);
+	  break;
+
+     case STW: 
+	  if (isfloat(ra)) 
+               load_store_f(opFSTS, ra, sum_reg(rb, rc), 0);
+          else
+               ldst_rr(opSTR, ra, rb, rc); 
+	  break;
+
+     case LDS:
+	  ldstx_rr(opLDSH, W(ra), rb, rc); break;
+     case LDSu: 
+          ldstx_rr(opLDRH, W(ra), rb, rc); break;
+     case STS: 
+	  ldstx_rr(opSTRH, ra, rb, rc); break;
+
+     case LDB:
+	  ldstx_rr(opLDSB, W(ra), rb, rc); break;
+     case LDBu: 
+	  ldst_rr(opLDRB, W(ra), rb, rc); break;
+     case STB: 
+	  ldst_rr(opSTRB, ra, rb, rc); break;
+
+     case LDQ: 
+          assert(isfloat(ra));
+          load_store_d(opFLDS, ra, sum_reg(rb, rc), 0); break;
+     case STQ:    
+          assert(isfloat(ra));
+          load_store_d(opFSTS, ra, sum_reg(rb, rc), 0); break;
 
      default:
 	  badop();
@@ -1069,55 +1078,39 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 
      switch (op) {
      case ADD: 
-          write_reg(ra);
-          add_immed(ra, rb, c); break;
+          add_immed(W(ra), rb, c); break;
      case SUB: 
-          write_reg(ra);
-	  arith_signed(opSUB, opADD, ra, rb, c); break;
+	  arith_signed(opSUB, opADD, W(ra), rb, c); break;
      case AND: 
-          write_reg(ra);
-	  arith_compl(opAND, opBIC, ra, rb, c); break;
+	  arith_compl(opAND, opBIC, W(ra), rb, c); break;
      case OR: 
-          write_reg(ra);
-	  arith_immed(opORR, ra, rb, c); break;
+	  arith_immed(opORR, W(ra), rb, c); break;
      case XOR: 
-          write_reg(ra);
-	  arith_immed(opEOR, ra, rb, c); break;
+	  arith_immed(opEOR, W(ra), rb, c); break;
      case MUL:
-          write_reg(ra);
-	  op_mul(opMUL, ra, rb, const_reg(c)); break;
+	  op_mul(opMUL, W(ra), rb, const_reg(c)); break;
 
      case LSH: 
-          write_reg(ra);
-	  shift_i(opLSL, ra, rb, c); break;
+	  shift_i(opLSL, W(ra), rb, c); break;
      case RSH: 
-          write_reg(ra);
-	  shift_i(opASR, ra, rb, c); break;
+	  shift_i(opASR, W(ra), rb, c); break;
      case RSHu: 
-          write_reg(ra);
-	  shift_i(opLSR, ra, rb, c); break;
+	  shift_i(opLSR, W(ra), rb, c); break;
      case ROR:
-          write_reg(ra);
-          shift_i(opROR, ra, rb, c); break;
+          shift_i(opROR, W(ra), rb, c); break;
 
      case EQ:
-          write_reg(ra);
-	  bool_immed(opMOVEQ, ra, rb, c); break;
+	  bool_immed(opMOVEQ, W(ra), rb, c); break;
      case GE:
-          write_reg(ra);
-	  bool_immed(opMOVGE, ra, rb, c); break;
+	  bool_immed(opMOVGE, W(ra), rb, c); break;
      case GT: 
-          write_reg(ra);
-	  bool_immed(opMOVGT, ra, rb, c); break;
+	  bool_immed(opMOVGT, W(ra), rb, c); break;
      case LE:
-          write_reg(ra);
-	  bool_immed(opMOVLE, ra, rb, c); break;
+	  bool_immed(opMOVLE, W(ra), rb, c); break;
      case LT: 
-          write_reg(ra);
-	  bool_immed(opMOVLT, ra, rb, c); break;
+	  bool_immed(opMOVLT, W(ra), rb, c); break;
      case NE:
-          write_reg(ra);
-	  bool_immed(opMOVNE, ra, rb, c); break;
+	  bool_immed(opMOVNE, W(ra), rb, c); break;
 
      default:
           vm_load_store(op, ra, rb, c);
@@ -1127,35 +1120,30 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 static void vm_load_store(operation op, int ra, int rb, int c) {
      switch(op) {
      case LDW:
-          write_reg(ra);
-	  if (! isfloat(ra)) 
-               load_store(opLDR, ra, rb, c); 
-          else 
+	  if (isfloat(ra)) 
                load_store_f(opFLDS, ra, rb, c);
+          else 
+               load_store(opLDR, W(ra), rb, c); 
 	  break;
 
      case STW: 
-	  if (! isfloat(ra)) 
-               load_store(opSTR, ra, rb, c); 
-          else
+	  if (isfloat(ra)) 
                load_store_f(opFSTS, ra, rb, c); 
+          else
+               load_store(opSTR, ra, rb, c); 
 	  break;
 
      case LDS:
-          write_reg(ra);
-	  load_store_x(opLDSH, ra, rb, c); break;
+	  load_store_x(opLDSH, W(ra), rb, c); break;
      case LDSu: 
-          write_reg(ra);
-          load_store_x(opLDRH, ra, rb, c); break;
+          load_store_x(opLDRH, W(ra), rb, c); break;
      case STS: 
 	  load_store_x(opSTRH, ra, rb, c); break;
 
      case LDB:
-          write_reg(ra);
-	  load_store_x(opLDSB, ra, rb, c); break;
+	  load_store_x(opLDSB, W(ra), rb, c); break;
      case LDBu: 
-          write_reg(ra);
-	  load_store(opLDRB, ra, rb, c); break;
+	  load_store(opLDRB, W(ra), rb, c); break;
      case STB: 
 	  load_store(opSTRB, ra, rb, c); break;
 

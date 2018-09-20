@@ -80,6 +80,7 @@ typedef struct _ctvalue {
      int v_type;		/* INT or FLO */
      int v_val;			/* Constant or offset */
      reg v_reg;			/* Register */
+     reg v_reg2;                /* Another register */
      int v_size;		/* Size (1 or 2 words) */
 } *ctvalue;;
 
@@ -133,12 +134,15 @@ void flex_space(reg nreg);
 void dumpregs(void);
 
 void init_stack(int frame);
-void push(valkind vkind, int type, reg r, int val, int size);
+void pushx(valkind vkind, int type, reg r, reg r2, int val, int size);
 void pop(int n);
 void unlock(int n);
 ctvalue peek(int n);
 void ldst_item(int op, reg rs, int i);
      
+#define push(k, t, r, v, s) pushx(k, t, r, NULL, v, s)
+#define push2(k, t, r, r2, s) pushx(k, t, r, r2, 0, s)
+
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);
 ctvalue move_from_frame(int i);

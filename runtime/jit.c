@@ -443,7 +443,7 @@ static void loadq(void) {
 
 static void dupe(int n) {
      ctvalue v = move_from_frame(n);
-     push(v->v_op, v->v_type, v->v_reg, v->v_val, v->v_size);
+     pushx(v->v_op, v->v_type, v->v_reg, v->v_reg2, v->v_val, v->v_size);
 }
 
 /* instr -- translate one bytecode instruction */
