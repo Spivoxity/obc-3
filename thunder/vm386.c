@@ -544,12 +544,6 @@ static void memory(int ra, int rb, int d) {
      register, we use an addr32 prefix to ensure the top 32 bits
      of the address are zero on amd64. */
 
-#ifdef M64X32
-#define SXTOFF prefix(ADDR32)
-#else
-#define SXTOFF (void) 0
-#endif
-
      if (rb == NOREG) {
 	  // Absolute [d]
 #ifndef M64X32
@@ -573,8 +567,14 @@ static void memory(int ra, int rb, int d) {
 	       addr(0, ra, rb);
 	  else if (signed8(d))
 	       addr(1, ra, rb), byte(d);
-	  else
-	       SXTOFF, addr(2, ra, rb), word(d);
+	  else {
+#ifdef M64X32
+               // rb could be a signed offset from base address d
+               prefix(ADDR32), addr(2, ra, rb), word(d);
+#else
+               addr(2, ra, rb), word(d);
+#endif
+          }
      }
 }
 
@@ -977,8 +977,8 @@ void jump_NEorP(vmlabel lab) {
 #ifdef USE_SSE
 #define if387(x)
 
-#define move_f(rd, rs) move_r(opMOVSS_r, rd, rs)
-#define move_d(rd, rs) move_r(opMOVSD_r, rd, rs)
+#define fmove_s(rd, rs) move_r(opMOVSS_r, rd, rs)
+#define fmove_d(rd, rs) move_r(opMOVSD_r, rd, rs)
      
 static void fneg_s(int rd, int rs) {
      static code_addr mask;
@@ -993,7 +993,7 @@ static void fneg_s(int rd, int rs) {
           mask = (code_addr) p;
      }
 
-     move_f(rd, rs);
+     fmove_s(rd, rs);
      instr_rm(opXORPS, rd, NOREG, (int) (ptr) mask);
 }
 
@@ -1010,7 +1010,7 @@ static void fneg_d(int rd, int rs) {
           mask = (code_addr) p;
      }
 
-     move_d(rd, rs);
+     fmove_d(rd, rs);
      instr_rm(opXORPD, rd, NOREG, (int) (ptr) mask);
 }
 
@@ -1055,10 +1055,10 @@ static void flop3c(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
 #define fstore_s(rt, rb, imm)  instr_st(opMOVSS_m, rt, rb, imm)
 #define fstore_d(rt, rb, imm)  instr_st(opMOVSD_m, rt, rb, imm)
 
-#define move_to_f(rd, rs)  instr_rr(opMOVD_r, rd, rs)
-#define move_from_f(rd, rs)  instr_sr(opMOVD_m, rs, rd)
-#define move_to_d(rd, rs)  instr_rr(opMOVQ_r, rd, rs)
-#define move_from_d(rd, rs)  instr_sr(opMOVQ_m, rs, rd)
+#define fmove_to_s(rd, rs)  instr_rr(opMOVD_r, rd, rs)
+#define fmove_from_s(rd, rs)  instr_sr(opMOVD_m, rs, rd)
+#define fmove_to_d(rd, rs)  instr_rr(opMOVQ_r, rd, rs)
+#define fmove_from_d(rd, rs)  instr_sr(opMOVQ_m, rs, rd)
 
 #else
 #define if387(x) x
@@ -1069,7 +1069,7 @@ static void flop3c(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
    to track register state. */
 
 /* Optional floating-point move */
-static void move_f(int rd, int rs) {
+static void fmove_s(int rd, int rs) {
      if (rd == rs) return;
 
      if (rs == rF0)
@@ -1080,7 +1080,7 @@ static void move_f(int rd, int rs) {
      }
 }
 
-#define move_d(rd, rs) move_f(rd, rs)
+#define fmove_d(rd, rs) fmove_s(rd, rs)
 
 /* Unary floating point, 2 registers */
 static void fmonop(OPDECL, int rd, int rs) {
@@ -1163,14 +1163,14 @@ static void storef(OPDECL2, OPDECL2_(p), int rt, int rs, int imm) {
 #define fzero(rd) 	      instr(opFLDZ), fstp_r(rd+1)
 #define ftruncs(rt, rs, imm)  fld_r(rt), instr_m(opFISTTPS_m, rs, imm)
 
-#define move_to_f(rd, rs) \
+#define fmove_to_s(rd, rs) \
      push_r(rs), fload_s(rd, rSP, 0), pop(rs)
-#define move_from_f(rd, rs) \
+#define fmove_from_s(rd, rs) \
      /* Make a stack slot, then overwrite it. */ \
      push_r(rd), fstore_s(rs, rSP, 0), pop(rd)
-#define move_to_d(rd, rs) \
+#define fmove_to_d(rd, rs) \
      push_r(rs), fload_d(rd, rSP, 0), pop(rs)
-#define move_from_d(rd, rs) \
+#define fmove_from_d(rd, rs) \
      push_r(rd), fstore_d(rs, rSP, 0), pop(rd)
 
 
@@ -1533,11 +1533,11 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      switch (op) {
      case MOV:
 	  if (isfloat(ra) && isfloat(rb))
-	       move_f(ra, rb);
+	       fmove_s(ra, rb);
           else if (isfloat(ra))
-	       move_to_f(ra, rb);
+	       fmove_to_s(ra, rb);
 	  else if (isfloat(rb))
-               move_from_f(ra, rb);
+               fmove_from_s(ra, rb);
 	  else
 	       move(ra, rb); 
 	  break;
@@ -1545,11 +1545,11 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 #ifdef M64X32
      case MOVq:
 	  if (isfloat(ra) && isfloat(rb))
-	       move_d(ra, rb);
+	       fmove_d(ra, rb);
 	  else if (isfloat(ra))
-	       move_to_d(ra, rb);
+	       fmove_to_d(ra, rb);
           else if (isfloat(rb))
-               move_from_d(ra, rb);
+               fmove_from_d(ra, rb);
           else
 	       move64(ra, rb); 
           break;
@@ -1609,7 +1609,7 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
           push_r(ra); ftruncs(rb, rSP, 0); pop(ra); break;
      case CONVfd:
      case CONVdf:
-          move_d(ra, rb); break;
+          fmove_d(ra, rb); break;
 #endif
 
      default:
