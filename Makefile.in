@@ -56,7 +56,7 @@ SHELL = /bin/sh
 VPATH = @srcdir@
 VERSION = @PACKAGE_VERSION@
 DEBUG = @DEBUG@
-MODULES = @MODULES@
+ALLMODS = @ALLMODS@
 SHLMODS = @SHLMODS@
 CHECKMODS = @CHECKMODS@
 DYNLINK = @DYNLINK@
@@ -228,11 +228,11 @@ BIN = obc obb oblist obprof
 LIBX = compiler/obc1 compiler/obb1 runtime/oblink obx
 
 # Library source
-LIBSRC = $(MODULES:%=$(srcdir)/lib/%.m)
+LIBSRC = $(ALLMODS:%=$(srcdir)/lib/%.m)
 
 # Other files installed in {prefix}/lib
 LIB = lib/lscript lib/lscript-b $(srcdir)/lib/Builtin.m lib/_Builtin.k \
-	$(MODULES:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k) \
+	$(ALLMODS:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k) \
 	runtime/obx.a runtime/obx-p.a $(PRIMS) \
 	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h
 
