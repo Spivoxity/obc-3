@@ -384,6 +384,20 @@ static int const_reg(int imm) {
      }
 }
 
+static int shifted(int ra, int s) {
+     if (s == 0)
+          return ra;
+     else {
+          shift_i(opSLL, R_1, ra, s);
+          return R_1;
+     }
+}
+
+static int index_reg(int ra, int rb, int s) {
+     arith_r(opADDU, R_1, ra, shifted(rb, s));
+     return R_1;
+}
+
 static void arith_immed(OPDECL, OPDECL2, int (*fits)(int),
                         int rd, int rt, int imm) {
      if (fits(imm))
@@ -502,6 +516,7 @@ void vm_gen1j(operation op, vmlabel lab) {
 }
 
 static void vm_load_store(operation op, int rx, int ry, int c);
+static void vm_load_storex(operation op, int ra, int rb, int rc, int s);
 
 void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      int rx = rega->vr_reg, ry = regb->vr_reg;
@@ -611,6 +626,53 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
           arith_r(opSLT, R_1, rz, ry);
           arith_i(opXORI, rx, R_1, 1); break;
 
+     default:
+	  vm_load_storex(op, rx, ry, rz, 0);
+     }
+}
+
+void vm_gen4rrrs(operation op, vmreg rega, vmreg regb, vmreg regc, int s) {
+     int ra = rega->vr_reg, rb = regb->vr_reg, rc = regc->vr_reg;
+
+     vm_debug1(op, 4, rega->vr_name, regb->vr_name, regc->vr_name, fmt_val(s));
+     vm_space(0);
+     
+     switch (op) {
+     case ADD:
+          arith_r(opADDU, ra, rb, shifted(rc, s));
+          break;
+
+     default:
+          vm_load_storex(op, ra, rb, rc, s);
+     }
+}
+
+static void vm_load_storex(operation op, int ra, int rb, int rc, int s) {
+     switch(op) {
+     case LDW:
+          load_store(opLW, ra, index_reg(rb, rc, s), 0);
+	  break;
+     case STW: 
+          load_store(opSW, ra, index_reg(rb, rc, s), 0);
+	  break;
+     case LDS:
+          load_store(opLH, ra, index_reg(rb, rc, s), 0);
+          break;
+     case LDSu: 
+          load_store(opLHU, ra, index_reg(rb, rc, s), 0);
+          break;
+     case STS: 
+          load_store(opSH, ra, index_reg(rb, rc, s), 0);
+          break;
+     case LDB:
+          load_store(opLB, ra, index_reg(rb, rc, s), 0);
+          break;
+     case LDBu: 
+          load_store(opLBU, ra, index_reg(rb, rc, s), 0);
+          break;
+     case STB: 
+          load_store(opSB, ra, index_reg(rb, rc, s), 0);
+          break;
      default:
 	  badop();
      }
