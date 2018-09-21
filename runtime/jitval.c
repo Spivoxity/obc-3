@@ -37,15 +37,15 @@
 
      OP    FIELDS      MEANING
                                 
-     CON       val     val
-     REG   reg         reg
-     ADDR  reg val     reg + val
-     KONW      val     konst_4[val]
-     KONQ      val     konst_8[val]
-     MEMs  reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
-     STKW      val     mem_4[BP + val]
-     STKQ      val     mem_8[BP + val]
-     *CMP*             comparison of two previous values */
+     CON       val      val
+     REG   reg          reg
+     ADDR  reg val r2 k if r2 = NULL: reg + val else: reg + r2<<k
+     KONW      val      konst_4[val]
+     KONQ      val      konst_8[val]
+     MEMs  reg val r2 k mem_s[reg + val] or mem_s[reg + r2<<k]
+     STKW      val      mem_4[BP + val]
+     STKQ      val      mem_8[BP + val]
+     *CMP*              comparison of two previous values */
 
 #define __v2__(sym) #sym,
 static char *vkind_name[] = { __VALKINDS__(__v2__) };
@@ -76,10 +76,20 @@ static void show(ctvalue v) {
           printf("compare %s", vkind_name[v->v_op]);
           break;
 
+#define regname(r) vm_regname(r->r_reg)
+
      default:
-	  printf("[%s %d", vkind_name[v->v_op], v->v_val);
-	  if (v->v_reg != NULL) printf("(%s)", vm_regname(v->v_reg->r_reg));
-	  printf("]");
+          if (v->v_reg2 != NULL && v->v_scale != 0)
+               printf("[%s (%s+%s<<%d)]", vkind_name[v->v_op],
+                      regname(v->v_reg), regname(v->v_reg2), v->v_scale);
+          else if (v->v_reg2 != NULL)
+               printf("[%s (%s+%s)]", vkind_name[v->v_op],
+                      regname(v->v_reg), regname(v->v_reg2));
+          else if (v->v_reg != NULL)
+               printf("[%s %d(%s)]", vkind_name[v->v_op],
+                      v->v_val, regname(v->v_reg));
+          else
+               printf("[%s %d]", vkind_name[v->v_op], v->v_val);
      }
 }
 
@@ -96,7 +106,7 @@ void dumpregs(void) {
           }
 	  printf("  %s(%d)", vm_regname(r->r_reg), r->r_refct);
 	  if (cached(r)) {
-	       printf(" = "); show(&r->r_value);
+	       printf("="); show(&r->r_value);
 	  }
      }
      if (! blank) printf("\n");
@@ -105,13 +115,16 @@ void dumpregs(void) {
 
 static mybool same(ctvalue v, ctvalue w) {
      return (v->v_op == w->v_op && v->v_val == w->v_val 
-	     && v->v_reg == w->v_reg && v->v_size == w->v_size);
+	     && v->v_reg == w->v_reg && v->v_reg2 == w->v_reg2
+             && v->v_scale == w->v_scale && v->v_size == w->v_size);
 }
 
 void set_cache(reg r, ctvalue v) {
+     if (v->v_reg == r || v->v_reg2 == r) return;
+
 #ifdef DEBUG
      if (dflag >= 4) {
-	  printf("\tCache %s = ", vm_regname(r->r_reg));
+	  printf("Cache %s = ", vm_regname(r->r_reg));
 	  show(v);
 	  printf("\n");
      }
@@ -218,14 +231,15 @@ void get_sp(reg r) {
 }
 
 /* set -- assign to a stack slot */
-static void set(int i, valkind vkind, int type, int val, reg r, int s) {
+static void set(int i, valkind vkind, int type,
+                int val, reg r, reg r2, int scale, int s) {
      ctvalue v = &vstack[i];
-     reserve(r);
+     reserve(r); reserve(r2);
 
      if (vkind == V_STKW || vkind == V_STKQ) val = offset[i];
 
      v->v_op = vkind; v->v_type = type; v->v_val = val; 
-     v->v_reg = r; v->v_size = s;
+     v->v_reg = r; v->v_reg2 = r2; v->v_scale = scale; v->v_size = s;
 
 #ifdef DEBUG
      if (dflag >= 3) {
@@ -236,20 +250,23 @@ static void set(int i, valkind vkind, int type, int val, reg r, int s) {
 #endif
 }
 
-/* push -- push a value onto the eval stack */
-void push(valkind vkind, int type, reg r, int val, int size) {
+/* pushx -- push a value onto the eval stack */
+void pushx(valkind vkind, int type, int val, reg r, reg r2,
+           int scale, int size) {
 #ifndef FLOATOPS
      type = INT;
 #endif
      pdepth += 4*size;
      offset[sp] = -pdepth;
-     set(sp++, vkind, type, val, r, size);
+     set(sp++, vkind, type, val, r, r2, scale, size);
 }
 
 /* pop -- pop one or more values from the eval stack */
 void pop(int n) {
-     for (int i = sp - n; i < sp; i++) 
+     for (int i = sp - n; i < sp; i++) {
 	  rfree(vstack[i].v_reg);
+          rfree(vstack[i].v_reg2);
+     }
 
      sp -= n;
      pdepth = (sp == 0 ? 0 : -offset[sp-1]);
@@ -262,8 +279,10 @@ ctvalue peek(int n) {
 
 /* unlock -- unlock registers used near the top of the stack */
 void unlock(int n) {
-     for (int i = sp; i < sp + n; i++)
+     for (int i = sp; i < sp + n; i++) {
 	  runlock(vstack[i].v_reg);
+          runlock(vstack[i].v_reg2);
+     }
 }
 
 /* save_stack -- record stack contents at a forward branch */
@@ -293,9 +312,9 @@ void restore_stack(codepoint lab) {
      sp = 0; pdepth = 0;
      for (int i = 0; i < n; i++) {
 	  if (map & (1 << i))
-	       push(V_STKQ, INT, NULL, 0, 2);
+	       push(V_STKQ, INT, 0, NULL, 2);
 	  else
-	       push(V_STKW, INT, NULL, 0, 1);	       
+	       push(V_STKW, INT, 0, NULL, 1);	       
      }
 }
 
@@ -351,19 +370,18 @@ void move_to_frame(int i) {
           {
                r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
 	       ldst_item(choose(v->v_size, STW, STQ), r, i);
-               if (v->v_op != V_REG && v->v_reg != r) 
-                    set_cache(r, v);
+               if (v->v_op != V_REG) set_cache(r, v);
           }
 
 	  set(sp-i, choose(v->v_size, V_STKW, V_STKQ), 
-	      v->v_type, 0, NULL, v->v_size);
+	      v->v_type, 0, NULL, NULL, 0, v->v_size);
      }
 }
 
 /* transient -- check if a value is not preserved across a procedure call */
 static mybool transient(ctvalue v) {
-     if (v->v_reg != NULL && v->v_reg->r_class != 0)
-	  return TRUE;
+     if (v->v_reg != NULL && v->v_reg->r_class != 0) return TRUE;
+     if (v->v_reg2 != NULL && v->v_reg2->r_class != 0) return TRUE;
 
      switch (v->v_op) {
      case V_MEMW:
@@ -397,7 +415,7 @@ void spill(reg r) {
 
      for (int i = sp; i > 0 && *rc > 0; i--) {
           ctvalue v = &vstack[sp-i];
-	  if (vstack[sp-i].v_reg == r) {
+	  if (vstack[sp-i].v_reg == r || vstack[sp-i].v_reg2 == r) {
                if (*rc == 1 || v->v_op == V_REG)
                     move_to_frame(i);
                else {
@@ -438,6 +456,32 @@ static reg load(operation op, int cl, reg r, int val) {
      return r1;
 }
 
+static reg loadv(operation op, int cl, ctvalue v) {
+     rfree(v->v_reg); rlock(v->v_reg);
+     rfree(v->v_reg2); rlock(v->v_reg2);
+     reg r1 = ralloc(cl);
+     runlock(v->v_reg); runlock(v->v_reg2);
+
+     if (v->v_reg2 != NULL)
+          vm_gen(op, r1->r_reg, v->v_reg->r_reg, v->v_reg2->r_reg, v->v_scale);
+     else if (v->v_reg != NULL)
+          vm_gen(op, r1->r_reg, v->v_reg->r_reg, v->v_val);
+     else
+          vm_gen(op, r1->r_reg, v->v_val);
+
+     return r1;
+}
+
+
+static void storev(operation op, reg r, ctvalue v) {
+     if (v->v_reg2 != NULL)
+          vm_gen(op, r->r_reg, v->v_reg->r_reg, v->v_reg2->r_reg, v->v_scale);
+     else if (v->v_reg != NULL)
+          vm_gen(op, r->r_reg, v->v_reg->r_reg, v->v_val);
+     else
+          vm_gen(op, r->r_reg, v->v_val);
+}
+
 /* move_to_reg -- move stack item to a register */
 reg move_to_reg(int i, int ty) {
      ctvalue v = &vstack[sp-i];
@@ -457,8 +501,8 @@ reg move_to_reg(int i, int ty) {
 #ifdef DEBUG
 		    if (dflag >= 4) printf("Hit %s\n", vm_regname(r->r_reg));
 #endif
-		    rfree(v->v_reg);
-		    set(sp-i, V_REG, ty, 0, r, v->v_size);
+		    rfree(v->v_reg); rfree(v->v_reg2);
+		    set(sp-i, V_REG, ty, 0, r, NULL, 0, v->v_size);
 		    return rlock(r);
 	       }
 	  }
@@ -479,9 +523,16 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case V_ADDR:
-          if (v->v_val == 0)
+          if (v->v_reg2 != NULL) {
+               rfree(v->v_reg); rlock(v->v_reg);
+               rfree(v->v_reg2); rlock(v->v_reg2);
+               r = ralloc_suggest(INT, v->v_reg);
+               runlock(v->v_reg); runlock(v->v_reg2);
+               vm_gen(ADD, r->r_reg, v->v_reg->r_reg,
+                      v->v_reg2->r_reg, v->v_scale);
+          } else if (v->v_val == 0) {
                r = rfree(v->v_reg);
-          else {
+          } else {
                rfree(v->v_reg); rlock(v->v_reg);
                r = ralloc_suggest(INT, v->v_reg);
                runlock(v->v_reg);
@@ -490,21 +541,21 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case V_MEMW:	
-	  r = load(LDW, ty, v->v_reg, v->v_val);
-	  break;
-
+	  r = loadv(LDW, ty, v);
+ 	  break;
+ 
      case V_MEMS:	
-	  r = load(LDS, INT, v->v_reg, v->v_val); 
-	  break;
-
+	  r = loadv(LDS, INT, v); 
+ 	  break;
+ 
      case V_MEMC:	
-	  r = load(LDBu, INT, v->v_reg, v->v_val); 
-	  break;
-
+          r = loadv(LDBu, INT, v); 
+ 	  break;
+ 
      case V_MEMQ:
-	  r = load(LDQ, ty, v->v_reg, v->v_val); 
-	  break;
-
+	  r = loadv(LDQ, ty, v); 
+ 	  break;
+ 
      case V_KONW:
           r = load(LDW, ty, rCP, v->v_val);
           break;
@@ -534,10 +585,9 @@ reg move_to_reg(int i, int ty) {
 	  r = r2;
      }
 
-     if (v->v_op != V_STKW && v->v_op != V_STKQ && v->v_reg != r)
-	  set_cache(r, v);
+     if (v->v_op != V_STKW && v->v_op != V_STKQ) set_cache(r, v);
 
-     set(sp-i, V_REG, ty, 0, r, v->v_size);
+     set(sp-i, V_REG, ty, 0, r, NULL, 0, v->v_size);
      return rlock(r);
 }
 
@@ -566,26 +616,34 @@ ctvalue fix_const(int i, mybool rflag) {
 
 /* deref -- perform load operation on top of stack */
 void deref(valkind vkind, int ty, int size) {
-     ctvalue v = &vstack[sp-1];
+     ctvalue v = peek(1);
      reg r1;
 
      switch (v->v_op) {
      case V_ADDR:
-	  pop(1); r1 = v->v_reg;
-	  push(vkind, ty, r1, v->v_val, size);
+#ifndef M64X32
+          if (vkind == V_MEMQ && ty == INT && v->v_reg2 != NULL)
+               goto catchall;
+#endif
+
+	  pop(1);
+	  pushx(vkind, ty, v->v_val, v->v_reg, v->v_reg2, v->v_scale, size);
           break;
 
      case V_CON:
-	  pop(1); unlock(1); r1 = NULL;
-	  push(vkind, ty, NULL, v->v_val, size);
-	  break;
+	  pop(1); unlock(1);
+ 	  push(vkind, ty, v->v_val, NULL, size);
+ 	  break;
 
      default:
+#ifndef M64X32
+     catchall:
+#endif
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1); 
-	  push(vkind, ty, r1, 0, size); 
+	  push(vkind, ty, 0, r1, size); 
 	  break;
      }
-}
+ }
 
 /* unalias -- execute load operations that might alias v */
 static void unalias(int a, ctvalue v) {
@@ -608,9 +666,10 @@ static void unalias(int a, ctvalue v) {
 /* store -- perform store operation on top of stack */
 void store(valkind vkind, int s) {
      reg r1;
-     ctvalue v;
+     ctvalue v = &vstack[sp-1];
+     int ty = v->v_type;
 
-     deref(vkind, vstack[sp-2].v_type, s);					     v = &vstack[sp-1];
+     deref(vkind, vstack[sp-2].v_type, s);
      if (same(v, &vstack[sp-2])) {
 	  /* Store into same location as load: mostly for
 	     SLIDEW / RESULTW */
@@ -620,73 +679,70 @@ void store(valkind vkind, int s) {
 
      unalias(2, v); 
 
-     int ty = v->v_type;
-
 #ifndef M64X32
      if (ty == INT && vkind == V_MEMQ) {
-	  move_longval(&vstack[sp-2], vstack[sp-1].v_reg, vstack[sp-1].v_val);
-	  pop(2);
+          if (v->v_reg2 != NULL) panic("Oops!");
+          move_longval(&vstack[sp-2], v->v_reg, v->v_val);
+          pop(2);
 	  return;
      }
 #endif
      
-     rlock(v->v_reg);
+     rlock(v->v_reg); rlock(v->v_reg2);
      r1 = move_to_reg(2, ty); 
      pop(2); unlock(2);						
 
      switch (vkind) {
      case V_MEMW:
-          ldst(STW, r1, v->v_reg, v->v_val); break;
+          storev(STW, r1, v); break;
      case V_MEMC:
-          ldst(STB, r1, v->v_reg, v->v_val); break;
+          storev(STB, r1, v); break;
      case V_MEMS:
-          ldst(STS, r1, v->v_reg, v->v_val); break;
+          storev(STS, r1, v); break;
      case V_MEMQ:
-          ldst(STQ, r1, v->v_reg, v->v_val); break;
+          storev(STQ, r1, v); break;
      default:
 	  panic("store %s", vkind_name[vkind]);
      }
 
      kill_alias(v);
-     if ((vkind == V_MEMW || vkind == V_MEMQ) && v->v_reg != r1)
-          set_cache(r1, v);
+     if (vkind == V_MEMW || vkind == V_MEMQ) set_cache(r1, v);
 }
 
 /* add_offset -- add address and offset */
-void add_offset() {
-     ctvalue v1, v2;
-     reg r1, r2;
+void add_offset(int scale) {
+     ctvalue v1 = peek(2), v2;
+     reg r1;
 
-     switch (vstack[sp-2].v_op) {
+     switch (v1->v_op) {
      case V_ADDR:
-	  v1 = &vstack[sp-2];
-	  v2 = move_to_rc(1); 
-	  pop(2);
-	  if (v2->v_op == V_CON)
-	       push(V_ADDR, INT, v1->v_reg, v1->v_val + v2->v_val, 1);
-	  else {
-	       r1 = ralloc_suggest(INT, v1->v_reg); 
-               r2 = v2->v_reg;
-	       runlock(v2->v_reg);
-	       vm_gen(ADD, r1->r_reg, v1->v_reg->r_reg, r2->r_reg);
-	       push(V_ADDR, INT, r1, v1->v_val, 1);
-	  }
-	  break;
+          if (v1->v_reg2 != NULL) goto catchall;
+ 	  v2 = move_to_rc(1); 
+	  if (v2->v_op == V_CON) {
+               pop(2);
+	       push(V_ADDR, INT, v1->v_val + (v2->v_val<<scale), v1->v_reg, 1);
+          } else if (v1->v_val == 0) {
+               pop(2);
+               push2(V_ADDR, INT, v1->v_reg, v2->v_reg, scale, 1);
+          } else {
+               pop(2); 
+               reserve(v2->v_reg);
+               r1 = ralloc_suggest(INT, v1->v_reg);
+               rthaw(v2->v_reg);
+	       vm_gen(ADD, r1->r_reg, v1->v_reg->r_reg, v1->v_val);
+	       push2(V_ADDR, INT, r1, v2->v_reg, scale, 1);
+ 	  }
+ 	  break;
 
      default:
+     catchall:
 	  r1 = move_to_reg(2, INT); 
 	  v2 = move_to_rc(1); 
-	  pop(2);
-	  if (v2->v_op == V_CON) {
-               // No need to sign extend as r1 is an address
-	       unlock(2);
-	       push(V_ADDR, INT, r1, v2->v_val, 1);
-	  } else {
-	       r2 = ralloc_suggest(INT, r1); 
-	       unlock(2);
-	       vm_gen(ADD, r2->r_reg, r1->r_reg, v2->v_reg->r_reg);
-	       push(V_REG, INT, r2, 0, 1);
-	  }
+	  pop(2); unlock(2);
+	  if (v2->v_op == V_CON)
+ 	       push(V_ADDR, INT, v2->v_val<<scale, r1, 1);
+          else
+	       push2(V_ADDR, INT, r1, v2->v_reg, scale, 1);
      }
 }
 
@@ -790,8 +846,8 @@ void move_longval(ctvalue src, reg rd, int offd) {
 	  move_long(src->v_reg, src->v_val, rd, offd);
 	  break;
      case V_KONQ:
-	  move_long(rCP, src->v_val, rd, offd);
-	  break;
+          move_long(rCP, src->v_val, rd, offd);
+          break;
      case V_STKQ:
 	  move_long(breg, sbase + src->v_val, rd, offd);
 	  break;

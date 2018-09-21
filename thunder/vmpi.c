@@ -91,7 +91,7 @@ struct _vmreg
      reg_rr = { "RET", R0 }, // Result register -- may overlap with others
      reg_sp = { "BASE", SP }; // Base register for locals
 
-/* Number of V registes, total int registers, number of F registers */
+/* Number of V registers, total int registers, number of F registers */
 const int vm_nvreg = 7, vm_nireg = 8, vm_nfreg = 7;
 
 /* The int registers, V followed by I */
@@ -134,6 +134,17 @@ static char *fmt_addr(int rs, int imm, int op) {
           sprintf(buf, "[%s, #%d]", regname[rs], (op&UBIT ? imm : -imm));
 
      return buf;
+}
+
+static char *fmt_shift(int r, int s) {
+     static char buf[16];
+
+     if (s == 0)
+          return regname[r];
+     else {
+          sprintf(buf, "%s, LSL %d", regname[r], s);
+          return buf;
+     }
 }
 
 // Macros that allow each opcode to be passed around with the 
@@ -384,8 +395,16 @@ static void shift_r(OPDECL, int rd, int rm, int rs) {
 
 // rd := rm shift c
 static void shift_i(OPDECL, int rd, int rm, int c) {
-     vm_debug2("mov %s, %s, %s #%d", regname[rd], regname[rm], mnem, c);
+     vm_debug2("%s %s, %s, #%d", mnem, regname[rd], regname[rm], c);
      instr(op, reg(rd), 0, reg(rm)|shift_imm(c));
+     vm_done();
+}
+
+// rd := rn op (rm << s)
+static void op_rrrs(OPDECL, int rd, int rn, int rm, int s) {
+     vm_debug2("%s %s, %s, %s, LSL #%d", mnem,
+               regname[rd], regname[rn], regname[rm], s);
+     instr(op, reg(rd), reg(rn), reg(rm)|shift_imm(s));
      vm_done();
 }
 
@@ -424,34 +443,44 @@ static void ldst_ri(OPDECL, int rd, int rn, int off) {
 #define RRBIT  (0x20<<20) // Double-reg indirect
 
 // rd :=: mem[rn + rm]
-static void ldst_rr(OPDECL, int rd, int rn, int rm) {
-     vm_debug2("%s %s, [%s, %s]", mnem, regname[rd], regname[rn], regname[rm]);
-     instr(op|RRBIT|UBIT, reg(rd), reg(rn), reg(rm));
+static void ldst_rr(OPDECL, int rd, int rn, int rm, int s) {
+     vm_debug2("%s %s, [%s, %s]", mnem, regname[rd], regname[rn],
+               fmt_shift(rm, s));
+     instr(op|RRBIT|UBIT, reg(rd), reg(rn), reg(rm)|shift_imm(s));
      vm_done();
 }
 
 
-// Fancy indexed loads and stores
+// Loads and stores for less common types
 
 #define IBIT  (0x04<<20)
 
 #define offx(n) ((((n)&0xf0)<<4)|((n)&0xf))
 
 // must specify UBIT for addition
-static void ldstx_ri(OPDECL, int rd, int rn, int off) {
+static void ldst2_ri(OPDECL, int rd, int rn, int off) {
      vm_debug2("%s %s, %s", mnem, regname[rd], fmt_addr(rn, off, op));
      instr(op|IBIT, reg(rd), reg(rn), offx(off));
      vm_done();
 }
 
-static void ldstx_rr(OPDECL, int rd, int rn, int rm) {
+static void ldst2_rr(OPDECL, int rd, int rn, int rm) {
      vm_debug2("%s %s, [%s, %s]", mnem, regname[rd], regname[rn], regname[rm]);
      instr(op|UBIT, reg(rd), reg(rn), reg(rm));
      vm_done();
 }
 
+// load/store float
+static void ldstf_ri(OPDECL, int rd, int rn, int off) {
+     vm_debug2("%s %s%s, %s", mnem, regname[rd], (op&DBIT ? "+1" : ""),
+               fmt_addr(rn, off*4, op));
+     instr(op, reg(rd), reg(rn), immed(off));
+     vm_done();
+}
+
 #define bit(r) (1<<(r))
 #define range(a, b) (((-1)<<a)&~(-1<<(b+1)))
+
 
 // Branches
 
@@ -473,6 +502,7 @@ static void _fmstat(OPDECL) {
      instr(op, 0xf, 0, 0);
      vm_done();
 }
+
 #define fmstat() _fmstat(opFMSTAT)
 
 // move from int reg to single-prec FP register rn := rd
@@ -481,6 +511,7 @@ static void _fmsr(OPDECL, int rn, int rd) {
      instr(op, reg(rd), reg(rn), 0);
      vm_done();
 }
+
 #define fmsr(rn, rd) _fmsr(opFMSR, rn, rd)
 
 // move from single-prec FP register to int reg rd := rn
@@ -489,15 +520,8 @@ static void _fmrs(OPDECL, int rd, int rn) {
      instr(op, reg(rd), reg(rn), 0);
      vm_done();
 }
-#define fmrs(rd, rn) _fmrs(opFMRS, rd, rn)
 
-// load/store single/double plus/minus -- must use UBIT for plus
-static void ldst_f(OPDECL, int rd, int rn, int off) {
-     vm_debug2("%s %s%s, %s", mnem, regname[rd], (op&DBIT ? "+1" : ""),
-         fmt_addr(rn, off*4, op));
-     instr(op, reg(rd), reg(rn), immed(off));
-     vm_done();
-}
+#define fmrs(rd, rn) _fmrs(opFMRS, rd, rn)
 
 
 // ---------------- LITERAL TABLE ----------------
@@ -567,6 +591,12 @@ static void move_immed(int r, int imm) {
 /* const_reg -- move constant into scratch register */
 static int const_reg(int imm) {
      move_immed(IP, imm);
+     return IP;
+}
+
+/* index_reg -- sum two regs into scratch register with shift */
+static int index_reg(int ra, int rb, int s) {
+     op_rrrs(opADD, IP, ra, rb, s);
      return IP;
 }
 
@@ -660,6 +690,7 @@ static void branch(OPDECL, vmlabel lab) {
      compare_immed(ra, b), branch(op, lab)
 
 /* Loads and stores for word and unsigned byte */
+
 static void load_store(OPDECL, int ra, int rb, int c) {
      if (rb == NOREG) {
 	  int rc = const_reg(c);
@@ -671,50 +702,57 @@ static void load_store(OPDECL, int ra, int rb, int c) {
           ldst_ri(SETBIT(OP, UBIT), ra, rb, c);
      else if (c < 0 && c > -4096)
           ldst_ri(OP, ra, rb, -c);
-     else {
-	  int rc = const_reg(c);
-          ldst_rr(OP, ra, rb, rc);
-     }
+     else
+          ldst_rr(OP, ra, rb, const_reg(c), 0);
 }
 
 #define load_word(ra, rb, off) \
      load_store(opLDR, ra, rb, off)
 
 /* Other integer loads and stores */
-static void load_store_x(OPDECL, int ra, int rb, int c) {
+
+static void load_store2_ri(OPDECL, int ra, int rb, int c) {
      if (rb == NOREG) {
 	  int rc = const_reg(c);
-          ldstx_ri(SETBIT(OP, UBIT), ra, rc, 0);
+          ldst2_ri(SETBIT(OP, UBIT), ra, rc, 0);
           return;
      }
 
      if (c >= 0 && c < 256)
-          ldstx_ri(SETBIT(OP, UBIT), ra, rb, c);
+          ldst2_ri(SETBIT(OP, UBIT), ra, rb, c);
      else if (c < 0 && c > -256)
-          ldstx_ri(OP, ra, rb, -c);
+          ldst2_ri(OP, ra, rb, -c);
      else {
 	  int rc = const_reg(c);
-          ldstx_rr(OP, ra, rb, rc);
+          ldst2_rr(OP, ra, rb, rc);
      }
 }
 
+static void load_store2_rrs(OPDECL, int ra, int rb, int rc, int s) {
+     if (s == 0)
+          ldst2_rr(OP, ra, rb, rc);
+     else
+          ldst2_ri(OP, ra, index_reg(rb, rc, s), 0);
+}
+
 /* Floating point loads and stores */
+
 static void load_store_f(OPDECL, int ra, int rb, int c) {
      assert((c&3) == 0);
 
      if (rb == NOREG) {
 	  int rc = const_reg(c);
-          ldst_f(SETBIT(OP, UBIT), ra, rc, 0);
+          ldstf_ri(SETBIT(OP, UBIT), ra, rc, 0);
           return;
      }
 
      if (c >= 0 && c < 1024)
-          ldst_f(SETBIT(OP, UBIT), ra, rb, c/4);
+          ldstf_ri(SETBIT(OP, UBIT), ra, rb, c/4);
      else if (c < 0 && c > -1024)
-	  ldst_f(OP, ra, rb, (-c)/4);
+	  ldstf_ri(OP, ra, rb, (-c)/4);
      else {
           add_immed(IP, rb, c);
-          ldst_f(SETBIT(OP, UBIT), ra, IP, 0);
+          ldstf_ri(SETBIT(OP, UBIT), ra, IP, 0);
      }
 }     
 
@@ -725,8 +763,8 @@ static void load_store_d(OPDECL, int ra, int rb, int c) {
 
      if (rb == NOREG) {
           int rc = const_reg(c);
-          ldst_f(SETBIT(OP, UBIT), ra, rc, 0);
-          ldst_f(SETBIT(OP, UBIT|DBIT), ra, rc, 1);
+          ldstf_ri(SETBIT(OP, UBIT), ra, rc, 0);
+          ldstf_ri(SETBIT(OP, UBIT|DBIT), ra, rc, 1);
           return;
      }
 
@@ -753,9 +791,14 @@ static void write_reg(int r) {
      if (! isfloat(r)) regmap |= bit(r);
 }
 
+#define W(r) (write_reg(r), r)
+
 // ---------------- CODE GENERATION INTERFACE ----------------
 
 #define badop() vm_unknown(__FUNCTION__, op)
+
+static void vm_load_store_ri(operation op, int ra, int rb, int c);
+static void vm_load_store_rrs(operation op, int ra, int rb, int rc, int s);
 
 void vm_gen1r(operation op, vmreg rega) {
      int ra = rega->vr_reg;
@@ -826,8 +869,6 @@ void vm_gen1j(operation op, vmlabel lab) {
      }
 }
 
-static void vm_load_store(operation op, int ra, int rb, int c);
-
 void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
 
@@ -836,15 +877,14 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 
      switch (op) {
      case MOV:
-          write_reg(ra);
 	  if (isfloat(ra) && isfloat(rb))
 	       op_rr(opFMOVS, ra, rb);
           else if (isfloat(ra))
 	       fmsr(ra, rb);	// Can only happen via SYSTEM.VAL etc.
           else if (isfloat(rb))
-               fmrs(ra, rb);	// Ditto
+               fmrs(W(ra), rb);	// Ditto
 	  else
-               move_reg(ra, rb); 
+               move_reg(W(ra), rb); 
 	  break;
 
      case MOVq:
@@ -853,12 +893,10 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
           break;
 
      case NEG:    
-          write_reg(ra);
-	  arith_immed(opRSB, ra, rb, 0); break;
+	  arith_immed(opRSB, W(ra), rb, 0); break;
 
      case NOT:    
-          write_reg(ra);
-	  op_rr(opMVN, ra, rb); break;
+	  op_rr(opMVN, W(ra), rb); break;
 
      case NEGf:
 	  op_rr(opFNEGS, ra, rb); break;
@@ -893,11 +931,10 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 	  op_rr(opFCVTSD, ra, rb); break;
 
      case CONVis: 
-          write_reg(ra);
-	  op_rr(opSXTH, ra, rb); break;
+	  op_rr(opSXTH, W(ra), rb); break;
 
      default:
-          vm_load_store(op, ra, rb, 0);
+          vm_load_store_ri(op, ra, rb, 0);
      }
 }
 
@@ -909,31 +946,29 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
      switch (op) {
      case MOV: 
-          write_reg(ra);
-          move_immed(ra, b);
+          move_immed(W(ra), b);
           break;
 
      case GETARG: 
-          write_reg(ra);
-	  move_reg(ra, R(b));
+	  move_reg(W(ra), R(b));
           break;
 
      default:
-          vm_load_store(op, ra, NOREG, b);
+          vm_load_store_ri(op, ra, NOREG, b);
      }
 }
 
 void vm_gen2rj(operation op, vmreg rega, vmlabel b) {
      int ra = rega->vr_reg;
+     code_addr r;
 
      vm_debug1(op, 2, rega->vr_name, fmt_lab(b));
      vm_space(0);
 
      switch (op) {
      case MOV:
-          write_reg(ra);
-          code_addr r = vm_literal(4);
-          load_store(opLDR, ra, PC, r - (pc+8));
+          r = vm_literal(4);
+          load_store(opLDR, W(ra), PC, r - (pc+8));
           vm_branch(ABS, r, b);
           break;
               
@@ -950,36 +985,26 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      switch (op) {
      case ADD: 
-          write_reg(ra);
-	  op_rrr(opADD, ra, rb, rc); break;
+	  op_rrr(opADD, W(ra), rb, rc); break;
      case AND: 
-          write_reg(ra);
-	  op_rrr(opAND, ra, rb, rc); break;
+	  op_rrr(opAND, W(ra), rb, rc); break;
      case XOR: 
-          write_reg(ra);
-	  op_rrr(opEOR, ra, rb, rc); break;
+	  op_rrr(opEOR, W(ra), rb, rc); break;
      case OR: 
-          write_reg(ra);
-	  op_rrr(opORR, ra, rb, rc); break;
+	  op_rrr(opORR, W(ra), rb, rc); break;
      case SUB: 
-          write_reg(ra);
-	  op_rrr(opSUB, ra, rb, rc); break;
+	  op_rrr(opSUB, W(ra), rb, rc); break;
      case MUL: 
-          write_reg(ra);
-	  op_mul(opMUL, ra, rb, rc); break;
+	  op_mul(opMUL, W(ra), rb, rc); break;
 
      case LSH: 
-          write_reg(ra);
-	  shift_r(opLSL, ra, rb, rc); break;
+	  shift_r(opLSL, W(ra), rb, rc); break;
      case RSH: 
-          write_reg(ra);
-	  shift_r(opASR, ra, rb, rc); break;
+	  shift_r(opASR, W(ra), rb, rc); break;
      case RSHu: 
-          write_reg(ra);
-	  shift_r(opLSR, ra, rb, rc); break;
+	  shift_r(opLSR, W(ra), rb, rc); break;
      case ROR:
-          write_reg(ra);
-          shift_r(opROR, ra, rb, rc); break;
+          shift_r(opROR, W(ra), rb, rc); break;
 
      case ADDf:
 	  op_rrr(opFADDS, ra, rb, rc); break;
@@ -1000,61 +1025,85 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 	  op_rrr(opFDIVD, ra, rb, rc); break;
 
      case EQ: 
-          write_reg(ra);
-	  bool_reg(opMOVEQ, ra, rb, rc); break;
+	  bool_reg(opMOVEQ, W(ra), rb, rc); break;
      case GE:
-          write_reg(ra);
-	  bool_reg(opMOVGE, ra, rb, rc); break;
+	  bool_reg(opMOVGE, W(ra), rb, rc); break;
      case GT: 
-          write_reg(ra);
-	  bool_reg(opMOVGT, ra, rb, rc); break;
+	  bool_reg(opMOVGT, W(ra), rb, rc); break;
      case LE:
-          write_reg(ra);
-	  bool_reg(opMOVLE, ra, rb, rc); break;
+	  bool_reg(opMOVLE, W(ra), rb, rc); break;
      case LT: 
-          write_reg(ra);
-	  bool_reg(opMOVLT, ra, rb, rc); break;
+	  bool_reg(opMOVLT, W(ra), rb, rc); break;
      case NE:
-          write_reg(ra);
-	  bool_reg(opMOVNE, ra, rb, rc); break;
+	  bool_reg(opMOVNE, W(ra), rb, rc); break;
 
      case EQf:
-          write_reg(ra);
-	  bool_reg_f(opMOVEQ, ra, rb, rc); break;
+	  bool_reg_f(opMOVEQ, W(ra), rb, rc); break;
      case LTf:
-          write_reg(ra);
-	  bool_reg_f(opMOVLO, ra, rb, rc); break;
+	  bool_reg_f(opMOVLO, W(ra), rb, rc); break;
      case LEf:
-          write_reg(ra);
-	  bool_reg_f(opMOVLS, ra, rb, rc); break;
+	  bool_reg_f(opMOVLS, W(ra), rb, rc); break;
      case GTf:
-          write_reg(ra);
-	  bool_reg_f(opMOVGT, ra, rb, rc); break;
+	  bool_reg_f(opMOVGT, W(ra), rb, rc); break;
      case GEf:
-          write_reg(ra);
-	  bool_reg_f(opMOVGE, ra, rb, rc); break;
+	  bool_reg_f(opMOVGE, W(ra), rb, rc); break;
      case NEf:
-          write_reg(ra);
-	  bool_reg_f(opMOVNE, ra, rb, rc); break;
+	  bool_reg_f(opMOVNE, W(ra), rb, rc); break;
 
      case EQd:
-          write_reg(ra);
-	  bool_reg_d(opMOVEQ, ra, rb, rc); break;
+	  bool_reg_d(opMOVEQ, W(ra), rb, rc); break;
      case GEd:
-          write_reg(ra);
-	  bool_reg_d(opMOVGE, ra, rb, rc); break;
+	  bool_reg_d(opMOVGE, W(ra), rb, rc); break;
      case GTd:
-          write_reg(ra);
-	  bool_reg_d(opMOVGT, ra, rb, rc); break;
+	  bool_reg_d(opMOVGT, W(ra), rb, rc); break;
      case LEd:
-          write_reg(ra);
-	  bool_reg_d(opMOVLS, ra, rb, rc); break;
+	  bool_reg_d(opMOVLS, W(ra), rb, rc); break;
      case LTd:
-          write_reg(ra);
-	  bool_reg_d(opMOVLO, ra, rb, rc); break;
+	  bool_reg_d(opMOVLO, W(ra), rb, rc); break;
      case NEd:
-          write_reg(ra);
-	  bool_reg_d(opMOVNE, ra, rb, rc); break;
+	  bool_reg_d(opMOVNE, W(ra), rb, rc); break;
+
+     default:
+	  vm_load_store_rrs(op, ra, rb, rc, 0);
+     }
+}
+
+static void vm_load_store_rrs(operation op, int ra, int rb, int rc, int s) {
+     switch(op) {
+     case LDW:
+	  if (isfloat(ra)) 
+               load_store_f(opFLDS, ra, index_reg(rb, rc, s), 0); 
+          else 
+               ldst_rr(opLDR, W(ra), rb, rc, s);
+	  break;
+
+     case STW: 
+	  if (isfloat(ra)) 
+               load_store_f(opFSTS, ra, index_reg(rb, rc, s), 0);
+          else
+               ldst_rr(opSTR, ra, rb, rc, s); 
+	  break;
+
+     case LDS:
+	  load_store2_rrs(opLDSH, W(ra), rb, rc, s); break;
+     case LDSu: 
+          load_store2_rrs(opLDRH, W(ra), rb, rc, s); break;
+     case STS: 
+	  load_store2_rrs(opSTRH, ra, rb, rc, s); break;
+
+     case LDB:
+	  load_store2_rrs(opLDSB, W(ra), rb, rc, s); break;
+     case LDBu: 
+	  ldst_rr(opLDRB, W(ra), rb, rc, s); break;
+     case STB: 
+	  ldst_rr(opSTRB, ra, rb, rc, s); break;
+
+     case LDQ: 
+          assert(isfloat(ra));
+          load_store_d(opFLDS, ra, index_reg(rb, rc, s), 0); break;
+     case STQ:    
+          assert(isfloat(ra));
+          load_store_d(opFSTS, ra, index_reg(rb, rc, s), 0); break;
 
      default:
 	  badop();
@@ -1069,93 +1118,72 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 
      switch (op) {
      case ADD: 
-          write_reg(ra);
-          add_immed(ra, rb, c); break;
+          add_immed(W(ra), rb, c); break;
      case SUB: 
-          write_reg(ra);
-	  arith_signed(opSUB, opADD, ra, rb, c); break;
+	  arith_signed(opSUB, opADD, W(ra), rb, c); break;
      case AND: 
-          write_reg(ra);
-	  arith_compl(opAND, opBIC, ra, rb, c); break;
+	  arith_compl(opAND, opBIC, W(ra), rb, c); break;
      case OR: 
-          write_reg(ra);
-	  arith_immed(opORR, ra, rb, c); break;
+	  arith_immed(opORR, W(ra), rb, c); break;
      case XOR: 
-          write_reg(ra);
-	  arith_immed(opEOR, ra, rb, c); break;
+	  arith_immed(opEOR, W(ra), rb, c); break;
      case MUL:
-          write_reg(ra);
-	  op_mul(opMUL, ra, rb, const_reg(c)); break;
+	  op_mul(opMUL, W(ra), rb, const_reg(c)); break;
 
      case LSH: 
-          write_reg(ra);
-	  shift_i(opLSL, ra, rb, c); break;
+	  shift_i(opLSL, W(ra), rb, c); break;
      case RSH: 
-          write_reg(ra);
-	  shift_i(opASR, ra, rb, c); break;
+	  shift_i(opASR, W(ra), rb, c); break;
      case RSHu: 
-          write_reg(ra);
-	  shift_i(opLSR, ra, rb, c); break;
+	  shift_i(opLSR, W(ra), rb, c); break;
      case ROR:
-          write_reg(ra);
-          shift_i(opROR, ra, rb, c); break;
+          shift_i(opROR, W(ra), rb, c); break;
 
      case EQ:
-          write_reg(ra);
-	  bool_immed(opMOVEQ, ra, rb, c); break;
+	  bool_immed(opMOVEQ, W(ra), rb, c); break;
      case GE:
-          write_reg(ra);
-	  bool_immed(opMOVGE, ra, rb, c); break;
+	  bool_immed(opMOVGE, W(ra), rb, c); break;
      case GT: 
-          write_reg(ra);
-	  bool_immed(opMOVGT, ra, rb, c); break;
+	  bool_immed(opMOVGT, W(ra), rb, c); break;
      case LE:
-          write_reg(ra);
-	  bool_immed(opMOVLE, ra, rb, c); break;
+	  bool_immed(opMOVLE, W(ra), rb, c); break;
      case LT: 
-          write_reg(ra);
-	  bool_immed(opMOVLT, ra, rb, c); break;
+	  bool_immed(opMOVLT, W(ra), rb, c); break;
      case NE:
-          write_reg(ra);
-	  bool_immed(opMOVNE, ra, rb, c); break;
+	  bool_immed(opMOVNE, W(ra), rb, c); break;
 
      default:
-          vm_load_store(op, ra, rb, c);
+          vm_load_store_ri(op, ra, rb, c);
      }
 }
 
-static void vm_load_store(operation op, int ra, int rb, int c) {
+static void vm_load_store_ri(operation op, int ra, int rb, int c) {
      switch(op) {
      case LDW:
-          write_reg(ra);
-	  if (! isfloat(ra)) 
-               load_store(opLDR, ra, rb, c); 
-          else 
+	  if (isfloat(ra)) 
                load_store_f(opFLDS, ra, rb, c);
+          else 
+               load_store(opLDR, W(ra), rb, c); 
 	  break;
 
      case STW: 
-	  if (! isfloat(ra)) 
-               load_store(opSTR, ra, rb, c); 
-          else
+	  if (isfloat(ra)) 
                load_store_f(opFSTS, ra, rb, c); 
+          else
+               load_store(opSTR, ra, rb, c); 
 	  break;
 
      case LDS:
-          write_reg(ra);
-	  load_store_x(opLDSH, ra, rb, c); break;
+	  load_store2_ri(opLDSH, W(ra), rb, c); break;
      case LDSu: 
-          write_reg(ra);
-          load_store_x(opLDRH, ra, rb, c); break;
+          load_store2_ri(opLDRH, W(ra), rb, c); break;
      case STS: 
-	  load_store_x(opSTRH, ra, rb, c); break;
+	  load_store2_ri(opSTRH, ra, rb, c); break;
 
      case LDB:
-          write_reg(ra);
-	  load_store_x(opLDSB, ra, rb, c); break;
+	  load_store2_ri(opLDSB, W(ra), rb, c); break;
      case LDBu: 
-          write_reg(ra);
-	  load_store(opLDRB, ra, rb, c); break;
+	  load_store(opLDRB, W(ra), rb, c); break;
      case STB: 
 	  load_store(opSTRB, ra, rb, c); break;
 
@@ -1300,6 +1328,25 @@ void vm_gen3rij(operation op, vmreg rega, int b, vmlabel lab) {
 	  badop();
      }
 }
+
+void vm_gen4rrrs(operation op, vmreg rega, vmreg regb, vmreg regc, int s) {
+     int ra = rega->vr_reg, rb = regb->vr_reg, rc = regc->vr_reg;
+
+     vm_debug1(op, 4, rega->vr_name, regb->vr_name, regc->vr_name, fmt_val(s));
+     vm_space(0);
+     
+     switch (op) {
+     case ADD:
+          op_rrrs(opADD, W(ra), rb, rc, s);
+          break;
+
+     default:
+          vm_load_store_rrs(op, ra, rb, rc, s);
+     }
+}
+
+
+/* Prelude and postlude */
 
 static code_addr entry;
 static int locals;

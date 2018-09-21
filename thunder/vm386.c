@@ -177,16 +177,32 @@ static char *_regname[] = {
 
 static char **regname = &_regname[1];
 
-static char *fmt_addr(int rs, int imm) {
-     static char buf[32];
+#define fmt_addr(rb, imm)  fmt_addrx(rb, imm, NOREG, 0)
 
-     if (rs == NOREG)
+static char *fmt_addrx(int rb, int imm, int rx, int s) {
+     static char buf[32], sbuf[32];
+
+     if (rb == NOREG && rx == NOREG)
           sprintf(buf, "%s", fmt_val(imm));
-     else
-          sprintf(buf, "%s(%s)",
-                  (imm != 0 ? fmt_val(imm) : ""),
-                  regname[rs]);
+     else {
+          char *mmm = (imm != 0 ? fmt_val(imm) : "");
 
+          if (rx == NOREG)
+               sprintf(buf, "%s(%s)", mmm, regname[rb]);
+          else {
+               if (s == 0)
+                    strcpy(sbuf, "");
+               else
+                    sprintf(sbuf, "<<%d", s);
+        
+               if (rb == NOREG)
+                    sprintf(buf, "%s(%s%s)", mmm, regname[rx], sbuf);
+               else
+                    sprintf(buf, "%s(%s+%s%s)", mmm, regname[rb],
+                            regname[rx], sbuf);
+          }
+     }
+     
      return buf;
 }
 
@@ -358,7 +374,8 @@ static char *fmt_addr(int rs, int imm) {
 #define opMOVW_m 	MNEM("movw", pfx(0x66, 0x89))
 #define opMOVB_m 	MNEM("movb", 0x88)
 #define opMOVL_i 	MNEM("mov", 0xb8) // Load immediate into register
-#define opLEA64		MNEM("lea", pfx(REX_W, 0x8d)) // Load effective address
+#define opLEA		MNEM("lea", 0x8d) // Load effective address
+#define opLEA64		MNEM("lea64", pfx(REX_W, 0x8d))
 
 #define opIMUL_i 	MNEM("imul", 0x69) // Integer multiply
 #define opIMUL_r	MNEM("imul", pfx(0x0f, 0xaf))
@@ -505,47 +522,49 @@ static void sib(int scale, int index, int base) {
 #define signed8(x) ((x) >= -128 && (x) < 128)
 
 /* memory operand */
-static void memory(int ra, int rb, int d) {
-     /* Encode the register ra and the memory address [rb+d]
+#define memory(ra, rb, d)  memoryx(ra, rb, d, NOREG, 0)
 
-        Most of the time (with no indexing), we need a (mode, reg, r/m) 
-        triple, where mode determines the size of displacement 
-        (0 = none, 1 = byte, 2 = word), and r/m is the base register.
-	But there are special cases involving the registers rSP = 4
-	and rBP = 5:
+static void memoryx(int ra, int rb, int d, int rx, int s) {
+     /* Encode the register ra and the memory address [rb+d+rx<<s]
 
-	mode = 0:
-	    Indirect addressing [rb].  
-            For [rBP], use (1, ra, rBP) with d = byte(0).
-	    
-	mode = 1 or 2:
-	    Based addressing [rb+d]. 
-            For [rSP+d] use (mode, ra, 4) followed by SIB = (0, 4, rSP).
+     Most of the time (with no indexing), we need a (mode, reg, r/m) 
+     triple, where mode determines the size of displacement 
+     (0 = none, 1 = byte, 2 = word), and r/m is the base register.
+     but there are special cases involving the registers rSP=4
+     and rBP=5:
 
-	mode = 0 and r/m = 5:
-	    Absolute addressing [d] (x86 only; on amd64, this gives 
-            PC-relative addressing).
+     A: (0,ra,rb)		[rb]			rb != rBP, rSP
+     B: (0,ra,4)  (s,rx,rb)	[rb + rx<<s]		rx != rSP; rb != rBP
+     C: (0,ra,4)  (s,rx,5)  d32	[d32 + rx<<s]		rx != rSP
+     D: (0,ra,4)  (s,4,rb) 	[rb]			rb != rBP
+     E: (0,ra,4)  (s,4,5)   d32	[d32]	
+     F: (0,ra,5)            d32	[d32] on i386; [pc + d32] on amd64
+     G: (1,ra,4)  (s,rx,rb) d8	[rb + d8 + rx<<s]	rx != rSP
+     H: (1,ra,4)  (s,4,rb)  d8	[rb + d8]
+     I: (1,ra,rb)           d8	[rb + d8]		rb != rSP
+     J: (2,ra,4)  (s,rx,rb) d32	[rb + d32 + rx<<s]	rx != rSP
+     K: (2,ra,4)  (s,4,rb)  d32	[rb + d32]*
+     L: (2,ra,rb)           d32	[rb + d32]*		rb != rSP 
 
-	r/m = 4:
-	    The triple is followed by another byte containing three
-	    values (s, i, b) to encode the address [reg(b)+d+reg(i)*2^s].
-	    But i = rSP and b = rBP give further special cases:
-	    
-	mode = 0, r/m = 4, b = 5:
-	    Baseless addressing [d + reg(i)]
-
-        mode = 0, r/m = 4, i = 4, b = 5
-            Absolute addressing [d], useful on amd64
-
-	mode = 0, r/m = 4, i = 4, b != 5:
-            Based addressing [d+reg(b)].
+     (On amd64, registers 12 and 13 also trigger the special cases,
+     but we don't use them.) 
 
      Where it's possible that a negative offset is taken from a
      register, we use an addr32 prefix to ensure the top 32 bits
      of the address are zero on amd64. */
 
-     if (rb == NOREG) {
-	  // Absolute [d]
+#ifdef M64X32
+#define SXTOFF prefix(ADDR32)
+#else
+#define SXTOFF (void) 0
+#endif
+
+     if (rb == NOREG && s == 0) {
+          rb = rx; rx = NOREG;
+     }
+
+     if (rb == NOREG && rx == NOREG) {
+	  // Absolute [d], case {F}
 #ifndef M64X32
 	  addr(0, ra, 5), word(d);
 #else
@@ -553,28 +572,33 @@ static void memory(int ra, int rb, int d) {
           addr(0, ra, 5), word((code_addr) (address) d - pc - 4);
           // Was: addr(0, ra, 4), sib(0, 4, 5), word(d);
 #endif
-     } else if (rb == rSP) {
-	  // Special case to use rSP as base [rSP+d]
+     } else if (rb == rSP && rx == NOREG) {
+	  // Special cases to use rSP as base [rSP+d]
 	  if (d == 0)
-	       addr(0, ra, 4), sib(0, 4, rSP);
+	       addr(0, ra, 4), sib(0, 4, rSP); // {E}
 	  else if (signed8(d))
-	       addr(1, ra, 4), sib(0, 4, rSP), byte(d); // untested
+	       addr(1, ra, 4), sib(0, 4, rSP), byte(d); // {H}, untested
 	  else
-	       addr(2, ra, 4), sib(0, 4, rSP), word(d); // untested
-     }  else {
+	       SXTOFF, addr(2, ra, 4), sib(0, 4, rSP), word(d); // {K}, untested
+     } else if (rx == NOREG) {
 	  // Base + Displacement [rb+d]
 	  if (d == 0 && rb != rBP)
-	       addr(0, ra, rb);
+	       addr(0, ra, rb); // {A}
 	  else if (signed8(d))
-	       addr(1, ra, rb), byte(d);
-	  else {
-#ifdef M64X32
-               // rb could be a signed offset from base address d
-               prefix(ADDR32), addr(2, ra, rb), word(d);
-#else
-               addr(2, ra, rb), word(d);
-#endif
-          }
+	       addr(1, ra, rb), byte(d); // {I}
+	  else
+	       SXTOFF, addr(2, ra, rb), word(d); // {L}
+     } else if (rb == NOREG) {
+          // Baseless addressing [d+rx<<s]
+          addr(0, ra, 4), sib(s, rx, 5), word(d); // {C}
+     } else {
+          // Scaled addressing [rb+d+rx<<s]
+          if (d == 0 && rb != rBP)
+               SXTOFF, addr(0, ra, 4), sib(s, rx, rb); // {B}
+          else if (signed8(d))
+               SXTOFF, addr(1, ra, 4), sib(s, rx, rb), byte(d); // {G}
+          else
+               SXTOFF, addr(2, ra, 4), sib(s, rx, rb), word(d); // {J}
      }
 }
 
@@ -633,15 +657,6 @@ static void instr_rr(OPDECL, int r1, int r2) {
      vm_done();
 }
 
-#ifdef USE_SSE
-/* instr_sr -- opcode plus two registers, swapped */
-static void instr_sr(OPDECL, int r1, int r2) {
-     vm_debug2("%s %s, %s", mnem, regname[r2], regname[r1]);
-     opcode(op), addr(3, r1, r2);
-     vm_done();
-}
-#endif
-
 /* General form of instr2_r for shifts and floating point ops */
 static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
      vm_debug2(fmt, mnem, regname[r]);
@@ -680,18 +695,24 @@ static void instr_rri(OPDECL, int reg, int rm, int imm) {
 }
 
 /* instr_rm -- register and memory operand */
-static void instr_rm(OPDECL, int rt, int rs, int imm) {
-     vm_debug2("%s %s, %s", mnem, regname[rt], fmt_addr(rs, imm));
-     opcode(op), memory(rt, rs, imm);
+static void instr_rmx(OPDECL, int rt, int rs, int imm, int rx, int s) {
+     vm_debug2("%s %s, %s", mnem, regname[rt], fmt_addrx(rs, imm, rx, s));
+     opcode(op), memoryx(rt, rs, imm, rx, s);
+     vm_done();
+}
+
+/* instr_rm -- register and memory operand */
+#define instr_rm(op, rt, rs, imm)  instr_rmx(op, rt, rs, imm, NOREG, 0)
+
+/* instr_stx -- store with indexing */
+static void instr_stx(OPDECL, int rt, int rb, int imm, int ri, int s) {
+     vm_debug2("%s %s, %s", mnem, fmt_addrx(rb, imm, ri, s), regname[rt]);
+     opcode(op), memoryx(rt, rb, imm, ri, s);
      vm_done();
 }
 
 /* instr_st -- alternate form of instr_rm for store instruction */
-static void instr_st(OPDECL, int rt, int rs, int imm) {
-     vm_debug2("%s %s, %s", mnem, fmt_addr(rs, imm), regname[rt]);
-     opcode(op), memory(rt, rs, imm);
-     vm_done();
-}
+#define instr_st(op, rt, rs, imm)  instr_stx(op, rt, rs, imm, NOREG, 0)
 
 /* instr_tgt -- opcode plus branch target */
 static void instr_tgt(OPDECL, code_addr tgt) {
@@ -732,14 +753,22 @@ static void instr_rel(OPDECL, int rd, vmlabel lab) {
 }
 #endif
 
-
-#ifndef USE_SSE
-/* instr_m -- floating point load or store */
-static void instr_m(OPDECL2, int rs, int imm) {
-     vm_debug2("%s %s", mnem, fmt_addr(rs, imm));
-     opcode(op), memory(op2, rs, imm);
+#ifdef USE_SSE
+/* instr_sr -- opcode plus two registers, swapped */
+static void instr_sr(OPDECL, int r1, int r2) {
+     vm_debug2("%s %s, %s", mnem, regname[r2], regname[r1]);
+     opcode(op), addr(3, r1, r2);
      vm_done();
 }
+#else
+/* instr_mx -- floating point load or store */
+static void instr_mx(OPDECL2, int rs, int imm, int rx, int s) {
+     vm_debug2("%s %s", mnem, fmt_addrx(rs, imm, rx, s));
+     opcode(op), memoryx(op2, rs, imm, rx, s);
+     vm_done();
+}
+
+#define instr_m(op, rs, imm)  instr_mx(op, rs, imm, NOREG, 0)
 #endif
 
 
@@ -832,18 +861,21 @@ static void shift3_i(OPDECL, int rd, int rs, int imm) {
 }
 
 /* store character from any register */
-static void storec(int rt, int rs, int imm) {
+#define storec(rt, rs, imm)  storecx(rt, rs, imm, NOREG, 0)
+
+static void storecx(int rt, int rb, int imm, int rx, int s) {
      if (is8bit(rt))
-          instr_st(opMOVB_m, rt, rs, imm);
+          instr_stx(opMOVB_m, rt, rb, imm, rx, s);
      else {
 #ifdef M64X32
-          instr_st(REX_(opMOVB_m), rt, rs, imm);
+          instr_stx(REX_(opMOVB_m), rt, rb, imm, rx, s);
 #else
-	  int rx = (rs == rAX ? rDX : rAX);
-	  push_r(rx); move(rx, rt);
-          if (rs == rSP) imm += 4; // Compensate for push
-	  instr_st(opMOVB_m, rx, rs, imm);
-	  pop(rx);
+	  int rz = ( (rb != rAX && rx != rAX) ? rAX :
+                     (rb != rDX && rx != rDX) ? rDX : rCX);
+	  push_r(rz); move(rz, rt);
+          if (rb == rSP) imm += 4; // Compensate for push
+	  instr_stx(opMOVB_m, rz, rb, imm, rx, s);
+	  pop(rz);
 #endif
      }
 }
@@ -1049,11 +1081,14 @@ static void flop3c(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
 #define fcomp_s(rs1, rs2)  instr_rr(opUCOMISS, rs1, rs2)
 #define fcomp_d(rs1, rs2)  instr_rr(opUCOMISD, rs1, rs2)
 
-#define fload_s(rt, rb, imm)  instr_rm(opMOVSS_r, rt, rb, imm)
-#define fload_d(rt, rb, imm)  instr_rm(opMOVSD_r, rt, rb, imm)
-
-#define fstore_s(rt, rb, imm)  instr_st(opMOVSS_m, rt, rb, imm)
-#define fstore_d(rt, rb, imm)  instr_st(opMOVSD_m, rt, rb, imm)
+#define floadx_s(rt, rb, imm, rx, s)             \
+     instr_rmx(opMOVSS_r, rt, rb, imm, rx, s)
+#define floadx_d(rt, rb, imm, rx, s)             \
+     instr_rmx(opMOVSD_r, rt, rb, imm, rx, s)
+#define fstorex_s(rt, rb, imm, rx, s)            \
+     instr_stx(opMOVSS_m, rt, rb, imm, rx, s)
+#define fstorex_d(rt, rb, imm, rx, s)            \
+     instr_stx(opMOVSD_m, rt, rb, imm, rx, s)
 
 #define fmove_to_s(rd, rs)  instr_rr(opMOVD_r, rd, rs)
 #define fmove_from_s(rd, rs)  instr_sr(opMOVD_m, rs, rd)
@@ -1144,22 +1179,27 @@ static void flop3(OPDECL, OPDECL_(r), int rd, int rs1, int rs2) {
 }
 
 /* Load float or double from memory */
-#define loadf(op, rt, rs, imm)  instr_m(op, rs, imm), fstp_r(rt+1)
-#define fload_s(rt, rs, imm) 	loadf(opFLDS_m, rt, rs, imm)
-#define fload_d(rt, rs, imm) 	loadf(opFLDL_m, rt, rs, imm)
+#define loadf(op, rt, rb, imm, rx, s) \
+     instr_mx(op, rb, imm, rx, s), fstp_r(rt+1)
+#define floadx_s(rt, rb, imm, rx, s)  loadf(opFLDS_m, rt, rb, imm, rx, s)
+#define floadx_d(rt, rb, imm, rx, s)  loadf(opFLDL_m, rt, rb, imm, rx, s)
 
 /* Store float or double to memory */
-static void storef(OPDECL2, OPDECL2_(p), int rt, int rs, int imm) {
+static void storef(OPDECL2, OPDECL2_(p),
+                   int rt, int rb, int imm, int rx, int s) {
      if (rt == rF0)
-	  instr_m(OP2, rs, imm);
+	  instr_mx(OP2, rb, imm, rx, s);
      else {
 	  fld_r(rt); 
-	  instr_m(OP2_(p), rs, imm); 
+	  instr_mx(OP2_(p), rb, imm, rx, s); 
      }
 }
 
-#define fstore_s(rt, rs, imm)  storef(opFSTS_m, opFSTPS_m, rt, rs, imm)
-#define fstore_d(rt, rs, imm)  storef(opFSTL_m, opFSTPL_m, rt, rs, imm)
+#define fstorex_s(rt, rb, imm, rx, s) \
+     storef(opFSTS_m, opFSTPS_m, rt, rb, imm, rx, s)
+#define fstorex_d(rt, rb, imm, rx, s) \
+     storef(opFSTL_m, opFSTPL_m, rt, rb, imm, rx, s)
+
 #define fzero(rd) 	      instr(opFLDZ), fstp_r(rd+1)
 #define ftruncs(rt, rs, imm)  fld_r(rt), instr_m(opFISTTPS_m, rs, imm)
 
@@ -1196,6 +1236,11 @@ static void fcomp_d(int rs1, int rs2) {
      fcomp_s(rs1, rs2), setcc_r(op, rd)
 #define fcompare_d(op, rd, rs1, rs2) \
      fcomp_d(rs1, rs2), setcc_r(op, rd)
+
+#define fload_s(rt, rs, imm)  floadx_s(rt, rs, imm, NOREG, 0)
+#define fload_d(rt, rs, imm)  floadx_d(rt, rs, imm, NOREG, 0)
+#define fstore_s(rt, rs, imm)  fstorex_s(rt, rs, imm, NOREG, 0)
+#define fstore_d(rt, rs, imm)  fstorex_d(rt, rs, imm, NOREG, 0)
 
 
 /* STACK FRAMES */
@@ -1523,6 +1568,7 @@ void vm_gen1j(operation op, vmlabel lab) {
 }
 
 static void vm_load_store(operation op, int ra, int rb, int c);
+static void vm_load_storex(operation op, int ra, int rb, int rc, int s);
 
 void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
@@ -1603,7 +1649,8 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 
      case CONVif:
      case CONVid:
-	  push_r(rb); loadf(opFILDL_m, ra, rSP, 0); pop(rb); break;
+	  push_r(rb); loadf(opFILDL_m, ra, rSP, 0, NOREG, 0); pop(rb);
+          break;
      case CONVfi:
      case CONVdi:
           push_r(ra); ftruncs(rb, rSP, 0); pop(ra); break;
@@ -1800,6 +1847,78 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
           commute64(REXW_(opIMUL_r), ra, rb, rc); break;
 #endif
            
+     default:
+          vm_load_storex(op, ra, rb, rc, 0);
+     }
+}
+
+void vm_gen4rrrs(operation op, vmreg rega, vmreg regb, vmreg regc, int s) {
+     int ra = rega->vr_reg, rb = regb->vr_reg, rc = regc->vr_reg;
+
+     vm_debug1(op, 4, rega->vr_name, regb->vr_name, regc->vr_name, fmt_val(s));
+     vm_space(0);
+     
+     switch (op) {
+     case ADD:
+          instr_rmx(opLEA, ra, rb, 0, rc, s);
+          break;
+
+     default:
+          vm_load_storex(op, ra, rb, rc, s);
+     }
+}
+
+static void vm_load_storex(operation op, int ra, int rb, int rc, int s) {
+     switch(op) {
+     case LDW:
+	  if (isfloat(ra)) 
+               floadx_s(ra, rb, 0, rc, s);
+          else 
+               instr_rmx(opMOVL_r, ra, rb, 0, rc, s);
+	  break;
+     case LDSu: 
+          instr_rmx(opMOVZWL_r, ra, rb, 0, rc, s); break;
+     case LDBu: 
+	  instr_rmx(opMOVZBL_r, ra, rb, 0, rc, s); break;
+     case LDS:
+	  instr_rmx(opMOVSWL_r, ra, rb, 0, rc, s); break;
+     case LDB:
+          instr_rmx(opMOVSBL_r, ra, rb, 0, rc, s); break;
+     case STW: 
+	  if (isfloat(ra)) 
+               fstorex_s(ra, rb, 0, rc, s); 
+          else 
+               instr_stx(opMOVL_m, ra, rb, 0, rc, s);
+	  break;
+     case STS: 
+          instr_stx(opMOVW_m, ra, rb, 0, rc, s); break;
+     case STB: 
+	  storecx(ra, rb, 0, rc, s); break;
+
+#ifndef M64X32
+     case LDQ: 
+          assert(isfloat(ra));
+          floadx_d(ra, rb, 0, rc, s);
+          break;
+     case STQ:    
+          assert(isfloat(ra));
+          fstorex_d(ra, rb, 0, rc, s);
+          break;
+#else
+     case LDQ: 
+          if (isfloat(ra))
+               floadx_d(ra, rb, 0, rc, s);
+          else
+               instr_rmx(REXW_(opMOVL_r), ra, rb, 0, rc, s);
+          break;
+     case STQ:    
+          if (isfloat(ra))
+               fstorex_d(ra, rb, 0, rc, s);
+          else
+               instr_stx(REXW_(opMOVL_m), ra, rb, 0, rc, s);
+          break;
+#endif
+
      default:
 	  badop();
      }

@@ -91,10 +91,10 @@ static uchar *pcbase, *pclimit;	/* Code addresses */
 
 static vmlabel stack_oflo, retlab;
 
-#define push_con(k) push(V_CON, INT, NULL, k, 1)
-#define push_reg(r) push(V_REG, INT, r, 0, 1)
-#define konst(op, ty, i, s) push(op, ty, NULL, 4*(CP_CONST+i), s)
-#define local(i)  push(V_ADDR, INT, rBP, i, 1)
+#define push_con(k) push(V_CON, INT, k, NULL, 1)
+#define push_reg(r) push(V_REG, INT, 0, r, 1)
+#define konst(op, ty, i, s) push(op, ty, 4*(CP_CONST+i), NULL, s)
+#define local(i)  push(V_ADDR, INT, i, rBP, 1)
 
 /* prolog -- generate code for procedure prologue */
 static word prolog(const char *name, int frame, int map) {
@@ -152,7 +152,7 @@ static void callout(void *op, int nargs, int ty, int size) {
      push_reg(r);
      gcall(op, 1);
      pop(nargs);
-     push((size == 1 ? V_STKW : V_STKQ), ty, NULL, 0, size);
+     push((size == 1 ? V_STKW : V_STKQ), ty, 0, NULL, size);
 }
 
 /* gmonop -- generic unary operation */
@@ -162,7 +162,7 @@ static void gmonop(operation op, int rclass1, int rclass2, int s) {
      reg r1 = move_to_reg(1, rclass1); pop(1); 
      reg r2 = ralloc_suggest(rclass2, r1); unlock(1);	
      vm_gen(op, r2->r_reg, r1->r_reg);
-     push(V_REG, rclass2, r2, 0, s);
+     push(V_REG, rclass2, 0, r2, s);
 }
 
 #ifdef FLOATOPS
@@ -206,7 +206,7 @@ static void binop(operation op, int size) {
 	  vm_gen(op, r2->r_reg, r1->r_reg, v->v_val);
      else								
 	  vm_gen(op, r2->r_reg, r1->r_reg, v->v_reg->r_reg);
-     push(V_REG, INT, r2, 0, size);
+     push(V_REG, INT, 0, r2, size);
 }
 
 #define ibinop(op)  binop(op, 1)
@@ -239,7 +239,7 @@ static void fdbinop(operation op, int s) {
      reg r2 = move_to_reg(1, FLO); pop(2);
      reg r3 = ralloc_suggest(FLO, r1); unlock(2);				
      vm_gen(op, r3->r_reg, r1->r_reg, r2->r_reg);				
-     push(V_REG, FLO, r3, 0, s);
+     push(V_REG, FLO, 0, r3, s);
 }
 
 #endif
@@ -311,7 +311,7 @@ static void compare1(operation op, operation opf, operation opd,
 }
 
 #ifdef FLOATOPS
-#define fcompare(op) push(V_##op, INT, NULL, 0, 0)
+#define fcompare(op) push(V_##op, INT, 0, NULL, 0)
 #else
 #define fcompare(op) callout(fn##op, 2, INT, 1)
 #define fnFCMPL flo_cmpl
@@ -409,7 +409,7 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
      gcallr(r1, 1);
      pop(nargs+3);
      if (ty != 0)
-          push(ldop, ty, NULL, address(&ob_res), size);
+          push(ldop, ty, address(&ob_res), NULL, size);
 }
 
 /* result -- store procedure result */
@@ -443,7 +443,8 @@ static void loadq(void) {
 
 static void dupe(int n) {
      ctvalue v = move_from_frame(n);
-     push(v->v_op, v->v_type, v->v_reg, v->v_val, v->v_size);
+     pushx(v->v_op, v->v_type, v->v_val, v->v_reg, v->v_reg2,
+           v->v_scale, v->v_size);
 }
 
 /* instr -- translate one bytecode instruction */
@@ -501,7 +502,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(2, INT);
 	  v = fix_const(1, FALSE);
 	  pop(2); unlock(2); killregs();
-	  push(V_STKW, INT, NULL, 0, 1);
+	  push(V_STKW, INT, 0, NULL, 1);
 	  vm_gen(BGE, r1->r_reg, v->v_val, target(arg1));
 	  break;
 
@@ -546,7 +547,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           pop(1); unlock(1);
 	  vm_gen(ZEROf, r2->r_reg);
 	  vm_gen(BEQf, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
-          push(V_REG, FLO, r1, 0, 1);
+          push(V_REG, FLO, 0, r1, 1);
 #else
           push_reg(rBP);
           push_con(arg1);
@@ -559,7 +560,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r1 = move_to_reg(1, FLO); r2 = ralloc(FLO); pop(1); unlock(1);
 	  vm_gen(ZEROd, r2->r_reg);
 	  vm_gen(BEQd, r1->r_reg, r2->r_reg, handler(E_FDIV, arg1));
-          push(V_REG, FLO, r1, 0, 2);
+          push(V_REG, FLO, 0, r1, 2);
 #else
           push_reg(rBP);
           push_con(arg1);
@@ -615,8 +616,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  break;
 
      case I_SAVELINK:
-	  push(V_MEMW, INT, NULL, address(&statlink), 1);
-	  push(V_ADDR, INT, rBP, 4*SL, 1);
+	  push(V_MEMW, INT, address(&statlink), NULL, 1);
+	  push(V_ADDR, INT, 4*SL, rBP, 1);
 	  store(V_MEMW, 1);
 	  break;
 
@@ -635,7 +636,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #ifndef M64X32
 	  callout(long_cmp, 2, INT, 1);
 #else
-          push(V_QCMP, INT, NULL, 0, 0);
+          push(V_QCMP, INT, 0, NULL, 0);
 #endif          
 	  break;
 
@@ -643,7 +644,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  v = peek(1);
 	  if (v->v_op == V_CON) {
 	       pop(1);
-	       push(V_CON, INT, NULL, v->v_val, 2);
+	       push(V_CON, INT, v->v_val, NULL, 2);
                break;
 	  }
           qmonop(SXTq);
@@ -655,7 +656,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           r1 = ralloc(INT);
           ldst_item(LDW, r1, 1);
           pop(1);
-          push(V_REG, INT, r1, 0, 1);
+          push_reg(r1);
 #else
           gmonop(MOV, INT, INT, 1);
 #endif
@@ -669,7 +670,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 #else
           r1 = move_to_reg(1, INT); pop(1); unlock(1);
           vm_gen(BEQq, r1->r_reg, 0, handler(E_DIV, arg1));
-          push(V_REG, INT, r1, 0, 2);
+          push(V_REG, INT, 0, r1, 2);
 #endif
 	  break;
 
