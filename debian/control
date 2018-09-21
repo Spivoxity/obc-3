@@ -2,7 +2,7 @@ Source: obc
 Section: devel
 Priority: optional
 Maintainer: Mike Spivey <mike@cs.ox.ac.uk>
-Build-Depends: debhelper (>= 4.0.0), autotools-dev, tcl8.6, ocaml|ocaml-nox, libgtksourceview2.0-dev
+Build-Depends: debhelper (>= 4.0.0), autotools-dev, tcl8.6, ocaml|ocaml-nox, libgtksourceview2.0-dev libffi-dev
 Standards-Version: 3.6.2
 
 Package: obc
