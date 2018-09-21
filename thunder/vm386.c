@@ -374,7 +374,8 @@ static char *fmt_addrx(int rb, int imm, int rx, int s) {
 #define opMOVW_m 	MNEM("movw", pfx(0x66, 0x89))
 #define opMOVB_m 	MNEM("movb", 0x88)
 #define opMOVL_i 	MNEM("mov", 0xb8) // Load immediate into register
-#define opLEA64		MNEM("lea", pfx(REX_W, 0x8d)) // Load effective address
+#define opLEA		MNEM("lea", 0x8d) // Load effective address
+#define opLEA64		MNEM("lea64", pfx(REX_W, 0x8d))
 
 #define opIMUL_i 	MNEM("imul", 0x69) // Integer multiply
 #define opIMUL_r	MNEM("imul", pfx(0x0f, 0xaf))
@@ -1568,6 +1569,7 @@ void vm_gen1j(operation op, vmlabel lab) {
 }
 
 static void vm_load_store(operation op, int ra, int rb, int c);
+static void vm_load_storex(operation op, int ra, int rb, int rc, int s);
 
 void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
@@ -1845,52 +1847,75 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
           commute64(REXW_(opIMUL_r), ra, rb, rc); break;
 #endif
            
+     default:
+          vm_load_storex(op, ra, rb, rc, 0);
+     }
+}
+
+void vm_gen4rrrs(operation op, vmreg rega, vmreg regb, vmreg regc, int s) {
+     int ra = rega->vr_reg, rb = regb->vr_reg, rc = regc->vr_reg;
+
+     vm_debug1(op, 4, rega->vr_name, regb->vr_name, regc->vr_name, fmt_val(s));
+     vm_space(0);
+     
+     switch (op) {
+     case ADD:
+          instr_rmx(opLEA, ra, rb, 0, rc, s);
+          break;
+
+     default:
+          vm_load_storex(op, ra, rb, rc, s);
+     }
+}
+
+static void vm_load_storex(operation op, int ra, int rb, int rc, int s) {
+     switch(op) {
      case LDW:
 	  if (isfloat(ra)) 
-               floadx_s(ra, rb, 0, rc, 0);
+               floadx_s(ra, rb, 0, rc, s);
           else 
-               instr_rmx(opMOVL_r, ra, rb, 0, rc, 0); 
+               instr_rmx(opMOVL_r, ra, rb, 0, rc, s);
 	  break;
      case LDSu: 
-          instr_rmx(opMOVZWL_r, ra, rb, 0, rc, 0); break;
+          instr_rmx(opMOVZWL_r, ra, rb, 0, rc, s); break;
      case LDBu: 
-	  instr_rmx(opMOVZBL_r, ra, rb, 0, rc, 0); break;
+	  instr_rmx(opMOVZBL_r, ra, rb, 0, rc, s); break;
      case LDS:
-	  instr_rmx(opMOVSWL_r, ra, rb, 0, rc, 0); break;
+	  instr_rmx(opMOVSWL_r, ra, rb, 0, rc, s); break;
      case LDB:
-          instr_rmx(opMOVSBL_r, ra, rb, 0, rc, 0); break;
+          instr_rmx(opMOVSBL_r, ra, rb, 0, rc, s); break;
      case STW: 
 	  if (isfloat(ra)) 
-               fstorex_s(ra, rb, 0, rc, 0); 
+               fstorex_s(ra, rb, 0, rc, s); 
           else 
-               instr_stx(opMOVL_m, ra, rb, 0, rc, 0);
+               instr_stx(opMOVL_m, ra, rb, 0, rc, s);
 	  break;
      case STS: 
-          instr_stx(opMOVW_m, ra, rb, 0, rc, 0); break;
+          instr_stx(opMOVW_m, ra, rb, 0, rc, s); break;
      case STB: 
-	  storecx(ra, rb, 0, rc, 0); break;
+	  storecx(ra, rb, 0, rc, s); break;
 
 #ifndef M64X32
      case LDQ: 
           assert(isfloat(ra));
-          floadx_d(ra, rb, 0, rc, 0);
+          floadx_d(ra, rb, 0, rc, s);
           break;
      case STQ:    
           assert(isfloat(ra));
-          fstorex_d(ra, rb, 0, rc, 0);
+          fstorex_d(ra, rb, 0, rc, s);
           break;
 #else
      case LDQ: 
           if (isfloat(ra))
-               floadx_d(ra, rb, 0, rc, 0);
+               floadx_d(ra, rb, 0, rc, s);
           else
-               instr_rmx(REXW_(opMOVL_r), ra, rb, 0, rc, 0);
+               instr_rmx(REXW_(opMOVL_r), ra, rb, 0, rc, s);
           break;
      case STQ:    
           if (isfloat(ra))
-               fstorex_d(ra, rb, 0, rc, 0);
+               fstorex_d(ra, rb, 0, rc, s);
           else
-               instr_stx(REXW_(opMOVL_m), ra, rb, 0, rc, 0);
+               instr_stx(REXW_(opMOVL_m), ra, rb, 0, rc, s);
           break;
 #endif
 

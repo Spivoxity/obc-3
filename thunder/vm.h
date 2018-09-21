@@ -233,6 +233,7 @@ void vm_gen3rrr(operation op, vmreg a, vmreg b, vmreg c);
 void vm_gen3rri(operation op, vmreg a, vmreg b, int c);
 void vm_gen3rrj(operation op, vmreg a, vmreg b, vmlabel lab);
 void vm_gen3rij(operation op, vmreg a, int b, vmlabel lab);
+void vm_gen4rrrs(operation op, vmreg a, vmreg b, vmreg c, int s);
 
 int vm_addr(void *x);
 
@@ -269,10 +270,10 @@ extern int vm_aflag;
 
 /* Fancy _Generic stuff to provide overloading of vm_gen */
 
-#define _SELECT(p, q, r, s, t, ...) t
+#define _SELECT(p, q, r, s, t, u, ...) u
 
 #define vm_gen(...) \
-     _SELECT(__VA_ARGS__, vm_gen3, vm_gen2, vm_gen1)(__VA_ARGS__)
+     _SELECT(__VA_ARGS__, vm_gen4, vm_gen3, vm_gen2, vm_gen1)(__VA_ARGS__)
 
 #define intcases(r) int: r, unsigned: r, char: r
 
@@ -289,3 +290,5 @@ extern int vm_aflag;
               vmlabel: _Generic(b, default: vm_gen3rrj,                 \
                                 intcases(vm_gen3rij)))(op, a, b, c)
 
+#define vm_gen4(op, a, b, c, d)                 			\
+     vm_gen4rrrs(op, a, b, c, d)

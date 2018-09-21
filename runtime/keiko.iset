@@ -43,10 +43,10 @@ inst LOCAL {[0] 1 2} V.x { local($a) }          { local(arg1) }
 
 # Compute indexed address
 # INDEXs :: a, b --> a + s * b
-inst OFFSET 0 B.x   { pointer($1) + $2.i }      { add_offset() }
-inst INDEXS 0 B.x   { index($1, $2, 1) }        {= PUSH 1, LSL, OFFSET }
-inst INDEXW 0 B.x   { index($1, $2, 2) }        {= PUSH 2, LSL, OFFSET }
-inst INDEXD 0 B.x   { index($1, $2, 3) }        {= PUSH 3, LSL, OFFSET }
+inst OFFSET 0 B.x   { pointer($1) + $2.i }      { add_offset(0) }
+inst INDEXS 0 B.x   { index($1, $2, 1) }        { add_offset(1) }
+inst INDEXW 0 B.x   { index($1, $2, 2) }        { add_offset(2) }
+inst INDEXD 0 B.x   { index($1, $2, 3) }        { add_offset(3) }
 
 
 # LOADS AND STORES

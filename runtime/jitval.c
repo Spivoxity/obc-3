@@ -39,10 +39,10 @@
                                 
      CON       val      val
      REG   reg          reg
-     ADDR  reg val r2   if r2 = NULL: reg + val else: reg + r2
+     ADDR  reg val r2 k if r2 = NULL: reg + val else: reg + r2<<k
      KONW      val      konst_4[val]
      KONQ      val      konst_8[val]
-     MEMs  reg val r2   mem_s[reg + val] or mem_s[reg + r2]
+     MEMs  reg val r2 k mem_s[reg + val] or mem_s[reg + r2<<k]
      STKW      val      mem_4[BP + val]
      STKQ      val      mem_8[BP + val]
      *CMP*              comparison of two previous values */
@@ -79,7 +79,10 @@ static void show(ctvalue v) {
 #define regname(r) vm_regname(r->r_reg)
 
      default:
-          if (v->v_reg2 != NULL)
+          if (v->v_reg2 != NULL && v->v_scale != 0)
+               printf("[%s (%s+%s<<%d)]", vkind_name[v->v_op],
+                      regname(v->v_reg), regname(v->v_reg2), v->v_scale);
+          else if (v->v_reg2 != NULL)
                printf("[%s (%s+%s)]", vkind_name[v->v_op],
                       regname(v->v_reg), regname(v->v_reg2));
           else if (v->v_reg != NULL)
@@ -113,13 +116,15 @@ void dumpregs(void) {
 static mybool same(ctvalue v, ctvalue w) {
      return (v->v_op == w->v_op && v->v_val == w->v_val 
 	     && v->v_reg == w->v_reg && v->v_reg2 == w->v_reg2
-             && v->v_size == w->v_size);
+             && v->v_scale == w->v_scale && v->v_size == w->v_size);
 }
 
 void set_cache(reg r, ctvalue v) {
+     if (v->v_reg == r || v->v_reg2 == r) return;
+
 #ifdef DEBUG
      if (dflag >= 4) {
-	  printf("\tCache %s = ", vm_regname(r->r_reg));
+	  printf("Cache %s = ", vm_regname(r->r_reg));
 	  show(v);
 	  printf("\n");
      }
@@ -227,14 +232,14 @@ void get_sp(reg r) {
 
 /* set -- assign to a stack slot */
 static void set(int i, valkind vkind, int type,
-                int val, reg r, reg r2, int s) {
+                int val, reg r, reg r2, int scale, int s) {
      ctvalue v = &vstack[i];
      reserve(r); reserve(r2);
 
      if (vkind == V_STKW || vkind == V_STKQ) val = offset[i];
 
      v->v_op = vkind; v->v_type = type; v->v_val = val; 
-     v->v_reg = r; v->v_reg2 = r2; v->v_size = s;
+     v->v_reg = r; v->v_reg2 = r2; v->v_scale = scale; v->v_size = s;
 
 #ifdef DEBUG
      if (dflag >= 3) {
@@ -245,14 +250,15 @@ static void set(int i, valkind vkind, int type,
 #endif
 }
 
-/* push -- push a value onto the eval stack */
-void pushx(valkind vkind, int type, reg r, reg r2, int val, int size) {
+/* pushx -- push a value onto the eval stack */
+void pushx(valkind vkind, int type, int val, reg r, reg r2,
+           int scale, int size) {
 #ifndef FLOATOPS
      type = INT;
 #endif
      pdepth += 4*size;
      offset[sp] = -pdepth;
-     set(sp++, vkind, type, val, r, r2, size);
+     set(sp++, vkind, type, val, r, r2, scale, size);
 }
 
 /* pop -- pop one or more values from the eval stack */
@@ -306,9 +312,9 @@ void restore_stack(codepoint lab) {
      sp = 0; pdepth = 0;
      for (int i = 0; i < n; i++) {
 	  if (map & (1 << i))
-	       push(V_STKQ, INT, NULL, 0, 2);
+	       push(V_STKQ, INT, 0, NULL, 2);
 	  else
-	       push(V_STKW, INT, NULL, 0, 1);	       
+	       push(V_STKW, INT, 0, NULL, 1);	       
      }
 }
 
@@ -364,19 +370,18 @@ void move_to_frame(int i) {
           {
                r = move_to_reg(i, v->v_type); runlock(r); rfree(r);
 	       ldst_item(choose(v->v_size, STW, STQ), r, i);
-               if (v->v_op != V_REG && v->v_reg != r) 
-                    set_cache(r, v);
+               if (v->v_op != V_REG) set_cache(r, v);
           }
 
 	  set(sp-i, choose(v->v_size, V_STKW, V_STKQ), 
-	      v->v_type, 0, NULL, NULL, v->v_size);
+	      v->v_type, 0, NULL, NULL, 0, v->v_size);
      }
 }
 
 /* transient -- check if a value is not preserved across a procedure call */
 static mybool transient(ctvalue v) {
-     if (v->v_reg != NULL && v->v_reg->r_class != 0)
-	  return TRUE;
+     if (v->v_reg != NULL && v->v_reg->r_class != 0) return TRUE;
+     if (v->v_reg2 != NULL && v->v_reg2->r_class != 0) return TRUE;
 
      switch (v->v_op) {
      case V_MEMW:
@@ -458,7 +463,7 @@ static reg loadv(operation op, int cl, ctvalue v) {
      runlock(v->v_reg); runlock(v->v_reg2);
 
      if (v->v_reg2 != NULL)
-          vm_gen(op, r1->r_reg, v->v_reg->r_reg, v->v_reg2->r_reg);
+          vm_gen(op, r1->r_reg, v->v_reg->r_reg, v->v_reg2->r_reg, v->v_scale);
      else if (v->v_reg != NULL)
           vm_gen(op, r1->r_reg, v->v_reg->r_reg, v->v_val);
      else
@@ -470,7 +475,7 @@ static reg loadv(operation op, int cl, ctvalue v) {
 
 static void storev(operation op, reg r, ctvalue v) {
      if (v->v_reg2 != NULL)
-          vm_gen(op, r->r_reg, v->v_reg->r_reg, v->v_reg2->r_reg);
+          vm_gen(op, r->r_reg, v->v_reg->r_reg, v->v_reg2->r_reg, v->v_scale);
      else if (v->v_reg != NULL)
           vm_gen(op, r->r_reg, v->v_reg->r_reg, v->v_val);
      else
@@ -496,8 +501,8 @@ reg move_to_reg(int i, int ty) {
 #ifdef DEBUG
 		    if (dflag >= 4) printf("Hit %s\n", vm_regname(r->r_reg));
 #endif
-		    rfree(v->v_reg);
-		    set(sp-i, V_REG, ty, 0, r, NULL, v->v_size);
+		    rfree(v->v_reg); rfree(v->v_reg2);
+		    set(sp-i, V_REG, ty, 0, r, NULL, 0, v->v_size);
 		    return rlock(r);
 	       }
 	  }
@@ -523,7 +528,8 @@ reg move_to_reg(int i, int ty) {
                rfree(v->v_reg2); rlock(v->v_reg2);
                r = ralloc_suggest(INT, v->v_reg);
                runlock(v->v_reg); runlock(v->v_reg2);
-               vm_gen(ADD, r->r_reg, v->v_reg->r_reg, v->v_reg2->r_reg);
+               vm_gen(ADD, r->r_reg, v->v_reg->r_reg,
+                      v->v_reg2->r_reg, v->v_scale);
           } else if (v->v_val == 0) {
                r = rfree(v->v_reg);
           } else {
@@ -579,10 +585,9 @@ reg move_to_reg(int i, int ty) {
 	  r = r2;
      }
 
-     if (v->v_op != V_STKW && v->v_op != V_STKQ && v->v_reg != r)
-	  set_cache(r, v);
+     if (v->v_op != V_STKW && v->v_op != V_STKQ) set_cache(r, v);
 
-     set(sp-i, V_REG, ty, 0, r, NULL, v->v_size);
+     set(sp-i, V_REG, ty, 0, r, NULL, 0, v->v_size);
      return rlock(r);
 }
 
@@ -622,12 +627,12 @@ void deref(valkind vkind, int ty, int size) {
 #endif
 
 	  pop(1);
-	  pushx(vkind, ty, v->v_reg, v->v_reg2, v->v_val, size);
+	  pushx(vkind, ty, v->v_val, v->v_reg, v->v_reg2, v->v_scale, size);
           break;
 
      case V_CON:
 	  pop(1); unlock(1);
- 	  push(vkind, ty, NULL, v->v_val, size);
+ 	  push(vkind, ty, v->v_val, NULL, size);
  	  break;
 
      default:
@@ -635,7 +640,7 @@ void deref(valkind vkind, int ty, int size) {
      catchall:
 #endif
 	  r1 = move_to_reg(1, INT); pop(1); unlock(1); 
-	  push(vkind, ty, r1, 0, size); 
+	  push(vkind, ty, 0, r1, size); 
 	  break;
      }
  }
@@ -701,33 +706,33 @@ void store(valkind vkind, int s) {
      }
 
      kill_alias(v);
-     if ((vkind == V_MEMW || vkind == V_MEMQ) && v->v_reg != r1)
-          set_cache(r1, v);
+     if (vkind == V_MEMW || vkind == V_MEMQ) set_cache(r1, v);
 }
 
 /* add_offset -- add address and offset */
-void add_offset() {
-     ctvalue v1, v2;
-     reg r1, r2;
+void add_offset(int scale) {
+     ctvalue v1 = peek(2), v2;
+     reg r1;
 
-     switch (vstack[sp-2].v_op) {
+     switch (v1->v_op) {
      case V_ADDR:
-	  v1 = &vstack[sp-2];
           if (v1->v_reg2 != NULL) goto catchall;
-	  v2 = move_to_rc(1); 
- 	  pop(2);
- 	  if (v2->v_op == V_CON)
-	       push(V_ADDR, INT, v1->v_reg, v1->v_val + v2->v_val, 1);
-	  else if (v1->v_val == 0)
-               push2(V_ADDR, INT, v1->v_reg, v2->v_reg, 1);
-          else {
-	       r1 = ralloc_suggest(INT, v1->v_reg); 
-               r2 = v2->v_reg;
- 	       runlock(v2->v_reg);
-	       vm_gen(ADD, r1->r_reg, v1->v_reg->r_reg, r2->r_reg);
-	       push(V_ADDR, INT, r1, v1->v_val, 1);
-	  }
-	  break;
+ 	  v2 = move_to_rc(1); 
+	  if (v2->v_op == V_CON) {
+               pop(2);
+	       push(V_ADDR, INT, v1->v_val + (v2->v_val<<scale), v1->v_reg, 1);
+          } else if (v1->v_val == 0) {
+               pop(2);
+               push2(V_ADDR, INT, v1->v_reg, v2->v_reg, scale, 1);
+          } else {
+               pop(2); 
+               reserve(v2->v_reg);
+               r1 = ralloc_suggest(INT, v1->v_reg);
+               rthaw(v2->v_reg);
+	       vm_gen(ADD, r1->r_reg, v1->v_reg->r_reg, v1->v_val);
+	       push2(V_ADDR, INT, r1, v2->v_reg, scale, 1);
+ 	  }
+ 	  break;
 
      default:
      catchall:
@@ -735,9 +740,9 @@ void add_offset() {
 	  v2 = move_to_rc(1); 
 	  pop(2); unlock(2);
 	  if (v2->v_op == V_CON)
- 	       push(V_ADDR, INT, r1, v2->v_val, 1);
+ 	       push(V_ADDR, INT, v2->v_val<<scale, r1, 1);
           else
-	       push2(V_ADDR, INT, r1, v2->v_reg, 1);
+	       push2(V_ADDR, INT, r1, v2->v_reg, scale, 1);
      }
 }
 

@@ -190,7 +190,7 @@ void killregs(void) {
      reg r;
 
 #ifdef DEBUG
-     if (dflag >= 4) printf("\tKillregs\n");
+     if (dflag >= 4) printf("Killregs\n");
 #endif
 
      for_regs (r)
@@ -202,13 +202,14 @@ reg kill(reg r) {
      reg r1;
 
 #ifdef DEBUG
-     if (dflag >= 4) printf("\tKill %s\n", vm_regname(r->r_reg));
+     if (dflag >= 4) printf("Kill %s\n", vm_regname(r->r_reg));
 #endif
 
      uncache(r);
 
      for_regs (r1) {
-	  if (cached(r1) && r1->r_value.v_reg == r)
+	  if (cached(r1)
+              && (r1->r_value.v_reg == r || r1->r_value.v_reg2 == r))
 	       uncache(r1);
      }
 
