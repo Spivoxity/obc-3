@@ -74,7 +74,6 @@ set ninstr 0;			# No. of instructions
 set maxargs 0;			# Max args of any template
 set status 0;			# Exit status
 set instrs {}; set dirs {}; set ops {}
-set defs {}
 
 proc make_inst {inst} {
     global ninstr instrs instrno templates opcount
@@ -217,11 +216,6 @@ proc process {inst patts key action} {
 	make_template $inst $patt $bounds $op $arglen
 	make_action $op $base $n $inst $key $action $args $totlen
     }
-}
-
-proc defs {text} {
-    global defs
-    append defs "$text\n"
 }
 
 # Create an instruction

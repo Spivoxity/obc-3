@@ -501,12 +501,8 @@ proc make_body {key action argv} {
 }
 
 proc gen_actions {f} {
-    global ncodes opcode defs copy ops action input err_op
+    global ncodes opcode copy ops action input err_op
     
-    # macros used in action code
-    puts $f $defs
-
-    # action code
     foreach op $ops {
 	set err_op $op
 	with $action($op) {base count length inst key act argv} {
