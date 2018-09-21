@@ -67,7 +67,7 @@ extern int nregs;
 extern reg rBP, rSP, rCP, rI0, rI1, rI2;
 
 #define __VALKINDS__(v) \
-     v(CON) v(REG) v(ADDR) v(KONW)               \
+     v(CON) v(REG) v(ADDR) v(KONW) v(KONQ)       \
      v(MEMC) v(MEMS) v(MEMW) v(MEMQ)             \
      v(FCMPL) v(FCMPG) v(DCMPL) v(DCMPG) v(QCMP) \
      v(STKW) v(STKQ)

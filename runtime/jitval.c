@@ -41,6 +41,7 @@
      REG   reg         reg
      ADDR  reg val     reg + val
      KONW      val     konst_4[val]
+     KONQ      val     konst_8[val]
      MEMs  reg val     mem_s[reg + val] for s = C, S, W, D, F, Q
      STKW      val     mem_4[BP + val]
      STKQ      val     mem_8[BP + val]
@@ -505,7 +506,11 @@ reg move_to_reg(int i, int ty) {
 	  break;
 
      case V_KONW:
-          r = load(LDW, ty, v->v_reg, v->v_val);
+          r = load(LDW, ty, rCP, v->v_val);
+          break;
+
+     case V_KONQ:
+          r = load(LDQ, ty, rCP, v->v_val);
           break;
 
      case V_STKW:
@@ -547,7 +552,6 @@ ctvalue fix_const(int i, mybool rflag) {
 
      case V_KONW:
           v->v_op = V_CON;
-          v->v_reg = NULL;
           v->v_val = * (word *) ((uchar *) jit_cxt + v->v_val);
           break;
 
@@ -654,18 +658,6 @@ void add_offset() {
      reg r1, r2;
 
      switch (vstack[sp-2].v_op) {
-     case V_CON:
-	  v1 = fix_const(2, FALSE); 
-	  v2 = move_to_rc(1); 
-	  pop(2); unlock(2);
-	  if (v2->v_op == V_CON)
-	       push(V_CON, INT, NULL, v1->v_val + v2->v_val, 1);
-	  else {
-               r2 = v2->v_reg;
-	       push(V_ADDR, INT, r2, v1->v_val, 1);
-          }
-	  break;
-
      case V_ADDR:
 	  v1 = &vstack[sp-2];
 	  v2 = move_to_rc(1); 
@@ -796,6 +788,9 @@ void move_longval(ctvalue src, reg rd, int offd) {
      switch (src->v_op) {
      case V_MEMQ:
 	  move_long(src->v_reg, src->v_val, rd, offd);
+	  break;
+     case V_KONQ:
+	  move_long(rCP, src->v_val, rd, offd);
 	  break;
      case V_STKQ:
 	  move_long(breg, sbase + src->v_val, rd, offd);

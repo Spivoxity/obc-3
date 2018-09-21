@@ -93,8 +93,8 @@ static vmlabel stack_oflo, retlab;
 
 #define push_con(k) push(V_CON, INT, NULL, k, 1)
 #define push_reg(r) push(V_REG, INT, r, 0, 1)
-#define konst(op, ty, i, s) \
-     push(op, ty, rCP, 4*(CP_CONST+i), s)
+#define konst(op, ty, i, s) push(op, ty, NULL, 4*(CP_CONST+i), s)
+#define local(i)  push(V_ADDR, INT, rBP, i, 1)
 
 /* prolog -- generate code for procedure prologue */
 static word prolog(const char *name, int frame, int map) {

@@ -96,6 +96,77 @@ static inline void putlong(value *v, longint x) {
 }
 #endif
 
+/* Macros used in action routines */
+
+#define error(msg, n)   runtime_error(msg, n, bp, pc0)
+
+#define local(n)        ((uchar *) bp + (n))
+#define parent(a, t)    indir(pointer(bp[SL]) + a, t)
+#define indir(p, t)     (* (t *) (p))
+#define subs(p, n, t)   ((t *) (p))[n]
+#define const(n)        cp[CP_CONST+n]
+#define jump(lab)       pc = pc0 + lab
+
+#define index(x, y, s)  pointer(x) + (y.i << s)
+
+
+#define load(x, t)      indir(pointer(x), t)
+#define store(x, y, t)  indir(pointer(y), t) = x
+#define ldl(a, t)       indir(local(a), t)
+#define stl(a, x, t)    indir(local(a), t) = x
+#define ldg(a, t)       indir(pointer(const(a)), t)
+#define stg(a, x, t)    indir(pointer(const(a)), t) = x
+#define ldn(a, x)       indir(pointer(x)+a, int)
+#define stn(a, x, y)    indir(pointer(y)+a, int) = x
+#define ldi(x, y, t)    subs(pointer(x), y.i, t)
+#define sti(x, y, z, t) subs(pointer(y), z.i, t) = x
+
+#define dup(n, sp)      sp--; sp[0] = sp[n+1]
+#define swap(sp)        sp[-1] = sp[1]; sp[1] = sp[0]; sp[0] = sp[-1]
+#define slide(nargs)    sp += HEAD + nargs; cond_break();
+
+#define ror(a, b)       ((((unsigned) a) >> b) | (((unsigned) a) << (32-b)))
+
+#define fcmpl(a, b)     (a > b ? 1 : a == b ? 0 : -1)
+#define fcmpg(a, b)     (a < b ? -1 : a == b ? 0 : 1)
+#define lcmp(a, b)      (a < b ? -1 : a > b ? 1 : 0)
+
+#ifdef WORDS_BIGENDIAN
+#define alignx(a, n)    (a << (32-n))
+#else
+#define alignx(a, n)    a
+#endif
+
+#ifdef PROFILE
+#define prof_charge(n)  ticks += n
+#else
+#define prof_charge(n)
+#endif
+
+#ifdef OBXDEB
+#define cond_break() \
+     if (one_shot && *pc != K_LNUM_2 && *pc != K_BREAK_2) \
+          debug_break(cp, bp, pc, "stop")
+#else
+#define cond_break()
+#endif
+
+#ifdef SPECIALS
+#define casejump(x, n0)                                 \
+     {                                                  \
+          int n = n0;                                   \
+          pc0 = pc; pc += 4*n;                          \
+          while (n > 0) {                               \
+               if (x == get2(pc0)) {                    \
+                    jump(get2(pc0+2));                  \
+                    break;                              \
+               }                                        \
+               pc0 += 4; n--;                           \
+          }                                             \
+     }
+#endif
+
+
 /* interp -- main loop of the interpreter */
 void interp(value *sp0) {
      register value *cp = valptr(sp0[CP]);
@@ -131,8 +202,6 @@ void interp(value *sp0) {
 #define DEFAULT    default:
 #define NEXT       break
 #endif
-
-#define error(msg, n) runtime_error(msg, n, bp, pc0)
 
      level++;
 
