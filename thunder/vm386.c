@@ -657,15 +657,6 @@ static void instr_rr(OPDECL, int r1, int r2) {
      vm_done();
 }
 
-#ifdef USE_SSE
-/* instr_sr -- opcode plus two registers, swapped */
-static void instr_sr(OPDECL, int r1, int r2) {
-     vm_debug2("%s %s, %s", mnem, regname[r2], regname[r1]);
-     opcode(op), addr(3, r1, r2);
-     vm_done();
-}
-#endif
-
 /* General form of instr2_r for shifts and floating point ops */
 static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
      vm_debug2(fmt, mnem, regname[r]);
@@ -762,14 +753,22 @@ static void instr_rel(OPDECL, int rd, vmlabel lab) {
 }
 #endif
 
-
-#ifndef USE_SSE
-/* instr_m -- floating point load or store */
-static void instr_m(OPDECL2, int rs, int imm) {
-     vm_debug2("%s %s", mnem, fmt_addr(rs, imm));
-     opcode(op), memory(op2, rs, imm);
+#ifdef USE_SSE
+/* instr_sr -- opcode plus two registers, swapped */
+static void instr_sr(OPDECL, int r1, int r2) {
+     vm_debug2("%s %s, %s", mnem, regname[r2], regname[r1]);
+     opcode(op), addr(3, r1, r2);
      vm_done();
 }
+#else
+/* instr_mx -- floating point load or store */
+static void instr_mx(OPDECL2, int rs, int imm, int rx, int s) {
+     vm_debug2("%s %s", mnem, fmt_addrx(rs, imm, rx, s));
+     opcode(op), memoryx(op2, rs, imm, rx, s);
+     vm_done();
+}
+
+#define instr_m(op, rs, imm)  instr_mx(op, rs, imm, NOREG, 0)
 #endif
 
 
@@ -1650,7 +1649,8 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
 
      case CONVif:
      case CONVid:
-	  push_r(rb); loadf(opFILDL_m, ra, rSP, 0); pop(rb); break;
+	  push_r(rb); loadf(opFILDL_m, ra, rSP, 0, NOREG, 0); pop(rb);
+          break;
      case CONVfi:
      case CONVdi:
           push_r(ra); ftruncs(rb, rSP, 0); pop(ra); break;
