@@ -235,3 +235,4 @@ mipstest/obx-mips
 mipstest/regress
 oniontest
 thunder/fact
+.DS_Store
