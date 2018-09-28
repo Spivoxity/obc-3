@@ -146,3 +146,11 @@ let commonest cmp xs0 =
 
 let flat_map f xs =
   let rec h = function [] -> [] | y::ys -> f y @ h ys in h xs
+
+let assoc_eq eq x f =
+  let rec loop =
+    function
+        [] -> raise Not_found
+      | (y,z)::ps ->
+          if eq x y then z else loop ps in
+  loop f

@@ -54,6 +54,9 @@ val commonest : ('a -> 'a -> int) -> 'a list -> 'a
 (* flat_map -- map function over list and concatenate results *)
 val flat_map : ('a -> 'b list) -> 'a list -> 'b list
 
+(* assoc_eq -- version of assoc with explicit equality test *)
+val assoc_eq : ('a -> 'a -> bool) -> 'a -> ('a * 'b) list -> 'b
+
 val range : int -> int -> int list
 
 val split_at : char -> string -> string * string

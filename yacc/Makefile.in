@@ -101,28 +101,28 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 bootlexer.cmo : bootyacc.cmi error.cmi grammar.cmi output.cmi
 bootmain.cmo  : bootlexer.cmo bootyacc.cmi compile.cmi conflict.cmi \
 		error.cmi grammar.cmi lalr.cmi lr0.cmi output.cmi \
-		report.cmi table.cmi yyparse.cmi
+		report.cmi table.cmi yyparse.cmi ../mllib/util.cmo
 bootyacc.cmo  : bootyacc.cmi error.cmi yyparse.cmi
 bootyacc.cmi  : grammar.cmi
-compile.cmo   : compile.cmi
+compile.cmo   : compile.cmi ../mllib/util.cmo
 compile.cmi   : grammar.cmi lr0.cmi
-conflict.cmo  : conflict.cmi error.cmi
+conflict.cmo  : conflict.cmi error.cmi ../mllib/util.cmo
 conflict.cmi  : grammar.cmi lr0.cmi
 error.cmo     : error.cmi
 grammar.cmo   : error.cmi grammar.cmi
 lalr.cmo      : grammar.cmi lalr.cmi lr0.cmi report.cmi
 lexer.cmo     : error.cmi grammar.cmi output.cmi yacc.cmi
-lr0.cmo       : lr0.cmi
+lr0.cmo       : lr0.cmi ../mllib/util.cmo
 lr0.cmi       : grammar.cmi
 main.cmo      : compile.cmi conflict.cmi error.cmi grammar.cmi lalr.cmi \
 		lexer.cmo lr0.cmi output.cmi report.cmi table.cmi \
-		yacc.cmi yyparse.cmi
+		yacc.cmi yyparse.cmi ../mllib/util.cmo
 output.cmo    : compile.cmi error.cmi output.cmi \
 		yyparse.cmi
 output.cmi    : grammar.cmi lr0.cmi table.cmi
 report.cmo    : error.cmi report.cmi
 report.cmi    : grammar.cmi lr0.cmi
-table.cmo     : table.cmi
+table.cmo     : table.cmi ../mllib/util.cmi
 yacc.cmo      : error.cmi yacc.cmi yyparse.cmi
 yacc.cmi      : grammar.cmi
 yyparse.cmo   : yyparse.cmi

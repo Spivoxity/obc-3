@@ -1129,17 +1129,15 @@ let gen_procdef d loc fsize body ret =
   put "END\n" []
 
 let type_code t =
-  if same_types t inttype then 'I'
-  else if same_types t character || same_types t boolean then 'C'
-  else if same_types t longint then 'L'
-  else if same_types t realtype then 'F'
-  else if same_types t longreal then 'D'
-  else if same_types t voidtype then 'V'
-  else if is_flex t then 'X' (* addr+bound *)
-  else if is_array t || is_pointer t
-    || same_types t ptrtype then 'P' (* 32-bit pointer *)
-  else if same_types t longptr then 'Q' (* 64-bit pointer *)
-  else failwith (sprintf "Can't pass $" [fOType t])
+  try
+    Util.assoc_eq same_types t
+      [(inttype, 'I'); (character, 'C'); (boolean, 'C'); (bytetype, 'C');
+        (shortint, 'S'); (longint, 'L'); (realtype, 'F'); (longreal, 'D');
+        (voidtype, 'V'); (ptrtype, 'P'); (longptr, 'Q')]
+  with Not_found ->
+    if is_flex t then 'X' (* addr+bound *)
+    else if is_array t || is_pointer t then 'P' (* 32-bit pointer *)
+    else failwith (sprintf "Can't pass $" [fOType t])
 
 let param_code d =
   match d.d_kind with
