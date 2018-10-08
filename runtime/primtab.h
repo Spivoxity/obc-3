@@ -42,6 +42,7 @@ typedef void type_V;
 
 /* Size of each kind in argument words */
 #define size_C 1
+#define size_S 1
 #define size_I 1
 #define size_F 1
 #define size_P 1
@@ -53,6 +54,7 @@ typedef void type_V;
 /* How to fetch each kind of argument */
 #define arg_I(j)  bp[HEAD+j].i
 #define arg_C(j)  align_byte(bp[HEAD+j].i)
+#define arg_S(j)  align_short(bp[HEAD+j].i)
 #define arg_L(j)  get_long(&bp[HEAD+j])
 #define arg_F(j)  bp[HEAD+j].f
 #define arg_D(j)  get_double(&bp[HEAD+j])
@@ -62,6 +64,7 @@ typedef void type_V;
 
 /* How to return each kind of result via ob_res */
 #define res_I(v)  ob_res.i = v
+#define res_S(v)  ob_res.i = v
 #define res_C(v)  ob_res.i = v
 #define res_F(v)  ob_res.f = v
 #define res_P(v)  ob_res.a = address(v)

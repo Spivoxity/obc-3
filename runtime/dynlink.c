@@ -87,6 +87,7 @@ typedef struct {
 static ffi_type *ffi_decode(char c) {
      switch (c) {
      case 'C':
+     case 'S':
      case 'I':
           return &ffi_type_sint32;
      case 'L':
@@ -121,6 +122,9 @@ void dlstub(value *bp) {
           switch (tstring[i+1]) {
           case 'C':
                avals[q].sint = align_byte(bp[HEAD+p].i);
+               p += 1; q += 1; break;
+          case 'S':
+               avals[q].sint = align_short(bp[HEAD+p].i);
                p += 1; q += 1; break;
           case 'I':
                avals[q].sint = bp[HEAD+p].i;
@@ -160,6 +164,7 @@ void dlstub(value *bp) {
      
      switch (tstring[0]) {
      case 'C':
+     case 'S':
      case 'I':
           ob_res.i = rval->sint;
           break;
