@@ -1,7 +1,7 @@
 BB_AUTH_STRING=`cat /z/.bitbucket`
 URL=https://api.bitbucket.org/2.0/repositories/Spivey/obc-3/downloads
 
-(hg pull bitbucket && hg up default) || exit
+(hg pull && hg up) || exit
 
 REV=`hg ident -i`
 # For releases:
