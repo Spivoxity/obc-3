@@ -116,43 +116,23 @@ static char *fmt_addr(int rs, int imm) {
 
 // The usual macro madness
 
-#define RFMT 1
-#define IFMT 2
-#define JFMT 3
-#define XFMT 4
-#define SFMT 5
+#define MNEM(mnem, op) mnem, op
+#define OPDECL const char *mnem, int op
+#define OPDECL2 const char *mnem2, int op2
+#define OP mnem, op
+#define OP2 mnem2, op2
 
-#define MNEMr(mnem, op) RFMT, mnem, op
-#define MNEMi(mnem, op) IFMT, mnem, op
-#define MNEMj(mnem, op) JFMT, mnem, op
-#define MNEMx(mnem, op) XFMT, mnem, op
-#define MNEMs(mnem, op) SFMT, mnem, op
-
-#define OPDECL int fmt, const char *mnem, int op
-#define OPDECL2 int fmt2, const char *mnem2, int op2
-#define OP fmt, mnem, op
-#define OP2 fmt2, mnem2, op2
-
-#define _GETOP(fmt, mnem, op) op
+#define _GETOP(mnem, op) op
 #define GETOP(op) _GETOP(op)
-
-#define FORMAT(f) assert(fmt == f)
 
 #else
 
-#define MNEMr(mnem, op) op
-#define MNEMi(mnem, op) op
-#define MNEMj(mnem, op) op
-#define MNEMx(mnem, op) op
-#define MNEMs(mnem, op) op
-
+#define MNEM(mnem, op) op
 #define OPDECL int op
 #define OPDECL2 int op2
 #define OP op
 #define OP2 op2
 #define GETOP(op) op
-
-#define FORMAT(f)
 
 #endif
 
@@ -160,70 +140,70 @@ static char *fmt_addr(int rs, int imm) {
 // OPCODES
 
 // R-format: 0 rs rt rd op>>8 op
-#define opSLLV	MNEMr("sllv",   0x04)
-#define opSRLV	MNEMr("srlv",   0x06)
-#define opROTRV	MNEMr("rotrv", 0x106)
-#define opSRAV	MNEMr("srav",   0x07)
-#define opJR	MNEMr("jr",     0x08)
-#define opJALR	MNEMr("jalr",   0x09)
-#define opMOVZ	MNEMr("movz",   0x0a)
-#define opMOVN	MNEMr("movn",   0x0b)
-#define opADDU	MNEMr("addu",   0x21)
-#define opSUBU	MNEMr("subu",   0x23)
-#define opAND	MNEMr("and",    0x24)
-#define opOR	MNEMr("or",     0x25)
-#define opXOR	MNEMr("xor",    0x26)
-#define opNOR	MNEMr("nor",    0x27)
-#define opSLT	MNEMr("slt",    0x2a)
-#define opSLTU	MNEMr("sltu",   0x2b)
+#define opSLLV	MNEM("sllv",   0x04)
+#define opSRLV	MNEM("srlv",   0x06)
+#define opROTRV	MNEM("rotrv", 0x106)
+#define opSRAV	MNEM("srav",   0x07)
+#define opJR	MNEM("jr",     0x08)
+#define opJALR	MNEM("jalr",   0x09)
+#define opMOVZ	MNEM("movz",   0x0a)
+#define opMOVN	MNEM("movn",   0x0b)
+#define opADDU	MNEM("addu",   0x21)
+#define opSUBU	MNEM("subu",   0x23)
+#define opAND	MNEM("and",    0x24)
+#define opOR	MNEM("or",     0x25)
+#define opXOR	MNEM("xor",    0x26)
+#define opNOR	MNEM("nor",    0x27)
+#define opSLT	MNEM("slt",    0x2a)
+#define opSLTU	MNEM("sltu",   0x2b)
 
 // Shift: 0 op>>8 rt rd sa op
-#define opSLL	MNEMs("sll",    0x00)
-#define opSRL	MNEMs("srl",    0x02)
-#define opROTR	MNEMs("rotr",  0x102)
-#define opSRA	MNEMs("sra",    0x03)
+#define opSLL	MNEM("sll",    0x00)
+#define opSRL	MNEM("srl",    0x02)
+#define opROTR	MNEM("rotr",  0x102)
+#define opSRA	MNEM("sra",    0x03)
 
 // RegImm: REGIMM rs op imm
 #define REGIMM 0x01
-#define opBLTZ	MNEMx("bltz",   0x00)
-#define opBGEZ	MNEMx("bgez",   0x01)
+#define opBLTZ	MNEM("bltz",   0x00)
+#define opBGEZ	MNEM("bgez",   0x01)
 
 // Jumps: op tgt
-#define opJ     MNEMj("j",      0x02)
-#define opJAL   MNEMj("jal",    0x03) // use JALR R_T9 instead for ABI
+#define opJ     MNEM("j",      0x02)
+#define opJAL   MNEM("jal",    0x03) // use JALR R_T9 instead for ABI
 
 // Immediate: op rs rt imm
-#define opB	MNEMi("b",      0x04) // == BEQ
-#define opBEQ	MNEMi("beq",    0x04)
-#define opBNE	MNEMi("bne",    0x05)
-#define opBLEZ	MNEMi("blez",   0x06)
-#define opBGTZ	MNEMi("bgtz",   0x07)
-#define opADDIU	MNEMi("addiu",  0x09)
-#define opSLTI	MNEMi("slti",   0x0a)
-#define opSLTIU	MNEMi("sltiu",  0x0b)
-#define opANDI	MNEMi("andi",   0x0c)
-#define opLI    MNEMi("li",     0x0d) // == ORI
-#define opORI	MNEMi("ori",    0x0d)
-#define opXORI	MNEMi("xori",   0x0e)
-#define opLUI	MNEMi("lui",    0x0f)
-#define opLB	MNEMi("lb",     0x20)
-#define opLH	MNEMi("lh",     0x21)
-#define opLW	MNEMi("lw",     0x23)
-#define opLBU	MNEMi("lbu",    0x24)
-#define opLHU	MNEMi("lhu",    0x25)
-#define opSB	MNEMi("sb",     0x28)
-#define opSH	MNEMi("sh",     0x29)
-#define opSW	MNEMi("sw",     0x2b)
+#define opB	MNEM("b",      0x04) // == BEQ
+#define opBEQ	MNEM("beq",    0x04)
+#define opBNE	MNEM("bne",    0x05)
+#define opBLEZ	MNEM("blez",   0x06)
+#define opBGTZ	MNEM("bgtz",   0x07)
+#define opADDIU	MNEM("addiu",  0x09)
+#define opSLTI	MNEM("slti",   0x0a)
+#define opSLTIU	MNEM("sltiu",  0x0b)
+#define opANDI	MNEM("andi",   0x0c)
+#define opLI    MNEM("li",     0x0d) // == ORI
+#define opORI	MNEM("ori",    0x0d)
+#define opXORI	MNEM("xori",   0x0e)
+#define opLUI	MNEM("lui",    0x0f)
+#define opLB	MNEM("lb",     0x20)
+#define opLH	MNEM("lh",     0x21)
+#define opLW	MNEM("lw",     0x23)
+#define opLBU	MNEM("lbu",    0x24)
+#define opLHU	MNEM("lhu",    0x25)
+#define opSB	MNEM("sb",     0x28)
+#define opSH	MNEM("sh",     0x29)
+#define opSW	MNEM("sw",     0x2b)
 
 // Special2: SPECIAL2 rs rt rd 0 0x02
 #define SPECIAL2 0x1c
-#define opMUL	MNEMx("mul",    0x02)
+#define opMUL	MNEM("mul",    0x02)
 
 // BSHFL: SPECIAL3 0 rt rd op BSHFL
 #define SPECIAL3 0x1f
 #define BSHFL 0x20
-#define opSEB	MNEMx("seb",    0x10)
-#define opSEH	MNEMx("seh",    0x18)
+#define opSEB	MNEM("seb",    0x10)
+#define opSEH	MNEM("seh",    0x18)
 
 
 // LOW-LEVEL ASSEMBLY
@@ -238,7 +218,7 @@ static void iformat(int op, int rs, int rt, int imm) {
 }
 
 static unsigned jumpfmt(int op, unsigned tgt) {
-#define TOP2 0xc000##0000
+#define TOP2 0xc0000000
      if ((tgt&TOP2) != ((int) pc&TOP2))
           vm_panic("J format error");
 
@@ -252,7 +232,6 @@ static unsigned jumpfmt(int op, unsigned tgt) {
 
 static void arith_r(OPDECL, int rd, int rs, int rt) {
      vm_debug2("%s %s, %s, %s", mnem, regname[rd], regname[rs], regname[rt]);
-     FORMAT(RFMT);
      rformat(0, rs, rt, rd, op>>8, op&0x3f);
      vm_done();
 }
@@ -265,56 +244,48 @@ static void move_r(int rd, int rs) {
 
 static void bshfl(OPDECL, int rd, int rt) {
      vm_debug2("%s %s, %s", mnem, regname[rd], regname[rt]);
-     FORMAT(XFMT);
      rformat(SPECIAL3, 0, rt, rd, op, BSHFL);
      vm_done();
 }
 
 static void special2(OPDECL, int rd, int rs, int rt) {
      vm_debug2("%s %s, %s, %s", mnem, regname[rd], regname[rs], regname[rt]);
-     FORMAT(XFMT);
      rformat(SPECIAL2, rs, rt, rd, 0, op);
      vm_done();
 }
 
 static void arith_i(OPDECL, int rt, int rs, int imm) {
      vm_debug2("%s %s, %s, %s", mnem, regname[rt], regname[rs], fmt_val(imm));
-     FORMAT(IFMT);
      iformat(op, rs, rt, imm);
      vm_done();
 }
 
 static void load_i(OPDECL, int rt, int imm) {
      vm_debug2("%s %s, %s", mnem, regname[rt], fmt_val(imm));
-     FORMAT(IFMT);
      iformat(op, 0, rt, imm);
      vm_done();
 }
 
 static void ldst_inst(OPDECL, int rt, int rs, int imm) {
      vm_debug2("%s %s, %s", mnem, regname[rt], fmt_addr(rs, imm));
-     FORMAT(IFMT);
      iformat(op, rs, rt, imm);
      vm_done();
 }
 
 static void shift_i(OPDECL, int rd, int rt, int sa) {
      vm_debug2("%s %s, %s, %d", mnem, regname[rd], regname[rt], sa);
-     FORMAT(SFMT);
      rformat(0, op>>8, rt, rd, sa, op&0x3f);
      vm_done();
 }
 
 static void jump_i(OPDECL, int imm) {
      vm_debug2("%s %#x; nop", mnem, imm);
-     FORMAT(JFMT);
      jformat(op, imm); nop();
      vm_done();
 }
 
 static void jump_r(OPDECL, int rd, int rs) {
      vm_debug2("%s %s; nop", mnem, regname[rs]); // Leave rd implicit
-     FORMAT(RFMT);
      rformat(0, rs, 0, rd, 0, op); nop();
      vm_done();
 }
@@ -322,7 +293,6 @@ static void jump_r(OPDECL, int rd, int rs) {
 static void branch(OPDECL, vmlabel lab) {
      vm_debug2("%s %s; nop", mnem, fmt_lab(lab));
      code_addr loc = pc;
-     FORMAT(IFMT);
      iformat(op, 0, 0, 0); nop();
      vm_branch(BRANCH, loc, lab);
      vm_done();
@@ -331,7 +301,6 @@ static void branch(OPDECL, vmlabel lab) {
 static void branch_r(OPDECL, int rs, vmlabel lab) {
      vm_debug2("%s %s, %s; nop", mnem, regname[rs], fmt_lab(lab));
      code_addr loc = pc;
-     FORMAT(IFMT);
      iformat(op, rs, 0, 0); nop();
      vm_branch(BRANCH, loc, lab);
      vm_done();
@@ -341,7 +310,6 @@ static void branch_rr(OPDECL, int rs, int rt, vmlabel lab) {
      vm_debug2("%s %s, %s, %s; nop",
                mnem, regname[rs], regname[rt], fmt_lab(lab));
      code_addr loc = pc;
-     FORMAT(IFMT);
      iformat(op, rs, rt, 0); nop();
      vm_branch(BRANCH, loc, lab);
      vm_done();
@@ -350,7 +318,6 @@ static void branch_rr(OPDECL, int rs, int rt, vmlabel lab) {
 static void br_regimm(OPDECL, int rs, vmlabel lab) {
      vm_debug2("%s %s, %s; nop", mnem, regname[rs], fmt_lab(lab));
      code_addr loc = pc;
-     FORMAT(XFMT);
      iformat(REGIMM, rs, op, 0); nop();
      vm_branch(BRANCH, loc, lab);
      vm_done();
