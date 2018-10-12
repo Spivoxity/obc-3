@@ -379,8 +379,9 @@ stamp-h: config.h.in config.status
 	CONFIG_FILES= CONFIG_HEADERS=config.h ./config.status
 	echo timestamp >stamp-h
 
-REVID := $(shell (hg id -i || echo $${BITBUCKET_COMMIT:-unknown}) \
-		| sed 's/\(............\)[0-9a-f]*/\1/' 2>/dev/null)
+REVID := $(shell \
+    (hg id --config 'ui.report_untrusted=False' -i || echo unknown) \
+	| sed 's/\(............\)[0-9a-f]*/\1/' 2>/dev/null)
 
 revid: force
 	echo $(REVID) | cmp -s $@ - || echo $(REVID) >$@
