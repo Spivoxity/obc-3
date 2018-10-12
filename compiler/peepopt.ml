@@ -337,6 +337,8 @@ let ruleset2 replace =
 	replace 3 [i2; i1]
     | i1 :: SWAP :: POP 1 :: _ when simple i1 ->
         replace 3 [POP 1; i1]
+    | CHECK (NullPtr, a) :: CONST n :: SWAP :: _ ->
+        replace 3 [CONST n; SWAP; CHECK (NullPtr, a)]
 
     | _ -> ()
 
