@@ -156,8 +156,8 @@ clean:
 	rm -f *.o *.k *.k0 *.so *.dylib *.tmp
 
 quiteclean: clean
-	rm -f lscript* Builtin.m
-	rm -f Builtin.c $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c)
+	rm -f lscript* Builtin.m Builtin.c XYstubs.c
+	rm -f $(PRIMMODS:%=%.c) $(SHLMODS:%=%.c) primtab.c
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean

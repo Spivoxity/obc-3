@@ -118,6 +118,9 @@ PROCEDURE SysMOVE(src, dest: INTEGER; n: INTEGER) IS "*sys_move";
 PROCEDURE SysLIBERROR(CONST msg: ARRAY OF CHAR) IS "*sys_liberror";
 PROCEDURE SysLOADLIB(name: ARRAY OF CHAR) IS "load_lib";
 PROCEDURE SysGC IS "*gc_collect";
+
+(* These are declared here so the primitives appear in primtab.c,
+   but they must be redeclared in any module that uses them *)
 PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
 PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
 
