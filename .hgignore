@@ -240,3 +240,4 @@ mipstest/code
 mipstest/data
 mipstest/out
 mipstest/out.0
+lib/_Builtin.tmp
