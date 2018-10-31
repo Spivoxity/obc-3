@@ -58,13 +58,13 @@ vmlabel handler(int code, int line);
 #define FLO 2
 
 /* Register rSP is the same as the last integer register, so that register
-   can be used only in procedures that don't use FLEXCOPY, so that the 
+   can be used only in procedures that don't use FLEXCOPY, where the 
    frame has a fixed size and all addressing can be done relative to rBP. */
 
 typedef struct _reg *reg;
 
 extern int nregs;
-extern reg rBP, rSP, rCP, rI0, rI1, rI2;
+extern reg rBP, rSP, rCP, rI0, rRET;
 
 #define __VALKINDS__(v) \
      v(CON) v(REG) v(ADDR) v(KONW) v(KONQ)       \
@@ -130,10 +130,11 @@ const char *regname(reg r);
 #define STACK 32		/* Maximum stack depth */
 
 int count_args(int size);
-void get_sp(reg r);
+int stack_depth(void);
+void push_sp(void);
 void flex_space(reg nreg);
 void dumpregs(void);
-
+void clear_stack(void);
 void init_stack(int frame);
 void pushx(valkind vkind, int type, int val, reg r, reg r2,
            int scale, int size);
@@ -157,7 +158,7 @@ void spill(reg r);
 
 void deref(valkind vkind, int ty, int size);
 void store(valkind vkind, int s);
-void add_offset();
+void add_offset(int scale);
 
 void save_stack(codepoint lab);
 void restore_stack(codepoint lab);

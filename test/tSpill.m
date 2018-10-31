@@ -53,7 +53,7 @@ MODULE tSpill STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSpill.Q 0 3 0
+PROC tSpill.Q 0 4 0
 ! PROCEDURE Q(a, b, c, d, e, f, k, l, m, n, o, p: INTEGER);
 !   Out.Int(a, 0); Out.Ln;
 CONST 0
@@ -142,7 +142,7 @@ CALL 0
 RETURN
 END
 
-PROC tSpill.R 0 13 0x03f00001
+PROC tSpill.R 0 14 0x03f00001
 ! PROCEDURE R(VAR u, v, w, x, y, z: INTEGER);
 !   Q(u, v, w, x, y, z, u, v, w, x, y, z)
 LDLW 32
@@ -174,7 +174,7 @@ CALL 12
 RETURN
 END
 
-PROC tSpill.%main 0 7 0
+PROC tSpill.%main 0 8 0
 !   p := 3; q := 1; r := 2;
 CONST 3
 STGW tSpill.p

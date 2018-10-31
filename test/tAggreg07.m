@@ -25,7 +25,7 @@ MODULE tAggreg07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tAggreg07.Print 0 3 0x00100001
+PROC tAggreg07.Print 0 4 0x00100001
 ! PROCEDURE Print(s: ARRAY OF CHAR);
 !   Out.Int(LEN(s), 0);
 CONST 0
@@ -43,7 +43,7 @@ CALL 0
 RETURN
 END
 
-PROC tAggreg07.%main 0 3 0
+PROC tAggreg07.%main 0 4 0
 !   Print("Hello!")
 CONST 7
 GLOBAL tAggreg07.%1

@@ -50,7 +50,7 @@ INC
 RETURNW
 END
 
-PROC tSegSum07.%main 0 3 0
+PROC tSegSum07.%main 0 4 0
 !   u := 0; v := 0; count := 0; sum := 0;
 CONST 0
 STGW tSegSum07.u

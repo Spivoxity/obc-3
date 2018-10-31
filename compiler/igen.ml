@@ -179,10 +179,10 @@ let convert t1 t2 =
 let mark_type t = if is_pointer t then XMARK else NOP
 
 let gen_call pcount rtype =
-  SEQ [XSTKMAP pcount; CALL (pcount, op_kind rtype); mark_type rtype]
+  SEQ [XSTKMAP pcount; LCALL (pcount, op_kind rtype); mark_type rtype]
 
 let call_proc lab pcount rtype =
-  SEQ [GLOBAL lab; gen_call pcount rtype]
+  SEQ [GLOBAL lab; const 0; gen_call pcount rtype]
 
 (* conditional -- test if an expression requires jumping code *)
 let rec conditional e =
@@ -465,8 +465,9 @@ and gen_proccall f args =
       ProcType p ->
 	SEQ [
 	  SEQ (List.map2 gen_arg (List.rev p.p_fparams) (List.rev args));
-	  gen_funarg LINK f; 
+	  gen_function f;
 	  check (CHECK (NullPtr, expr_line f));
+          gen_statlink f;
 	  gen_call p.p_pcount p.p_result]
 
     | BuiltinType b ->
@@ -490,7 +491,7 @@ and gen_message r m args =
 	    DUP 0; offset (-word_size); LOAD IntT]  (* desc *)
       | _ -> failwith "method receiver");
     offset (method_offset + word_size * d.d_offset); LOAD IntT;
-    gen_call p.p_pcount p.p_result]
+    const 0; gen_call p.p_pcount p.p_result]
 
 (*
 This table shows how the three kinds of parameters are passed and how
@@ -529,7 +530,8 @@ instruction.
 and gen_arg f a = 
   if is_proc f.d_type then
     (match f.d_kind with
-	ParamDef | CParamDef -> gen_funarg NOP a
+	ParamDef | CParamDef ->
+          SEQ [gen_statlink a; gen_function a]
       | VParamDef -> gen_addr a
       | _ -> failwith "gen_arg")
   else if scalar f.d_type then
@@ -552,24 +554,41 @@ and gen_arg f a =
   else
     failwith "gen_arg"
 
-(* Push a (code, statlink) pair and use inst on the static link *)
-and gen_funarg inst a =
+(* Push a function address *)
+and gen_function a =
   match a.e_guts with
       Name x ->
 	let d = get_def x in
 	begin match d.d_kind with
 	    ProcDef ->
-	      SEQ [if d.d_level = 0 then const 0 else local d.d_level 0;
-		inst; GLOBAL d.d_lab]
+              GLOBAL d.d_lab
 	  | (ParamDef | CParamDef) ->
-	      SEQ [local d.d_level (d.d_offset + word_size);
-		load_addr; inst;
-		local d.d_level d.d_offset; load_addr]
+	      SEQ [local d.d_level d.d_offset; load_addr]
 	  | _ ->
-	      SEQ [const 0; inst; gen_expr a]
+	      gen_expr a
 	end
     | _ ->
-	SEQ [const 0; inst; gen_expr a]
+	gen_expr a
+
+(* Push a static link *)
+and gen_statlink a =
+  match a.e_guts with
+      Name x ->
+	let d = get_def x in
+	begin match d.d_kind with
+	    ProcDef ->
+	      if d.d_level = 0 then const 0 else local d.d_level 0
+	  | (ParamDef | CParamDef) ->
+	      SEQ [local d.d_level (d.d_offset + word_size); load_addr]
+	  | _ ->
+	      const 0
+	end
+    | _ ->
+	const 0
+
+(* Push a (code, statlink) pair and use inst on the static link *)
+and gen_funarg inst a =
+  SEQ [gen_statlink a; inst; gen_function a]
 
 (* gen_recarg -- push address and descriptor of record *)
 and gen_recarg a =
@@ -684,9 +703,9 @@ and gen_builtin q args =
 		  gen_expr (List.nth args 1);
 		gen_addr e1;
 		if q.b_id = IncProc then
-		  call_proc "INCLONG" 3 longint
+		  call_proc "INCLONG" 3 voidtype
 		else
-		  call_proc "DECLONG" 3 longint]
+		  call_proc "DECLONG" 3 voidtype]
 	  | _ -> failwith "IncProc"
 	end
 
@@ -740,7 +759,9 @@ and gen_builtin q args =
 	check (SEQ [gen_cond lab2 lab1 e1; LABEL lab1;
 	  if List.length args = 1 then const 0 else
 	    gen_expr (List.nth args 1);
-	  EASSERT (expr_line e1); LABEL lab2])
+          const (expr_line e1);
+	  call_proc "EASSERT" 2 voidtype;
+          LABEL lab2])
 
     | AdrFun, [e1] -> gen_addr e1
 
@@ -871,12 +892,14 @@ let is_param x =
 let proc_assign v e =
   match v.e_guts with
       Name x when is_param x ->
-        SEQ [gen_funarg (check (CHECK (GlobProc, expr_line v))) e;
-		gen_addr v; STORE IntT;
-                const 0; gen_addr v; offset word_size; STORE IntT]
+        SEQ [
+          check (SEQ [gen_statlink e; CHECK (GlobProc, expr_line v)]);
+          const 0; gen_addr v; offset word_size; STORE IntT;
+          gen_function e; gen_addr v; STORE IntT]
     | _ ->
-        SEQ [gen_funarg (check (CHECK (GlobProc, expr_line v))) e;
-		gen_addr v; STORE IntT]
+        SEQ [
+          check (SEQ [gen_statlink e; CHECK (GlobProc, expr_line v)]);
+          gen_function e; gen_addr v; STORE IntT]
 
 (* gen_stmt -- generate code for a statement *)
 let rec gen_stmt exit_lab s =
@@ -1097,7 +1120,7 @@ let transform code =
 	[] -> List.rev zs
       | XMARK :: ys -> Stack.mark (); walk ys zs
       | XSTKMAP n :: ys ->
-	  let m = Stack.make_map n in
+	  let m = Stack.make_map 2 n in
 	  if m = null_map then walk ys zs else
 	    walk ys (STKMAP (make_map 0 (genlab ()) m) :: zs)
       | x :: ys -> Stack.simulate x; walk ys (x :: zs) in
@@ -1108,7 +1131,6 @@ let gen_procdef d loc fsize body ret =
   let line = line_num loc in
   level := d.d_level+1;
   let code = SEQ [
-    if d.d_level > 0 then SAVELINK else NOP;
     gen_copy p.p_fparams;
     gen_stmt nolab body;
     (match ret with
@@ -1119,11 +1141,13 @@ let gen_procdef d loc fsize body ret =
             RETURN VoidT
           else
             ERROR ("E_RETURN", line))] in
-
   let code2 = Peepopt.optimise (transform (Icode.canon code)) in
   let stk = Stack.max_depth () in
   let map = frame_map d in
   put "PROC $ $ $ $" [fSym d.d_lab; fNum !fsize; fNum stk; fSym map];
+  if d.d_level > 0 then put "LFRAME" []
+  else if !fsize > 0 then put "FRAME" [];
+  (* The first possible breakpoint comes *after* clearing the frame *)
   if loc <> no_loc then Icode.put_line line;
   Icode.output line code2;
   put "END\n" []

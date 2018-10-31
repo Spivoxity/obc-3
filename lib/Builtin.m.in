@@ -35,6 +35,8 @@ IMPORT SYSTEM;
 CONST version =
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
 
+VAR reason: INTEGER;
+
 PROCEDURE HALT(n: INTEGER) IS "xmain_exit";
 
 PROCEDURE NEW(desc: SYSTEM.PTR; size: INTEGER): SYSTEM.PTR IS "*NEW";
@@ -114,6 +116,8 @@ BEGIN
   x := SYSTEM.VAL(LONGREAL, xx - LONG(n) * two52)
 END UNPKLONG;
 
+PROCEDURE EASSERT(line, arg: INTEGER) IS "*eassert";
+
 PROCEDURE SysMOVE(src, dest: INTEGER; n: INTEGER) IS "*sys_move";
 PROCEDURE SysLIBERROR(CONST msg: ARRAY OF CHAR) IS "*sys_liberror";
 PROCEDURE SysLOADLIB(name: ARRAY OF CHAR) IS "load_lib";
@@ -135,10 +139,12 @@ END Builtin.
 char *lib_version = 
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
 
-void NEW(value *bp) {
+value *NEW(value *bp) {
      value *desc = valptr(bp[HEAD+0]);
      int size = bp[HEAD+1].i;
-     ob_res.a = address(gc_alloc(desc, size, bp));
+     value *sp = bp;
+     (*--sp).a = address(gc_alloc(desc, size, bp));
+     return sp;
 }
 
 /*
@@ -172,11 +178,12 @@ Parameters NEWFLEX(elmap, elsize, k: INTEGER;
 			dim_0, ..., dim_{k-1}: INTEGER): SYSTEM.PTR
 */
 
-void NEWFLEX(value *bp) {
+value *NEWFLEX(value *bp) {
      value *elmap = valptr(bp[HEAD+0]);
      int elsize = bp[HEAD+1].i;
      int k = bp[HEAD+2].i;
      value *dim = &bp[HEAD+3];		/* Array of bounds */
+     value *sp = bp;
 
      int size, arsize, i, n;
      value *q, *desc, *map;
@@ -219,24 +226,28 @@ void NEWFLEX(value *bp) {
 	  map[9].i = GC_END;
      }
 
-     ob_res.a = address(q); 
+     (*--sp).a = address(q); 
+     return sp;
 }
 
-void COMPARE(value *bp) {
+value *COMPARE(value *bp) {
      uchar *s1 = pointer(bp[HEAD+0]), *s2 = pointer(bp[HEAD+2]);
      int i = 0, n = min(bp[HEAD+1].i, bp[HEAD+3].i);
+     value *sp = bp;
 
      while (i < n && s1[i] != '\0' && s1[i] == s2[i]) i++;
      if (i >= n) liberror("string is not null-terminated");
-     ob_res.i = s1[i] - s2[i]; 
+     (*--sp).i = s1[i] - s2[i]; 
+     return sp;
 }
 
-void COPY(value *bp) {
+value *COPY(value *bp) {
      obcopy((char * ) pointer(bp[HEAD+2]), bp[HEAD+3].i,
             (char * ) pointer(bp[HEAD+0]), bp[HEAD+1].i, bp);
+     return bp;                                           
 }
 
-void FLEXASSIGN(value *bp) {
+value *FLEXASSIGN(value *bp) {
      int size = bp[HEAD+0].i;
      int dim = bp[HEAD+1].i;
      uchar *src = pointer(bp[HEAD+2]), *dst = pointer(bp[HEAD+dim+3]);
@@ -251,13 +262,25 @@ void FLEXASSIGN(value *bp) {
      }
 
      memmove(dst, src, size);
+     return bp;
 }
 
-void sys_move(value *bp) {
+value *sys_move(value *bp) {
      memmove(pointer(bp[HEAD+1]), pointer(bp[HEAD+0]), bp[HEAD+2].i);
+     return bp;
 }
 
-void sys_liberror(value *bp) {
+value *sys_liberror(value *bp) {
      value *bp1 = valptr(bp[BP]);
-     error_stop((char * ) pointer(bp[HEAD+0]), 0, bp1, NULL);
+     error_stop((char * ) pointer(bp[HEAD+0]), 0, 0, bp1, NULL);
+     return bp;
+}
+
+value *eassert(value *bp) {
+     int line = bp[HEAD+0].i;
+     int arg = bp[HEAD+1].i;
+     value *bp1 = valptr(bp[BP]);
+     uchar *pc = pointer(bp[PC]);
+     error_stop("assertion failed (%d)", arg, line, bp1, pc);
+     return bp;
 }

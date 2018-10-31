@@ -56,6 +56,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tFlex4.Print 16 5 0x00100001
+FRAME
 ! PROCEDURE Print(VAR m: Matrix);
 !   FOR i := 0 TO LEN(m, 0)-1 DO
 LDLW 16
@@ -106,7 +107,8 @@ CALL 0
 RETURN
 END
 
-PROC tFlex4.CopyPrint 4 9 0x00110001
+PROC tFlex4.CopyPrint 4 10 0x00110001
+FRAME
 ! PROCEDURE CopyPrint(VAR m: Matrix);
 !   NEW(mm, LEN(m, 0), LEN(m, 1));
 LDLW 20
@@ -189,7 +191,7 @@ CALL 8
 RETURN
 END
 
-PROC tFlex4.%main 0 9 0
+PROC tFlex4.%main 0 10 0
 !   NEW(a, 2, 3); NEW(c, 2, 3);
 CONST 3
 CONST 2

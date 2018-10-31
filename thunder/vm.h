@@ -172,7 +172,7 @@ Note that Keiko procedures are compiled into subroutines that accept
 one argument (the value of the Keiko stack pointer) and return no
 result.  The parameters to a Keiko procedure are passed in a separate
 memory area from the host's subroutine stack, and any result is
-assigned to a global variable ob_res.
+also returned on the stack.
 
 
 IMPLEMENTATION HINTS

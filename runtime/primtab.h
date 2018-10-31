@@ -62,15 +62,15 @@ typedef void type_V;
 #define arg_X(j)  pointer(bp[HEAD+j])
 #define arg_Q(j)  ptrcast(void, get_long(&bp[HEAD+j]))
 
-/* How to return each kind of result via ob_res */
-#define res_I(v)  ob_res.i = v
-#define res_S(v)  ob_res.i = v
-#define res_C(v)  ob_res.i = v
-#define res_F(v)  ob_res.f = v
-#define res_P(v)  ob_res.a = address(v)
-#define res_L(v)  put_long(&ob_res, v)
-#define res_D(v)  put_double(&ob_res, v)
-#define res_Q(v)  put_long(&ob_res, (ptrtype) v)
+/* How to return each kind of result */
+#define res_I(v)  (*--sp).i = v
+#define res_S(v)  (*--sp).i = v
+#define res_C(v)  (*--sp).i = v
+#define res_F(v)  (*--sp).f = v
+#define res_P(v)  (*--sp).a = address(v)
+#define res_L(v)  sp -= 2, put_long(sp, v)
+#define res_D(v)  sp -= 2, put_double(sp, v)
+#define res_Q(v)  sp -= 2, put_long(sp, (ptrtype) v)
 #define res_V(v)  v
 
 /* Three kinds of primitive: 
@@ -144,7 +144,13 @@ typedef void type_V;
 #define _INDIR(name, res, atypes, args) \
      __WRAP(type_##res name atypes;, name, res, args)
 #define __WRAP(decl, name, res, args) \
-     void P_##name(value *bp) { decl FPINIT; res_##res(name args); }
+     value *P_##name(value *bp) { \
+          decl \
+          value *sp = bp; \
+          FPINIT;          \
+          res_##res(name args); \
+          return sp; \
+     }
 
 #define WRAPPERS(prims) prims(DIRECT, INDIRECT, WRAPPER)
 

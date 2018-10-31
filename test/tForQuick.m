@@ -76,6 +76,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tForQuick.Swap 4 2 0x00300001
+FRAME
 ! PROCEDURE Swap(VAR x, y: REAL);
 !   t := x; x := y; y := t
 LDLW 12
@@ -91,7 +92,8 @@ STOREF
 RETURN
 END
 
-PROC tForQuick.Sort 16 5 0x00100001
+PROC tForQuick.Sort 16 6 0x00100001
+FRAME
 ! PROCEDURE Sort(VAR a: ARRAY OF REAL; lo, hi: INTEGER);
 !   IF lo+1 < hi THEN
 LDLW 20
@@ -176,7 +178,8 @@ LABEL L3
 RETURN
 END
 
-PROC tForQuick.Main 4 5 0
+PROC tForQuick.Main 4 6 0
+FRAME
 ! PROCEDURE Main;
 !   FOR i := 0 TO N-1 DO b[i] := Random.Uniform() END;
 CONST 0
@@ -224,7 +227,7 @@ LABEL L12
 RETURN
 END
 
-PROC tForQuick.%main 0 1 0
+PROC tForQuick.%main 0 2 0
 !   Main
 GLOBAL tForQuick.Main
 CALL 0

@@ -31,6 +31,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tLongShort07.P 4 2 0
+FRAME
 ! PROCEDURE P* (x: REAL): INTEGER;
 !   p := FLOOR(x);
 LDLD 12
@@ -41,7 +42,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tLongShort07.%main 0 4 0
+PROC tLongShort07.%main 0 5 0
 !   Out.Int(P(3.14), 0); Out.Ln
 CONST 0
 DCONST 3.14

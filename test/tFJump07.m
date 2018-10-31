@@ -25,7 +25,7 @@ MODULE tFJump07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFJump07.%main 0 3 0
+PROC tFJump07.%main 0 4 0
 !   x := 1.0;
 FCONST 1.0
 STGF tFJump07.x

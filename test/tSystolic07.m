@@ -422,7 +422,7 @@ IMPORT Out STAMP
 IMPORT Random STAMP
 ENDHDR
 
-PROC tSystolic07.PrintVal 0 3 0
+PROC tSystolic07.PrintVal 0 4 0
 ! PROCEDURE PrintVal(x: INTEGER);
 !   IF x = INF THEN Out.String("INF") ELSE Out.Int(x, 0) END
 LDLW 12
@@ -441,7 +441,7 @@ CALL 2
 RETURN
 END
 
-PROC tSystolic07.Trace 0 3 0
+PROC tSystolic07.Trace 0 4 0
 ! PROCEDURE Trace(chid: INTEGER; x: INTEGER);
 !   Out.String("Time "); Out.Int(t, 0); Out.String(": chan");
 CONST 6
@@ -473,7 +473,7 @@ CALL 0
 RETURN
 END
 
-PROC tSystolic07.Print 0 3 0
+PROC tSystolic07.Print 0 4 0
 ! PROCEDURE Print(x: INTEGER);
 !   Out.String("Time "); Out.Int(t, 0); Out.String(": print ");
 CONST 6
@@ -498,6 +498,7 @@ RETURN
 END
 
 PROC tSystolic07.Max 4 2 0
+FRAME
 ! PROCEDURE Max(x, y: INTEGER): INTEGER;
 !   IF x >= y THEN r := x ELSE r := y END
 LDLW 12
@@ -516,6 +517,7 @@ RETURNW
 END
 
 PROC tSystolic07.Min 4 2 0
+FRAME
 ! PROCEDURE Min(x, y: INTEGER): INTEGER;
 !   IF x <= y THEN r := x ELSE r := y END
 LDLW 12
@@ -732,7 +734,8 @@ STNW 4
 RETURN
 END
 
-PROC tSystolic07.MakeChannel 4 3 0x00010001
+PROC tSystolic07.MakeChannel 4 4 0x00010001
+FRAME
 ! PROCEDURE MakeChannel(chid: INTEGER): Channel;
 !   NEW(ch); InitChan(ch, chid); RETURN ch
 CONST 12
@@ -767,7 +770,8 @@ STNW 8
 RETURN
 END
 
-PROC tSystolic07.Eval 4 3 0x00100001
+PROC tSystolic07.Eval 4 4 0x00100001
+FRAME
 ! PROCEDURE Eval(self: Channel);
 !   IF (self.sender # NIL) & (self.receiver # NIL) THEN
 LDLW 12
@@ -825,7 +829,8 @@ LABEL L32
 RETURN
 END
 
-PROC tSystolic07.MakeInjector 4 7 0x00210001
+PROC tSystolic07.MakeInjector 4 8 0x00210001
+FRAME
 ! PROCEDURE MakeInjector(pid: INTEGER; right: Channel): Injector;
 !   NEW(p); Init(p, pid, NIL, right, StepInj); RETURN p
 CONST 40
@@ -846,6 +851,7 @@ RETURNW
 END
 
 PROC tSystolic07.StepInj 4 4 0x00110001
+FRAME
 ! PROCEDURE StepInj(self0: Process);
 !   self := self0(Injector);
 LDLW 12
@@ -950,7 +956,8 @@ LABEL L38
 RETURN
 END
 
-PROC tSystolic07.MakeComparator 4 7 0x00610001
+PROC tSystolic07.MakeComparator 4 8 0x00610001
+FRAME
 ! PROCEDURE MakeComparator(pid: INTEGER; left, right: Channel): Comparator;
 !   NEW(p); Init(p, pid, left, right, StepComp); RETURN p
 CONST 40
@@ -971,6 +978,7 @@ RETURNW
 END
 
 PROC tSystolic07.StepComp 4 4 0x00110001
+FRAME
 ! PROCEDURE StepComp(self0: Process);
 !   self := self0(Comparator);
 LDLW 12
@@ -1098,7 +1106,8 @@ LABEL L53
 RETURN
 END
 
-PROC tSystolic07.MakeCollector 4 7 0x00210001
+PROC tSystolic07.MakeCollector 4 8 0x00210001
+FRAME
 ! PROCEDURE MakeCollector(pid: INTEGER; left: Channel): Collector;
 !   NEW(p); Init(p, pid, left, NIL, StepColl); RETURN p
 CONST 36
@@ -1119,6 +1128,7 @@ RETURNW
 END
 
 PROC tSystolic07.StepColl 4 4 0x00110001
+FRAME
 ! PROCEDURE StepColl(self0: Process);
 !   self := self0(Collector);
 LDLW 12
@@ -1196,7 +1206,8 @@ LABEL L69
 RETURN
 END
 
-PROC tSystolic07.Build 4 4 0
+PROC tSystolic07.Build 4 5 0
+FRAME
 ! PROCEDURE Build;
 !   FOR i := 0 TO N DO chan[i] := MakeChannel(i) END;
 CONST 0
@@ -1263,6 +1274,7 @@ RETURN
 END
 
 PROC tSystolic07.RunSim 4 3 0
+FRAME
 ! PROCEDURE RunSim;
 !   t := 0;
 CONST 0
@@ -1315,7 +1327,7 @@ LABEL L83
 RETURN
 END
 
-PROC tSystolic07.%main 0 1 0
+PROC tSystolic07.%main 0 2 0
 !   Build;
 GLOBAL tSystolic07.Build
 CALL 0

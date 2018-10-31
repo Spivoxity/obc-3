@@ -93,11 +93,6 @@ void long_flo(value *sp) {
      put_double(sp, get_long(sp));
 }
 
-void long_zcheck(value *sp) {
-     if (get_long(sp+2) == 0)
-          rterror(E_DIV, sp[0].i, ptrcast(value, sp[1].a));
-}
-
 #ifndef M64X32
 void long_add(value *sp) {
      put_long(sp+2, get_long(sp+2) + get_long(sp));
@@ -122,6 +117,11 @@ void long_cmp(value *sp) {
 
 void long_ext(value *sp) {
      put_long(sp-1, (longint) sp[0].i);
+}
+
+void long_zcheck(value *sp) {
+     if (get_long(sp+2) == 0)
+          runtime_error(E_DIV, sp[0].i, ptrcast(value, sp[1].a), NULL);
 }
 #endif
 
@@ -192,12 +192,12 @@ void flo_trunc(value *sp) {
 
 void flo_zcheck(value *sp) {
      if (sp[2].f == 0.0f)
-          rterror(E_FDIV, sp[0].i, ptrcast(value, sp[1].a));
+          runtime_error(E_FDIV, sp[0].i, ptrcast(value, sp[1].a), NULL);
 }
 
 void dbl_zcheck(value *sp) {
      if (get_double(sp+2) == 0.0)
-          rterror(E_FDIV, sp[0].i, ptrcast(value, sp[1].a));
+          runtime_error(E_FDIV, sp[0].i, ptrcast(value, sp[1].a), NULL);
 }
 #endif
 

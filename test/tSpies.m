@@ -61,6 +61,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tSpies.Unit 20 6 0x00010001
+FRAME
 ! PROCEDURE Unit(lat, long: R): Vector;
 !   NEW(r);
 CONST 24
@@ -125,6 +126,7 @@ RETURNW
 END
 
 PROC tSpies.Cross 4 6 0x00310001
+FRAME
 ! PROCEDURE Cross(a, b: Vector): Vector;
 !   NEW(r);
 CONST 24
@@ -205,6 +207,7 @@ RETURNW
 END
 
 PROC tSpies.LatLong 8 6 0x00700001
+FRAME
 ! PROCEDURE LatLong(a: Vector; VAR lat, long: R);
 !   u := M.Sqrt(a.x*a.x + a.y*a.y);
 LDLW 12
@@ -260,7 +263,7 @@ STORED
 RETURN
 END
 
-PROC tSpies.%main 0 6 0
+PROC tSpies.%main 0 7 0
 !   v1 := Unit(50.313685,-4.223152);	(* Rame Head *)
 DCONST -4.223152
 DCONST 50.313685
@@ -295,8 +298,9 @@ CALLW 2
 LDGW tSpies.v3
 LDGW tSpies.v2
 GLOBAL tSpies.Cross
+CONST 0
 STKMAP 0x00000009
-CALLW 2
+LCALLW 2
 GLOBAL tSpies.Cross
 CALLW 2
 GLOBAL tSpies.LatLong

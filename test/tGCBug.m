@@ -36,7 +36,7 @@ MODULE tGCBug STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tGCBug.%main 0 3 0
+PROC tGCBug.%main 0 4 0
 !   NEW(p); NEW(q);
 CONST 2044
 CONST 0

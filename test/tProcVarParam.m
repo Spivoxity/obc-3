@@ -40,7 +40,7 @@ STOREW
 RETURN
 END
 
-PROC tProcVarParam.%main 0 4 0
+PROC tProcVarParam.%main 0 5 0
 !   Choose(p);
 GLOBAL tProcVarParam.p
 GLOBAL tProcVarParam.Choose

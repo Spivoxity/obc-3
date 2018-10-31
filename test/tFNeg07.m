@@ -22,7 +22,7 @@ MODULE tFNeg07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFNeg07.%main 0 2 0
+PROC tFNeg07.%main 0 3 0
 !   f := 2.71;
 FCONST 2.71
 STGF tFNeg07.f

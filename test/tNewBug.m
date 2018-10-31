@@ -34,7 +34,7 @@ ENDHDR
 
 PRIMDEF tNewBug.GcDebug gc_debug VX
 
-PROC tNewBug.%main 0 3 0
+PROC tNewBug.%main 0 4 0
 !   GcDebug("z");
 CONST 2
 GLOBAL tNewBug.%3

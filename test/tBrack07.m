@@ -209,7 +209,8 @@ MODULE tBrack07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBrack07.MakeExp 4 3 0x00610001
+PROC tBrack07.MakeExp 4 4 0x00610001
+FRAME
 ! PROCEDURE MakeExp(rator: INTEGER; left, right: Exp): Exp;
 !   NEW(p);
 CONST 12
@@ -236,6 +237,7 @@ RETURNW
 END
 
 PROC tBrack07.Reset 4 5 0
+FRAME
 ! PROCEDURE Reset(a, b: INTEGER);
 !   FOR x := 0 TO 2 DO 
 CONST 0
@@ -289,6 +291,7 @@ RETURN
 END
 
 PROC tBrack07.Init 8 5 0x00100001
+FRAME
 ! PROCEDURE Init(s: ARRAY OF CHAR);
 !   n := 0;
 CONST 0
@@ -371,6 +374,7 @@ RETURN
 END
 
 PROC tBrack07.Combine 12 7 0
+FRAME
 ! PROCEDURE Combine(i, j, k: INTEGER);
 !   FOR x := 0 TO 2 DO
 CONST 0
@@ -581,7 +585,8 @@ LABEL L28
 RETURN
 END
 
-PROC tBrack07.Tabulate 28 4 0x00100001
+PROC tBrack07.Tabulate 28 5 0x00100001
+FRAME
 ! PROCEDURE Tabulate(s: ARRAY OF CHAR);
 !   Init(s);
 LDLW 16
@@ -650,7 +655,8 @@ LABEL L41
 RETURN
 END
 
-PROC tBrack07.Eval 4 4 0x00100001
+PROC tBrack07.Eval 4 5 0x00100001
+FRAME
 ! PROCEDURE Eval(e: Exp): INTEGER;
 !   IF e.rator = STAR THEN
 LDLW 12
@@ -692,7 +698,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tBrack07.Print 0 2 0x00100001
+PROC tBrack07.Print 0 3 0x00100001
 ! PROCEDURE Print(e: Exp);
 !   IF e.rator = STAR THEN
 LDLW 12
@@ -735,6 +741,7 @@ RETURN
 END
 
 PROC tBrack07.Test 4 5 0x00100001
+FRAME
 ! PROCEDURE Test(s: ARRAY OF CHAR);
 !   Out.String(s); Out.Ln;
 LDLW 16

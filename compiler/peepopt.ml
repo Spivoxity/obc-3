@@ -205,17 +205,13 @@ let ruleset1 replace =
         replace 3 [CONST z; JUMPC (IntT, opposite w, lab)]
 
     (* Void returns *)
-    | CALL (n, k) :: POP s :: _ when k <> VoidT ->
-	replace 2 [CALL (n, VoidT)]
+    | LCALL (n, k) :: POP s :: _ when k <> VoidT ->
+	replace 2 [LCALL (n, VoidT)]
 
     (* Easy array bounds *)
     | DUP n :: POP 1 :: _ -> replace 2 []
     | LOCAL n :: POP 1 :: _ -> replace 2 []
     | LOAD IntT :: POP 1 :: _  -> replace 1 []
-
-    (* Unneeded static links *)
-    | CONST n :: LINK :: _ when n = integer 0 ->
-	replace 2 []
 
     (* Don't use JUMPN if there's a JUMPC equivalent *)
     | JUMPN ((IntT|LongT as k), w, lab) :: _ ->
@@ -330,6 +326,9 @@ let ruleset2 replace =
     | CONST n :: STI IntT :: _ -> 
 	replace 2 [STNW (4 * int_of_integer n)]
 
+    | CONST z :: LCALL (n, k) :: _ when z = integer 0 ->
+        replace 2 [CALL (n, k)]
+
     (* Eliminate simple pops and swaps *)
     | i1 :: POP 1 :: _ when simple i1 -> 
 	replace 2 []
@@ -356,6 +355,8 @@ let ruleset3 replace =
 	replace 1 [CONST (int_value x); CONV (IntT, LongT)]
 
       (* Small results *)
+    | LCALL (n, (CharT|BoolT|SysByteT|ShortT)) :: _ -> 
+	replace 1 [LCALL (n, IntT)]
     | CALL (n, (CharT|BoolT|SysByteT|ShortT)) :: _ -> 
 	replace 1 [CALL (n, IntT)]
     | RETURN (CharT|BoolT|SysByteT|ShortT) :: _ -> replace 1 [RETURN IntT]

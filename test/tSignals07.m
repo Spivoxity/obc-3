@@ -320,6 +320,7 @@ RETURN
 END
 
 PROC tSignals07.MakeSig 4 4 0x00610001
+FRAME
 ! PROCEDURE MakeSig(op: CHAR; left, right: Sig; value: INTEGER);
 !   IF signal[value] = NIL THEN
 GLOBAL tSignals07.signal
@@ -381,7 +382,7 @@ LABEL L14
 RETURN
 END
 
-PROC tSignals07.Combine 0 5 0x00300001
+PROC tSignals07.Combine 0 6 0x00300001
 ! PROCEDURE Combine(u, v: Sig);
 !   MakeSig('&', u, v, Bit.And(u.value, v.value));
 LDLW 16
@@ -416,7 +417,8 @@ CALL 4
 RETURN
 END
 
-PROC tSignals07.Negate 8 5 0x00100001
+PROC tSignals07.Negate 8 6 0x00100001
+FRAME
 ! PROCEDURE Negate(u: Sig): BOOLEAN;
 !   v := Bit.Xor(u.value, 0FFH);
 CONST 255
@@ -455,6 +457,7 @@ RETURNW
 END
 
 PROC tSignals07.Closure 8 4 0
+FRAME
 ! PROCEDURE Closure(lo: INTEGER);
 !   i := lo;
 LDLW 12
@@ -496,7 +499,8 @@ LABEL L20
 RETURN
 END
 
-PROC tSignals07.OutBits 4 4 0
+PROC tSignals07.OutBits 4 5 0
+FRAME
 ! PROCEDURE OutBits(v: INTEGER);
 !   FOR j := 0 TO 7 DO
 CONST 0
@@ -522,7 +526,7 @@ LABEL L25
 RETURN
 END
 
-PROC tSignals07.OutName 0 3 0x00100001
+PROC tSignals07.OutName 0 4 0x00100001
 ! PROCEDURE OutName(p: Sig);
 !   Out.Char('s'); Out.Int(p.id, 0)
 CONST 115
@@ -538,7 +542,7 @@ CALL 2
 RETURN
 END
 
-PROC tSignals07.OutArc 0 3 0x00300001
+PROC tSignals07.OutArc 0 4 0x00300001
 ! PROCEDURE OutArc(p, q: Sig);
 !   OutName(p); Out.String(" -> "); OutName(q); Out.Ln
 LDLW 12
@@ -556,7 +560,7 @@ CALL 0
 RETURN
 END
 
-PROC tSignals07.Print 0 3 0x00100001
+PROC tSignals07.Print 0 4 0x00100001
 ! PROCEDURE Print(p: Sig);
 !   OutName(p); Out.String('[label="'); 
 LDLW 12
@@ -748,6 +752,7 @@ RETURN
 END
 
 PROC tSignals07.PrintMarked 8 4 0
+FRAME
 ! PROCEDURE PrintMarked;
 !   FOR i := 0 TO sp-1 DO
 LDGW tSignals07.sp
@@ -795,7 +800,8 @@ LABEL L37
 RETURN
 END
 
-PROC tSignals07.Check 12 3 0
+PROC tSignals07.Check 12 4 0
+FRAME
 ! PROCEDURE Check;
 !   notx := Bit.Xor(xxx, 0FFH); 
 CONST 255
@@ -877,7 +883,8 @@ LABEL L43
 RETURN
 END
 
-PROC tSignals07.Search 24 5 0
+PROC tSignals07.Search 24 6 0
+FRAME
 ! PROCEDURE Search;
 !   MakeSig('x', NIL, NIL, xxx);
 CONST 240

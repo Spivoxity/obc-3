@@ -288,8 +288,8 @@ IMPORT Strings STAMP
 ENDHDR
 
 PROC tCDown1.%9.Put 4 4 0
+LFRAME
 !   PROCEDURE Put(c: CHAR);
-SAVELINK
 !     buf[pos] := c; pos := pos+1
 LDLC 12
 LDLW -4
@@ -308,8 +308,8 @@ RETURN
 END
 
 PROC tCDown1.%10.Walk 32 5 0
+LFRAME
 !   PROCEDURE Walk(e: INTEGER; p: INTEGER);
-SAVELINK
 !     k := exp[e];
 GLOBAL tCDown1.exp
 LDLW 12
@@ -347,10 +347,9 @@ CONST 10
 BOUND 59
 LDIC
 ALIGNC
-LDLW -4
-LINK
 GLOBAL tCDown1.%9.Put
-CALL 1
+LDLW -4
+LCALL 1
 INCL -12
 JUMP L20
 LABEL L19
@@ -378,10 +377,9 @@ LDLW 16
 JGEQ L14
 CONST 40
 ALIGNC
-LDLW -4
-LINK
 GLOBAL tCDown1.%9.Put
-CALL 1
+LDLW -4
+LCALL 1
 LABEL L14
 !       Walk(lnk[e-1], kp);
 LDLW -16
@@ -391,56 +389,51 @@ DEC
 CONST 40
 BOUND 65
 LDIW
-LDLW -4
-LINK
 GLOBAL tCDown1.%10.Walk
-CALL 2
+LDLW -4
+LCALL 2
 !       Put(' '); Put(op[k]); Put(' ');
 CONST 32
 ALIGNC
-LDLW -4
-LINK
 GLOBAL tCDown1.%9.Put
-CALL 1
+LDLW -4
+LCALL 1
 GLOBAL tCDown1.%1
 LDLW -8
 CONST 6
 BOUND 66
 LDIC
 ALIGNC
-LDLW -4
-LINK
 GLOBAL tCDown1.%9.Put
-CALL 1
+LDLW -4
+LCALL 1
 CONST 32
 ALIGNC
-LDLW -4
-LINK
 GLOBAL tCDown1.%9.Put
-CALL 1
+LDLW -4
+LCALL 1
 !       Walk(e-1, rp);
 LDLW -20
 LDLW 12
 DEC
-LDLW -4
-LINK
 GLOBAL tCDown1.%10.Walk
-CALL 2
+LDLW -4
+LCALL 2
 !       IF kp < p THEN Put(')') END
 LDLW -16
 LDLW 16
 JGEQ L17
 CONST 41
 ALIGNC
-LDLW -4
-LINK
 GLOBAL tCDown1.%9.Put
-CALL 1
+LDLW -4
+LCALL 1
 LABEL L17
 RETURN
 END
 
-PROC tCDown1.Grind 4 3 0x00200001
+PROC tCDown1.Grind 4 4 0x00200001
+FRAME
 ! PROCEDURE Grind(e0: INTEGER; VAR buf: buffer);
 !   pos := 0;
 CONST 0
@@ -448,21 +441,20 @@ STLW -4
 !   Walk(e0, 1);
 CONST 1
 LDLW 12
-LOCAL 0
-LINK
 GLOBAL tCDown1.%10.Walk
-CALL 2
+LOCAL 0
+LCALL 2
 !   Put(0X)
 CONST 0
 ALIGNC
-LOCAL 0
-LINK
 GLOBAL tCDown1.%9.Put
-CALL 1
+LOCAL 0
+LCALL 1
 RETURN
 END
 
-PROC tCDown1.Try 20 5 0
+PROC tCDown1.Try 20 6 0
+FRAME
 ! PROCEDURE Try(i: INTEGER; d: INTEGER);
 !   IF d = 1 THEN
 LDLW 16
@@ -959,6 +951,7 @@ RETURN
 END
 
 PROC tCDown1.Search 24 4 0
+FRAME
 ! PROCEDURE Search(n: INTEGER);
 !   Out.String("To make "); Out.Int(target, 0); Out.String(" from");
 CONST 9
@@ -1145,6 +1138,7 @@ RETURN
 END
 
 PROC tCDown1.Main 4 4 0
+FRAME
 ! PROCEDURE Main;
 !   n := 6;
 CONST 6
@@ -1179,7 +1173,7 @@ CALL 1
 RETURN
 END
 
-PROC tCDown1.%main 0 1 0
+PROC tCDown1.%main 0 2 0
 !   Main
 GLOBAL tCDown1.Main
 CALL 0

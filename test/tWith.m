@@ -47,7 +47,7 @@ MODULE tWith STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tWith.doeval 0 3 0x00100001
+PROC tWith.doeval 0 4 0x00100001
 ! PROCEDURE doeval (ex: Obj): INTEGER;
 !   WITH ex : OpObj DO
 LDLW 12
@@ -94,7 +94,7 @@ LABEL L1
 ERROR E_RETURN 17
 END
 
-PROC tWith.%main 0 3 0
+PROC tWith.%main 0 4 0
 !   NEW(p); NEW(q);
 CONST 0
 GLOBAL tWith.Empty

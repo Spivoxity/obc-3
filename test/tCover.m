@@ -77,7 +77,7 @@ MODULE tCover STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCover.proc1 0 3 0x00100001
+PROC tCover.proc1 0 4 0x00100001
 ! PROCEDURE proc1(VAR r: t);
 !   Out.Int(r.y, 0); Out.Ln
 CONST 0
@@ -115,7 +115,7 @@ CALL 2
 RETURN
 END
 
-PROC tCover.print 0 4 0
+PROC tCover.print 0 5 0
 ! PROCEDURE print(CONST x: LONGINT);
 !   Out.LongInt(x, 0); Out.Ln
 CONST 0
@@ -127,7 +127,8 @@ CALL 0
 RETURN
 END
 
-PROC tCover.proc9 8 5 0x00018001
+PROC tCover.proc9 8 6 0x00018001
+FRAME
 ! PROCEDURE proc9*;
 !   NEW(p, 20); NEW(q)
 CONST 20
@@ -145,7 +146,7 @@ STLW -8
 RETURN
 END
 
-PROC tCover.%main 0 6 0
+PROC tCover.%main 0 5 0
 !   l := 1122334455667788;
 QCONST 1122334455667788
 STGQ tCover.l
@@ -175,7 +176,7 @@ CONST 1
 CONVNQ
 GLOBAL tCover.l
 GLOBAL DECLONG
-CALLQ 3
+CALL 3
 LDGQ tCover.l
 GLOBAL tCover.print
 CALL 2

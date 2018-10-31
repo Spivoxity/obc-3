@@ -31,7 +31,7 @@ MODULE tForDown STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tForDown.%main 0 3 0
+PROC tForDown.%main 0 4 0
 !   FOR i := 10 TO 1 BY -1 DO
 CONST 10
 STGS tForDown.i

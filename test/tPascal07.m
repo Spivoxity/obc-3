@@ -50,6 +50,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tPascal07.pascal2 12 5 0x00004001
+FRAME
 ! PROCEDURE pascal2();
 !   NEW(a);
 CONST 440
@@ -184,7 +185,7 @@ LABEL L3
 RETURN
 END
 
-PROC tPascal07.%main 0 1 0
+PROC tPascal07.%main 0 2 0
 !   pascal2()
 GLOBAL tPascal07.pascal2
 CALL 0

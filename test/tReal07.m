@@ -28,7 +28,7 @@ IMPORT Out STAMP
 IMPORT Math STAMP
 ENDHDR
 
-PROC tReal07.%main 0 5 0
+PROC tReal07.%main 0 6 0
 !   r := Math.pi;
 FCONST 3.14159265359
 STGF tReal07.r

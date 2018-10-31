@@ -18,7 +18,7 @@ MODULE tBigReal07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBigReal07.%main 0 2 0
+PROC tBigReal07.%main 0 3 0
 !   Out.Real(2.0E+32); Out.Ln;
 FCONST 2.0e+32
 GLOBAL Out.Real

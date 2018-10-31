@@ -42,7 +42,7 @@ MODULE tMeth STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMeth.foo.baz 0 3 0x00100001
+PROC tMeth.foo.baz 0 4 0x00100001
 ! PROCEDURE (VAR f: foo) baz; 
 !   Out.String("Hello!"); Out.Ln 
 CONST 7
@@ -65,7 +65,7 @@ CALL 2
 RETURN
 END
 
-PROC tMeth.Main 0 3 0
+PROC tMeth.Main 0 4 0
 ! PROCEDURE Main;
 !   it.doit
 GLOBAL tMeth.foo

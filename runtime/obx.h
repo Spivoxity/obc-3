@@ -46,7 +46,7 @@
 
 typedef union value value;
 
-typedef void primitive(value *sp);
+typedef value *primitive(value *sp);
 
 typedef uint32_t word;
 typedef uintptr_t ptrtype;
@@ -132,17 +132,6 @@ extern struct primdef {
      char *p_name;
      primitive *p_prim;
 } primtab[];
-
-#ifndef M64X32
-EXTERN value _result[2];        /* Procedure result */
-EXTERN value *statlink;		/* Static link for procedure call */
-#else
-EXTERN value *_result;
-EXTERN value **_stat;
-#define statlink (*_stat)
-#endif
-
-#define ob_res _result[0]
 
 EXTERN int level;		/* Recursion level in bytecode interp. */
 #ifdef OBXDEB
@@ -231,7 +220,6 @@ word wrap_prim(primitive *prim);
 
 /* dynlink.c */
 void load_lib(char *fname);
-void dltrap(value *sp);
 
 /* load_file -- load a file of object code */
 void load_file(FILE *bfp);
@@ -243,11 +231,11 @@ void make_symbol(const char *kind, char *name, uchar *addr);
 void panic(const char *, ...);
 void obcopy(char *dst, int dlen, const char *src, int slen, value *bp);
 
-void error_stop(const char *msg, int line, value *bp, uchar *pc);
+void error_stop(const char *msg, int val, int line, value *bp, uchar *pc);
 void runtime_error(int num, int line, value *bp, uchar *pc);
 void rterror(int num, int line, value *bp);
 void stkoflo(value *bp);
-#define liberror(msg) error_stop(msg, 0, bp, NULL)
+#define liberror(msg) error_stop(msg, 0, 0, bp, NULL)
 
 proc find_symbol(value *p, proc *table, int nelem);
 #define find_proc(cp) find_symbol(cp, proctab, nprocs)
@@ -315,7 +303,7 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...);
 /* jit.c */
 #ifdef JIT
 void jit_compile(value *cp);
-void jit_trap(value *cp);
+value *jit_trap(value *cp);
 #endif
 
 #ifdef __cplusplus

@@ -90,6 +90,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tAck.Ack 88 4 0
+FRAME
 ! PROCEDURE Ack(M, N: INTEGER): INTEGER;
 !   arg[0] := 0; val[0] := 1;
 CONST 0
@@ -189,6 +190,7 @@ RETURNW
 END
 
 PROC tAck.Ack2 4 5 0
+FRAME
 ! PROCEDURE Ack2(M, N: INTEGER): INTEGER;
 !   IF memo[M, N] # 0 THEN RETURN memo[M, N] END;
 GLOBAL tAck.memo
@@ -265,7 +267,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tAck.%main 0 4 0
+PROC tAck.%main 0 5 0
 !   Out.Int(Ack(4,1), 0); Out.Ln;
 CONST 0
 CONST 1

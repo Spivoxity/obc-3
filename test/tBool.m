@@ -23,7 +23,7 @@ MODULE tBool STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBool.%main 0 5 0
+PROC tBool.%main 0 6 0
 !   x := 3;
 FCONST 3.0
 STGF tBool.x

@@ -322,7 +322,8 @@ proc make_body {key action argv} {
 
     for {set i 0} {$i < [llength $argv]} {incr i} {
 	set formal [string index "abcd" $i]
-	regsub -all "\\\$$formal" $body [lindex $argv $i] body
+        set actual [lindex $argv $i]
+	regsub -all "\\\$$formal" $body "($actual)" body
     }
 
     regsub -all {\$s} $body "sp" body

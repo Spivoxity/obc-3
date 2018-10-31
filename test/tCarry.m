@@ -37,7 +37,7 @@ QMINUS
 RETURNQ
 END
 
-PROC tCarry.%main 0 4 0
+PROC tCarry.%main 0 5 0
 !   Out.LongInt(X, 0); Out.Ln;
 CONST 0
 QCONST 4294967295

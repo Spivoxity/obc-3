@@ -32,7 +32,7 @@ MODULE tGloWith STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tGloWith.%main 0 3 0
+PROC tGloWith.%main 0 4 0
 !   NEW(b); b.x := 37; a := b;
 CONST 4
 GLOBAL tGloWith.BB

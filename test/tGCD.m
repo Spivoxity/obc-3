@@ -28,7 +28,7 @@ MODULE tGCD STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tGCD.%main 0 3 0
+PROC tGCD.%main 0 4 0
 !   x := 37 * 123; y := 57 * 123;
 CONST 4551
 STGW tGCD.x

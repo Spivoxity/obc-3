@@ -168,11 +168,12 @@ static inline void putlong(value *v, longint x) {
 
 
 /* interp -- main loop of the interpreter */
-void interp(value *sp0) {
+value *interp(value *sp0) {
      register value *cp = valptr(sp0[CP]);
      uchar *pc = pointer(cp[CP_CODE]);
      register uchar *pc0 = NULL;
      register value *sp = sp0;
+     register value *rp = NULL;
      register uchar ir = 0;
 #ifdef PROFILE
      register counter ticks = 0;
@@ -215,7 +216,6 @@ enter:
      bp = sp;								
      sp = (value *) ((uchar *) bp - cp[CP_FRAME].i);			
      if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);		
-     memset(sp, 0, cp[CP_FRAME].i);
 
 #ifdef JTABLE
      NEXT;
@@ -247,6 +247,7 @@ enter:
 	  ACTION(ILLEGAL)
 	  DEFAULT
 	       panic("*illegal instruction %d", ir);
+               return NULL;
 #ifndef JTABLE
 	  }
      }

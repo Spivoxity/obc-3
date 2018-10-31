@@ -25,7 +25,8 @@ MODULE tFlexAss07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFlexAss07.Print 1024 7 0x00100001
+PROC tFlexAss07.Print 1024 8 0x00100001
+FRAME
 ! PROCEDURE Print(s: ARRAY OF CHAR);
 !   a := s;
 CONST 1024
@@ -46,7 +47,7 @@ CALL 0
 RETURN
 END
 
-PROC tFlexAss07.%main 0 3 0
+PROC tFlexAss07.%main 0 4 0
 !   Print("Hello world")
 CONST 12
 GLOBAL tFlexAss07.%1

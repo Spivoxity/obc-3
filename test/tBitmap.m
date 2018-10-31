@@ -27,7 +27,7 @@ MODULE tBitmap STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBitmap.%main 0 5 0
+PROC tBitmap.%main 0 6 0
 !   i := 4; j := 4;
 CONST 4
 STGW tBitmap.i

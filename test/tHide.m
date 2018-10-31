@@ -58,7 +58,7 @@ IMPORT xPrelude STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tHide.spot.one 0 3 0x00100001
+PROC tHide.spot.one 0 4 0x00100001
 ! PROCEDURE (VAR b: spot) one;
 !   Out.String("spot.one"); Out.Ln;
 CONST 9
@@ -74,7 +74,7 @@ STNW 8
 RETURN
 END
 
-PROC tHide.spot.two 0 3 0x00100001
+PROC tHide.spot.two 0 4 0x00100001
 ! PROCEDURE (VAR b: spot) two*;
 !   Out.String("spot.two "); Out.Int(b.x, 0); Out.Ln
 CONST 10
@@ -91,7 +91,7 @@ CALL 0
 RETURN
 END
 
-PROC tHide.%main 0 3 0
+PROC tHide.%main 0 4 0
 !   bb.x := 23;
 CONST 23
 GLOBAL tHide.bb

@@ -28,7 +28,7 @@ MODULE tSuck07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuck07.%main 0 3 0
+PROC tSuck07.%main 0 4 0
 !   b := FALSE;
 CONST 0
 STGC tSuck07.b

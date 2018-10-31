@@ -124,7 +124,8 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tTreeCopy07.NewNode 4 3 0x00010001
+PROC tTreeCopy07.NewNode 4 4 0x00010001
+FRAME
 ! PROCEDURE NewNode(x: INTEGER): Tree;
 !   NEW(p); p.data := x; RETURN p
 CONST 12
@@ -141,6 +142,7 @@ RETURNW
 END
 
 PROC tTreeCopy07.RandTree 4 3 0x00010001
+FRAME
 ! PROCEDURE RandTree(d: INTEGER): Tree;
 !   IF Random.Roll(10) < d THEN
 CONST 10
@@ -182,7 +184,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tTreeCopy07.PrintTree 0 3 0x00100001
+PROC tTreeCopy07.PrintTree 0 4 0x00100001
 ! PROCEDURE PrintTree(t: Tree);
 !   IF t = NIL THEN
 LDLW 12
@@ -215,6 +217,7 @@ RETURN
 END
 
 PROC tTreeCopy07.Copy 8020 4 tTreeCopy07.Copy.%map
+FRAME
 ! PROCEDURE Copy(t: Tree): Tree;
 !   IF t = NIL THEN
 LDLW 12
@@ -363,7 +366,7 @@ LDLW -16
 RETURNW
 END
 
-PROC tTreeCopy07.FlatPrint 0 3 0x00100001
+PROC tTreeCopy07.FlatPrint 0 4 0x00100001
 ! PROCEDURE FlatPrint(t: Tree);
 !   IF t # NIL THEN
 LDLW 12
@@ -391,7 +394,8 @@ LABEL L22
 RETURN
 END
 
-PROC tTreeCopy07.PrintFlat 4 3 0x00110001
+PROC tTreeCopy07.PrintFlat 4 4 0x00110001
+FRAME
 ! PROCEDURE PrintFlat(t: Tree);
 LABEL L23
 !   WHILE t # NIL DO
@@ -441,7 +445,8 @@ LABEL L25
 RETURN
 END
 
-PROC tTreeCopy07.Test 8 2 0x00018001
+PROC tTreeCopy07.Test 8 3 0x00018001
+FRAME
 ! PROCEDURE Test;
 !   t := RandTree(0);
 CONST 0
@@ -480,7 +485,7 @@ CALL 0
 RETURN
 END
 
-PROC tTreeCopy07.%main 0 1 0
+PROC tTreeCopy07.%main 0 2 0
 !   Test
 GLOBAL tTreeCopy07.Test
 CALL 0

@@ -23,14 +23,16 @@ END tAssert.
 MODULE tAssert STAMP 0
 ENDHDR
 
-PROC tAssert.Fail 0 1 0
+PROC tAssert.Fail 0 4 0
 ! PROCEDURE Fail;
 CONST 0
-EASSERT 12
+CONST 12
+GLOBAL EASSERT
+CALL 2
 RETURN
 END
 
-PROC tAssert.%main 0 1 0
+PROC tAssert.%main 0 2 0
 !   Fail
 GLOBAL tAssert.Fail
 CALL 0

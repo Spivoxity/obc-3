@@ -194,6 +194,11 @@ void init_stack(int frame) {
      breg = rBP;
 }
 
+void clear_stack(void) {
+     sp = 0;
+     pdepth = 0;
+}
+
 int count_args(int size) {
      int nargs = 0;
 
@@ -225,9 +230,13 @@ void flex_space(reg nreg) {
      vm_gen(AND, rSP->r_reg, rSP->r_reg, ~0x3);
 }
 
-/* get_sp -- compute value of Oberon stack pointer */
-void get_sp(reg r) {
-     vm_gen(SUB, r->r_reg, breg->r_reg, pdepth-sbase);
+/* stack_depth -- return current stack depth */
+int stack_depth(void) {
+     return sp;
+}
+
+void push_sp(void) {
+     push(V_ADDR, INT, sbase-pdepth, breg, 1);
 }
 
 /* set -- assign to a stack slot */
@@ -382,14 +391,7 @@ void move_to_frame(int i) {
 static mybool transient(ctvalue v) {
      if (v->v_reg != NULL && v->v_reg->r_class != 0) return TRUE;
      if (v->v_reg2 != NULL && v->v_reg2->r_class != 0) return TRUE;
-
-     switch (v->v_op) {
-     case V_MEMW:
-     case V_MEMQ:
-	  return (v->v_val == address(&ob_res));
-     default:
-	  return FALSE;
-     }
+     return FALSE;
 }
 
 /* flush_stack -- flush values into the runtime stack */
@@ -814,9 +816,9 @@ static void move_long(reg rs, int offs, reg rd, int offd) {
      
      if (rs == rd && offs == offd) return;
 
-     rlock(rs); rlock(rd);
+     rfreeze(rs); rfreeze(rd);
      r1 = ralloc(INT); r2 = ralloc_avoid(INT, r1);
-     runlock(rs); runlock(rd);
+     rthaw(rs); rthaw(rd);
      ldst(LDW, r1, rs, offs);
      ldst(LDW, r2, rs, offs+4);
      ldst(STW, r1, rd, offd);
@@ -848,9 +850,6 @@ void move_longval(ctvalue src, reg rd, int offd) {
      case V_KONQ:
 	  move_long(rCP, src->v_val, rd, offd);
 	  break;
-     case V_KONQ:
-          move_long(rCP, src->v_val, rd, offd);
-          break;
      case V_STKQ:
 	  move_long(breg, sbase + src->v_val, rd, offd);
 	  break;

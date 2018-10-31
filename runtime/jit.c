@@ -97,7 +97,8 @@ static vmlabel stack_oflo, retlab;
 #define local(i)  push(V_ADDR, INT, i, rBP, 1)
 
 /* prolog -- generate code for procedure prologue */
-static word prolog(const char *name, int frame, int map) {
+static word prolog(const char *name) {
+     int frame = jit_cxt[CP_FRAME].i;
      vmlabel lab = vm_newlab();
      word entry = vm_begin(name, 1);
      vm_gen(GETARG, rBP->r_reg, 0);
@@ -109,15 +110,22 @@ static word prolog(const char *name, int frame, int map) {
      push_reg(rBP);
      gcall(stkoflo, 1);
      vm_label(lab);
+     return entry;
+}
+
+static void init_frame(mybool local) {
+     int frame = jit_cxt[CP_FRAME].i;
+     int map = jit_cxt[CP_MAP].i;
 
      if (map != 0 && (map & 0x1) == 0) {
           // A complex map -- just clear the frame
 	  vm_gen(SUB, rI0->r_reg, rBP->r_reg, frame);
-          push_con(frame);
+          // If a local procedure, don't overwrite the static link
+          push_con(frame - 4*local);
           push_con(0);
           push_reg(rI0);
 	  gcall(memset, 3);
-     } else if (map != 0) {
+     } else if ((map & (~(-1 << FRAME_SHIFT) << 1)) != 0) {
           // A bitmap -- clear specified words
           map >>= 1;
 	  vm_gen(MOV, rI0->r_reg, 0);
@@ -128,9 +136,9 @@ static word prolog(const char *name, int frame, int map) {
           }
      }
 
-     return entry;
+     killregs();
 }
-
+     
 /* stack_map -- find pointer map for eval stack at procedure call */
 static int stack_map(uchar *pc) {
      value *r = valptr(jit_cxt[CP_STKMAP]);
@@ -144,14 +152,13 @@ static int stack_map(uchar *pc) {
 
 /* callout -- call out-of-line stack operation */
 static void callout(void *op, int nargs, int ty, int size) {
-     reg r;
      flush_stack(0, nargs);
-     killregs();
-     r = ralloc(INT);
-     get_sp(r);
-     push_reg(r);
+     push_sp();
+     reg r = move_to_reg(1, INT);
+     runlock(r);
      gcall(op, 1);
      pop(nargs);
+     killregs();
      push((size == 1 ? V_STKW : V_STKQ), ty, 0, NULL, size);
 }
 
@@ -396,26 +403,35 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
 	count of stack items */
      int nargs = count_args(arg);
 
-     reg r1 = move_to_reg(1, INT); 
-     push_con(stack_map(pc));     /* PC = stack map */
-     push_reg(rBP);               /* BP */
-     reserve(r1);
-     flush_stack(0, nargs+3);
-     killregs();
-     reg r2 = ralloc(INT); rthaw(r1);
-     vm_gen(LDW, r1->r_reg, r1->r_reg, 4*CP_PRIM);
-     get_sp(r2);
-     push_reg(r2);
-     gcallr(r1, 1);
+                                  /* 5: SP */
+     push_con(stack_map(pc));     /* 4: PC = stack map */
+     push_reg(rBP);               /* 3: BP */
+     push_sp();                   /* 2: SP */
+     reg r1 = move_to_reg(4, INT); 
+     push(V_MEMW, INT, 4*CP_PRIM, r1, 1); /* 1: Entry point */
+     runlock(r1);
+     flush_stack(2, nargs+5);
+     reg r2 = move_to_reg(2, INT);
+     reg r3 = move_to_reg(1, INT);
+     pop(1); unlock(1); runlock(r2);
+     gcallr(r3, 1);
      pop(nargs+3);
-     if (ty != 0)
-          push(ldop, ty, address(&ob_res), NULL, size);
-}
-
-/* result -- store procedure result */
-static void result(int ldop, int size) {
-     push_con(address(&ob_res));
-     store(ldop, size);
+     killregs();
+     if (ty != 0) {
+#ifndef FLOATOPS
+          ty = INT;
+#endif
+          push(ldop, ty, 0, rRET, size);
+#ifndef M64X32
+          if (ty == INT && size == 2)
+               move_to_frame(1);
+          else
+#endif
+          {
+               reg r4 = move_to_reg(1, ty);
+               runlock(r4);
+          }
+     }
 }
 
 static void lsl(void) {
@@ -610,23 +626,38 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           killregs();
           break;
 
-     case I_LINK:
-	  push_con(address(&statlink));
-	  store(V_MEMW, 1);
-	  break;
-
-     case I_SAVELINK:
-	  push(V_MEMW, INT, address(&statlink), NULL, 1);
-	  push(V_ADDR, INT, 4*SL, rBP, 1);
-	  store(V_MEMW, 1);
-	  break;
+     case I_FINIT:
+          init_frame(arg1);
+          break;
 
      case I_JPROC:
-	  /* Let the SLIDEs instruction do the work */
+          if (arg1) {
+               //  NOW         LATER
+               //  arg 2       arg 2
+               //  arg 1       arg 1
+               //  proc        proc    A
+               //  statlink    retaddr | HEAD
+               //              dynlink V
+               //              statlink
+               int offset = 8 + 4*(SL - HEAD);
+               push_sp();
+               push_con(offset);
+               add_offset(0);
+               store(V_MEMW, 1);
+          }
 	  break;
 
      case I_RETURN:
+          if (stack_depth() > 0) {
+               move_to_frame(1);
+               push_sp();
+               ctvalue v = peek(1);
+               assert(v->v_op == V_ADDR);
+               vm_gen(SUB, rRET->r_reg, v->v_reg->r_reg, -v->v_val);
+               pop(1);
+          }
           vm_gen(JUMP, retlab);
+          clear_stack();
 	  break;
 
      case I_LNUM:
@@ -851,19 +882,17 @@ void jit_compile(value *cp) {
 #endif
 
      jit_cxt = cp; 
-     int frame = jit_cxt[CP_FRAME].i;
      pcbase = pointer(jit_cxt[CP_CODE]);
      pclimit = pcbase + jit_cxt[CP_SIZE].i;
-     int map = jit_cxt[CP_MAP].i;
 
      init_regs();
      init_labels();
-     init_stack(frame);
+     init_stack(jit_cxt[CP_FRAME].i);
      stack_oflo = vm_newlab();
      retlab = vm_newlab();
 
      map_labels();
-     word entry = prolog(pname, frame, map);
+     word entry = prolog(pname);
      translate();
      do_errors(make_error);
      vm_label(retlab);
@@ -876,10 +905,10 @@ void jit_compile(value *cp) {
 }
 
 /* jit_trap -- translate procedure on first call */
-void jit_trap(value *bp) {
+value *jit_trap(value *bp) {
      value *cp = valptr(bp[CP]);
      jit_compile(cp);
-     primcall(cp, bp);
+     return primcall(cp, bp);
 }
 
 /* jit_proc -- translate a specified procedure */

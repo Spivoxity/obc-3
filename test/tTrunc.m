@@ -28,7 +28,7 @@ MODULE tTrunc STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tTrunc.%main 0 3 0
+PROC tTrunc.%main 0 4 0
 !         x := 32767;
 CONST 32767
 STGS tTrunc.x
@@ -48,7 +48,9 @@ LDGS tTrunc.x
 CONST -32768
 JEQ L2
 CONST 0
-EASSERT 12
+CONST 12
+GLOBAL EASSERT
+CALL 2
 LABEL L2
 ! 	y := 50000; x := SHORT(y);
 CONST 50000

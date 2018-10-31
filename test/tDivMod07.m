@@ -63,7 +63,8 @@ MODULE tDivMod07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDivMod07.Test 20 3 0
+PROC tDivMod07.Test 20 4 0
+FRAME
 ! PROCEDURE Test(b: INTEGER);
 !   FOR a := -10 TO 10 DO
 CONST -10
@@ -182,7 +183,7 @@ LABEL L7
 RETURN
 END
 
-PROC tDivMod07.%main 0 3 0
+PROC tDivMod07.%main 0 4 0
 !   failed := FALSE;
 CONST 0
 STGC tDivMod07.failed

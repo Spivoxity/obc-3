@@ -33,7 +33,7 @@ MODULE tConst STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tConst.Print 0 3 0
+PROC tConst.Print 0 4 0
 ! PROCEDURE Print(s: ARRAY OF CHAR; n: INTEGER);
 LOCAL 12
 LDLW 16
@@ -56,7 +56,7 @@ CALL 0
 RETURN
 END
 
-PROC tConst.%main 0 4 0
+PROC tConst.%main 0 5 0
 !   Print("127", 127);
 CONST 127
 CONST 4

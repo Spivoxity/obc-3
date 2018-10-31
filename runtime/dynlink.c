@@ -108,9 +108,10 @@ static ffi_type *ffi_decode(char c) {
      }
 }
 
-void dlstub(value *bp) {
+value *dlstub(value *bp) {
      value *cp = valptr(bp[CP]);
      char *tstring = (char *) pointer(cp[CP_CODE]);
+     value *sp = bp;
 
      ffi_raw avals[MAXP], rval[2];
      int i, p = 0, q = 0;
@@ -166,30 +167,35 @@ void dlstub(value *bp) {
      case 'C':
      case 'S':
      case 'I':
-          ob_res.i = rval->sint;
+          (*--sp).i = rval->sint;
           break;
      case 'L':
           memcpy(&z, rval, sizeof(longint));
-          put_long(&ob_res, z);
+          sp -= 2;
+          put_long(sp, z);
           break;
      case 'F':
-          ob_res.f = rval->flt;
+          (*--sp).f = rval->flt;
           break;
      case 'D':
           memcpy(&d, rval, sizeof(double));
-          put_double(&ob_res, d);
+          sp -= 2;
+          put_double(sp, d);
           break;
      case 'P':
-          ob_res.a = rval->uint;
+          (*--sp).a = rval->uint;
           break;
      case 'Q':
-          put_long(&ob_res, (ptrtype) rval->ptr);
+          sp -= 2;
+          put_long(sp, (ptrtype) rval->ptr);
           break;
      case 'V':
           break;
      default:
           panic("Bad type 3");
      }
+
+     return sp;
 }
 #endif
 
@@ -215,7 +221,7 @@ primitive *find_prim(char *name) {
 
 #endif
 
-void dltrap(value *bp) {
+value *dltrap(value *bp) {
      value *cp = valptr(bp[CP]);
      char *tstring = (char *) pointer(cp[CP_CODE]);
      char *name = tstring + strlen(tstring) + 1;
@@ -232,8 +238,7 @@ void dltrap(value *bp) {
 
      if (prim != NULL) {
           cp[CP_PRIM].a = wrap_prim(prim);
-          (*prim)(bp);
-          return;
+          return (*prim)(bp);
      }
 
 #ifdef DYNLINK
@@ -256,11 +261,11 @@ void dltrap(value *bp) {
           cp[CP_PRIM].a = dynstub;
           cp[CP_CONST].a = address(w);
 
-          dlstub(bp);
-          return;
+          return dlstub(bp);
      }
 #endif
 #endif
 
      panic("Couldn't find primitive %s", name);
+     return NULL;
 }

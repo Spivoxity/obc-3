@@ -42,7 +42,7 @@ MODULE tCaseRange STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCaseRange.Classify 0 3 0
+PROC tCaseRange.Classify 0 4 0
 ! PROCEDURE Classify(n: INTEGER);
 !   Out.Int(n, 0); Out.String(" is in the ");
 CONST 0
@@ -135,7 +135,7 @@ CALL 0
 RETURN
 END
 
-PROC tCaseRange.%main 0 2 0
+PROC tCaseRange.%main 0 3 0
 !   x := 20;
 CONST 20
 STGW tCaseRange.x

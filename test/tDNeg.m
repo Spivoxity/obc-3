@@ -23,7 +23,7 @@ IMPORT Math STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDNeg.%main 0 3 0
+PROC tDNeg.%main 0 4 0
 !   x := Math.pi;
 DCONST 3.14159265359
 STGD tDNeg.x

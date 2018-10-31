@@ -24,7 +24,7 @@ MODULE tSysVal STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSysVal.%main 0 3 0
+PROC tSysVal.%main 0 4 0
 !   byte := SYSTEM.VAL(SYSTEM.BYTE, 15);
 CONST 15
 STGC tSysVal.byte

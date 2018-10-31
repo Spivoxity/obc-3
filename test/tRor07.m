@@ -36,7 +36,7 @@ MODULE tRor07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRor07.%main 0 3 0
+PROC tRor07.%main 0 4 0
 !   x := 5;
 CONST 5
 STGW tRor07.x

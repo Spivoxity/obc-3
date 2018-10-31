@@ -30,7 +30,7 @@ MODULE tFold STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFold.%main 0 3 0
+PROC tFold.%main 0 4 0
 !   Out.Int(LSR(-1, 16), 0); Out.Ln;
 CONST 0
 CONST 65535

@@ -53,7 +53,8 @@ ASR
 RETURNW
 END
 
-PROC tDiv10.Test 12 3 0
+PROC tDiv10.Test 12 4 0
+FRAME
 ! PROCEDURE Test;
 !   FOR x := 0 TO ASH(1, 12) - 1 DO
 CONST 0
@@ -108,7 +109,7 @@ LABEL L5
 RETURN
 END
 
-PROC tDiv10.%main 0 3 0
+PROC tDiv10.%main 0 4 0
 !   Test;
 GLOBAL tDiv10.Test
 CALL 0

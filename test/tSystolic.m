@@ -408,7 +408,7 @@ IMPORT Out STAMP
 IMPORT Random STAMP
 ENDHDR
 
-PROC tSystolic.PrintVal 0 3 0
+PROC tSystolic.PrintVal 0 4 0
 ! PROCEDURE PrintVal(x: INTEGER);
 !   IF x = INF THEN Out.String("INF") ELSE Out.Int(x, 0) END
 LDLW 12
@@ -427,7 +427,7 @@ CALL 2
 RETURN
 END
 
-PROC tSystolic.Trace 0 3 0
+PROC tSystolic.Trace 0 4 0
 ! PROCEDURE Trace(chid: INTEGER; x: INTEGER);
 !   Out.String("Time "); Out.Int(t, 0); Out.String(": chan");
 CONST 6
@@ -459,7 +459,7 @@ CALL 0
 RETURN
 END
 
-PROC tSystolic.Print 0 3 0
+PROC tSystolic.Print 0 4 0
 ! PROCEDURE Print(x: INTEGER);
 !   Out.String("Time "); Out.Int(t, 0); Out.String(": print ");
 CONST 6
@@ -699,6 +699,7 @@ RETURN
 END
 
 PROC tSystolic.MakeChannel 4 4 0x00010001
+FRAME
 ! PROCEDURE MakeChannel(chid: INTEGER): Channel;
 !   NEW(ch); ch.Init(chid); RETURN ch
 CONST 12
@@ -736,7 +737,8 @@ STNW 8
 RETURN
 END
 
-PROC tSystolic.ChanRec.Eval 4 3 0x00100001
+PROC tSystolic.ChanRec.Eval 4 4 0x00100001
+FRAME
 ! PROCEDURE (self: Channel) Eval;
 !   IF (self.sender # NIL) & (self.receiver # NIL) THEN
 LDLW 12
@@ -795,6 +797,7 @@ RETURN
 END
 
 PROC tSystolic.MakeInjector 4 6 0x00210001
+FRAME
 ! PROCEDURE MakeInjector(pid: INTEGER; right: Channel): Injector;
 !   NEW(p); p.Init(pid, NIL, right); RETURN p
 CONST 36
@@ -916,6 +919,7 @@ RETURN
 END
 
 PROC tSystolic.MakeComparator 4 6 0x00610001
+FRAME
 ! PROCEDURE MakeComparator(pid: INTEGER; left, right: Channel): Comparator;
 !   NEW(p); p.Init(pid, left, right); RETURN p
 CONST 36
@@ -1069,6 +1073,7 @@ RETURN
 END
 
 PROC tSystolic.MakeCollector 4 6 0x00210001
+FRAME
 ! PROCEDURE MakeCollector(pid: INTEGER; left: Channel): Collector;
 !   NEW(p); p.Init(pid, left, NIL); RETURN p
 CONST 32
@@ -1159,7 +1164,8 @@ LABEL L60
 RETURN
 END
 
-PROC tSystolic.Build 4 4 0
+PROC tSystolic.Build 4 5 0
+FRAME
 ! PROCEDURE Build;
 !   FOR i := 0 TO N DO chan[i] := MakeChannel(i) END;
 CONST 0
@@ -1226,6 +1232,7 @@ RETURN
 END
 
 PROC tSystolic.Run 4 3 0
+FRAME
 ! PROCEDURE Run;
 !   t := 0;
 CONST 0
@@ -1285,7 +1292,7 @@ LABEL L74
 RETURN
 END
 
-PROC tSystolic.%main 0 1 0
+PROC tSystolic.%main 0 2 0
 !   Build;
 GLOBAL tSystolic.Build
 CALL 0
