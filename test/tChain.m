@@ -75,7 +75,8 @@ MODULE tChain STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChain.Cons 4 3 0x00210001
+PROC tChain.Cons 4 4 0x00210001
+FRAME
 ! PROCEDURE Cons(hd: INTEGER; tl: list): list;
 !   NEW(p);
 CONST 12
@@ -103,7 +104,8 @@ LDLW -4
 RETURNW
 END
 
-PROC tChain.Test 12 3 0x00004001
+PROC tChain.Test 12 4 0x00004001
+FRAME
 ! PROCEDURE Test;
 !   xs := NIL;
 CONST 0
@@ -185,7 +187,7 @@ END
 
 PRIMDEF tChain.GcDebug gc_debug VX
 
-PROC tChain.%main 0 3 0
+PROC tChain.%main 0 4 0
 !   GcDebug('gs');
 CONST 3
 GLOBAL tChain.%2

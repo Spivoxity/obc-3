@@ -22,7 +22,7 @@ IMPORT Out STAMP
 IMPORT Conv STAMP
 ENDHDR
 
-PROC tPrimVal.%main 0 5 0
+PROC tPrimVal.%main 0 6 0
 !   p := Conv.IntVal;
 GLOBAL Conv.IntVal
 STGW tPrimVal.p

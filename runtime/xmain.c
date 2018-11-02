@@ -168,8 +168,6 @@ static const char *message(int code) {
 	  return "no matching label in CASE statement";
      case E_WITH:
 	  return "no matching type guard in WITH statement";
-     case E_ASSERT:
-	  return "assertion failed (%d)";
      case E_RETURN:
 	  return "function failed to return a result";
      case E_BOUND:
@@ -190,18 +188,18 @@ static const char *message(int code) {
 }
 
 /* error_stop -- runtime error with explicit message text */
-void error_stop(const char *msg, int line, value *bp, uchar *pc) {
+void error_stop(const char *msg, int val, int line, value *bp, uchar *pc) {
      value *cp = valptr(bp[CP]);
 
 #ifdef OBXDEB
      char buf[256];
-     sprintf(buf, msg, ob_res.i);
+     sprintf(buf, msg, val);
      debug_break(cp, bp, pc, "error %d %s", line, buf);
 #else
      module mod = find_module(cp);
 
      fprintf(stderr, "Runtime error: ");
-     fprintf(stderr, msg, ob_res.i);
+     fprintf(stderr, msg, val);
      if (line > 0) fprintf(stderr, " on line %d", line);
      if (mod != NULL && strcmp(mod->m_name, "_Builtin") != 0) 
 	  fprintf(stderr, " in module %s", mod->m_name);
@@ -221,7 +219,7 @@ void error_stop(const char *msg, int line, value *bp, uchar *pc) {
 
 /* runtime_error -- report a runtime error */
 void runtime_error(int m, int line, value *bp, uchar *pc) {
-     error_stop(message(m), line, bp, pc);
+     error_stop(message(m), 0, line, bp, pc);
 }
 
 /* rterror -- simple version of runtime_error for JIT */
@@ -534,12 +532,6 @@ int main(int ac, char *av[]) {
      dynstub = wrap_prim(dlstub);
 #endif
 
-#ifdef M64X32
-     /* Allocate ob_res and statlink in 32-bit addressible storage */
-     _result = (value *) scratch_alloc(2 * sizeof(value));
-     _stat = (value **) scratch_alloc(sizeof(value *));
-#endif
-
      fp = fopen(codefile, "rb");
      if (fp == NULL) panic("can't open %s", codefile);
      load_file(fp);
@@ -577,8 +569,9 @@ int main(int ac, char *av[]) {
 }
 
 #ifdef JIT
-void interp(value *bp) {
+value *interp(value *bp) {
      panic("dummy interp called");
+     return NULL;
 }
 #endif
 

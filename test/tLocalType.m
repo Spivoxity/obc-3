@@ -98,9 +98,9 @@ MODULE tLocalType STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLocalType.%2.Build 8 3 0x00008001
+PROC tLocalType.%2.Build 8 4 0x00008001
+LFRAME
 ! PROCEDURE Build(n: INTEGER): tree;
-SAVELINK
 !   IF n <= 1 THEN
 LDLW 12
 CONST 1
@@ -119,20 +119,18 @@ STLW -8
 LDLW 12
 CONST 2
 MINUS
-LDLW -4
-LINK
 GLOBAL tLocalType.%2.Build
-CALLW 1
+LDLW -4
+LCALLW 1
 LDLW -8
 NCHECK 23
 STOREW
 !     t.right := Build(n-1);
 LDLW 12
 DEC
-LDLW -4
-LINK
 GLOBAL tLocalType.%2.Build
-CALLW 1
+LDLW -4
+LCALLW 1
 LDLW -8
 NCHECK 24
 STNW 4
@@ -141,9 +139,9 @@ LDLW -8
 RETURNW
 END
 
-PROC tLocalType.%3.Print 4 3 0x00100001
+PROC tLocalType.%3.Print 4 4 0x00100001
+LFRAME
 ! PROCEDURE Print(t:tree);
-SAVELINK
 !   IF NIL = t THEN
 LDLW 12
 JNEQZ L12
@@ -163,18 +161,16 @@ CALL 1
 LDLW 12
 NCHECK 35
 LOADW
-LDLW -4
-LINK
 GLOBAL tLocalType.%3.Print
-CALL 1
+LDLW -4
+LCALL 1
 !     Print(t.right);
 LDLW 12
 NCHECK 36
 LDNW 4
-LDLW -4
-LINK
 GLOBAL tLocalType.%3.Print
-CALL 1
+LDLW -4
+LCALL 1
 !     Out.Char(')')
 CONST 41
 ALIGNC
@@ -183,29 +179,28 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType.First 4 2 0x00010001
+PROC tLocalType.First 4 3 0x00010001
+FRAME
 ! PROCEDURE First;
 !   p := Build(7);
 CONST 7
-LOCAL 0
-LINK
 GLOBAL tLocalType.%2.Build
-CALLW 1
+LOCAL 0
+LCALLW 1
 STLW -4
 !   Print(p); Out.Ln();
 LDLW -4
-LOCAL 0
-LINK
 GLOBAL tLocalType.%3.Print
-CALL 1
+LOCAL 0
+LCALL 1
 GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tLocalType.%5.Build 8 3 0x00008001
+PROC tLocalType.%5.Build 8 4 0x00008001
+LFRAME
 ! PROCEDURE Build(n: INTEGER): tree;
-SAVELINK
 !   IF n <= 2 THEN
 LDLW 12
 CONST 2
@@ -224,10 +219,9 @@ STLW -8
 LDLW 12
 CONST 3
 MINUS
-LDLW -4
-LINK
 GLOBAL tLocalType.%5.Build
-CALLW 1
+LDLW -4
+LCALLW 1
 LDLW -8
 NCHECK 61
 STOREW
@@ -235,20 +229,18 @@ STOREW
 LDLW 12
 CONST 2
 MINUS
-LDLW -4
-LINK
 GLOBAL tLocalType.%5.Build
-CALLW 1
+LDLW -4
+LCALLW 1
 LDLW -8
 NCHECK 62
 STNW 4
 !     t.right := Build(n-1);
 LDLW 12
 DEC
-LDLW -4
-LINK
 GLOBAL tLocalType.%5.Build
-CALLW 1
+LDLW -4
+LCALLW 1
 LDLW -8
 NCHECK 63
 STNW 8
@@ -257,9 +249,9 @@ LDLW -8
 RETURNW
 END
 
-PROC tLocalType.%6.Print 4 3 0x00100001
+PROC tLocalType.%6.Print 4 4 0x00100001
+LFRAME
 ! PROCEDURE Print(t:tree);
-SAVELINK
 !   IF NIL = t THEN
 LDLW 12
 JNEQZ L18
@@ -279,26 +271,23 @@ CALL 1
 LDLW 12
 NCHECK 74
 LOADW
-LDLW -4
-LINK
 GLOBAL tLocalType.%6.Print
-CALL 1
+LDLW -4
+LCALL 1
 !     Print(t.mid);
 LDLW 12
 NCHECK 75
 LDNW 4
-LDLW -4
-LINK
 GLOBAL tLocalType.%6.Print
-CALL 1
+LDLW -4
+LCALL 1
 !     Print(t.right);
 LDLW 12
 NCHECK 76
 LDNW 8
-LDLW -4
-LINK
 GLOBAL tLocalType.%6.Print
-CALL 1
+LDLW -4
+LCALL 1
 !     Out.Char(')')
 CONST 41
 ALIGNC
@@ -307,27 +296,26 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType.Second 4 2 0x00010001
+PROC tLocalType.Second 4 3 0x00010001
+FRAME
 ! PROCEDURE Second;
 !   p := Build(7);
 CONST 7
-LOCAL 0
-LINK
 GLOBAL tLocalType.%5.Build
-CALLW 1
+LOCAL 0
+LCALLW 1
 STLW -4
 !   Print(p); Out.Ln();
 LDLW -4
-LOCAL 0
-LINK
 GLOBAL tLocalType.%6.Print
-CALL 1
+LOCAL 0
+LCALL 1
 GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tLocalType.%main 0 1 0
+PROC tLocalType.%main 0 2 0
 !   First;
 GLOBAL tLocalType.First
 CALL 0

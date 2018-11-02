@@ -19,7 +19,7 @@ IMPORT MathL STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPi07.%main 0 3 0
+PROC tPi07.%main 0 4 0
 !   Out.LongReal(MathL.pi); Out.Ln
 DCONST 3.14159265359
 GLOBAL Out.LongReal

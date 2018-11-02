@@ -115,7 +115,7 @@ const vmreg vm_ireg[] = {
 
    Registers 12 and 13 are hard to encode as index registers, so we 
    don't bother with them.  On Windows, rSI and rDI are
-   preserved across calls, so we could have made nvreg = 4; it makes
+   preserved across calls, so we could have made nvreg = 6; it makes
    no difference to the Kieko JIT.  We do, however, respect the
    calling convention by saving those registers in the frame. */
 
@@ -159,7 +159,7 @@ const vmreg vm_ret = &reg_i0, vm_base = &reg_sp;
 /* Floating point registers are labelled with bit 0x10 */
 #define isfloat(r) (((r)&0x10) != 0)
 
-/* DEBUGGING OUTPUT: for consistency with the VM we are implementing,
+/* DEBUGGING OUTPUT: for consistency with the layout of VM code,
    instructions are displayed with the destination at the left: thus
    for a := b - c, we would produce "mov rAX, rBX; sub rAX, rCX".  This is
    different from the AT&T syntax normally used in Unix, and more like
@@ -177,9 +177,7 @@ static char *_regname[] = {
 
 static char **regname = &_regname[1];
 
-#define fmt_addr(rb, imm)  fmt_addrx(rb, imm, NOREG, 0)
-
-static char *fmt_addrx(int rb, int imm, int rx, int s) {
+static char *fmt_addr(int rb, int imm, int rx, int s) {
      static char buf[32], sbuf[32];
 
      if (rb == NOREG && rx == NOREG)
@@ -505,8 +503,8 @@ static void packreg(int reg) {
      check_rex(reg, REX_B);
 }
 
-/* addr -- a (mode, reg, r/m) triple */
-static void addr(int mode, int reg, int rm) {
+/* modrm -- a (mode, reg, r/m) triple */
+static void modrm(int mode, int reg, int rm) {
      byte((mode<<6) | (register(reg)<<3) | register(rm));
      check_rex(reg, REX_R);
      check_rex(rm, REX_B);
@@ -521,10 +519,8 @@ static void sib(int scale, int index, int base) {
 
 #define signed8(x) ((x) >= -128 && (x) < 128)
 
-/* memory operand */
-#define memory(ra, rb, d)  memoryx(ra, rb, d, NOREG, 0)
-
-static void memoryx(int ra, int rb, int d, int rx, int s) {
+/* memory -- memory operand */
+static void memory(int ra, int rb, int d, int rx, int s) {
      /* Encode the register ra and the memory address [rb+d+rx<<s]
 
      Most of the time (with no indexing), we need a (mode, reg, r/m) 
@@ -566,39 +562,40 @@ static void memoryx(int ra, int rb, int d, int rx, int s) {
      if (rb == NOREG && rx == NOREG) {
 	  // Absolute [d], case {F}
 #ifndef M64X32
-	  addr(0, ra, 5), word(d);
+	  modrm(0, ra, 5), word(d);
 #else
           // Use PC-relative addressing
-          addr(0, ra, 5), word((code_addr) (address) d - pc - 4);
-          // Was: addr(0, ra, 4), sib(0, 4, 5), word(d);
+          modrm(0, ra, 5), word((code_addr) (address) d - pc - 4);
+          // Was: modrm(0, ra, 4), sib(0, 4, 5), word(d);
 #endif
      } else if (rb == rSP && rx == NOREG) {
 	  // Special cases to use rSP as base [rSP+d]
 	  if (d == 0)
-	       addr(0, ra, 4), sib(0, 4, rSP); // {E}
+	       modrm(0, ra, 4), sib(0, 4, rSP); // {E}
 	  else if (signed8(d))
-	       addr(1, ra, 4), sib(0, 4, rSP), byte(d); // {H}, untested
+	       modrm(1, ra, 4), sib(0, 4, rSP), byte(d); // {H}, untested
 	  else
-	       SXTOFF, addr(2, ra, 4), sib(0, 4, rSP), word(d); // {K}, untested
+	       SXTOFF, modrm(2, ra, 4),
+                    sib(0, 4, rSP), word(d); // {K}, untested
      } else if (rx == NOREG) {
 	  // Base + Displacement [rb+d]
 	  if (d == 0 && rb != rBP)
-	       addr(0, ra, rb); // {A}
+	       modrm(0, ra, rb); // {A}
 	  else if (signed8(d))
-	       addr(1, ra, rb), byte(d); // {I}
+	       modrm(1, ra, rb), byte(d); // {I}
 	  else
-	       SXTOFF, addr(2, ra, rb), word(d); // {L}
+	       SXTOFF, modrm(2, ra, rb), word(d); // {L}
      } else if (rb == NOREG) {
           // Baseless addressing [d+rx<<s]
-          addr(0, ra, 4), sib(s, rx, 5), word(d); // {C}
+          modrm(0, ra, 4), sib(s, rx, 5), word(d); // {C}
      } else {
           // Scaled addressing [rb+d+rx<<s]
           if (d == 0 && rb != rBP)
-               SXTOFF, addr(0, ra, 4), sib(s, rx, rb); // {B}
+               SXTOFF, modrm(0, ra, 4), sib(s, rx, rb); // {B}
           else if (signed8(d))
-               SXTOFF, addr(1, ra, 4), sib(s, rx, rb), byte(d); // {G}
+               SXTOFF, modrm(1, ra, 4), sib(s, rx, rb), byte(d); // {G}
           else
-               SXTOFF, addr(2, ra, 4), sib(s, rx, rb), word(d); // {J}
+               SXTOFF, modrm(2, ra, 4), sib(s, rx, rb), word(d); // {J}
      }
 }
 
@@ -653,14 +650,14 @@ static void instr_regi32(OPDECL, int r, int imm) {
 /* instr_rr -- opcode plus two registers */
 static void instr_rr(OPDECL, int r1, int r2) {
      vm_debug2("%s %s, %s", mnem, regname[r1], regname[r2]);
-     opcode(op), addr(3, r1, r2);
+     opcode(op), modrm(3, r1, r2);
      vm_done();
 }
 
 /* General form of instr2_r for shifts and floating point ops */
 static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
      vm_debug2(fmt, mnem, regname[r]);
-     opcode(op), addr(3, op2, r);
+     opcode(op), modrm(3, op2, r);
      vm_done();
 }
 
@@ -670,7 +667,7 @@ static void instr2_fmt(ifdebug(char *fmt) OPDECL2, int r) {
 /* instr2_ri8 -- twin opcode plus register and 8-bit immediate */
 static void instr2_ri8(OPDECL2, int rm, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
-     opcode(op), addr(3, op2, rm), byte(imm);
+     opcode(op), modrm(3, op2, rm), byte(imm);
      vm_done();
 }
 
@@ -678,9 +675,9 @@ static void instr2_ri8(OPDECL2, int rm, int imm) {
 static void instr2_ri(OPDECL2, int rm, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[rm], fmt_val(imm));
      if (signed8(imm))
-	  opcode(op), modify(x_byte), addr(3, op2, rm), byte(imm);
+	  opcode(op), modify(x_byte), modrm(3, op2, rm), byte(imm);
      else
-	  opcode(op), addr(3, op2, rm), word(imm);
+	  opcode(op), modrm(3, op2, rm), word(imm);
      vm_done();
 }
 
@@ -688,31 +685,25 @@ static void instr2_ri(OPDECL2, int rm, int imm) {
 static void instr_rri(OPDECL, int reg, int rm, int imm) {
      vm_debug2("%s %s, %s, #%s", mnem, regname[reg], regname[rm], fmt_val(imm));
      if (signed8(imm))
-	  opcode(op), modify(x_byte), addr(3, reg, rm), byte(imm);
+	  opcode(op), modify(x_byte), modrm(3, reg, rm), byte(imm);
      else
-	  opcode(op), addr(3, reg, rm), word(imm);
+	  opcode(op), modrm(3, reg, rm), word(imm);
      vm_done();
 }
 
-/* instr_rm -- register and memory operand */
-static void instr_rmx(OPDECL, int rt, int rs, int imm, int rx, int s) {
-     vm_debug2("%s %s, %s", mnem, regname[rt], fmt_addrx(rs, imm, rx, s));
-     opcode(op), memoryx(rt, rs, imm, rx, s);
+/* instr_rm -- register and memory operand with indexing */
+static void instr_rm(OPDECL, int rt, int rs, int imm, int rx, int s) {
+     vm_debug2("%s %s, %s", mnem, regname[rt], fmt_addr(rs, imm, rx, s));
+     opcode(op), memory(rt, rs, imm, rx, s);
      vm_done();
 }
 
-/* instr_rm -- register and memory operand */
-#define instr_rm(op, rt, rs, imm)  instr_rmx(op, rt, rs, imm, NOREG, 0)
-
-/* instr_stx -- store with indexing */
-static void instr_stx(OPDECL, int rt, int rb, int imm, int ri, int s) {
-     vm_debug2("%s %s, %s", mnem, fmt_addrx(rb, imm, ri, s), regname[rt]);
-     opcode(op), memoryx(rt, rb, imm, ri, s);
+/* instr_st -- store with indexing */
+static void instr_st(OPDECL, int rt, int rb, int imm, int ri, int s) {
+     vm_debug2("%s %s, %s", mnem, fmt_addr(rb, imm, ri, s), regname[rt]);
+     opcode(op), memory(rt, rb, imm, ri, s);
      vm_done();
 }
-
-/* instr_st -- alternate form of instr_rm for store instruction */
-#define instr_st(op, rt, rs, imm)  instr_stx(op, rt, rs, imm, NOREG, 0)
 
 /* instr_tgt -- opcode plus branch target */
 static void instr_tgt(OPDECL, code_addr tgt) {
@@ -747,7 +738,7 @@ static void instr_abs(OPDECL, int rd, vmlabel lab) {
 static void instr_rel(OPDECL, int rd, vmlabel lab) {
      code_addr r;
      vm_debug2("%s %s, #%s", mnem, regname[rd], fmt_lab(lab));
-     opcode(op), addr(0, rd, 5), r = pc, word(0);
+     opcode(op), modrm(0, rd, 5), r = pc, word(0);
      vm_branch(BRANCH, r, lab);
      vm_done();
 }
@@ -757,41 +748,41 @@ static void instr_rel(OPDECL, int rd, vmlabel lab) {
 /* instr_sr -- opcode plus two registers, swapped */
 static void instr_sr(OPDECL, int r1, int r2) {
      vm_debug2("%s %s, %s", mnem, regname[r2], regname[r1]);
-     opcode(op), addr(3, r1, r2);
+     opcode(op), modrm(3, r1, r2);
      vm_done();
 }
-#else
-/* instr_mx -- floating point load or store */
-static void instr_mx(OPDECL2, int rs, int imm, int rx, int s) {
-     vm_debug2("%s %s", mnem, fmt_addrx(rs, imm, rx, s));
-     opcode(op), memoryx(op2, rs, imm, rx, s);
-     vm_done();
-}
+#endif
 
-#define instr_m(op, rs, imm)  instr_mx(op, rs, imm, NOREG, 0)
+#ifndef USE_SSE
+/* instr_fpm -- floating point load or store */
+static void instr_fpm(OPDECL2, int rs, int imm, int rx, int s) {
+     vm_debug2("%s %s", mnem, fmt_addr(rs, imm, rx, s));
+     opcode(op), memory(op2, rs, imm, rx, s);
+     vm_done();
+}
 #endif
 
 
 /* SPECIFIC INSTRUCTIONS */
 
-#define add_i(rd, imm)	instr2_ri(ALUOP_i(opADD), rd, imm)
-#define sub_i(rd, imm)	instr2_ri(ALUOP_i(opSUB), rd, imm)
+#define add_i(rd, imm)	  instr2_ri(ALUOP_i(opADD), rd, imm)
+#define sub_i(rd, imm)	  instr2_ri(ALUOP_i(opSUB), rd, imm)
 #define add64_i(rd, imm)  instr2_ri(ALUOP64_i(opADD), rd, imm)
 #define sub64_i(rd, imm)  instr2_ri(ALUOP64_i(opSUB), rd, imm)
 
-#define push_r(r)	instr_reg(opPUSH_r, r)
-#define push_i(imm)	instr_imm(opPUSH_i, imm)
-#define pop(r)		instr_reg(opPOP, r)
-#define fld_r(r) 	instr_reg(opFLD_r, r)
-#define fst_r(r) 	instr_reg(opFST_r, r)
-#define fstp_r(r) 	instr_reg(opFSTP_r, r)
+#define push_r(r)	  instr_reg(opPUSH_r, r)
+#define push_i(imm)	  instr_imm(opPUSH_i, imm)
+#define pop(r)		  instr_reg(opPOP, r)
+#define fld_r(r) 	  instr_reg(opFLD_r, r)
+#define fst_r(r) 	  instr_reg(opFST_r, r)
+#define fstp_r(r) 	  instr_reg(opFSTP_r, r)
 
 #ifndef M64X32
-#define inc_r(r)  instr_reg(opINC_r, r)
-#define dec_r(r)  instr_reg(opDEC_r, r)
+#define inc_r(r)          instr_reg(opINC_r, r)
+#define dec_r(r)          instr_reg(opDEC_r, r)
 #else
-#define inc_r(r)  instr2_r(opINC_m, r)
-#define dec_r(r)  instr2_r(opDEC_m, r)
+#define inc_r(r)  	  instr2_r(opINC_m, r)
+#define dec_r(r)          instr2_r(opDEC_m, r)
 #endif
 
 /* shift instruction with one operand in CL */
@@ -815,7 +806,7 @@ static void move_r(OPDECL, int rd, int rs) {
           instr_rr(OP, rd, rs);
 }
 
-#define move(rd, rs)  move_r(opMOVL_r, rd, rs)
+#define move(rd, rs)    move_r(opMOVL_r, rd, rs)
 #define move64(rd, rs)  move_r(REXW_(opMOVL_r), rd, rs)
 
 /* Load constant */
@@ -830,7 +821,7 @@ static void move_i(int rd, int imm) {
 #define swap(r1, r2) instr_rr(opXCHG, r1, r2)
 
 /* Load word */
-#define load(rd, rs, off)  instr_rm(opMOVL_r, rd, rs, off)
+#define load(rd, rs, off)  instr_rm(opMOVL_r, rd, rs, off, NOREG, 0)
 
 /* shift instructions (3 registers) */
 static void shift3_r(OPDECL, int rd, int rs1, int rs2) {
@@ -861,20 +852,18 @@ static void shift3_i(OPDECL, int rd, int rs, int imm) {
 }
 
 /* store character from any register */
-#define storec(rt, rs, imm)  storecx(rt, rs, imm, NOREG, 0)
-
-static void storecx(int rt, int rb, int imm, int rx, int s) {
+static void storec(int rt, int rb, int imm, int rx, int s) {
      if (is8bit(rt))
-          instr_stx(opMOVB_m, rt, rb, imm, rx, s);
+          instr_st(opMOVB_m, rt, rb, imm, rx, s);
      else {
 #ifdef M64X32
-          instr_stx(REX_(opMOVB_m), rt, rb, imm, rx, s);
+          instr_st(REX_(opMOVB_m), rt, rb, imm, rx, s);
 #else
 	  int rz = ( (rb != rAX && rx != rAX) ? rAX :
-                     (rb != rDX && rx != rDX) ? rDX : rCX);
+                     (rb != rDX && rx != rDX) ? rDX : rCX );
 	  push_r(rz); move(rz, rt);
           if (rb == rSP) imm += 4; // Compensate for push
-	  instr_stx(opMOVB_m, rz, rb, imm, rx, s);
+	  instr_st(opMOVB_m, rz, rb, imm, rx, s);
 	  pop(rz);
 #endif
      }
@@ -886,8 +875,10 @@ static void gmonop(OPDECL2, OPDECL_(move), int rd, int rs) {
      instr2_r(OP2, rd);
 }
 
-#define monop(op, rd, rs)  gmonop(op, opMOVL_r, rd, rs)
-#define neg64(rd, rs)  gmonop(MONOP64(opNEG), REXW_(opMOVL_r), rd, rs)
+#define monop(op, rd, rs) \
+     gmonop(op, opMOVL_r, rd, rs)
+#define neg64(rd, rs) \
+     gmonop(MONOP64(opNEG), REXW_(opMOVL_r), rd, rs)
 
 /* commutative ALU operation (3 register operands) */
 static void gcommute(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
@@ -899,8 +890,10 @@ static void gcommute(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
      }
 }
 
-#define commute(op, rd, rs1, rs2) gcommute(op, opMOVL_r, rd, rs1, rs2)
-#define commute64(op, rd, rs1, rs2) gcommute(op, REXW_(opMOVL_r), rd, rs1, rs2)
+#define commute(op, rd, rs1, rs2) \
+     gcommute(op, opMOVL_r, rd, rs1, rs2)
+#define commute64(op, rd, rs1, rs2) \
+     gcommute(op, REXW_(opMOVL_r), rd, rs1, rs2)
 
 /* subtract (3 registers) */
 static void gsubtract(OPDECL, OPDECL2_(neg), OPDECL_(move),
@@ -937,8 +930,11 @@ static void gcomp_i(OPDECL2_(cmp), OPDECL_(test), int rs, int imm) {
 	  instr2_ri(OP2_(cmp), rs, imm);
 }
 
-#define comp_i(rs, imm) gcomp_i(ALUOP_i(opCMP), opTEST, rs, imm)
-#define comp64_i(rs, imm) gcomp_i(ALUOP64_i(opCMP), opTESTq, rs, imm)
+/* Integer compare */
+#define comp_i(rs, imm) \
+     gcomp_i(ALUOP_i(opCMP), opTEST, rs, imm)
+#define comp64_i(rs, imm) \
+     gcomp_i(ALUOP64_i(opCMP), opTESTq, rs, imm)
 
 /* Conditional branch, register + immediate */
 #define branch_i(op, rs, imm, lab) \
@@ -963,7 +959,8 @@ static void setcc_r(OPDECL2, int rd) {
      }
 }
 
-void setcc_EandNP(int r) {
+/* setcc_equal -- boolean result if equal and not NaN */
+void setcc_equal(int r) {
      vmlabel lab1 = vm_newlab();
      setcc_r(SETCC(opE), r);
      instr_lab(CONDJ(opNP), lab1);
@@ -971,14 +968,16 @@ void setcc_EandNP(int r) {
      vm_label(lab1);
 }
 
-void jump_EandNP(vmlabel lab) {
+/* jump_equal -- jump if equal and not NaN */
+void jump_equal(vmlabel lab) {
      vmlabel lab1 = vm_newlab();
      instr_lab(CONDJ(opP), lab1);
      instr_lab(CONDJ(opE), lab);
      vm_label(lab1);
 }
 
-void setcc_NEorP(int r) {
+/* setcc_not_equal -- boolean result if not equal or NaN */
+void setcc_not_equal(int r) {
      vmlabel lab1 = vm_newlab();
      setcc_r(SETCC(opNE), r);
      instr_lab(CONDJ(opNP), lab1);
@@ -986,7 +985,8 @@ void setcc_NEorP(int r) {
      vm_label(lab1);
 }
 
-void jump_NEorP(vmlabel lab) {
+/* jump_not_equal -- jump if not equal or NaN */
+void jump_not_equal(vmlabel lab) {
      instr_lab(CONDJ(opP), lab);
      instr_lab(CONDJ(opNE), lab);
 }     
@@ -1009,8 +1009,8 @@ void jump_NEorP(vmlabel lab) {
 #ifdef USE_SSE
 #define if387(x)
 
-#define fmove_s(rd, rs) move_r(opMOVSS_r, rd, rs)
-#define fmove_d(rd, rs) move_r(opMOVSD_r, rd, rs)
+#define fmove_s(rd, rs)  move_r(opMOVSS_r, rd, rs)
+#define fmove_d(rd, rs)  move_r(opMOVSD_r, rd, rs)
      
 static void fneg_s(int rd, int rs) {
      static code_addr mask;
@@ -1026,7 +1026,7 @@ static void fneg_s(int rd, int rs) {
      }
 
      fmove_s(rd, rs);
-     instr_rm(opXORPS, rd, NOREG, (int) (ptr) mask);
+     instr_rm(opXORPS, rd, NOREG, (int) (ptr) mask, NOREG, 0);
 }
 
 static void fneg_d(int rd, int rs) {
@@ -1043,7 +1043,7 @@ static void fneg_d(int rd, int rs) {
      }
 
      fmove_d(rd, rs);
-     instr_rm(opXORPD, rd, NOREG, (int) (ptr) mask);
+     instr_rm(opXORPD, rd, NOREG, (int) (ptr) mask, NOREG, 0);
 }
 
 static void flop3(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
@@ -1081,18 +1081,18 @@ static void flop3c(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
 #define fcomp_s(rs1, rs2)  instr_rr(opUCOMISS, rs1, rs2)
 #define fcomp_d(rs1, rs2)  instr_rr(opUCOMISD, rs1, rs2)
 
-#define floadx_s(rt, rb, imm, rx, s)             \
-     instr_rmx(opMOVSS_r, rt, rb, imm, rx, s)
-#define floadx_d(rt, rb, imm, rx, s)             \
-     instr_rmx(opMOVSD_r, rt, rb, imm, rx, s)
-#define fstorex_s(rt, rb, imm, rx, s)            \
-     instr_stx(opMOVSS_m, rt, rb, imm, rx, s)
-#define fstorex_d(rt, rb, imm, rx, s)            \
-     instr_stx(opMOVSD_m, rt, rb, imm, rx, s)
+#define fload_s(rt, rb, imm, rx, s)             \
+     instr_rm(opMOVSS_r, rt, rb, imm, rx, s)
+#define fload_d(rt, rb, imm, rx, s)             \
+     instr_rm(opMOVSD_r, rt, rb, imm, rx, s)
+#define fstore_s(rt, rb, imm, rx, s)            \
+     instr_st(opMOVSS_m, rt, rb, imm, rx, s)
+#define fstore_d(rt, rb, imm, rx, s)            \
+     instr_st(opMOVSD_m, rt, rb, imm, rx, s)
 
-#define fmove_to_s(rd, rs)  instr_rr(opMOVD_r, rd, rs)
+#define fmove_to_s(rd, rs)    instr_rr(opMOVD_r, rd, rs)
 #define fmove_from_s(rd, rs)  instr_sr(opMOVD_m, rs, rd)
-#define fmove_to_d(rd, rs)  instr_rr(opMOVQ_r, rd, rs)
+#define fmove_to_d(rd, rs)    instr_rr(opMOVQ_r, rd, rs)
 #define fmove_from_d(rd, rs)  instr_sr(opMOVQ_m, rs, rd)
 
 #else
@@ -1180,38 +1180,35 @@ static void flop3(OPDECL, OPDECL_(r), int rd, int rs1, int rs2) {
 
 /* Load float or double from memory */
 #define loadf(op, rt, rb, imm, rx, s) \
-     instr_mx(op, rb, imm, rx, s), fstp_r(rt+1)
-#define floadx_s(rt, rb, imm, rx, s)  loadf(opFLDS_m, rt, rb, imm, rx, s)
-#define floadx_d(rt, rb, imm, rx, s)  loadf(opFLDL_m, rt, rb, imm, rx, s)
+     instr_fpm(op, rb, imm, rx, s), fstp_r(rt+1)
+#define fload_s(rt, rb, imm, rx, s)  loadf(opFLDS_m, rt, rb, imm, rx, s)
+#define fload_d(rt, rb, imm, rx, s)  loadf(opFLDL_m, rt, rb, imm, rx, s)
 
 /* Store float or double to memory */
 static void storef(OPDECL2, OPDECL2_(p),
                    int rt, int rb, int imm, int rx, int s) {
      if (rt == rF0)
-	  instr_mx(OP2, rb, imm, rx, s);
+	  instr_fpm(OP2, rb, imm, rx, s);
      else {
 	  fld_r(rt); 
-	  instr_mx(OP2_(p), rb, imm, rx, s); 
+	  instr_fpm(OP2_(p), rb, imm, rx, s); 
      }
 }
 
-#define fstorex_s(rt, rb, imm, rx, s) \
+#define fstore_s(rt, rb, imm, rx, s) \
      storef(opFSTS_m, opFSTPS_m, rt, rb, imm, rx, s)
-#define fstorex_d(rt, rb, imm, rx, s) \
+#define fstore_d(rt, rb, imm, rx, s) \
      storef(opFSTL_m, opFSTPL_m, rt, rb, imm, rx, s)
 
-#define fzero(rd) 	      instr(opFLDZ), fstp_r(rd+1)
-#define ftruncs(rt, rs, imm)  fld_r(rt), instr_m(opFISTTPS_m, rs, imm)
-
-#define fmove_to_s(rd, rs) \
-     push_r(rs), fload_s(rd, rSP, 0), pop(rs)
+#define fmove_to_s(rd, rs)                      \
+     push_r(rs), fload_s(rd, rSP, 0, NOREG, 0), pop(rs)
 #define fmove_from_s(rd, rs) \
      /* Make a stack slot, then overwrite it. */ \
-     push_r(rd), fstore_s(rs, rSP, 0), pop(rd)
+     push_r(rd), fstore_s(rs, rSP, 0, NOREG, 0), pop(rd)
 #define fmove_to_d(rd, rs) \
-     push_r(rs), fload_d(rd, rSP, 0), pop(rs)
+     push_r(rs), fload_d(rd, rSP, 0, NOREG, 0), pop(rs)
 #define fmove_from_d(rd, rs) \
-     push_r(rd), fstore_d(rs, rSP, 0), pop(rd)
+     push_r(rd), fstore_d(rs, rSP, 0, NOREG, 0), pop(rd)
 
 
 /* Floating point comparison, setting integer flags */
@@ -1236,11 +1233,6 @@ static void fcomp_d(int rs1, int rs2) {
      fcomp_s(rs1, rs2), setcc_r(op, rd)
 #define fcompare_d(op, rd, rs1, rs2) \
      fcomp_d(rs1, rs2), setcc_r(op, rd)
-
-#define fload_s(rt, rs, imm)  floadx_s(rt, rs, imm, NOREG, 0)
-#define fload_d(rt, rs, imm)  floadx_d(rt, rs, imm, NOREG, 0)
-#define fstore_s(rt, rs, imm)  fstorex_s(rt, rs, imm, NOREG, 0)
-#define fstore_d(rt, rs, imm)  fstorex_d(rt, rs, imm, NOREG, 0)
 
 
 /* STACK FRAMES */
@@ -1515,15 +1507,13 @@ void vm_gen1r(operation op, vmreg rega) {
           
 #ifdef USE_SSE
      case ZEROf:
-          instr_rr(opXORPS, ra, ra);
-          break;
+          instr_rr(opXORPS, ra, ra); break;
      case ZEROd:
-          instr_rr(opXORPD, ra, ra);
-          break;
+          instr_rr(opXORPD, ra, ra); break;
 #else
      case ZEROf:
      case ZEROd:
-	  fzero(ra); break;
+          instr(opFLDZ); fstp_r(ra+1); break;
 #endif
 
      default:
@@ -1567,8 +1557,7 @@ void vm_gen1j(operation op, vmlabel lab) {
      }
 }
 
-static void vm_load_store(operation op, int ra, int rb, int c);
-static void vm_load_storex(operation op, int ra, int rb, int rc, int s);
+static void vm_load_store(operation op, int ra, int rb, int c, int rx, int s);
 
 void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
      int ra = rega->vr_reg, rb = regb->vr_reg;
@@ -1653,14 +1642,16 @@ void vm_gen2rr(operation op, vmreg rega, vmreg regb) {
           break;
      case CONVfi:
      case CONVdi:
-          push_r(ra); ftruncs(rb, rSP, 0); pop(ra); break;
+          push_r(ra); fld_r(rb);
+          instr_fpm(opFISTTPS_m, rSP, 0, NOREG, 0); pop(ra);
+          break;
      case CONVfd:
      case CONVdf:
           fmove_d(ra, rb); break;
 #endif
 
      default:
-          vm_load_store(op, ra, rb, 0);
+          vm_load_store(op, ra, rb, 0, NOREG, 0);
      }
 }
 
@@ -1690,7 +1681,7 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
           break;
 
      default:
-          vm_load_store(op, ra, NOREG, b);
+          vm_load_store(op, ra, NOREG, b, NOREG, 0);
      }
 }
 
@@ -1806,10 +1797,10 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 
      case EQd:
      if387(case EQf:)
-          fcomp_d(rb, rc); setcc_EandNP(ra); break;
+          fcomp_d(rb, rc); setcc_equal(ra); break;
      case NEd:
      if387(case NEf:)
-          fcomp_d(rb, rc); setcc_NEorP(ra); break;
+          fcomp_d(rb, rc); setcc_not_equal(ra); break;
      case GEd:
      if387(case GEf:)
 	  fcompare_d(SETCC(opAE), ra, rb, rc); break;
@@ -1825,9 +1816,9 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
           
 #ifdef USE_SSE
      case EQf:
-          fcomp_s(rb, rc); setcc_EandNP(ra); break;
+          fcomp_s(rb, rc); setcc_equal(ra); break;
      case NEf:
-          fcomp_s(rb, rc); setcc_NEorP(ra); break;
+          fcomp_s(rb, rc); setcc_not_equal(ra); break;
      case GEf:
 	  fcompare_s(SETCC(opAE), ra, rb, rc); break;
      case GTf:
@@ -1848,7 +1839,7 @@ void vm_gen3rrr(operation op, vmreg rega, vmreg regb, vmreg regc) {
 #endif
            
      default:
-          vm_load_storex(op, ra, rb, rc, 0);
+          vm_load_store(op, ra, rb, 0, rc, 0);
      }
 }
 
@@ -1860,62 +1851,63 @@ void vm_gen4rrrs(operation op, vmreg rega, vmreg regb, vmreg regc, int s) {
      
      switch (op) {
      case ADD:
-          instr_rmx(opLEA, ra, rb, 0, rc, s);
+          instr_rm(opLEA, ra, rb, 0, rc, s);
           break;
 
      default:
-          vm_load_storex(op, ra, rb, rc, s);
+          vm_load_store(op, ra, rb, 0, rc, s);
      }
 }
 
-static void vm_load_storex(operation op, int ra, int rb, int rc, int s) {
+static void vm_load_store(operation op, int ra,
+                           int rb, int c, int rx, int s) {
      switch(op) {
      case LDW:
 	  if (isfloat(ra)) 
-               floadx_s(ra, rb, 0, rc, s);
+               fload_s(ra, rb, c, rx, s);
           else 
-               instr_rmx(opMOVL_r, ra, rb, 0, rc, s);
+               instr_rm(opMOVL_r, ra, rb, c, rx, s);
 	  break;
      case LDSu: 
-          instr_rmx(opMOVZWL_r, ra, rb, 0, rc, s); break;
+          instr_rm(opMOVZWL_r, ra, rb, c, rx, s); break;
      case LDBu: 
-	  instr_rmx(opMOVZBL_r, ra, rb, 0, rc, s); break;
+	  instr_rm(opMOVZBL_r, ra, rb, c, rx, s); break;
      case LDS:
-	  instr_rmx(opMOVSWL_r, ra, rb, 0, rc, s); break;
+	  instr_rm(opMOVSWL_r, ra, rb, c, rx, s); break;
      case LDB:
-          instr_rmx(opMOVSBL_r, ra, rb, 0, rc, s); break;
+          instr_rm(opMOVSBL_r, ra, rb, c, rx, s); break;
      case STW: 
 	  if (isfloat(ra)) 
-               fstorex_s(ra, rb, 0, rc, s); 
+               fstore_s(ra, rb, c, rx, s); 
           else 
-               instr_stx(opMOVL_m, ra, rb, 0, rc, s);
+               instr_st(opMOVL_m, ra, rb, c, rx, s);
 	  break;
      case STS: 
-          instr_stx(opMOVW_m, ra, rb, 0, rc, s); break;
+          instr_st(opMOVW_m, ra, rb, c, rx, s); break;
      case STB: 
-	  storecx(ra, rb, 0, rc, s); break;
+	  storec(ra, rb, c, rx, s); break;
 
 #ifndef M64X32
      case LDQ: 
           assert(isfloat(ra));
-          floadx_d(ra, rb, 0, rc, s);
+          fload_d(ra, rb, c, rx, s);
           break;
      case STQ:    
           assert(isfloat(ra));
-          fstorex_d(ra, rb, 0, rc, s);
+          fstore_d(ra, rb, c, rx, s);
           break;
 #else
      case LDQ: 
           if (isfloat(ra))
-               floadx_d(ra, rb, 0, rc, s);
+               fload_d(ra, rb, c, rx, s);
           else
-               instr_rmx(REXW_(opMOVL_r), ra, rb, 0, rc, s);
+               instr_rm(REXW_(opMOVL_r), ra, rb, c, rx, s);
           break;
      case STQ:    
           if (isfloat(ra))
-               fstorex_d(ra, rb, 0, rc, s);
+               fstore_d(ra, rb, c, rx, s);
           else
-               instr_stx(REXW_(opMOVL_m), ra, rb, 0, rc, s);
+               instr_st(REXW_(opMOVL_m), ra, rb, c, rx, s);
           break;
 #endif
 
@@ -2017,63 +2009,7 @@ void vm_gen3rri(operation op, vmreg rega, vmreg regb, int c) {
 #endif
 
      default:
-          vm_load_store(op, ra, rb, c);
-     }
-}
-
-static void vm_load_store(operation op, int ra, int rb, int c) {
-     switch (op) {
-     case LDW:
-	  if (isfloat(ra)) 
-               fload_s(ra, rb, c); 
-          else 
-               load(ra, rb, c); 
-	  break;
-     case LDSu: 
-          instr_rm(opMOVZWL_r, ra, rb, c); break;
-     case LDBu: 
-	  instr_rm(opMOVZBL_r, ra, rb, c); break;
-     case LDS:
-	  instr_rm(opMOVSWL_r, ra, rb, c); break;
-     case LDB:
-          instr_rm(opMOVSBL_r, ra, rb, c); break;
-     case STW: 
-	  if (isfloat(ra)) 
-               fstore_s(ra, rb, c); 
-          else 
-               instr_st(opMOVL_m, ra, rb, c);
-	  break;
-     case STS: 
-          instr_st(opMOVW_m, ra, rb, c); break;
-     case STB: 
-	  storec(ra, rb, c); break;
-
-#ifndef M64X32
-     case LDQ: 
-          assert(isfloat(ra));
-          fload_d(ra, rb, c);
-          break;
-     case STQ:    
-          assert(isfloat(ra));
-          fstore_d(ra, rb, c);
-          break;
-#else
-     case LDQ: 
-          if (isfloat(ra))
-               fload_d(ra, rb, c);
-          else
-               instr_rm(REXW_(opMOVL_r), ra, rb, c);
-          break;
-     case STQ:    
-          if (isfloat(ra))
-               fstore_d(ra, rb, c);
-          else
-               instr_st(REXW_(opMOVL_m), ra, rb, c);
-          break;
-#endif
-
-     default:
-	  badop();
+          vm_load_store(op, ra, rb, c, NOREG, 0);
      }
 }
 
@@ -2120,10 +2056,10 @@ void vm_gen3rrj(operation op, vmreg rega, vmreg regb, vmlabel lab) {
 	  branch64_r(CONDJ(opNE), ra, rb, lab); break;
 #endif
 
-     /* Care is needed with floating point comparisons to
-        ensure the correct treatment of NaN values. */
+/* Care is needed with floating point comparisons to
+   ensure the correct treatment of NaN values.  The P bit
+   indicates whether values were unordered in a comparison.
 
-/*
 Result of UCOMI
 	<	=	>	Unord
 ZCP     010     100     000     111     O = S = 0
@@ -2144,11 +2080,11 @@ BNGE    T       F       F       T       JB
 
      case BEQd:
      if387(case BEQf:)
-          fcomp_d(ra, rb); jump_EandNP(lab); break;
+          fcomp_d(ra, rb); jump_equal(lab); break;
           break;
      case BNEd:
      if387(case BNEf:)
-          fcomp_d(ra, rb); jump_NEorP(lab); break;
+          fcomp_d(ra, rb); jump_not_equal(lab); break;
      case BGEd:
      if387(case BGEf:)
 	  fbranch_d(CONDJ(opAE), ra, rb, lab); break;
@@ -2176,9 +2112,9 @@ BNGE    T       F       F       T       JB
 
 #ifdef USE_SSE
      case BEQf:
-          fcomp_s(ra, rb); jump_EandNP(lab); break;
+          fcomp_s(ra, rb); jump_equal(lab); break;
      case BNEf:
-          fcomp_s(ra, rb); jump_NEorP(lab); break;
+          fcomp_s(ra, rb); jump_not_equal(lab); break;
      case BGEf:
 	  fbranch_s(CONDJ(opAE), ra, rb, lab); break;
      case BGTf:

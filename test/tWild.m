@@ -82,6 +82,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tWild.SegLen 4 3 0x00100001
+FRAME
 ! PROCEDURE SegLen(VAR patt: ARRAY OF CHAR; i: INTEGER): INTEGER;
 !   k := 0;
 CONST 0
@@ -182,7 +183,8 @@ INCL 32
 JUMP L14
 END
 
-PROC tWild.Match 12 7 0
+PROC tWild.Match 12 8 0
+FRAME
 ! PROCEDURE Match(patt, text: ARRAY OF CHAR): BOOLEAN;
 LOCAL 12
 LDLW 16
@@ -270,7 +272,8 @@ CONST 1
 RETURNW
 END
 
-PROC tWild.Test 4 5 0
+PROC tWild.Test 4 6 0
+FRAME
 ! PROCEDURE Test(patt, text: ARRAY OF CHAR; exp: BOOLEAN);
 LOCAL 12
 LDLW 16
@@ -337,7 +340,7 @@ CALL 0
 RETURN
 END
 
-PROC tWild.%main 0 6 0
+PROC tWild.%main 0 7 0
 !   Test("foo", "foo", TRUE);
 CONST 1
 ALIGNC

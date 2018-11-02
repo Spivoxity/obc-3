@@ -39,7 +39,8 @@ MODULE tKleinert STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tKleinert.Generate 8 5 0
+PROC tKleinert.Generate 8 6 0
+FRAME
 ! PROCEDURE Generate(iA: ARRAY OF INTEGER);
 LOCAL 12
 LDLW 16
@@ -87,7 +88,7 @@ STLW -8
 RETURN
 END
 
-PROC tKleinert.%main 0 3 0
+PROC tKleinert.%main 0 4 0
 !   Generate(tstArr);
 CONST 4
 GLOBAL tKleinert.tstArr

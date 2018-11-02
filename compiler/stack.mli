@@ -18,7 +18,7 @@ val reset : unit -> unit
 val mark : unit -> unit
 
 (* make_map -- make a pointer map before calling a routine with N params *)
-val make_map : int -> Gcmap.gcmap
+val make_map : int -> int -> Gcmap.gcmap
 
 (* max_depth -- find max stack depth for procedure *)
 val max_depth : unit -> int

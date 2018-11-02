@@ -38,15 +38,14 @@ let arity =
     | LOAD k -> (1, flags k)
     | CHECK (NullPtr, _) -> (1, [t])
     | ALIGN _ -> (1, [f])
-    | BOUND _ | EASSERT _ -> (1, [])
+    | BOUND _ -> (1, [])
     | POP n -> (n, [])
     | STORE k -> (count k + 1, [])
     | FLEXCOPY -> (2, []) | FIXCOPY -> (3, [])
     | RETURN k -> (count k, [])
     | LINE _ -> (0, [])
-    | CALL (n, k) -> (n+1, flags k) 
-    | (CHECK (GlobProc, _) | LINK) -> (1, [])
-    | SAVELINK -> (0, [])
+    | LCALL (n, k) -> (n+2, flags k) 
+    | CHECK (GlobProc, _) -> (1, [])
     | MONOP (k, _) -> (count k, flags k)
     | CHECK (DivZero k, _) -> (count k, flags k)
     | BINOP (k, (Eq|Lt|Gt|Leq|Geq|Neq)) -> (2 * count k, [f])
@@ -73,9 +72,8 @@ let simulate i =
 	let x = nth_stack !stk 0  and y = nth_stack !stk 1 in
 	stk := push_stack y (push_stack x (pop_stack 2 !stk))
     | LABEL lab ->
-	(* This assumes that a label immediately following an unconditional 
-	   branch has an empty stack if it is not the target of some other 
-	   forward branch. *)
+	(* This assumes that a label has an empty stack if it is
+           not the target of some forward branch. *)
 	stk := (try Hashtbl.find labstate lab with Not_found -> [])
     | _ -> 
         let (k, xs) = arity i in
@@ -103,9 +101,9 @@ When make_map is called, the n parameters (maybe including a static
 link) and the code address of the callee are on the simulated stack;
 so we drop n+1 stack items before computing the map. *)
 
-let make_map n =
+let make_map k n =
   let h p m = join (if p then ptr_map else null_map) (shift 4 m) in
-  shift (4*n) (List.fold_right h (pop_stack (n+1) !stk) null_map)
+  shift (4*n) (List.fold_right h (pop_stack (n+k) !stk) null_map)
 
 let max_depth () = !maxd
 

@@ -34,7 +34,7 @@ MODULE tPParam07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPParam07.r 0 3 0
+PROC tPParam07.r 0 4 0
 ! PROCEDURE r;
 !   Out.String("R"); Out.Ln
 CONST 2
@@ -46,7 +46,7 @@ CALL 0
 RETURN
 END
 
-PROC tPParam07.s 0 3 0
+PROC tPParam07.s 0 4 0
 ! PROCEDURE s;
 !   Out.String("S"); Out.Ln
 CONST 2
@@ -61,20 +61,19 @@ END
 PROC tPParam07.p 0 3 0
 ! PROCEDURE p(q: PROCEDURE);
 !   q := s;
-GLOBAL tPParam07.s
-STLW 12
 CONST 0
 STLW 16
+GLOBAL tPParam07.s
+STLW 12
 !   q
-LDLW 16
-LINK
 LDLW 12
 NCHECK 18
-CALL 0
+LDLW 16
+LCALL 0
 RETURN
 END
 
-PROC tPParam07.%main 0 3 0
+PROC tPParam07.%main 0 4 0
 !   p(r)
 CONST 0
 GLOBAL tPParam07.r

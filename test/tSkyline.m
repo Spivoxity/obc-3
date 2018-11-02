@@ -127,6 +127,7 @@ RETURNW
 END
 
 PROC tSkyline.MinPos 8 4 0x00100001
+FRAME
 ! PROCEDURE MinPos(VAR a: ARRAY OF INTEGER; i, j: INTEGER): INTEGER;
 !   m := i; k := i+1;
 LDLW 20
@@ -163,7 +164,8 @@ LDLW -8
 RETURNW
 END
 
-PROC tSkyline.Best1 4 6 0x00100001
+PROC tSkyline.Best1 4 7 0x00100001
+FRAME
 ! PROCEDURE Best1(VAR h: ARRAY OF INTEGER; i, j: INTEGER): INTEGER;
 !   IF i = j THEN
 LDLW 20
@@ -212,6 +214,7 @@ RETURNW
 END
 
 PROC tSkyline.Best2 24 6 0x00100801
+FRAME
 ! PROCEDURE Best2(VAR h: ARRAY OF INTEGER): INTEGER;
 !   n := LEN(h);
 LDLW 16
@@ -331,7 +334,8 @@ LDLW -12
 RETURNW
 END
 
-PROC tSkyline.Test1 28 6 0
+PROC tSkyline.Test1 28 7 0
+FRAME
 ! PROCEDURE Test1;
 !   a[0] := 2; a[1] := 1; a[2] := 4; a[3] := 5;
 CONST 2
@@ -374,7 +378,8 @@ CALL 0
 RETURN
 END
 
-PROC tSkyline.Test2 12 6 0x00010001
+PROC tSkyline.Test2 12 7 0x00010001
+FRAME
 ! PROCEDURE Test2(n: INTEGER);
 !   NEW(a, n);
 LDLW 12
@@ -441,7 +446,7 @@ CALL 0
 RETURN
 END
 
-PROC tSkyline.%main 0 2 0
+PROC tSkyline.%main 0 3 0
 !   Test1;
 GLOBAL tSkyline.Test1
 CALL 0

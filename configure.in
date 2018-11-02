@@ -267,29 +267,33 @@ fi
 
 # Option jit
 CODEPAGE=16384
+FLOATOPS=1
 AC_ARG_ENABLE(jit,
   AS_HELP_STRING([--disable-jit], [disable JIT translator]))
 if test "$enable_jit" != no; then
   case $host in
     i?86-*) 
       ENABLE_JIT=1; VM=vm386.o
-      AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive])
-      AC_DEFINE(FLOATOPS, 1, [Whether to use thunder for floating point]);;
+      AC_DEFINE(NEED_FPINIT, 1, [Reboot FPU for each primitive]);;
     x86_64-*) 
-      ENABLE_JIT=1; VM=vm386.o
-      AC_DEFINE(FLOATOPS, 1);;
+      ENABLE_JIT=1; VM=vm386.o;;
     armv6l-*|armv7l-*|arm-*)
       ENABLE_JIT=1; VM=vmpi.o; CODEPAGE=4096
-      AC_DEFINE(USE_FLUSH, 1, [Whether to flush the cache])
-      AC_DEFINE(FLOATOPS, 1);;
+      AC_DEFINE(USE_FLUSH, 1, [Whether to flush the cache]);;
     mipsel-*)
-      ENABLE_JIT=1; VM=vmomega.o
+      ENABLE_JIT=1; VM=vmomega.o; FLOATOPS=0
       AC_DEFINE(USE_FLUSH, 1);;
   esac
 fi
+AC_ARG_ENABLE(floatops,
+  AS_HELP_STRING([--disable-floatops], [disable JIT for floating point]))
+if test "$enable_floatops" = no; then FLOATOPS=0; fi
 AC_SUBST(VM)
 AC_SUBST(ENABLE_JIT)
 AC_DEFINE_UNQUOTED([CODEPAGE], $CODEPAGE, [Size of block for JIT code])
+if test $FLOATOPS = 1; then
+  AC_DEFINE(FLOATOPS, 1, [Whether to use thunder for floating point])
+fi
 
 # Option debugger
 AC_ARG_ENABLE(debugger,

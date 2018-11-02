@@ -382,7 +382,7 @@ MODULE tSudoku STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSudoku.PrintCol 0 3 0x00100001
+PROC tSudoku.PrintCol 0 4 0x00100001
 ! PROCEDURE PrintCol(c: Column);
 !   Out.Char(c.name); Out.Int(c.x, 0); Out.Int(c.y, 0)
 LDLW 12
@@ -406,7 +406,8 @@ CALL 2
 RETURN
 END
 
-PROC tSudoku.PrintRow 8 3 0x00110001
+PROC tSudoku.PrintRow 8 4 0x00110001
+FRAME
 ! PROCEDURE PrintRow(p: Cell);
 !   q := p;
 LDLW 12
@@ -488,7 +489,8 @@ CALL 0
 RETURN
 END
 
-PROC tSudoku.ColumnLink 4 3 0x00310001
+PROC tSudoku.ColumnLink 4 4 0x00310001
+FRAME
 ! PROCEDURE ColumnLink(r: Column; VAR p: Cell);
 !   NEW(q);
 CONST 20
@@ -587,6 +589,7 @@ RETURN
 END
 
 PROC tSudoku.MakeArray 20 5 0x00104001
+FRAME
 ! PROCEDURE MakeArray(VAR a: ARRAY OF ARRAY OF Column; 
 !   FOR i := 0 TO m-1 DO
 LDLW 28
@@ -709,6 +712,7 @@ RETURN
 END
 
 PROC tSudoku.MakeMove 4 5 0x00010001
+FRAME
 ! PROCEDURE MakeMove(i, j, k: INTEGER);
 !   p := NIL;
 CONST 0
@@ -803,7 +807,8 @@ STIW
 RETURN
 END
 
-PROC tSudoku.MakePuzzle 12 7 0
+PROC tSudoku.MakePuzzle 12 8 0
+FRAME
 ! PROCEDURE MakePuzzle;
 !   NEW(root);
 CONST 32
@@ -903,6 +908,7 @@ RETURN
 END
 
 PROC tSudoku.Cover 8 3 0x00118001
+FRAME
 ! PROCEDURE Cover(p: Column);
 !   p.covered := TRUE;
 CONST 1
@@ -995,6 +1001,7 @@ RETURN
 END
 
 PROC tSudoku.Uncover 8 3 0x00118001
+FRAME
 ! PROCEDURE Uncover(p: Column);
 !   p.prev.next := p; p.next.prev := p;
 LDLW 12
@@ -1079,6 +1086,7 @@ RETURN
 END
 
 PROC tSudoku.ChooseColumn 8 3 0x00018001
+FRAME
 ! PROCEDURE ChooseColumn(): Column;
 !   col := root.next;
 LDGW tSudoku.root
@@ -1119,6 +1127,7 @@ RETURNW
 END
 
 PROC tSudoku.PrintState 104 5 0x00002001
+FRAME
 ! PROCEDURE PrintState(level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -1256,6 +1265,7 @@ RETURN
 END
 
 PROC tSudoku.Solve 12 4 0x0001c001
+FRAME
 ! PROCEDURE Solve(level: INTEGER);
 !   IF root.next = root THEN
 LDGW tSudoku.root
@@ -1386,6 +1396,7 @@ RETURN
 END
 
 PROC tSudoku.ChooseRow 4 4 0x00310001
+FRAME
 ! PROCEDURE ChooseRow(VAR level: INTEGER; p: Cell);
 !   choice[level] := p; INC(level);
 LDLW 16
@@ -1444,6 +1455,7 @@ RETURN
 END
 
 PROC tSudoku.Input 16 4 0x00100001
+FRAME
 ! PROCEDURE Input(VAR level: INTEGER);
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -1520,7 +1532,7 @@ LABEL L79
 RETURN
 END
 
-PROC tSudoku.%main 0 2 0
+PROC tSudoku.%main 0 3 0
 !   MakePuzzle;
 GLOBAL tSudoku.MakePuzzle
 CALL 0

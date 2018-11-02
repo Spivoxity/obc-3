@@ -88,7 +88,8 @@ MODULE tSort STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSort.FindMin 8 3 0x00118001
+PROC tSort.FindMin 8 4 0x00118001
+FRAME
 ! PROCEDURE FindMin(xs: List): List;
 !   p := xs.next;
 LDLW 12
@@ -100,7 +101,9 @@ LDLW -4
 LDLW 12
 JNEQ L2
 CONST 0
-EASSERT 18
+CONST 18
+GLOBAL EASSERT
+CALL 2
 LABEL L2
 !   q := p.next;
 LDLW -4
@@ -135,7 +138,8 @@ LDLW -4
 RETURNW
 END
 
-PROC tSort.Sort 4 3 0x00310001
+PROC tSort.Sort 4 4 0x00310001
+FRAME
 ! PROCEDURE Sort(xs: List; VAR ys: List);
 !   NEW(ys);
 CONST 12
@@ -217,7 +221,8 @@ LABEL L11
 RETURN
 END
 
-PROC tSort.Append 4 3 0x00110001
+PROC tSort.Append 4 4 0x00110001
+FRAME
 ! PROCEDURE Append(xs: List; d: INTEGER);
 !   NEW(p); p.data := d;
 CONST 12
@@ -254,7 +259,8 @@ STNW 4
 RETURN
 END
 
-PROC tSort.Test 20 3 0x00007001
+PROC tSort.Test 20 4 0x00007001
+FRAME
 ! PROCEDURE Test;
 !   NEW(xs);
 CONST 12
@@ -340,7 +346,7 @@ CALL 0
 RETURN
 END
 
-PROC tSort.%main 0 1 0
+PROC tSort.%main 0 2 0
 !   Test 
 GLOBAL tSort.Test
 CALL 0

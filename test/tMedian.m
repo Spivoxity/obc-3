@@ -120,6 +120,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tMedian.Deal 8 4 0x00600001
+FRAME
 ! PROCEDURE Deal(n: INTEGER; VAR a, b: array);
 !   j := 0; k := 0;
 CONST 0
@@ -190,6 +191,7 @@ RETURNW
 END
 
 PROC tMedian.Median 16 4 0x00600001
+FRAME
 ! PROCEDURE Median(n: INTEGER; VAR a, b: array): INTEGER;
 !   j := 0; k := 0; m := n;
 CONST 0
@@ -258,7 +260,8 @@ CALLW 2
 RETURNW
 END
 
-PROC tMedian.%main 8 5 0
+PROC tMedian.%main 8 6 0
+FRAME
 !   FOR n := 1 TO 20 DO
 CONST 1
 STGW tMedian.n

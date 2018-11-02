@@ -22,7 +22,7 @@ MODULE tComp07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tComp07.%main 0 3 0
+PROC tComp07.%main 0 4 0
 !   x := FLT(3); y := FLT(4);
 FCONST 3.0
 STGF tComp07.x

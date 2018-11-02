@@ -52,9 +52,8 @@ type icode =
   | POP of int			(* Pop value (count) *)
   | SWAP			(* Swap top two values on stack *)
   | STKMAP of symbol		(* Stack map for call point *)
-  | CALL of int * kind		(* Proc call (pcount, result size) *)
-  | LINK			(* Pass static link *)
-  | SAVELINK			(* Save static link in frame *)
+  | LCALL of int * kind		(* Proc call (pcount, result size) *)
+  | CALL of int * kind		(* Global call (pcount, result size) *)
   | RETURN of kind		(* Return from procedure (rsize) *)
   | MONOP of kind * op		(* Unary operation (type, op) *)
   | BINOP of kind * op		(* Binary operation *)
@@ -64,7 +63,6 @@ type icode =
   | BOUND of int		(* Array bound check (line) *)
   | CHECK of check * int	(* Runtime check (kind, line) *)
   | ERROR of symbol * int	(* Runtime error (kind, line) *)
-  | EASSERT of int		(* Assertion failed (line) *)
   | JUMP of codelab		(* Unconditional branch (dest) *)
   | JUMPC of kind * op * codelab  (* Conditional branch *)
   | JUMPN of kind * op * codelab  (* Negated condx branch *)
@@ -171,9 +169,8 @@ let fInst =
     | SWAP ->		fStr "SWAP"
     | POP n ->		fMeta "POP $" [fNum n]
     | STKMAP x ->	fMeta "STKMAP $" [fSym x]
+    | LCALL (n, s) ->	fMeta "LCALL$ $" [fKind s; fNum n]
     | CALL (n, s) ->	fMeta "CALL$ $" [fKind s; fNum n]
-    | LINK ->		fStr "LINK"
-    | SAVELINK ->	fStr "SAVELINK"
     | RETURN s -> 	fMeta "RETURN$" [fKind s]
     | MONOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
     | BINOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
@@ -188,7 +185,6 @@ let fInst =
     | CHECK (DivZero t, ln) ->	
 			fMeta "$ZCHECK $" [fType t; fNum ln]
     | ERROR (k, ln) ->	fMeta "ERROR $ $" [fSym k; fNum ln]
-    | EASSERT ln ->     fMeta "EASSERT $" [fNum ln]
     | JUMP lab ->	fMeta "JUMP $" [fLab lab]
     | JUMPC (t, w, lab) ->	
 	fMeta "$J$ $" [fType t; fOpcode w; fLab lab]

@@ -90,7 +90,8 @@ MODULE tFibTree07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFibTree07.Build 4 3 0x00010001
+PROC tFibTree07.Build 4 4 0x00010001
+FRAME
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -133,7 +134,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tFibTree07.Print 0 2 0x00100001
+PROC tFibTree07.Print 0 3 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
 LDLW 12
@@ -170,7 +171,8 @@ CALL 1
 RETURN
 END
 
-PROC tFibTree07.count 4 3 0x00100001
+PROC tFibTree07.count 4 4 0x00100001
+FRAME
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
@@ -199,7 +201,7 @@ LDLW -4
 RETURNW
 END
 
-PROC tFibTree07.%main 0 3 0
+PROC tFibTree07.%main 0 4 0
 !   FOR i := 0 TO 7 DO
 CONST 0
 STGW tFibTree07.i

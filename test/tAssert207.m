@@ -20,7 +20,7 @@ In procedure tAssert207.%main
 MODULE tAssert207 STAMP 0
 ENDHDR
 
-PROC tAssert207.%main 0 2 0
+PROC tAssert207.%main 0 4 0
 !   x := 3;
 CONST 3
 STGW tAssert207.x
@@ -29,7 +29,9 @@ LDGW tAssert207.x
 CONST 2
 JEQ L2
 CONST 999
-EASSERT 7
+CONST 7
+GLOBAL EASSERT
+CALL 2
 LABEL L2
 RETURN
 END

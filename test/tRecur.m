@@ -49,6 +49,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tRecur.Recip 8028 4 0
+FRAME
 ! PROCEDURE Recip(N: INTEGER);
 !   FOR i := 0 TO N-1 DO p[i] := -1 END;
 LDLW 12
@@ -189,7 +190,7 @@ CALL 0
 RETURN
 END
 
-PROC tRecur.%main 0 2 0
+PROC tRecur.%main 0 3 0
 !   Recip(2);
 CONST 2
 GLOBAL tRecur.Recip

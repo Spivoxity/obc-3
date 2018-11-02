@@ -28,7 +28,7 @@ MODULE tDblArg STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDblArg.f 0 3 0
+PROC tDblArg.f 0 4 0
 ! PROCEDURE f(b: BOOLEAN; x: LONGREAL); 
 !   IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x) END; 
 LDLC 12
@@ -49,7 +49,7 @@ CALL 0
 RETURN
 END
 
-PROC tDblArg.%main 0 4 0
+PROC tDblArg.%main 0 5 0
 !   p := 3; q := 2;
 CONST 3
 STGW tDblArg.p

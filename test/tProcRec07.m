@@ -35,7 +35,7 @@ MODULE tProcRec07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tProcRec07.Clear 0 3 0
+PROC tProcRec07.Clear 0 4 0
 ! PROCEDURE Clear; 
 !   Out.String("Clear"); Out.Ln
 CONST 6
@@ -47,7 +47,7 @@ CALL 0
 RETURN
 END
 
-PROC tProcRec07.%main 0 3 0
+PROC tProcRec07.%main 0 4 0
 !   NEW(noqueue);
 CONST 8
 GLOBAL tProcRec07.QueueRec

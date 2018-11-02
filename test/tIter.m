@@ -102,7 +102,8 @@ MODULE tIter STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tIter.MakeList 12 3 0x0000c001
+PROC tIter.MakeList 12 4 0x0000c001
+FRAME
 ! PROCEDURE MakeList(s: ARRAY OF CHAR): List;
 LOCAL 12
 LDLW 16
@@ -152,6 +153,7 @@ RETURNW
 END
 
 PROC tIter.Accept 4 4 0x00310001
+FRAME
 ! PROCEDURE Accept(p: List; v: Visitor);
 !   q := p;
 LDLW 12
@@ -179,6 +181,7 @@ RETURN
 END
 
 PROC tIter.CVisit 4 4 0x00110001
+FRAME
 ! PROCEDURE CVisit(self0: Visitor; n: INTEGER);
 !   self := self0(Counter); (* Type cast!!! *)
 LDLW 12
@@ -211,7 +214,8 @@ STNW 4
 RETURN
 END
 
-PROC tIter.Length 4 3 0x00110001
+PROC tIter.Length 4 4 0x00110001
+FRAME
 ! PROCEDURE Length(p: List): INTEGER;
 !   NEW(c); c.visit := CVisit; c.count := 0;
 CONST 8
@@ -240,6 +244,7 @@ RETURNW
 END
 
 PROC tIter.RVisit 8 4 0x00118001
+FRAME
 ! PROCEDURE RVisit(self0: Visitor; n: INTEGER);
 !   self := self0(Reverser); (* Type cast!!! *)
 LDLW 12
@@ -284,7 +289,8 @@ STNW 4
 RETURN
 END
 
-PROC tIter.Reverse 4 3 0x00110001
+PROC tIter.Reverse 4 4 0x00110001
+FRAME
 ! PROCEDURE Reverse(p: List): List;
 !   NEW(r); r.visit := RVisit; r.list := NIL;
 CONST 8
@@ -312,7 +318,7 @@ LDNW 4
 RETURNW
 END
 
-PROC tIter.PVisit 0 3 0x00100001
+PROC tIter.PVisit 0 4 0x00100001
 ! PROCEDURE PVisit(self: Visitor; n: INTEGER);
 !   Out.Int(n, 0)
 CONST 0
@@ -322,7 +328,8 @@ CALL 2
 RETURN
 END
 
-PROC tIter.Print 4 3 0x00110001
+PROC tIter.Print 4 4 0x00110001
+FRAME
 ! PROCEDURE Print(p: List);
 !   NEW(v); v.visit := PVisit;
 CONST 4
@@ -342,7 +349,8 @@ CALL 2
 RETURN
 END
 
-PROC tIter.Main 4 3 0x00010001
+PROC tIter.Main 4 4 0x00010001
+FRAME
 ! PROCEDURE Main;
 !   p := MakeList("31415926");
 CONST 9
@@ -370,7 +378,7 @@ CALL 0
 RETURN
 END
 
-PROC tIter.%main 0 1 0
+PROC tIter.%main 0 2 0
 !   Main
 GLOBAL tIter.Main
 CALL 0

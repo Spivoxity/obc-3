@@ -42,7 +42,7 @@ DTIMES
 RETURND
 END
 
-PROC tLong.%main 0 5 0
+PROC tLong.%main 0 6 0
 !   x := 3.0;
 DCONST 3.0
 STGD tLong.x

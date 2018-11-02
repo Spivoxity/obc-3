@@ -25,7 +25,7 @@ MODULE tSuper3 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuper3.b.f 0 3 0x00100001
+PROC tSuper3.b.f 0 4 0x00100001
 ! PROCEDURE (p: a) f; BEGIN Out.String("foo"); Out.Ln END f;
 CONST 4
 GLOBAL tSuper3.%1
@@ -36,7 +36,7 @@ CALL 0
 RETURN
 END
 
-PROC tSuper3.%main 0 3 0
+PROC tSuper3.%main 0 4 0
 !   NEW(p); p.f^ 
 CONST 0
 GLOBAL tSuper3.d

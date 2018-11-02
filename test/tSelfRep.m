@@ -12,7 +12,7 @@ MODULE tSelfRep STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSelfRep.%main 0 3 0
+PROC tSelfRep.%main 0 4 0
 ! MODULE tSelfRep; IMPORT Out; CONST x = "MODULE tSelfRep; IMPORT Out; CONST x = "; y = "; BEGIN Out.String(x); Out.Char(22X); Out.String(x); Out.Char(22X); Out.String('; y = '); Out.Char(22X); Out.String(y); Out.Char(22X); Out.String(y); Out.Ln END tSelfRep."; BEGIN Out.String(x); Out.Char(22X); Out.String(x); Out.Char(22X); Out.String('; y = '); Out.Char(22X); Out.String(y); Out.Char(22X); Out.String(y); Out.Ln END tSelfRep.
 CONST 40
 GLOBAL tSelfRep.%1

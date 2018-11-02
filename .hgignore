@@ -233,7 +233,6 @@ thunder/Makefile
 runtime/jitrules.c
 mipstest/obx-mips
 mipstest/regress
-oniontest
 thunder/fact
 mipstest/obxj-mips
 mipstest/mgrep
@@ -242,8 +241,4 @@ mipstest/code
 mipstest/data
 mipstest/out
 mipstest/out.0
-mipstest/a.out
-mipstest/code
-mipstest/data
-mipstest/out
-mipstest/out.0
+lib/_Builtin.tmp

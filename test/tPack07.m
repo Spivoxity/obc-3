@@ -37,7 +37,7 @@ MODULE tPack07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPack07.%main 0 3 0
+PROC tPack07.%main 0 4 0
 !   x := 256.0 * 1.61803;
 FCONST 414.21568
 STGF tPack07.x

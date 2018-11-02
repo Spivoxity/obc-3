@@ -43,12 +43,12 @@ RETURN
 END
 
 PROC tLocProc.%1.R 4 0 0
+LFRAME
 !   PROCEDURE R; END R;
-SAVELINK
 RETURN
 END
 
-PROC tLocProc.Q 0 3 0
+PROC tLocProc.Q 0 4 0
 ! PROCEDURE Q;
 !   A(R)
 LOCAL 0
@@ -58,7 +58,7 @@ CALL 2
 RETURN
 END
 
-PROC tLocProc.%main 0 1 0
+PROC tLocProc.%main 0 2 0
 !   Q
 GLOBAL tLocProc.Q
 CALL 0

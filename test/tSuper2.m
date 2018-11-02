@@ -49,7 +49,7 @@ IMPORT xPrelude STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuper2.r1.Foo 0 3 0x00100001
+PROC tSuper2.r1.Foo 0 4 0x00100001
 ! PROCEDURE (VAR x: r1) Foo; 
 ! BEGIN Out.String("r1.Foo"); Out.Ln END Foo;
 CONST 7
@@ -61,7 +61,7 @@ CALL 0
 RETURN
 END
 
-PROC tSuper2.r3.Foo 0 3 0x00100001
+PROC tSuper2.r3.Foo 0 4 0x00100001
 ! PROCEDURE (VAR x: r3) Foo; 
 ! BEGIN x.Foo^; Out.String("r3.Foo"); Out.Ln END Foo;
 LDLW 16
@@ -77,7 +77,7 @@ CALL 0
 RETURN
 END
 
-PROC tSuper2.s3.Foo 0 3 0x00100001
+PROC tSuper2.s3.Foo 0 4 0x00100001
 ! PROCEDURE (VAR x: s3) Foo*; 
 ! BEGIN x.Foo^; Out.String("s3.Foo"); Out.Ln END Foo;
 LDLW 16
@@ -98,7 +98,7 @@ PROC tSuper2.s3.Baz 0 0 0x00100001
 RETURN
 END
 
-PROC tSuper2.%main 0 3 0
+PROC tSuper2.%main 0 4 0
 !   x.Foo^; 
 GLOBAL tSuper2.r3
 GLOBAL tSuper2.x

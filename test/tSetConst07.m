@@ -27,7 +27,7 @@ MODULE tSetConst07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSetConst07.%main 0 3 0
+PROC tSetConst07.%main 0 4 0
 !         Out.String("True");
 CONST 5
 GLOBAL tSetConst07.%1

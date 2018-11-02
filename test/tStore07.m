@@ -98,6 +98,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tStore07.Find 12 6 0x00100001
+FRAME
 ! PROCEDURE Find(s: string): INTEGER;
 !   a := -1; b := N;
 CONST -1
@@ -147,6 +148,7 @@ RETURNW
 END
 
 PROC tStore07.Store 8 6 0x00100001
+FRAME
 ! PROCEDURE Store(s: string; v: INTEGER);
 !   i := Find(s);
 LDLW 12
@@ -249,6 +251,7 @@ RETURN
 END
 
 PROC tStore07.Recall 8 6 0x00100001
+FRAME
 ! PROCEDURE Recall(s: string): INTEGER;
 !   i := Find(s);
 LDLW 12
@@ -293,6 +296,7 @@ RETURNW
 END
 
 PROC tStore07.Test 8 4 0
+FRAME
 ! PROCEDURE Test;
 !   Out.Int(Recall("mike"), 5); Out.Int(Recall("abel"), 5); Out.Ln;
 CONST 5
@@ -414,7 +418,7 @@ LABEL L26
 RETURN
 END
 
-PROC tStore07.%main 0 1 0
+PROC tStore07.%main 0 2 0
 !   Test
 GLOBAL tStore07.Test
 CALL 0

@@ -25,7 +25,7 @@ MODULE tWithErr STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tWithErr.%main 0 3 0
+PROC tWithErr.%main 0 4 0
 !   NEW(p0);
 CONST 0
 GLOBAL tWithErr.r0

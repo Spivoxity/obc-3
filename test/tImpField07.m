@@ -19,7 +19,7 @@ IMPORT xTypes07 STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tImpField07.%main 0 3 0
+PROC tImpField07.%main 0 4 0
 !   s.x := 3;
 CONST 3
 GLOBAL tImpField07.s

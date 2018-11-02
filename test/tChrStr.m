@@ -42,7 +42,8 @@ MODULE tChrStr STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChrStr.p 4 3 0
+PROC tChrStr.p 4 4 0
+FRAME
 ! PROCEDURE p(u: q);
 LOCAL -2
 LDLW 12
@@ -56,7 +57,7 @@ CALL 2
 RETURN
 END
 
-PROC tChrStr.%main 0 5 0
+PROC tChrStr.%main 0 6 0
 !   s := 'x';
 CONST 2
 GLOBAL tChrStr.s

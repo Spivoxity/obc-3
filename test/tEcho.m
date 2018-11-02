@@ -33,7 +33,8 @@ IMPORT Args STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tEcho.Echo 12 5 0x00008001
+PROC tEcho.Echo 12 6 0x00008001
+FRAME
 ! PROCEDURE Echo(n: INTEGER);
 !   NEW(s, n);
 LDLW 12
@@ -91,7 +92,7 @@ CALL 0
 RETURN
 END
 
-PROC tEcho.%main 0 2 0
+PROC tEcho.%main 0 3 0
 !   Echo(20);
 CONST 20
 GLOBAL tEcho.Echo

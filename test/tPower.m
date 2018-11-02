@@ -147,7 +147,7 @@ MODULE tPower STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPower.var 0 3 0
+PROC tPower.var 0 4 0
 ! PROCEDURE var(n : INTEGER);
 !   Out.String("x"); IF n # 1 THEN Out.Int(n,0) END
 CONST 2
@@ -165,7 +165,7 @@ LABEL L10
 RETURN
 END
 
-PROC tPower.assign 0 3 0
+PROC tPower.assign 0 4 0
 ! PROCEDURE assign(a, b, c : INTEGER);
 !   var(a); Out.String(":="); var(b); Out.String("*"); var(c); Out.String("; ")
 LDLW 12
@@ -192,7 +192,7 @@ CALL 2
 RETURN
 END
 
-PROC tPower.power 0 4 0
+PROC tPower.power 0 5 0
 ! PROCEDURE power(n : INTEGER);
 !   IF n # 1 THEN
 LDLW 12
@@ -238,8 +238,8 @@ RETURN
 END
 
 PROC tPower.%5.add 8 4 0x03008001
+LFRAME
 !   PROCEDURE add(newset : SET; newcost, i, j : INTEGER; left, right: setofset);
-SAVELINK
 !     IF newcost <= cost THEN
 LDLW 16
 LDLW -4
@@ -343,8 +343,8 @@ RETURN
 END
 
 PROC tPower.%7.out 4 5 0x00100001
+LFRAME
 !     PROCEDURE out(p : setofset);
-SAVELINK
 !       IF (p # NIL) & (p.cost > 0) THEN
 LDLW 12
 JEQZ L32
@@ -356,18 +356,16 @@ JLEQZ L32
 LDLW 12
 NCHECK 73
 LDNW 20
-LDLW -4
-LINK
 GLOBAL tPower.%7.out
-CALL 1
+LDLW -4
+LCALL 1
 ! 	out(p.right);
 LDLW 12
 NCHECK 74
 LDNW 24
-LDLW -4
-LINK
 GLOBAL tPower.%7.out
-CALL 1
+LDLW -4
+LCALL 1
 ! 	assign(p.i+p.j, p.i, p.j)
 LDLW 12
 NCHECK 75
@@ -389,8 +387,8 @@ RETURN
 END
 
 PROC tPower.%6.print 8 3 0x00008001
+LFRAME
 !   PROCEDURE print;
-SAVELINK
 !     p := ss;
 LDLW -4
 LDNW -20
@@ -416,14 +414,14 @@ JUMP L34
 LABEL L36
 !     out(p)
 LDLW -8
-LOCAL 0
-LINK
 GLOBAL tPower.%7.out
-CALL 1
+LOCAL 0
+LCALL 1
 RETURN
 END
 
 PROC tPower.dynamic 36 9 0x00001c01
+FRAME
 ! PROCEDURE dynamic(n : INTEGER);
 !   cost := 0;
 CONST 0
@@ -561,10 +559,9 @@ CONST 32
 BOUND 104
 LSL
 BITOR
-LOCAL 0
-LINK
 GLOBAL tPower.%5.add
-CALL 6
+LOCAL 0
+LCALL 6
 ! 		    add(sj.set + {i+j}, sj.cost + 1, i, j, NIL, sj)
 LDLW -28
 CONST 0
@@ -585,10 +582,9 @@ CONST 32
 BOUND 105
 LSL
 BITOR
-LOCAL 0
-LINK
 GLOBAL tPower.%5.add
-CALL 6
+LOCAL 0
+LCALL 6
 JUMP L55
 LABEL L64
 ! 		    IF si = sj THEN
@@ -619,10 +615,9 @@ CONST 32
 BOUND 108
 LSL
 BITOR
-LOCAL 0
-LINK
 GLOBAL tPower.%5.add
-CALL 6
+LOCAL 0
+LCALL 6
 JUMP L55
 LABEL L62
 ! 		      add(si.set + sj.set + {i+j}, 
@@ -653,10 +648,9 @@ CONST 32
 BOUND 111
 LSL
 BITOR
-LOCAL 0
-LINK
 GLOBAL tPower.%5.add
-CALL 6
+LOCAL 0
+LCALL 6
 LABEL L55
 ! 	    FOR j := 1 TO n-i DO 
 INCL -16
@@ -681,14 +675,13 @@ STLW -24
 JUMP L40
 LABEL L39
 !   print
-LOCAL 0
-LINK
 GLOBAL tPower.%6.print
-CALL 0
+LOCAL 0
+LCALL 0
 RETURN
 END
 
-PROC tPower.%main 0 2 0
+PROC tPower.%main 0 3 0
 !     n := 15;
 CONST 15
 STGW tPower.n

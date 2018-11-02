@@ -351,7 +351,6 @@ inst DZCHECK 2 T1d \
 inst QZCHECK 2 T1q \
     { if ($1.q == 0) error(E_DIV, $a) }
 inst ERROR 12 S0    { error($a, $b) }
-equiv EASSERT 2     { RESULTW, ERROR E_ASSERT $a }
 
 
 # MORE BITS AND PIECES
@@ -380,22 +379,34 @@ inst FLEXCOPY 0 S0 {
      d[0].a = address(sp);
 }
 
+equiv FRAME 0       { FINIT 0 }
+equiv LFRAME 0      { FINIT 1 }
+
+inst FINIT {[0,1,1]} S0 { memset(sp, 0, cp[CP_FRAME].i - 4*$a) }
+
 # In the interpreter, the CALLW and CALLD instructions are implemented as 
 # two operations, an ordinary CALL followed by a SLIDE; the return address 
 # of the called routine points to the SLIDE instruction, which is 
 # responsible for copying the result.
-equiv CALL 1        { JPROC, SLIDE $a }
-equiv CALLW 1       { JPROC, SLIDEW $a }
-equiv CALLQ 1       { JPROC, SLIDEQ $a }
-equiv CALLF 1       { JPROC, SLIDEF $a }
-equiv CALLD 1       { JPROC, SLIDED $a }
+equiv LCALL 1       { JPROC 1, SLIDE $a }
+equiv LCALLW 1      { JPROC 1, SLIDEW $a }
+equiv LCALLQ 1      { JPROC 1, SLIDEQ $a }
+equiv LCALLF 1      { JPROC 1, SLIDEF $a }
+equiv LCALLD 1      { JPROC 1, SLIDED $a }
 
-inst LINK 0 S1      { statlink = valptr($1) }
-inst SAVELINK 0 S0  { bp[SL].a = address(statlink) }
+equiv CALL 1        { JPROC 0, SLIDE $a }
+equiv CALLW 1       { JPROC 0, SLIDEW $a }
+equiv CALLQ 1       { JPROC 0, SLIDEQ $a }
+equiv CALLF 1       { JPROC 0, SLIDEF $a }
+equiv CALLD 1       { JPROC 0, SLIDED $a }
 
-inst JPROC 0 S0 {
+inst JPROC {[0,1,1]} S0 {
+     value *sl = ($a ? valptr(*sp++) : NULL);
      value *p = valptr(sp[0]);
-     sp -= HEAD-1; sp[BP].a = address(bp); sp[PC].a = address(pc);
+     sp -= HEAD-1;
+     sp[BP].a = address(bp);
+     sp[PC].a = address(pc);
+     sp[SL].a = address(sl);
 
      if (interpreted(p)) {
           cp = p; pc = pointer(cp[CP_CODE]);
@@ -410,7 +421,7 @@ inst JPROC 0 S0 {
 #ifdef OBXDEB
     prim_bp = sp;
 #endif
-    primcall(p, sp);
+    rp = primcall(p, sp);
 #ifdef OBXDEB
     prim_bp = NULL;
 #endif
@@ -420,27 +431,22 @@ inst SLIDE 1 S0 \
     { slide($a) } \
     { proc_call(pc, arg1, 0, 0, 0) }
 inst SLIDEW 1 S0 \
-    { slide($a); sp--; sp[0].i = ob_res.i } \
+    { slide($a); sp--; sp[0].i = (*rp).i } \
     { proc_call(pc, arg1, INT, V_MEMW, 1) }
 inst SLIDEF 1 S0 \
-    { slide($a); sp--; sp[0].f = ob_res.f } \
+    { slide($a); sp--; sp[0].f = (*rp).f } \
     { proc_call(pc, arg1, FLO, V_MEMW, 1) }
 inst SLIDED 1 S0 \
-    { slide($a); sp -= 2; putdbl(&sp[0], getdbl(&ob_res)) } \
+    { slide($a); sp -= 2; putdbl(&sp[0], getdbl(rp)) } \
     { proc_call(pc, arg1, FLO, V_MEMQ, 2) }
 inst SLIDEQ 1 S0 \
-    { slide($a); sp -= 2; putlong(&sp[0], getlong(&ob_res)) } \
+    { slide($a); sp -= 2; putlong(&sp[0], getlong(rp)) } \
     { proc_call(pc, arg1, INT, V_MEMQ, 2) }
     
-equiv RETURNW 0     { RESULTW, RETURN }
-equiv RETURNF 0     { RESULTF, RETURN }
-equiv RETURND 0     { RESULTD, RETURN }
-equiv RETURNQ 0     { RESULTQ, RETURN }
-
-inst RESULTW 0 S1   { ob_res = $1 }             { result(V_MEMW, 1) }
-inst RESULTF 0 S1   { ob_res.f = $1.f }         { result(V_MEMW, 1) }
-inst RESULTQ 0 S1q  { putlong(&ob_res, $1.q) }  { result(V_MEMQ, 2) }
-inst RESULTD 0 S1d  { putdbl(&ob_res, $1.d) }   { result(V_MEMQ, 2) }
+equiv RETURNW 0     { RETURN }
+equiv RETURNF 0     { RETURN }
+equiv RETURND 0     { RETURN }
+equiv RETURNQ 0     { RETURN }
 
 inst RETURN 0 S0 {
      if (bp == base) {
@@ -448,10 +454,11 @@ inst RETURN 0 S0 {
 #ifdef PROFILE
           prof_exit(NULL, ticks);
 #endif
-          return;
+          return sp;
      }
 
-     sp = bp; pc = pointer(sp[PC]); bp = valptr(sp[BP]); cp = valptr(bp[CP]);
+     rp = sp; sp = bp; pc = pointer(sp[PC]);
+     bp = valptr(sp[BP]); cp = valptr(bp[CP]);
      do_find_proc;
 #ifdef PROFILE
      prof_exit(cp, ticks);
@@ -518,8 +525,3 @@ dir ENDHDR 0
 dir IMPORT ??
 dir STKMAP ?
 dir LINE ?
-
-if {[info exists SPECIALS]} {
-    dir PCALL ?
-    dir PCALLW ?
-}

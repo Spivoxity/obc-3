@@ -93,7 +93,7 @@ IMPORT Out STAMP
 IMPORT xPrelude STAMP
 ENDHDR
 
-PROC tLimits.TestAsh 0 4 0
+PROC tLimits.TestAsh 0 5 0
 ! PROCEDURE TestAsh(x, n: INTEGER);
 !   Out.Int(ASH(x, n), 0); Out.Ln
 CONST 0
@@ -116,6 +116,7 @@ RETURN
 END
 
 PROC tLimits.MaxReal 12 2 0
+FRAME
 ! PROCEDURE MaxReal(): REAL;
 !   i := 0FFFFFFH; j := 800000H;
 CONST 16777215

@@ -55,7 +55,8 @@ MODULE tEqual STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tEqual.Plot 8 3 0
+PROC tEqual.Plot 8 4 0
+FRAME
 ! PROCEDURE Plot(f: PROCEDURE (i, j: INTEGER): BOOLEAN);
 !   FOR i := -4 TO 4 DO
 CONST -4
@@ -74,11 +75,10 @@ JGT L6
 !       IF f(i, j) THEN Out.String(" T") ELSE Out.String(" F") END
 LDLW -8
 LDLW -4
-LDLW 16
-LINK
 LDLW 12
 NCHECK 12
-CALLW 2
+LDLW 16
+LCALLW 2
 JEQZ L9
 CONST 3
 GLOBAL tEqual.%1
@@ -121,7 +121,7 @@ NEQ
 RETURNW
 END
 
-PROC tEqual.%main 0 3 0
+PROC tEqual.%main 0 4 0
 !   Plot(Equal);
 CONST 0
 GLOBAL tEqual.Equal

@@ -23,7 +23,7 @@ MODULE tByte07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tByte07.%main 0 3 0
+PROC tByte07.%main 0 4 0
 !   a := 200;
 CONST 200
 STGC tByte07.a

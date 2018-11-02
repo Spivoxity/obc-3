@@ -33,7 +33,7 @@ MODULE tConst07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tConst07.Print 0 3 0x00100001
+PROC tConst07.Print 0 4 0x00100001
 ! PROCEDURE Print(s: ARRAY OF CHAR; n: INTEGER);
 !   Out.String(s); Out.Char(' '); Out.Int(n, 0); Out.Ln
 LDLW 16
@@ -53,7 +53,7 @@ CALL 0
 RETURN
 END
 
-PROC tConst07.%main 0 4 0
+PROC tConst07.%main 0 5 0
 !   Print("127", 127);
 CONST 127
 CONST 4

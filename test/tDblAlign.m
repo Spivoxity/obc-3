@@ -34,7 +34,8 @@ IMPORT MathL STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDblAlign.P 24 3 0
+PROC tDblAlign.P 24 4 0
+FRAME
 ! PROCEDURE P;
 !   y := MathL.pi;
 DCONST 3.14159265359
@@ -62,7 +63,7 @@ CALL 0
 RETURN
 END
 
-PROC tDblAlign.%main 0 1 0
+PROC tDblAlign.%main 0 2 0
 !   P
 GLOBAL tDblAlign.P
 CALL 0

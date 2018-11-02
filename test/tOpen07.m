@@ -36,6 +36,7 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tOpen07.Sum 12 4 0x00100001
+FRAME
 ! PROCEDURE Sum(a: ARRAY OF INTEGER): INTEGER;
 !   s := 0;
 CONST 0
@@ -67,6 +68,7 @@ RETURNW
 END
 
 PROC tOpen07.Main 4 4 0
+FRAME
 ! PROCEDURE Main;
 !   FOR j := 0 TO LEN(b)-1 DO b[j] := j+1 END
 CONST 0
@@ -88,7 +90,7 @@ LABEL L4
 RETURN
 END
 
-PROC tOpen07.%main 0 4 0
+PROC tOpen07.%main 0 5 0
 !   Main;
 GLOBAL tOpen07.Main
 CALL 0

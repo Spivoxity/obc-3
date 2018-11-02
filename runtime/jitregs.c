@@ -34,7 +34,7 @@
 
 struct _reg *regs = NULL;
 int nregs;
-reg rBP, rCP, rSP, rI0, rI1, rI2;
+reg rBP, rCP, rSP, rI0, rRET;
 
 static reg def_reg(vmreg r, int c) {
      reg p = &regs[nregs++];
@@ -42,6 +42,9 @@ static reg def_reg(vmreg r, int c) {
      p->r_class = c;
      p->r_refct = 0;
      p->r_value.v_op = 0;
+
+     if (vm_ret == r) rRET = p;
+
      return p;
 }
 
@@ -66,8 +69,14 @@ void setup_regs(void) {
      for (int i = 0; i < vm_nfreg; i++)
           def_reg(vm_freg[i], FLO);
 
-     rI0 = &regs[0]; rI1 = &regs[1]; rI2 = &regs[2];
-     rSP = &regs[nireg-3]; rCP = &regs[nireg-2]; rBP = &regs[nireg-1]; 
+     if (rRET == NULL) {
+          // vm_ret is not one of the usual registers
+          def_reg(vm_ret, INT);
+          rRET->r_class = 0;
+     }
+
+     rI0 = &regs[0]; rSP = &regs[nireg-3];
+     rCP = &regs[nireg-2]; rBP = &regs[nireg-1]; 
      rCP->r_class = rBP->r_class = 0;
 }
 

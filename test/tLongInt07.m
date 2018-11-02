@@ -61,7 +61,7 @@ QTIMES
 RETURNQ
 END
 
-PROC tLongInt07.%main 0 6 0
+PROC tLongInt07.%main 0 5 0
 !   r := 2;
 CONST 2
 STGW tLongInt07.r
@@ -156,7 +156,7 @@ CONST 1
 CONVNQ
 GLOBAL tLongInt07.m
 GLOBAL INCLONG
-CALLQ 3
+CALL 3
 !   Out.LongInt(m, 0); Out.Ln;
 CONST 0
 LDGQ tLongInt07.m

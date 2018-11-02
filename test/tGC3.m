@@ -93,7 +93,7 @@ MOD
 RETURNW
 END
 
-PROC tGC3.Size 0 3 0x00100001
+PROC tGC3.Size 0 4 0x00100001
 ! PROCEDURE Size(t: tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
@@ -119,6 +119,7 @@ RETURNW
 END
 
 PROC tGC3.Build 28 4 0x00000801
+FRAME
 ! PROCEDURE Build(count: INTEGER);
 !   FOR i := 0 TO count-1 DO
 LDLW 12
@@ -216,6 +217,7 @@ RETURN
 END
 
 PROC tGC3.Print 12 4 0
+FRAME
 ! PROCEDURE Print;
 !   s := 0; r := 0;
 CONST 0
@@ -266,7 +268,7 @@ END
 
 PRIMDEF tGC3.GcHeapSize gc_heap_size I
 
-PROC tGC3.%main 0 3 0
+PROC tGC3.%main 0 4 0
 !   Build(K); Print;
 CONST 500000
 GLOBAL tGC3.Build

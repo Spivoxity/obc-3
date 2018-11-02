@@ -42,7 +42,7 @@ MODULE tChrStr07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tChrStr07.p 0 3 0x00100001
+PROC tChrStr07.p 0 4 0x00100001
 ! PROCEDURE p(u: q);
 !   Out.String(u)
 CONST 2
@@ -52,7 +52,7 @@ CALL 2
 RETURN
 END
 
-PROC tChrStr07.%main 0 5 0
+PROC tChrStr07.%main 0 6 0
 !   s := 'x';
 CONST 2
 GLOBAL tChrStr07.s
