@@ -684,9 +684,9 @@ and gen_builtin q args =
 		  gen_expr (List.nth args 1);
 		gen_addr e1;
 		if q.b_id = IncProc then
-		  call_proc "INCLONG" 3 longint
+		  call_proc "INCLONG" 3 voidtype
 		else
-		  call_proc "DECLONG" 3 longint]
+		  call_proc "DECLONG" 3 voidtype]
 	  | _ -> failwith "IncProc"
 	end
 
