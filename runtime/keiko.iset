@@ -297,7 +297,7 @@ inst DCMPL 0 B.idd  { fcmpl($1.d, $2.d) }       { fcompare(DCMPL) }
 inst DCMPG 0 B.idd  { fcmpg($1.d, $2.d) }       { fcompare(DCMPG) }
 
 equiv DEQ 0         { DCMPL, PUSH 0, EQ }
-equiv DNEQ 0        { DCMPL, PUSH 0, NE }
+equiv DNEQ 0        { DCMPL, PUSH 0, NEQ }
 equiv DLT 0         { DCMPG, PUSH 0, LT }
 equiv DGT 0         { DCMPL, PUSH 0, GT }
 equiv DLEQ 0        { DCMPG, PUSH 0, LE }
