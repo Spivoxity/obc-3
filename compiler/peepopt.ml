@@ -169,10 +169,6 @@ let ruleset1 replace =
     | CONV (IntT, ShortT) :: (LOCAL _ | GLOBAL _) :: STORE ShortT :: _ -> 
 	replace 1 []
 
-    (* Don't lose precision in double conversion *)
-    | CONV (IntT, FloatT) :: CONV (FloatT, DoubleT) :: _ ->
-        replace 2 [CONV (IntT, DoubleT)]
-
     (* Specially for INC(local) and INC(global) *)
     | LOCAL a :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->

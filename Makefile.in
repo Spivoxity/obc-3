@@ -216,6 +216,10 @@ test0: force
 	$(MAKE) -C test all
 	cd test; ./regress -nojit
 
+test1: force
+	$(MAKE) -C test all
+	cd test; ./regress -noopt -nocode
+
 # Installation stuff:
 # This supports two kinds of installation:
 # (1) building from source, followed by 'make install'
