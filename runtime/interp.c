@@ -42,6 +42,7 @@
       switch. */
 
 #include <math.h>
+#include <string.h>
 #include "obx.h"
 #include "keiko.h"
 

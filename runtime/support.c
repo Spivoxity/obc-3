@@ -29,6 +29,8 @@
  */
 
 #include "obx.h"
+#include <stdarg.h>
+#include <string.h>
 
 /* Assorted runtime support routines */
 

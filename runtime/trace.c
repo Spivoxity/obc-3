@@ -31,6 +31,7 @@
 #define TRACE
 #include "obx.h"
 #include "keiko.h"
+#include <string.h>
 
 struct _opcode { 
      const char *i_name;	/* Name */

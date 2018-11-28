@@ -135,6 +135,7 @@ END Builtin.
 #include "obx.h"
 #include <ctype.h>
 #include <math.h>
+#include <string.h>
 
 char *lib_version = 
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";

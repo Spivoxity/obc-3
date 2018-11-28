@@ -83,7 +83,7 @@ SUBDIRS = compiler runtime lib
 EXTRADIRS = test
 BUILD = $(ALL_INTERPS) obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
-PRIMS = lib/oblib.o lib/primtab.o
+PRIMS = lib/primtab.o lib/oblib.a
 
 ifdef MACOS
   EXTRADIRS += macport
@@ -237,8 +237,9 @@ LIBSRC = $(ALLMODS:%=$(srcdir)/lib/%.m)
 # Other files installed in {prefix}/lib
 LIB = lib/lscript lib/lscript-b $(srcdir)/lib/Builtin.m lib/_Builtin.k \
 	$(ALLMODS:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k) \
-	runtime/obx.a runtime/obx-p.a $(PRIMS) \
-	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h
+	runtime/obx.a runtime/obx-p.a lib/oblib.a $(srcdir)/runtime/primtab.h \
+	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h \
+	lib/obcprims.h
 
 # Manual pages
 MAN = obb.1 obc.1 oblist.1 obprof.1

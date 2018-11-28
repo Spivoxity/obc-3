@@ -29,6 +29,8 @@
  */
 
 #include "obx.h"
+#include <string.h>
+#include <stdio.h>
 
 /* Define MULTIBLOCKS to allow splitting of multi-page blocks */
 #undef MULTIBLOCKS

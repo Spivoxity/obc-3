@@ -32,6 +32,8 @@
 #include "obx.h"
 #include "keiko.h"
 #include <ctype.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
 #ifdef WINDOWS
   #include <winsock2.h>

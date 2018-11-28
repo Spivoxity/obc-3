@@ -69,7 +69,7 @@ ifdef DEBUG
 endif
 
 all:: _Builtin.k $(STDMODS:%=%.k) $(CHECKMODS:%=%-b.k) $(SHLMODS:%=%.k) \
-	oblib.o primtab.o lscript lscript-b
+	oblib.a primtab.o lscript lscript-b
 
 ### Bytecode files
 
@@ -99,20 +99,34 @@ In.k In-b.k : Conv.k
 
 ### C and object code for primitives
 
-OBLIB := Builtin $(PRIMMODS)
+ALL_RTFLAGS = $(RTFLAGS) -Wall $(INCLUDE)
+INCLUDE = -I .. -I $(top_srcdir)/runtime -I ../runtime
+
+# Without dynamic linking, we make a single primitive table that
+# contains both the standard library and XYplane (if supported),
+# and a library archive that contains all modules, including XYplane.
+# All these will be linked into the standard obx.  A custom runtime
+# can contain only some of the modules, and can be independent of X.
+
+# With dynamic linking, we make separate collections of primitive
+# wrappers for the standard library and for XYplane.  (There is no
+# global table of primitives.)  The library archive contains the
+# standard modules, all of which will be dragged into the link of obx
+# by the wrappers; XYplane is a separate shared library.
+
+PRIMDEF := $(STDMODS)
+LIBRARY := $(PRIMMODS)
 CSRC = Builtin $(PRIMMODS) $(SHLMODS)
 
 ifdef DYNLINK
 all:: $(SHLMODS:%=%$(DLEXT))
 else
-OBLIB += $(SHLMODS)
+PRIMDEF += $(SHLMODS)
+LIBRARY += $(SHLMODS)
 endif
 
-ALL_RTFLAGS = $(RTFLAGS) -Wall $(INCLUDE)
-INCLUDE = -I .. -I $(top_srcdir)/runtime -I ../runtime
-
-oblib.o: $(OBLIB:%=%.o)
-	$(LD) -r $^ -o $@
+oblib.a: Builtin.o $(LIBRARY:%=%.o)
+	ar cr $@ $^; $(RANLIB) $@
 
 $(CSRC:%=%.c): %.c: %.m
 	sed -e '1,/^--CODE--/d' $< >$@
@@ -121,23 +135,23 @@ XYplane$(DLEXT): XYplane.c XYstubs.c
 	$(CC) $(ALL_RTFLAGS) $(X_CFLAGS) $(SHL_CFLAGS) \
 		$(SHL_LFLAGS) $^ $(LIBS) $(XLIB) -o $@
 
-XYstubs.c: XYplane.k makestubs.tcl
-	$(TCLSH) makestubs.tcl XYplane.k >$@
-
 %$(DLEXT): %.c
 	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $(SHL_LFLAGS) $< $(LIBS) -o $@
 
 %.o: %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
-$(OBLIB:%=%.o) $(SHLMODS:%=%$(DLEXT)) primtab.o: \
+$(STDLIB:%=%.o) $(SHLMODS:%=%$(DLEXT)) $(SHLMODS:%=%.o) primtab.o: \
 	../config.h $(top_srcdir)/runtime/obx.h \
 	$(top_srcdir)/runtime/obcommon.h
 
-primtab.o: $(top_srcdir)/runtime/primtab.h
+primtab.o XYstubs.o: $(top_srcdir)/runtime/primtab.h
 
-primtab.c: _Builtin.k $(STDMODS:%=%.k) makestubs.tcl
-	$(TCLSH) makestubs.tcl _Builtin.k $(STDMODS:%=%.k) >$@
+primtab.c: _Builtin.k $(PRIMDEF:%=%.k)
+	$(TCLSH) $(srcdir)/makestubs.tcl $^ >$@
+
+XYstubs.c: XYplane.k
+	$(TCLSH) $(srcdir)/makestubs.tcl $^ >$@
 
 
 ### Library scripts

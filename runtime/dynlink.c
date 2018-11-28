@@ -43,6 +43,8 @@ in its initialization part.
 */
 
 #include "obx.h"
+#include <string.h>
+#include <stdlib.h>
 
 #ifdef DYNLINK
 
@@ -226,6 +228,8 @@ value *dltrap(value *bp) {
      char *tstring = (char *) pointer(cp[CP_CODE]);
      char *name = tstring + strlen(tstring) + 1;
      primitive *prim = NULL;
+
+     if (*name == '=') name++;
 
      if (tstring[0] == '*')
           prim = find_prim(name);

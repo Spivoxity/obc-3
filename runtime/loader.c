@@ -31,6 +31,7 @@
 #include "obx.h"
 #include "keiko.h"
 #include "exec.h"
+#include <string.h>
 
 static FILE *binfp;
 
