@@ -49,6 +49,7 @@ END Args.
 --CODE--
 
 #include "obx.h"
+#include <stdlib.h>
 
 void GetArg(value *bp) {
      int n = bp[HEAD+0].i;

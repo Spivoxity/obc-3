@@ -32,6 +32,7 @@
 #include "keiko.h"
 #include "jit.h"
 #include <stdarg.h>
+#include <string.h>
 #include <assert.h>
 
 /* Debug levels:

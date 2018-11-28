@@ -31,6 +31,8 @@
 #include "obx.h"
 #include "jit.h"
 #include <assert.h>
+#include <string.h>
+
 
 // A small hash table of targets indexed by address.
 

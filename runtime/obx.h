@@ -37,9 +37,6 @@
 
 #include "config.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
 #include "obcommon.h"
 
 #define SLIMIT 256		/* Min stack space space left (bytes) */

@@ -31,6 +31,7 @@
 #include "obx.h"
 #include <math.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 /* Types for each kind of argument */
 typedef int type_C, type_I;

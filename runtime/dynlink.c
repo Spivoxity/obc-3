@@ -43,6 +43,8 @@ in its initialization part.
 */
 
 #include "obx.h"
+#include <string.h>
+#include <stdlib.h>
 
 #ifdef DYNLINK
 
