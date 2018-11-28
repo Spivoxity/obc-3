@@ -179,7 +179,6 @@ primitive interp, dltrap, dlstub;
 EXTERN int saved_argc;
 EXTERN char **saved_argv;
 
-int obgetc(FILE *fp);
 void xmain_exit(int status);
 void error_exit(int status);
 
@@ -227,7 +226,6 @@ void dbl_zcheck(value *sp);
 word wrap_prim(primitive *prim);
 
 /* dynlink.c */
-void load_lib(char *fname);
 void dltrap(value *sp);
 
 /* load_file -- load a file of object code */
@@ -296,7 +294,6 @@ int gc_heap_size(void);
 
 extern mybool gcflag;
 void gc_init(void);
-void gc_debug(char *flags);
 void gc_dump(void);
 
 /* debug.c */

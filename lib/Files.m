@@ -166,20 +166,21 @@ BEGIN
   RETURN f.file
 END raw;
 
-(* Wrappers around functions from stdio *)
-PROCEDURE fopen(name, mode: ARRAY OF CHAR): RawFile IS "fopen";
-PROCEDURE fdopen(fd: INTEGER; mode: ARRAY OF CHAR): RawFile IS "fdopen";
-PROCEDURE fclose(fp: RawFile) IS "fclose";
-PROCEDURE fflush(fp: RawFile) IS "fflush";
+(* Wrappers around functions from stdio: the = in "=fopen"
+   marks functions declared in stdio.h *)
+PROCEDURE fopen(name, mode: ARRAY OF CHAR): RawFile IS "=fopen";
+PROCEDURE fdopen(fd: INTEGER; mode: ARRAY OF CHAR): RawFile IS "=fdopen";
+PROCEDURE fclose(fp: RawFile) IS "=fclose";
+PROCEDURE fflush(fp: RawFile) IS "=fflush";
 PROCEDURE obgetc(fp: RawFile): INTEGER IS "obgetc";
-PROCEDURE ungetc(c: CHAR; fp: RawFile) IS "ungetc";
-PROCEDURE fputc(c: CHAR; fp: RawFile) IS "fputc";
-PROCEDURE fseek(fp: RawFile; offset, whence: INTEGER) IS "fseek";
-PROCEDURE ftell(fp: RawFile): INTEGER IS "ftell";
+PROCEDURE ungetc(c: CHAR; fp: RawFile) IS "=ungetc";
+PROCEDURE fputc(c: CHAR; fp: RawFile) IS "=fputc";
+PROCEDURE fseek(fp: RawFile; offset, whence: INTEGER) IS "=fseek";
+PROCEDURE ftell(fp: RawFile): INTEGER IS "=ftell";
 PROCEDURE fread(VAR buf: ARRAY OF SYSTEM.BYTE; n, s: INTEGER;
-  fp: RawFile): INTEGER IS "fread";
+  fp: RawFile): INTEGER IS "=fread";
 PROCEDURE fwrite(VAR buf: ARRAY OF SYSTEM.BYTE; n, s: INTEGER; fp: RawFile)
-  IS "fwrite";
+  IS "=fwrite";
 
 (* Wrappers around printf calls *)
 PROCEDURE FmtInt(fp: RawFile; n, w: INTEGER) IS "FmtInt";

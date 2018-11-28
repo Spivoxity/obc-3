@@ -218,6 +218,8 @@ void dltrap(value *bp) {
      char *name = tstring + strlen(tstring) + 1;
      primitive *prim = NULL;
 
+     if (*name == '=') name++;
+
      if (tstring[0] == '*')
           prim = find_prim(name);
      else {
