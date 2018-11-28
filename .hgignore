@@ -236,3 +236,4 @@ mipstest/regress
 oniontest
 thunder/fact
 .DS_Store
+lib/_Builtin.tmp
