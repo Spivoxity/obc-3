@@ -94,7 +94,7 @@ JUMP L1
 LABEL L2
 !   RETURN s
 LDLW -8
-RETURNW
+RETURN
 END
 
 PROC tFlexAsgn.%main 0 5 0

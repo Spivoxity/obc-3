@@ -164,7 +164,7 @@ STLW -4
 LABEL L5
 ! RETURN res
 LDLW -4
-RETURNW
+RETURN
 END
 
 PROC tDomino07.Init 12 5 0
@@ -435,7 +435,7 @@ STGW tDomino07.zero
 LABEL L29
 !   RETURN z
 LDLW -8
-RETURNW
+RETURN
 END
 
 PROC tDomino07.%main 0 6 0

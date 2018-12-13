@@ -47,7 +47,7 @@ PROC tSegSum07.f 0 2 0
 !   RETURN i+1
 LDLW 12
 INC
-RETURNW
+RETURN
 END
 
 PROC tSegSum07.%main 0 4 0

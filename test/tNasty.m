@@ -43,7 +43,7 @@ STGW tNasty.y
 LDLW 12
 CONST 2
 TIMES
-RETURNW
+RETURN
 END
 
 PROC tNasty.%main 0 4 0

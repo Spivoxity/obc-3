@@ -53,7 +53,7 @@ type icode =
   | STKMAP of symbol		(* Stack map for call point *)
   | LCALL of int * kind		(* Proc call (pcount, result size) *)
   | CALL of int * kind		(* Global call (pcount, result size) *)
-  | RETURN of kind		(* Return from procedure (rsize) *)
+  | RETURN 			(* Return from procedure (rsize) *)
   | MONOP of kind * op		(* Unary operation (type, op) *)
   | BINOP of kind * op		(* Binary operation *)
   | OFFSET			(* Add address and offset *)

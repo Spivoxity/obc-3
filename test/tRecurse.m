@@ -59,7 +59,7 @@ LDLW 12
 JNEQZ L3
 !     RETURN 0
 CONST 0
-RETURNW
+RETURN
 LABEL L3
 !     RETURN a[n-1] + Sum(n-1, a)
 LDLW 16
@@ -75,7 +75,7 @@ DEC
 GLOBAL tRecurse.Sum
 CALLW 3
 PLUS
-RETURNW
+RETURN
 END
 
 PROC tRecurse.Sumorial 0 4 0
@@ -85,7 +85,7 @@ LDLW 12
 JNEQZ L6
 !     RETURN 0
 CONST 0
-RETURNW
+RETURN
 LABEL L6
 !     RETURN n + Sumorial(n-1)
 LDLW 12
@@ -94,7 +94,7 @@ DEC
 GLOBAL tRecurse.Sumorial
 CALLW 1
 PLUS
-RETURNW
+RETURN
 END
 
 PROC tRecurse.%main 0 6 0

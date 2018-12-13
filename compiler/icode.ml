@@ -54,7 +54,7 @@ type icode =
   | STKMAP of symbol		(* Stack map for call point *)
   | LCALL of int * kind		(* Proc call (pcount, result size) *)
   | CALL of int * kind		(* Global call (pcount, result size) *)
-  | RETURN of kind		(* Return from procedure (rsize) *)
+  | RETURN 			(* Return from procedure (rsize) *)
   | MONOP of kind * op		(* Unary operation (type, op) *)
   | BINOP of kind * op		(* Binary operation *)
   | OFFSET			(* Add address and offset *)
@@ -171,7 +171,7 @@ let fInst =
     | STKMAP x ->	fMeta "STKMAP $" [fSym x]
     | LCALL (n, s) ->	fMeta "LCALL$ $" [fKind s; fNum n]
     | CALL (n, s) ->	fMeta "CALL$ $" [fKind s; fNum n]
-    | RETURN s -> 	fMeta "RETURN$" [fKind s]
+    | RETURN -> 	fStr "RETURN"
     | MONOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
     | BINOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
     | OFFSET ->		fStr "OFFSET"

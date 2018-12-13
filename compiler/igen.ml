@@ -947,12 +947,9 @@ let rec gen_stmt exit_lab s =
 	    if size_of e = 0 then NOP else POP (count_of e.e_type)]
 
       | Return res ->
-	  begin 
-	    match res with 
-		Some e -> 
-		  SEQ [gen_expr e; RETURN (op_kind e.e_type)]
-	      | None -> 
-		  RETURN VoidT
+	  begin match res with 
+	      Some e -> SEQ [gen_expr e; RETURN]
+	    | None -> RETURN
 	  end
 
       | IfStmt (arms, elsept) ->
@@ -1135,10 +1132,10 @@ let gen_procdef d loc fsize body ret =
     gen_stmt nolab body;
     (match ret with
         Some e -> 
-          SEQ [LINE (expr_line e); gen_expr e; RETURN (op_kind e.e_type)]
+          SEQ [LINE (expr_line e); gen_expr e; RETURN]
       | None ->
           if kind_of p.p_result = VoidT then
-            RETURN VoidT
+            RETURN
           else
             ERROR ("E_RETURN", line))] in
   let code2 = Peepopt.optimise (transform (Icode.canon code)) in

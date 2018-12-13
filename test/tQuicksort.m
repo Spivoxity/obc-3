@@ -179,7 +179,7 @@ CALL 2
 !   RETURN i-1
 LDLW -4
 DEC
-RETURNW
+RETURN
 END
 
 PROC tQuicksort.Quicksort 4 5 0x00100001

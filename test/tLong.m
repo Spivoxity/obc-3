@@ -39,7 +39,7 @@ PROC tLong.Mult 0 4 0
 LDLD 12
 LDLD 20
 DTIMES
-RETURND
+RETURN
 END
 
 PROC tLong.%main 0 6 0

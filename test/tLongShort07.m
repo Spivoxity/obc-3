@@ -39,7 +39,7 @@ CONVDN
 STLW -4
 !   RETURN p
 LDLW -4
-RETURNW
+RETURN
 END
 
 PROC tLongShort07.%main 0 5 0

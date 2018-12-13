@@ -110,7 +110,7 @@ PROC tEqual.Equal 0 2 0
 LDLW 12
 LDLW 16
 EQ
-RETURNW
+RETURN
 END
 
 PROC tEqual.Unequal 0 2 0
@@ -118,7 +118,7 @@ PROC tEqual.Unequal 0 2 0
 LDLW 12
 LDLW 16
 NEQ
-RETURNW
+RETURN
 END
 
 PROC tEqual.%main 0 4 0

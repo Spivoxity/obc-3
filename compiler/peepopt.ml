@@ -34,8 +34,6 @@ open Print
 open Error
 open Eval
 
-let rkind = ref VoidT
-
 type labdata = LabDef of labrec | Equiv of codelab
 and labrec = { y_id : codelab; y_refct : int ref; mutable y_return: bool }
 
@@ -224,8 +222,8 @@ let ruleset1 replace =
 	replace 1 []
     | JUMP lab :: i :: _ when not (is_label i) -> 
 	replace 2 [JUMP lab]
-    | RETURN s :: i :: _ when not (is_label i) -> 
-	replace 2 [RETURN s]
+    | RETURN :: i :: _ when not (is_label i) -> 
+	replace 2 [RETURN]
     | LABEL lab1 :: JUMP lab2 :: _ when not (same_lab lab1 lab2) ->
 	replace 1 []; equate lab1 lab2
     | LINE n :: JUMP lab2 :: _ -> 
@@ -238,10 +236,10 @@ let ruleset1 replace =
 	replace 1 []
     | LINE n :: LABEL lab :: _ ->
 	replace 2 [LABEL lab; LINE n]
-    | LABEL lab :: RETURN s :: _ when not (is_return lab) ->
-        rkind := s; set_return lab; replace 2 [LABEL lab; RETURN s]
+    | LABEL lab :: RETURN :: _ when not (is_return lab) ->
+        set_return lab; replace 2 [LABEL lab; RETURN]
     | JUMP lab :: _ when is_return lab ->
-        replace 1 [RETURN !rkind]
+        replace 1 [RETURN]
     | NOP :: _ -> replace 1 []
 
     | _ -> ()
@@ -355,7 +353,6 @@ let ruleset3 replace =
 	replace 1 [LCALL (n, IntT)]
     | CALL (n, (CharT|BoolT|SysByteT|ShortT)) :: _ -> 
 	replace 1 [CALL (n, IntT)]
-    | RETURN (CharT|BoolT|SysByteT|ShortT) :: _ -> replace 1 [RETURN IntT]
 
       (* Eliminate operands that don't fit in 16 bits *)
     | LOCAL n :: _ when not (fits 16 n) ->

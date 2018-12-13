@@ -416,7 +416,7 @@ CALL 4
 RETURN
 END
 
-PROC tSignals.Negate 4 6 0x00100001
+PROC tSignals.Negate 4 7 0x00100001
 FRAME
 ! PROCEDURE Negate(u: Sig): BOOLEAN;
 !   v := Bit.Xor(u.value, 0FFH);
@@ -435,7 +435,7 @@ BOUND 50
 LDIW
 JEQZ L17
 CONST 0
-RETURNW
+RETURN
 LABEL L17
 !   MakeSig('~', NIL, u, v);
 LDLW -4
@@ -447,7 +447,7 @@ GLOBAL tSignals.MakeSig
 CALL 4
 !   RETURN TRUE
 CONST 1
-RETURNW
+RETURN
 END
 
 PROC tSignals.Closure 8 4 0

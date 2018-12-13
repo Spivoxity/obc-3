@@ -443,11 +443,6 @@ inst SLIDEQ 1 S0 \
     { slide($a); sp -= 2; putlong(&sp[0], getlong(rp)) } \
     { proc_call(pc, arg1, INT, V_MEMQ, 2) }
     
-equiv RETURNW 0     { RETURN }
-equiv RETURNF 0     { RETURN }
-equiv RETURND 0     { RETURN }
-equiv RETURNQ 0     { RETURN }
-
 inst RETURN 0 S0 {
      if (bp == base) {
           level--;

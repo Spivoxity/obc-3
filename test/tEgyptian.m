@@ -98,7 +98,7 @@ JUMP L4
 LABEL L6
 !   RETURN n
 LDLW -28
-RETURNW
+RETURN
 END
 
 PROC tEgyptian.%main 4 6 0

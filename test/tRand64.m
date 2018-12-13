@@ -158,7 +158,7 @@ STGQ tRand64.u
 !   RETURN SHORT(u)
 LDGQ tRand64.u
 CONVQN
-RETURNW
+RETURN
 END
 
 PROC tRand64.%main 0 4 0

@@ -42,7 +42,7 @@ let arity =
     | POP n -> (n, [])
     | STORE k -> (count k + 1, [])
     | FLEXCOPY -> (2, []) | FIXCOPY -> (3, [])
-    | RETURN k -> (count k, [])
+    | RETURN -> (0, [])
     | LINE _ -> (0, [])
     | LCALL (n, k) -> (n+2, flags k) 
     | CHECK (GlobProc, _) -> (1, [])
