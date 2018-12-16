@@ -179,10 +179,10 @@ let convert t1 t2 =
 let mark_type t = if is_pointer t then XMARK else NOP
 
 let gen_call pcount rtype =
-  SEQ [XSTKMAP pcount; LCALL (pcount, op_kind rtype); mark_type rtype]
+  SEQ [XSTKMAP pcount; CALL (pcount, op_kind rtype); mark_type rtype]
 
 let call_proc lab pcount rtype =
-  SEQ [GLOBAL lab; const 0; gen_call pcount rtype]
+  SEQ [GLOBAL lab; gen_call pcount rtype; mark_type rtype]
 
 (* conditional -- test if an expression requires jumping code *)
 let rec conditional e =
@@ -465,9 +465,9 @@ and gen_proccall f args =
       ProcType p ->
 	SEQ [
 	  SEQ (List.map2 gen_arg (List.rev p.p_fparams) (List.rev args));
+          gen_statlink f; STATLINK;
 	  gen_function f;
 	  check (CHECK (NullPtr, expr_line f));
-          gen_statlink f;
 	  gen_call p.p_pcount p.p_result]
 
     | BuiltinType b ->
@@ -491,7 +491,7 @@ and gen_message r m args =
 	    DUP 0; offset (-word_size); LOAD IntT]  (* desc *)
       | _ -> failwith "method receiver");
     offset (method_offset + word_size * d.d_offset); LOAD IntT;
-    const 0; gen_call p.p_pcount p.p_result]
+    gen_call p.p_pcount p.p_result]
 
 (*
 This table shows how the three kinds of parameters are passed and how
@@ -585,10 +585,6 @@ and gen_statlink a =
 	end
     | _ ->
 	const 0
-
-(* Push a (code, statlink) pair and use inst on the static link *)
-and gen_funarg inst a =
-  SEQ [gen_statlink a; inst; gen_function a]
 
 (* gen_recarg -- push address and descriptor of record *)
 and gen_recarg a =
@@ -1117,7 +1113,7 @@ let transform code =
 	[] -> List.rev zs
       | XMARK :: ys -> Stack.mark (); walk ys zs
       | XSTKMAP n :: ys ->
-	  let m = Stack.make_map 2 n in
+	  let m = Stack.make_map 1 n in
 	  if m = null_map then walk ys zs else
 	    walk ys (STKMAP (make_map 0 (genlab ()) m) :: zs)
       | x :: ys -> Stack.simulate x; walk ys (x :: zs) in
@@ -1142,8 +1138,7 @@ let gen_procdef d loc fsize body ret =
   let stk = Stack.max_depth () in
   let map = frame_map d in
   put "PROC $ $ $ $" [fSym d.d_lab; fNum !fsize; fNum stk; fSym map];
-  if d.d_level > 0 then put "LFRAME" []
-  else if !fsize > 0 then put "FRAME" [];
+  if d.d_level > 0 then put "SAVELINK" [];
   (* The first possible breakpoint comes *after* clearing the frame *)
   if loc <> no_loc then Icode.put_line line;
   Icode.output line code2;

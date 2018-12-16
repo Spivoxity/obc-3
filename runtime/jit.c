@@ -100,6 +100,7 @@ static vmlabel stack_oflo, retlab;
 /* prolog -- generate code for procedure prologue */
 static word prolog(const char *name) {
      int frame = jit_cxt[CP_FRAME].i;
+     int map = jit_cxt[CP_MAP].i;
      vmlabel lab = vm_newlab();
      word entry = vm_begin(name, 1);
      vm_gen(GETARG, rBP->r_reg, 0);
@@ -111,18 +112,14 @@ static word prolog(const char *name) {
      push_reg(rBP);
      gcall(stkoflo, 1);
      vm_label(lab);
-     return entry;
-}
-
-static void init_frame(mybool local) {
-     int frame = jit_cxt[CP_FRAME].i;
-     int map = jit_cxt[CP_MAP].i;
 
      if (map != 0 && (map & 0x1) == 0) {
           // A complex map -- just clear the frame
 	  vm_gen(SUB, rI0->r_reg, rBP->r_reg, frame);
           // If a local procedure, don't overwrite the static link
-          push_con(frame - 4*local);
+          if (*pcbase == K_SAVELINK) frame -= 4;
+
+          push_con(frame);
           push_con(0);
           push_reg(rI0);
 	  gcall(memset, 3);
@@ -138,6 +135,7 @@ static void init_frame(mybool local) {
      }
 
      killregs();
+     return entry;
 }
      
 /* stack_map -- find pointer map for eval stack at procedure call */
@@ -404,7 +402,6 @@ static void proc_call(uchar *pc, int arg, int ty, int ldop, int size) {
 	count of stack items */
      int nargs = count_args(arg);
 
-                                  /* 5: SP */
      push_con(stack_map(pc));     /* 4: PC = stack map */
      push_reg(rBP);               /* 3: BP */
      push_sp();                   /* 2: SP */
@@ -627,25 +624,8 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           killregs();
           break;
 
-     case I_FINIT:
-          init_frame(arg1);
-          break;
-
      case I_JPROC:
-          if (arg1) {
-               //  NOW         LATER
-               //  arg 2       arg 2
-               //  arg 1       arg 1
-               //  proc        proc    A
-               //  statlink    retaddr | HEAD
-               //              dynlink V
-               //              statlink
-               int offset = 8 + 4*(SL - HEAD);
-               push_sp();
-               push_con(offset);
-               add_offset(0);
-               store(V_MEMW, 1);
-          }
+          // All done by the SLIDE instruction
 	  break;
 
      case I_RETURN:

@@ -379,34 +379,44 @@ inst FLEXCOPY 0 S0 {
      d[0].a = address(sp);
 }
 
-equiv FRAME 0       { FINIT 0 }
-equiv LFRAME 0      { FINIT 1 }
-
-inst FINIT {[0,1,1]} S0 { memset(sp, 0, cp[CP_FRAME].i - 4*$a) }
-
 # In the interpreter, the CALLW and CALLD instructions are implemented as 
 # two operations, an ordinary CALL followed by a SLIDE; the return address 
 # of the called routine points to the SLIDE instruction, which is 
 # responsible for copying the result.
-equiv LCALL 1       { JPROC 1, SLIDE $a }
-equiv LCALLW 1      { JPROC 1, SLIDEW $a }
-equiv LCALLQ 1      { JPROC 1, SLIDEQ $a }
-equiv LCALLF 1      { JPROC 1, SLIDEF $a }
-equiv LCALLD 1      { JPROC 1, SLIDED $a }
+equiv CALL 1        { JPROC, SLIDE $a }
+equiv CALLW 1       { JPROC, SLIDEW $a }
+equiv CALLQ 1       { JPROC, SLIDEQ $a }
+equiv CALLF 1       { JPROC, SLIDEF $a }
+equiv CALLD 1       { JPROC, SLIDED $a }
 
-equiv CALL 1        { JPROC 0, SLIDE $a }
-equiv CALLW 1       { JPROC 0, SLIDEW $a }
-equiv CALLQ 1       { JPROC 0, SLIDEQ $a }
-equiv CALLF 1       { JPROC 0, SLIDEF $a }
-equiv CALLD 1       { JPROC 0, SLIDED $a }
+inst STATLINK 0 S0 {
+     /*
+         NOW           LATER
 
-inst JPROC {[0,1,1]} S0 {
-     value *sl = ($a ? valptr(*sp++) : NULL);
+         param 2       param 2
+         param 1       param 1
+     sp: stat link     proc addr 
+                       ret addr
+                   bp: dyn link
+                       stat link
+     */
+     sp[1-HEAD+SL].a = sp[0].a; sp++;
+} {
+     push_sp();
+     push_con(4*(1-HEAD+SL));
+     add_offset(0);
+     store(V_MEMW, 1);
+}
+
+# SAVELINK is implemented by protecting the static link
+# when the frame is cleared
+inst SAVELINK 0 S0 { } { }
+
+inst JPROC 0 S0 {
      value *p = valptr(sp[0]);
      sp -= HEAD-1;
      sp[BP].a = address(bp);
      sp[PC].a = address(pc);
-     sp[SL].a = address(sl);
 
      if (interpreted(p)) {
           cp = p; pc = pointer(cp[CP_CODE]);

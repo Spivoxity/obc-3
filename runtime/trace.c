@@ -69,6 +69,7 @@ char *fmt_inst(uchar *pc) {
 	       s += sprintf(s, " %ld", (long) (get1(pc)+(args-imem)));
                pc += 1; break;
 	  case 'N':
+	  case 'V':
 	       s += sprintf(s, " %d", ip->i_arg); break;
 	  default:
 	       s += sprintf(s, " ?%c?", *p);

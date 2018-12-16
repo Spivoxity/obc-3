@@ -406,7 +406,7 @@ static phrase expand(phrase q) {
 	  int n = split_line(buf, words);
 	  template t1 = find_template(words[0]);
 	  if (strlen(t1->t_pattern) != n-1 || t->t_size < 0) 
-	       panic("*macro expansion failed");
+	       panic("*macro expansion failed for %s", q->q_name);
 
 	  /* Insert expansion before original phrase */
 	  q1 = do_template(t1, &words[1], q, q->q_arg);
