@@ -33,8 +33,7 @@ IMPORT xTypes STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tAbsImport.MkBlip 4 4 0x00010001
-FRAME
+PROC tAbsImport.MkBlip 4 3 0x00010001
 ! PROCEDURE MkBlip(): X.Thing;
 !   NEW(p); RETURN p
 CONST 0
@@ -46,7 +45,7 @@ LDLW -4
 RETURN
 END
 
-PROC tAbsImport.Blip.Print 0 4 0x00100001
+PROC tAbsImport.Blip.Print 0 3 0x00100001
 ! PROCEDURE (p: Thang) Print*; BEGIN Out.String("A Blip") END Print;
 CONST 7
 GLOBAL tAbsImport.%1

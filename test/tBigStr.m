@@ -32,7 +32,6 @@ IMPORT Strings STAMP
 ENDHDR
 
 PROC tBigStr.%main 4 4 0
-FRAME
 !   Out.Int(LEN(s), 0); Out.Ln;
 CONST 0
 CONST 301

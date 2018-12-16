@@ -86,8 +86,7 @@ CALLW 2
 RETURN
 END
 
-PROC tDigits07.Search 16 5 0x00404001
-FRAME
+PROC tDigits07.Search 16 4 0x00404001
 ! PROCEDURE Search(k, n: INTEGER; s: Set);
 !   IF k = 10 THEN
 LDLW 12
@@ -183,8 +182,7 @@ LABEL L8
 RETURN
 END
 
-PROC tDigits07.Main 4 5 0x00010001
-FRAME
+PROC tDigits07.Main 4 4 0x00010001
 ! PROCEDURE Main;
 !   NEW(s);
 CONST 0
@@ -201,7 +199,7 @@ CALL 3
 RETURN
 END
 
-PROC tDigits07.%main 0 2 0
+PROC tDigits07.%main 0 1 0
 !   Main
 GLOBAL tDigits07.Main
 CALL 0

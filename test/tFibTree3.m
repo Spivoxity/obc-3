@@ -118,8 +118,7 @@ IMPORT Out STAMP
 IMPORT Random STAMP
 ENDHDR
 
-PROC tFibTree3.Alloc 16 6 tFibTree3.Alloc.%map
-FRAME
+PROC tFibTree3.Alloc 16 5 tFibTree3.Alloc.%map
 ! PROCEDURE Alloc(a: node; VAR b: node): tree;
 LOCAL 12
 LDLW 16
@@ -191,8 +190,7 @@ LDLW -8
 RETURN
 END
 
-PROC tFibTree3.Cons 8 6 0x00318001
-FRAME
+PROC tFibTree3.Cons 8 5 0x00318001
 ! PROCEDURE Cons(l, r: tree): tree;
 !   a[0] := l; a[1] := r;
 LDLW 12
@@ -214,7 +212,7 @@ CALLW 4
 RETURN
 END
 
-PROC tFibTree3.Build 0 4 0
+PROC tFibTree3.Build 0 3 0
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -233,9 +231,8 @@ LDLW 12
 CONST 2
 MINUS
 GLOBAL tFibTree3.Build
-CONST 0
 STKMAP 0x00000005
-LCALLW 1
+CALLW 1
 GLOBAL tFibTree3.Cons
 CALLW 2
 RETURN
@@ -324,7 +321,7 @@ END
 
 PRIMDEF tFibTree3.GcDebug gc_debug VX
 
-PROC tFibTree3.%main 0 4 0
+PROC tFibTree3.%main 0 3 0
 !   GcDebug("s");
 CONST 2
 GLOBAL tFibTree3.%2

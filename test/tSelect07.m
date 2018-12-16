@@ -119,7 +119,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tSelect07.Randomize 4 4 0
-FRAME
 ! PROCEDURE Randomize;
 !   FOR i := 0 TO N-1 DO a[i] := Random.Random() END;
 CONST 0
@@ -147,7 +146,6 @@ RETURN
 END
 
 PROC tSelect07.Sort 12 4 0x00100001
-FRAME
 ! PROCEDURE Sort(VAR u: ARRAY OF INTEGER; N: INTEGER);
 !   r := 0;
 CONST 0
@@ -208,7 +206,6 @@ RETURN
 END
 
 PROC tSelect07.Swap 4 2 0x00300001
-FRAME
 ! PROCEDURE Swap(VAR a, b: INTEGER);
 !   t := a; a := b; b := t
 LDLW 12
@@ -225,7 +222,6 @@ RETURN
 END
 
 PROC tSelect07.Partition 12 4 0
-FRAME
 ! PROCEDURE Partition(m, n: INTEGER): INTEGER;
 !   i := m + Random.Roll(n-m);
 LDLW 12
@@ -317,8 +313,7 @@ LDLW -4
 RETURN
 END
 
-PROC tSelect07.Select 8 5 0
-FRAME
+PROC tSelect07.Select 8 4 0
 ! PROCEDURE Select(k, m, n: INTEGER): INTEGER;
 !   IF n - m = 1 THEN
 LDLW 20
@@ -397,8 +392,7 @@ LDLW -8
 RETURN
 END
 
-PROC tSelect07.Select2 12 4 0
-FRAME
+PROC tSelect07.Select2 12 3 0
 ! PROCEDURE Select2(k, m, n: INTEGER): INTEGER;
 !   done := FALSE;
 CONST 0
@@ -465,7 +459,7 @@ LDLW -8
 RETURN
 END
 
-PROC tSelect07.%main 0 6 0
+PROC tSelect07.%main 0 5 0
 !   Randomize;
 GLOBAL tSelect07.Randomize
 CALL 0

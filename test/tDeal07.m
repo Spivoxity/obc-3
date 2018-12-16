@@ -94,7 +94,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tDeal07.MakeDeck 12 5 0
-FRAME
 ! PROCEDURE MakeDeck;
 !   i := 0;
 CONST 0
@@ -153,7 +152,6 @@ RETURN
 END
 
 PROC tDeal07.MakeDeal 32 5 0x00100001
-FRAME
 ! PROCEDURE MakeDeal(VAR deal: Deal);
 !   FOR p := 0 TO NP-1 DO k[p] := 0 END;
 CONST 0
@@ -253,7 +251,6 @@ RETURN
 END
 
 PROC tDeal07.Main 112 5 0
-FRAME
 ! PROCEDURE Main;
 !   MakeDeck;
 GLOBAL tDeal07.MakeDeck
@@ -309,7 +306,7 @@ LABEL L18
 RETURN
 END
 
-PROC tDeal07.%main 0 2 0
+PROC tDeal07.%main 0 1 0
 !   Main
 GLOBAL tDeal07.Main
 CALL 0

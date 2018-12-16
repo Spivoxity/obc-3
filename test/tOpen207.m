@@ -33,7 +33,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tOpen207.Sum 12 5 0x00100001
-FRAME
 ! PROCEDURE Sum(a: flex): INTEGER;
 !   s := 0;
 CONST 0
@@ -70,7 +69,7 @@ LDLW -8
 RETURN
 END
 
-PROC tOpen207.%main 0 6 0
+PROC tOpen207.%main 0 5 0
 !   NEW(b, 5);
 CONST 5
 CONST 1

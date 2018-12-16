@@ -31,8 +31,7 @@ MODULE tShort STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tShort.Main 12 4 0
-FRAME
+PROC tShort.Main 12 3 0
 ! PROCEDURE Main;
 !   x := 8; y := -1; z := 8;
 CONST 8
@@ -101,7 +100,7 @@ CALL 0
 RETURN
 END
 
-PROC tShort.%main 0 2 0
+PROC tShort.%main 0 1 0
 !   Main
 GLOBAL tShort.Main
 CALL 0

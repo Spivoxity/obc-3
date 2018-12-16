@@ -35,7 +35,7 @@ MODULE tLen07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLen07.OutInt 0 4 0
+PROC tLen07.OutInt 0 3 0
 ! PROCEDURE OutInt(z: INTEGER);
 !   Out.Int(z, 0); Out.Ln
 CONST 0
@@ -48,7 +48,6 @@ RETURN
 END
 
 PROC tLen07.Say 4 3 0x00100001
-FRAME
 ! PROCEDURE Say(bar: ARRAY OF ARRAY OF CHAR);
 !   n := LEN(bar); OutInt(n);
 LDLW 16
@@ -77,7 +76,7 @@ CALL 1
 RETURN
 END
 
-PROC tLen07.%main 0 5 0
+PROC tLen07.%main 0 4 0
 !   NEW(foo); Say(foo^)
 CONST 2000
 CONST 0

@@ -74,7 +74,7 @@ IMPORT Random STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tInorder.Traverse1 0 4 0x00100001
+PROC tInorder.Traverse1 0 3 0x00100001
 ! PROCEDURE Traverse1(t: Tree);
 !   IF t # NIL THEN
 LDLW 12
@@ -103,7 +103,6 @@ RETURN
 END
 
 PROC tInorder.Traverse2 4008 4 tInorder.Traverse2.%map
-FRAME
 ! PROCEDURE Traverse2(t: Tree);
 !   u := t; sp := 0;
 LDLW 12
@@ -157,8 +156,7 @@ LABEL L5
 RETURN
 END
 
-PROC tInorder.RandTree 4 5 0x00010001
-FRAME
+PROC tInorder.RandTree 4 4 0x00010001
 ! PROCEDURE RandTree(depth: INTEGER): Tree;
 !   IF Random.Roll(8) < depth THEN RETURN NIL END;
 CONST 8
@@ -203,7 +201,7 @@ LDLW -4
 RETURN
 END
 
-PROC tInorder.%main 0 3 0
+PROC tInorder.%main 0 2 0
 !   t := RandTree(0);
 CONST 0
 GLOBAL tInorder.RandTree

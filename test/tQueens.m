@@ -62,7 +62,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tQueens.queens 16 4 0x00200001
-FRAME
 ! PROCEDURE queens(k: INTEGER; VAR choice: board);
 !   IF k = N THEN
 LDLW 12
@@ -156,7 +155,6 @@ RETURN
 END
 
 PROC tQueens.print 4 4 0x00100001
-FRAME
 ! PROCEDURE print(VAR choice: board);
 !   x := 0;
 CONST 0
@@ -194,7 +192,7 @@ CALL 0
 RETURN
 END
 
-PROC tQueens.%main 0 4 0
+PROC tQueens.%main 0 3 0
 !   queens(0, choice)
 GLOBAL tQueens.choice
 CONST 0

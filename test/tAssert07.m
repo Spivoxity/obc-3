@@ -23,7 +23,7 @@ END tAssert07.
 MODULE tAssert07 STAMP 0
 ENDHDR
 
-PROC tAssert07.Fail 0 4 0
+PROC tAssert07.Fail 0 3 0
 ! PROCEDURE Fail;
 CONST 0
 CONST 12
@@ -32,7 +32,7 @@ CALL 2
 RETURN
 END
 
-PROC tAssert07.%main 0 2 0
+PROC tAssert07.%main 0 1 0
 !   Fail
 GLOBAL tAssert07.Fail
 CALL 0

@@ -53,8 +53,7 @@ LSR
 RETURN
 END
 
-PROC tDiv1007.Test 12 4 0
-FRAME
+PROC tDiv1007.Test 12 3 0
 ! PROCEDURE Test;
 !   FOR x := 0 TO LSL(1, 12) - 1 DO
 CONST 0
@@ -109,7 +108,7 @@ LABEL L5
 RETURN
 END
 
-PROC tDiv1007.%main 0 4 0
+PROC tDiv1007.%main 0 3 0
 !   Test;
 GLOBAL tDiv1007.Test
 CALL 0

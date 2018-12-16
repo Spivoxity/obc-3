@@ -34,7 +34,7 @@ MODULE tBigMap STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBigMap.%main 0 4 0
+PROC tBigMap.%main 0 3 0
 !   Out.Int(LEN(exp1), 0); Out.Ln
 CONST 0
 CONST 500000

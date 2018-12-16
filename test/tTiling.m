@@ -100,7 +100,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tTiling.Init 12 4 0
-FRAME
 ! PROCEDURE Init;
 !   FOR i := 0 TO N-1 DO
 CONST 0
@@ -143,17 +142,17 @@ RETURN
 END
 
 PROC tTiling.DoPred 4 8 0
-FRAME
 ! PROCEDURE DoPred(s, u: SET; p: PROCEDURE (t: SET));
 !   IF s = {} THEN
 LDLW 12
 JNEQZ L16
 !     p(u)
 LDLW 16
+LDLW 24
+STATLINK
 LDLW 20
 NCHECK 34
-LDLW 24
-LCALL 1
+CALL 1
 RETURN
 LABEL L16
 !     m := max[ORD(s)];
@@ -221,8 +220,8 @@ CALL 4
 RETURN
 END
 
-PROC tTiling.%4.Inc 4 5 0
-LFRAME
+PROC tTiling.%4.Inc 4 4 0
+SAVELINK
 !   PROCEDURE Inc(u: SET);
 !     ways := ways + Calc(k-1, u)
 LDLW -4
@@ -239,8 +238,7 @@ STNW -4
 RETURN
 END
 
-PROC tTiling.Calc 4 6 0
-FRAME
+PROC tTiling.Calc 4 5 0
 ! PROCEDURE Calc(k: INTEGER; s: SET): INTEGER;
 !   IF k = 0 THEN
 LDLW 12
@@ -342,7 +340,7 @@ LDLW -4
 RETURN
 END
 
-PROC tTiling.Main 0 5 0
+PROC tTiling.Main 0 4 0
 ! PROCEDURE Main;
 !   Out.Int(Calc(N, {0..N-1}), 0); Out.Ln;
 CONST 0
@@ -389,7 +387,7 @@ CALL 0
 RETURN
 END
 
-PROC tTiling.%main 0 2 0
+PROC tTiling.%main 0 1 0
 !   Init; Main
 GLOBAL tTiling.Init
 CALL 0

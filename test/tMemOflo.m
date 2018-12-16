@@ -21,7 +21,7 @@ MODULE tMemOflo STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tMemOflo.%main 0 4 0
+PROC tMemOflo.%main 0 3 0
 !   Out.String("OK"); Out.Ln
 CONST 3
 GLOBAL tMemOflo.%1

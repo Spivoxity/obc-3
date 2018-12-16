@@ -23,7 +23,7 @@ MODULE tBool07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBool07.%main 0 6 0
+PROC tBool07.%main 0 5 0
 !   x := FLT(3);
 FCONST 3.0
 STGF tBool07.x

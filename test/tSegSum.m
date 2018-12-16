@@ -50,7 +50,7 @@ INC
 RETURN
 END
 
-PROC tSegSum.%main 0 4 0
+PROC tSegSum.%main 0 3 0
 !   u := 0; v := 0; count := 0; sum := 0;
 CONST 0
 STGW tSegSum.u

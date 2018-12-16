@@ -28,7 +28,7 @@ MODULE tTrunc07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tTrunc07.%main 0 4 0
+PROC tTrunc07.%main 0 3 0
 !         x := 32767;
 CONST 32767
 STGS tTrunc07.x

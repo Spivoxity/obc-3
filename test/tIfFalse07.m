@@ -20,7 +20,7 @@ MODULE tIfFalse07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tIfFalse07.%main 0 4 0
+PROC tIfFalse07.%main 0 3 0
 !   Out.String("Testing:");
 CONST 9
 GLOBAL tIfFalse07.%1

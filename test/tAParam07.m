@@ -37,7 +37,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tAParam07.Sum 8 4 0x00400001
-FRAME
 ! PROCEDURE Sum(dummy: LONGREAL; a: row): INTEGER;
 !   dummy := 0.0;
 DCONST 0.0
@@ -70,7 +69,7 @@ LDLW -8
 RETURN
 END
 
-PROC tAParam07.%main 0 6 0
+PROC tAParam07.%main 0 5 0
 !   FOR j := 0 TO LEN(b)-1 DO 
 CONST 0
 STGW tAParam07.j

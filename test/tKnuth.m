@@ -96,7 +96,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tKnuth.Normalize 4 4 0x00100001
-FRAME
 ! PROCEDURE Normalize(VAR a: bignum);
 !   FOR i := 0 TO N-2 DO
 CONST 0
@@ -147,7 +146,6 @@ RETURN
 END
 
 PROC tKnuth.Set 4 4 0x00100001
-FRAME
 ! PROCEDURE Set(VAR a: bignum; x: INTEGER);
 !   a[0] := x;
 LDLW 16
@@ -177,7 +175,6 @@ RETURN
 END
 
 PROC tKnuth.Add 44 4 0x00100001
-FRAME
 ! PROCEDURE Add(VAR a1: bignum; a2: bignum);
 LOCAL -44
 LDLW 16
@@ -216,8 +213,7 @@ CALL 1
 RETURN
 END
 
-PROC tKnuth.PrintPiece 4 4 0
-FRAME
+PROC tKnuth.PrintPiece 4 3 0
 ! PROCEDURE PrintPiece(x: INTEGER);
 !   m := M;
 CONST 1000000000
@@ -252,7 +248,6 @@ RETURN
 END
 
 PROC tKnuth.Print 4 4 0x00100001
-FRAME
 ! PROCEDURE Print(VAR a: bignum);
 !   i := N-1;
 CONST 9
@@ -298,7 +293,6 @@ RETURN
 END
 
 PROC tKnuth.Calc 896 4 0x00200001
-FRAME
 ! PROCEDURE Calc(n: INTEGER; VAR ans: bignum);
 !   FOR j := 0 TO K-1 DO arg[j] := 0; Set(val[j], 1) END;
 CONST 0
@@ -404,7 +398,7 @@ FIXCOPY
 RETURN
 END
 
-PROC tKnuth.%main 0 4 0
+PROC tKnuth.%main 0 3 0
 !   Calc(10000, ans);
 GLOBAL tKnuth.ans
 CONST 10000

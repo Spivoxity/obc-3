@@ -44,8 +44,7 @@ MODULE tCast STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCast.PrintNode 4 4 0
-FRAME
+PROC tCast.PrintNode 4 3 0
 ! PROCEDURE PrintNode(n: Node);
 LOCAL -4
 LDLW 12
@@ -137,7 +136,7 @@ CALL 0
 RETURN
 END
 
-PROC tCast.%main 0 4 0
+PROC tCast.%main 0 3 0
 !   NEW(a); 
 CONST 4
 GLOBAL tCast.Node

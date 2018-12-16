@@ -57,7 +57,7 @@ MODULE tLongJump STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLongJump.%main 0 4 0
+PROC tLongJump.%main 0 3 0
 !   x := 0;
 CONST 0
 STGW tLongJump.x

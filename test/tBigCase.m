@@ -226,7 +226,7 @@ MODULE tBigCase STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBigCase.%main 0 4 0
+PROC tBigCase.%main 0 3 0
 !   i := 107;
 CONST 107
 STGW tBigCase.i

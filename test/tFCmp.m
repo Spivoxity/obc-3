@@ -54,7 +54,7 @@ FLT
 RETURN
 END
 
-PROC tFCmp.SCmp 0 6 0
+PROC tFCmp.SCmp 0 5 0
 ! PROCEDURE SCmp(a, b: ARRAY OF CHAR): BOOLEAN;
 LOCAL 12
 LDLW 16
@@ -74,7 +74,7 @@ LT
 RETURN
 END
 
-PROC tFCmp.PBool 0 4 0
+PROC tFCmp.PBool 0 3 0
 ! PROCEDURE PBool(b: BOOLEAN);
 !   IF b THEN
 LDLC 12
@@ -98,7 +98,7 @@ CALL 0
 RETURN
 END
 
-PROC tFCmp.%main 0 6 0
+PROC tFCmp.%main 0 5 0
 !   PBool(FCmp(-2.0, -1.0));
 FCONST -1.0
 FCONST -2.0

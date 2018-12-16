@@ -34,8 +34,7 @@ MODULE tFac07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFac07.fac 4 4 0
-FRAME
+PROC tFac07.fac 4 3 0
 ! PROCEDURE fac(n: INTEGER): INTEGER;
 !   IF n = 0 THEN 
 LDLW 12
@@ -59,7 +58,7 @@ LDLW -4
 RETURN
 END
 
-PROC tFac07.%main 0 4 0
+PROC tFac07.%main 0 3 0
 !   Out.String("The factorial of "); Out.Int(nnn, 0);
 CONST 18
 GLOBAL tFac07.%1

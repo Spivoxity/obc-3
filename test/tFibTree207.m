@@ -104,7 +104,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tFibTree207.Cons 4 4 0x00310001
-FRAME
 ! PROCEDURE Cons(l, r: tree): tree;
 !   NEW(p);
 CONST 160
@@ -142,8 +141,7 @@ LDNW 132
 RETURN
 END
 
-PROC tFibTree207.Build 4 4 0x00010001
-FRAME
+PROC tFibTree207.Build 4 3 0x00010001
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -166,9 +164,8 @@ LDLW 12
 CONST 2
 MINUS
 GLOBAL tFibTree207.Build
-CONST 0
 STKMAP 0x00000005
-LCALLW 1
+CALLW 1
 GLOBAL tFibTree207.Cons
 CALLW 2
 STLW -4
@@ -178,7 +175,7 @@ LDLW -4
 RETURN
 END
 
-PROC tFibTree207.Print 0 3 0x00100001
+PROC tFibTree207.Print 0 2 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
@@ -215,8 +212,7 @@ CALL 1
 RETURN
 END
 
-PROC tFibTree207.count 4 4 0x00100001
-FRAME
+PROC tFibTree207.count 4 3 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
@@ -247,7 +243,7 @@ END
 
 PRIMDEF tFibTree207.GcDebug gc_debug VX
 
-PROC tFibTree207.%main 0 4 0
+PROC tFibTree207.%main 0 3 0
 !   GcDebug("gs");
 CONST 3
 GLOBAL tFibTree207.%1

@@ -46,7 +46,7 @@ TIMES
 RETURN
 END
 
-PROC tNasty.%main 0 4 0
+PROC tNasty.%main 0 3 0
 !   x := 3; y := 5;
 CONST 3
 STGW tNasty.x

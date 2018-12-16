@@ -99,8 +99,7 @@ MODULE tIter207 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tIter207.MakeList 12 4 0x0010c001
-FRAME
+PROC tIter207.MakeList 12 3 0x0010c001
 ! PROCEDURE MakeList(s: ARRAY OF CHAR): List;
 !   p := NIL;
 CONST 0
@@ -146,7 +145,7 @@ LDLW -8
 RETURN
 END
 
-PROC tIter207.VRec.Visit 0 4 0x00100001
+PROC tIter207.VRec.Visit 0 3 0x00100001
 ! PROCEDURE (self: Visitor) Visit(n: INTEGER);
 !   Out.Int(n, 0)
 CONST 0
@@ -156,8 +155,7 @@ CALL 2
 RETURN
 END
 
-PROC tIter207.Print 4 4 0x00110001
-FRAME
+PROC tIter207.Print 4 3 0x00110001
 ! PROCEDURE Print(p: List);
 !   NEW(v);
 CONST 0
@@ -174,7 +172,6 @@ RETURN
 END
 
 PROC tIter207.Accept 4 4 0x00310001
-FRAME
 ! PROCEDURE Accept(p: List; v: Visitor);
 !   q := p;
 LDLW 12
@@ -214,8 +211,7 @@ STOREW
 RETURN
 END
 
-PROC tIter207.Length 4 4 0x00110001
-FRAME
+PROC tIter207.Length 4 3 0x00110001
 ! PROCEDURE Length(p: List): INTEGER;
 !   NEW(c); c.count := 0;
 CONST 4
@@ -239,8 +235,7 @@ LOADW
 RETURN
 END
 
-PROC tIter207.RRec.Visit 4 4 0x00110001
-FRAME
+PROC tIter207.RRec.Visit 4 3 0x00110001
 ! PROCEDURE (self: Reverser) Visit(n: INTEGER);
 !   NEW(p); p.head := n; p.tail := self.list; self.list := p
 CONST 8
@@ -265,8 +260,7 @@ STOREW
 RETURN
 END
 
-PROC tIter207.Reverse 4 4 0x00110001
-FRAME
+PROC tIter207.Reverse 4 3 0x00110001
 ! PROCEDURE Reverse(p: List): List;
 !   NEW(r); r.list := NIL;
 CONST 4
@@ -290,8 +284,7 @@ LOADW
 RETURN
 END
 
-PROC tIter207.Main 4 4 0x00010001
-FRAME
+PROC tIter207.Main 4 3 0x00010001
 ! PROCEDURE Main;
 !   p := MakeList("31415926");
 CONST 9
@@ -319,7 +312,7 @@ CALL 0
 RETURN
 END
 
-PROC tIter207.%main 0 2 0
+PROC tIter207.%main 0 1 0
 !   Main
 GLOBAL tIter207.Main
 CALL 0

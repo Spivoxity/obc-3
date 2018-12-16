@@ -435,7 +435,6 @@ RETURN
 END
 
 PROC tPermute07.Permute 36 4 0x00100001
-FRAME
 ! PROCEDURE Permute(VAR arg: ARRAY OF INTEGER);
 !   FOR i := 0 TO N-1 DO u[i] := 0 END;
 CONST 0
@@ -639,7 +638,6 @@ RETURN
 END
 
 PROC tPermute07.Test 44 4 0
-FRAME
 ! PROCEDURE Test;
 !   FOR i := 0 TO 2*N DO val[i] := Random.Random() END;
 CONST 0
@@ -765,7 +763,6 @@ RETURN
 END
 
 PROC tPermute07.Main 4 2 0
-FRAME
 ! PROCEDURE Main;
 !   FOR n := 0 TO 99 DO Test END
 CONST 0
@@ -782,7 +779,7 @@ LABEL L42
 RETURN
 END
 
-PROC tPermute07.%main 0 2 0
+PROC tPermute07.%main 0 1 0
 !   Main
 GLOBAL tPermute07.Main
 CALL 0

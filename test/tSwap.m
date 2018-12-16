@@ -67,7 +67,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tSwap.one 12 6 0
-FRAME
 ! PROCEDURE one;
 !   x, y := 3, 4;
 CONST 4
@@ -124,7 +123,6 @@ RETURN
 END
 
 PROC tSwap.two 20 5 0
-FRAME
 ! PROCEDURE two;
 !   i := 2;
 CONST 2
@@ -181,7 +179,6 @@ RETURN
 END
 
 PROC tSwap.three 12 4 0x0001c001
-FRAME
 ! PROCEDURE three;
 !   NEW(p); NEW(q);
 CONST 8
@@ -260,7 +257,7 @@ CALL 0
 RETURN
 END
 
-PROC tSwap.%main 0 2 0
+PROC tSwap.%main 0 1 0
 !   one; two; three
 GLOBAL tSwap.one
 CALL 0

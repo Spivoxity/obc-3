@@ -47,7 +47,7 @@ MODULE tRecurse STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tRecurse.Sum 0 6 0
+PROC tRecurse.Sum 0 5 0
 ! PROCEDURE Sum(n: INTEGER; a: ARRAY OF INTEGER): INTEGER;
 LOCAL 16
 LDLW 20
@@ -78,7 +78,7 @@ PLUS
 RETURN
 END
 
-PROC tRecurse.Sumorial 0 4 0
+PROC tRecurse.Sumorial 0 3 0
 ! PROCEDURE Sumorial(n: INTEGER): INTEGER;
 !   IF n = 0 THEN
 LDLW 12
@@ -97,7 +97,7 @@ PLUS
 RETURN
 END
 
-PROC tRecurse.%main 0 6 0
+PROC tRecurse.%main 0 5 0
 !   FOR n := 0 TO N-1 DO a[n] := N-n END;
 CONST 0
 STGW tRecurse.n

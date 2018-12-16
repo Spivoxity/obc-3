@@ -42,7 +42,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tFlex.PostIncr 4 3 0x00100001
-FRAME
 ! PROCEDURE PostIncr(VAR x: INTEGER): INTEGER;
 !   y := x;
 LDLW 12
@@ -80,7 +79,7 @@ STIW
 RETURN
 END
 
-PROC tFlex.%main 0 6 0
+PROC tFlex.%main 0 5 0
 !   NEW(xxx[0], 5);
 CONST 5
 CONST 1

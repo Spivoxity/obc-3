@@ -48,7 +48,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tTypeCase07.doeval 4 4 0x00100001
-FRAME
 ! PROCEDURE doeval (ex: Obj): INTEGER;
 !   CASE ex OF
 LDLW 12
@@ -119,7 +118,7 @@ LDLW -4
 RETURN
 END
 
-PROC tTypeCase07.%main 0 4 0
+PROC tTypeCase07.%main 0 3 0
 !   NEW(p); NEW(q);
 CONST 0
 GLOBAL tTypeCase07.Empty

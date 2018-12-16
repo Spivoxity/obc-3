@@ -56,7 +56,7 @@ MODULE tOver07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOver07.Print 0 6 0
+PROC tOver07.Print 0 5 0
 ! PROCEDURE Print(x: LONGREAL);
 !   Out.Fixed(x, 0, 6); Out.Ln
 CONST 6

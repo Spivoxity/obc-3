@@ -24,7 +24,7 @@ MODULE tNotOpen STAMP 0
 IMPORT Files STAMP
 ENDHDR
 
-PROC tNotOpen.%main 0 3 0
+PROC tNotOpen.%main 0 2 0
 !   Files.Close(f)
 LDGW tNotOpen.f
 GLOBAL Files.Close

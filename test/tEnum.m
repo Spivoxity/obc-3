@@ -41,7 +41,7 @@ IMPORT xPrelude STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tEnum.Print 0 4 0
+PROC tEnum.Print 0 3 0
 ! PROCEDURE Print(c: X.colour);
 !   IF c = X.red THEN
 LDLW 12
@@ -85,7 +85,7 @@ CALL 2
 RETURN
 END
 
-PROC tEnum.%main 0 4 0
+PROC tEnum.%main 0 3 0
 !   Out.Int(SIZE(X.colour), 0); Out.Ln;
 CONST 0
 CONST 4

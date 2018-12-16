@@ -59,7 +59,7 @@ MODULE tGC2 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tGC2.Reverse 0 4 0x00100001
+PROC tGC2.Reverse 0 3 0x00100001
 ! PROCEDURE Reverse(a: ptr): ptr;
 !   IF a = NIL THEN
 LDLW 12
@@ -82,8 +82,7 @@ CALLW 2
 RETURN
 END
 
-PROC tGC2.Snoc 4 4 0x00110001
-FRAME
+PROC tGC2.Snoc 4 3 0x00110001
 ! PROCEDURE Snoc(a: ptr; x: INTEGER): ptr;
 !   NEW(r);
 CONST 8
@@ -127,7 +126,7 @@ LDLW -4
 RETURN
 END
 
-PROC tGC2.Sum 0 4 0x00100001
+PROC tGC2.Sum 0 3 0x00100001
 ! PROCEDURE Sum(a: ptr): INTEGER;
 !   IF a = NIL THEN
 LDLW 12
@@ -151,7 +150,7 @@ END
 
 PRIMDEF tGC2.GcHeapSize gc_heap_size I
 
-PROC tGC2.%main 0 4 0
+PROC tGC2.%main 0 3 0
 !   a := NIL;
 CONST 0
 STGW tGC2.a
