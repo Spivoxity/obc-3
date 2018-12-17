@@ -389,15 +389,24 @@ equiv CALLQ 1       { JPROC, SLIDEQ $a }
 equiv CALLF 1       { JPROC, SLIDEF $a }
 equiv CALLD 1       { JPROC, SLIDED $a }
 
+# STATLINK saves a static link in a 'secret place' just before a proedure
+# call.  The secret place is chosen to be the location where the called
+# procedure will store its static link, which can be computed as a negative
+# offset from the stack pointer.  The fixed offset means that STATLINK
+# will work properly only as part of the calling sequence
+#     <static link> / STATLINK / <load proc addr> / [STKMAP] / CALL
+# and not (e.g.) if the static link is saved *before* the parameters
+# are put on the stack, or if <load proc addr> requires a stack depth
+# of more than 3.
 inst STATLINK 0 S0 {
      /*
          NOW           LATER
 
          param 2       param 2
          param 1       param 1
-     sp: stat link     proc addr 
-                       ret addr
-                   bp: dyn link
+     sp: stat link     proc addr |
+                       ret addr  | HEAD
+                   bp: dyn link  V
                        stat link
      */
      sp[1-HEAD+SL].a = sp[0].a; sp++;
@@ -408,8 +417,11 @@ inst STATLINK 0 S0 {
      store(V_MEMW, 1);
 }
 
-# SAVELINK is implemented by protecting the static link
-# when the frame is cleared
+# SAVELINK moves the static link from the 'secret place' to its proper
+# location in the frame of the called procedure.  Because the secret
+# place is actually the proper location already, all that is needed is
+# to protecting the static link when the frame is cleared (see the call
+# to memset in interp.c).
 inst SAVELINK 0 S0 { } { }
 
 inst JPROC 0 S0 {

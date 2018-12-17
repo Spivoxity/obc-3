@@ -1,0 +1,122 @@
+MODULE tCPSFib;
+
+IMPORT Out;
+
+PROCEDURE Fib(n: INTEGER; k: PROCEDURE (v: INTEGER));
+  PROCEDURE k1(x: INTEGER);
+    PROCEDURE k2(y: INTEGER); BEGIN k(x+y) END k2;
+  BEGIN 
+    Fib(n-2, k2)
+  END k1;
+BEGIN
+  IF n <= 1 THEN
+    k(n)
+  ELSE
+    Fib(n-1, k1)
+  END
+END Fib;
+
+PROCEDURE Print(v: INTEGER);
+BEGIN
+  Out.Int(v, 0); Out.Ln
+END Print;
+
+BEGIN
+  Fib(20, Print)
+END tCPSFib.
+
+(*<<
+6765
+>>*)
+
+(*[[
+!! (SYMFILE #tCPSFib STAMP #tCPSFib.%main 1)
+!! (CHKSUM STAMP)
+!! 
+MODULE tCPSFib STAMP 0
+IMPORT Out STAMP
+ENDHDR
+
+PROC tCPSFib.%2.k2 4 3 0
+SAVELINK
+!     PROCEDURE k2(y: INTEGER); BEGIN k(x+y) END k2;
+LDLW -4
+LDNW 12
+LDLW 12
+PLUS
+LDLW -4
+LDNW -4
+LDNW 20
+STATLINK
+LDLW -4
+LDNW -4
+LDNW 16
+NCHECK 7
+CALL 1
+RETURN
+END
+
+PROC tCPSFib.%1.k1 4 4 0
+SAVELINK
+!   PROCEDURE k1(x: INTEGER);
+!     Fib(n-2, k2)
+LOCAL 0
+GLOBAL tCPSFib.%2.k2
+LDLW -4
+LDNW 12
+CONST 2
+MINUS
+GLOBAL tCPSFib.Fib
+CALL 3
+RETURN
+END
+
+PROC tCPSFib.Fib 0 4 0
+! PROCEDURE Fib(n: INTEGER; k: PROCEDURE (v: INTEGER));
+!   IF n <= 1 THEN
+LDLW 12
+CONST 1
+JGT L5
+!     k(n)
+LDLW 12
+LDLW 20
+STATLINK
+LDLW 16
+NCHECK 13
+CALL 1
+RETURN
+LABEL L5
+!     Fib(n-1, k1)
+LOCAL 0
+GLOBAL tCPSFib.%1.k1
+LDLW 12
+DEC
+GLOBAL tCPSFib.Fib
+CALL 3
+RETURN
+END
+
+PROC tCPSFib.Print 0 3 0
+! PROCEDURE Print(v: INTEGER);
+!   Out.Int(v, 0); Out.Ln
+CONST 0
+LDLW 12
+GLOBAL Out.Int
+CALL 2
+GLOBAL Out.Ln
+CALL 0
+RETURN
+END
+
+PROC tCPSFib.%main 0 4 0
+!   Fib(20, Print)
+CONST 0
+GLOBAL tCPSFib.Print
+CONST 20
+GLOBAL tCPSFib.Fib
+CALL 3
+RETURN
+END
+
+! End of file
+]]*)
