@@ -150,7 +150,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tDomino07.Ind 4 2 0
-FRAME
 ! PROCEDURE Ind(b: BOOLEAN): INTEGER;
 !   IF b THEN res := 1 ELSE res := 0 END
 LDLC 12
@@ -164,11 +163,10 @@ STLW -4
 LABEL L5
 ! RETURN res
 LDLW -4
-RETURNW
+RETURN
 END
 
 PROC tDomino07.Init 12 5 0
-FRAME
 ! PROCEDURE Init;
 !   FOR i := 0 TO n-1 DO
 CONST 0
@@ -225,8 +223,7 @@ LABEL L9
 RETURN
 END
 
-PROC tDomino07.Compute 8 6 0
-FRAME
+PROC tDomino07.Compute 8 5 0
 ! PROCEDURE Compute(i, j: INTEGER; s: SET): INTEGER;
 !   INC(calls);
 LDGW tDomino07.calls
@@ -435,10 +432,10 @@ STGW tDomino07.zero
 LABEL L29
 !   RETURN z
 LDLW -8
-RETURNW
+RETURN
 END
 
-PROC tDomino07.%main 0 6 0
+PROC tDomino07.%main 0 5 0
 !   Init;
 GLOBAL tDomino07.Init
 CALL 0

@@ -19,7 +19,7 @@ IMPORT Out STAMP
 IMPORT Random STAMP
 ENDHDR
 
-PROC tBigInt07.%main 0 4 0
+PROC tBigInt07.%main 0 3 0
 !   Out.Int(Random.MAXRAND, 0); Out.Ln
 CONST 0
 CONST 2147483646

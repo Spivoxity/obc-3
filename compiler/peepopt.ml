@@ -34,8 +34,6 @@ open Print
 open Error
 open Eval
 
-let rkind = ref VoidT
-
 type labdata = LabDef of labrec | Equiv of codelab
 and labrec = { y_id : codelab; y_refct : int ref; mutable y_return: bool }
 
@@ -169,10 +167,6 @@ let ruleset1 replace =
     | CONV (IntT, ShortT) :: (LOCAL _ | GLOBAL _) :: STORE ShortT :: _ -> 
 	replace 1 []
 
-    (* Don't lose precision in double conversion *)
-    | CONV (IntT, FloatT) :: CONV (FloatT, DoubleT) :: _ ->
-        replace 2 [CONV (IntT, DoubleT)]
-
     (* Specially for INC(local) and INC(global) *)
     | LOCAL a :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
 	  :: SWAP :: STORE s1 :: _  when s = s1 ->
@@ -205,8 +199,8 @@ let ruleset1 replace =
         replace 3 [CONST z; JUMPC (IntT, opposite w, lab)]
 
     (* Void returns *)
-    | LCALL (n, k) :: POP s :: _ when k <> VoidT ->
-	replace 2 [LCALL (n, VoidT)]
+    | CALL (n, k) :: POP s :: _ when k <> VoidT ->
+	replace 2 [CALL (n, VoidT)]
 
     (* Easy array bounds *)
     | DUP n :: POP 1 :: _ -> replace 2 []
@@ -228,8 +222,8 @@ let ruleset1 replace =
 	replace 1 []
     | JUMP lab :: i :: _ when not (is_label i) -> 
 	replace 2 [JUMP lab]
-    | RETURN s :: i :: _ when not (is_label i) -> 
-	replace 2 [RETURN s]
+    | RETURN :: i :: _ when not (is_label i) -> 
+	replace 2 [RETURN]
     | LABEL lab1 :: JUMP lab2 :: _ when not (same_lab lab1 lab2) ->
 	replace 1 []; equate lab1 lab2
     | LINE n :: JUMP lab2 :: _ -> 
@@ -242,10 +236,10 @@ let ruleset1 replace =
 	replace 1 []
     | LINE n :: LABEL lab :: _ ->
 	replace 2 [LABEL lab; LINE n]
-    | LABEL lab :: RETURN s :: _ when not (is_return lab) ->
-        rkind := s; set_return lab; replace 2 [LABEL lab; RETURN s]
+    | LABEL lab :: RETURN :: _ when not (is_return lab) ->
+        set_return lab; replace 2 [LABEL lab; RETURN]
     | JUMP lab :: _ when is_return lab ->
-        replace 1 [RETURN !rkind]
+        replace 1 [RETURN]
     | NOP :: _ -> replace 1 []
 
     | _ -> ()
@@ -326,8 +320,8 @@ let ruleset2 replace =
     | CONST n :: STI IntT :: _ -> 
 	replace 2 [STNW (4 * int_of_integer n)]
 
-    | CONST z :: LCALL (n, k) :: _ when z = integer 0 ->
-        replace 2 [CALL (n, k)]
+    | CONST z :: STATLINK :: _ when z = integer 0 ->
+        replace 2 []
 
     (* Eliminate simple pops and swaps *)
     | i1 :: POP 1 :: _ when simple i1 -> 
@@ -355,11 +349,8 @@ let ruleset3 replace =
 	replace 1 [CONST (int_value x); CONV (IntT, LongT)]
 
       (* Small results *)
-    | LCALL (n, (CharT|BoolT|SysByteT|ShortT)) :: _ -> 
-	replace 1 [LCALL (n, IntT)]
     | CALL (n, (CharT|BoolT|SysByteT|ShortT)) :: _ -> 
 	replace 1 [CALL (n, IntT)]
-    | RETURN (CharT|BoolT|SysByteT|ShortT) :: _ -> replace 1 [RETURN IntT]
 
       (* Eliminate operands that don't fit in 16 bits *)
     | LOCAL n :: _ when not (fits 16 n) ->

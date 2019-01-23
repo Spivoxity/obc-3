@@ -50,7 +50,7 @@ MODULE tCases07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCases07.%main 0 4 0
+PROC tCases07.%main 0 3 0
 !   i := 0;
 CONST 0
 STGW tCases07.i

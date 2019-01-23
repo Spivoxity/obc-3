@@ -95,7 +95,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tChange.Normalize 4 4 0x00100001
-FRAME
 ! PROCEDURE Normalize(VAR a: bignum);
 !   FOR i := 0 TO N-2 DO
 CONST 0
@@ -146,7 +145,6 @@ RETURN
 END
 
 PROC tChange.Set 4 4 0x00100001
-FRAME
 ! PROCEDURE Set(VAR a: bignum; x: INTEGER);
 !   a[0] := x;
 LDLW 16
@@ -176,7 +174,6 @@ RETURN
 END
 
 PROC tChange.Add 44 4 0x00100001
-FRAME
 ! PROCEDURE Add(VAR a1: bignum; a2: bignum);
 LOCAL -44
 LDLW 16
@@ -215,8 +212,7 @@ CALL 1
 RETURN
 END
 
-PROC tChange.PrintPiece 4 4 0
-FRAME
+PROC tChange.PrintPiece 4 3 0
 ! PROCEDURE PrintPiece(x: INTEGER);
 !   m := M;
 CONST 1000000000
@@ -251,7 +247,6 @@ RETURN
 END
 
 PROC tChange.Print 4 4 0x00100001
-FRAME
 ! PROCEDURE Print(VAR a: bignum);
 !   i := N-1;
 CONST 9
@@ -296,8 +291,7 @@ LABEL L16
 RETURN
 END
 
-PROC tChange.Pay 28 6 0x00802001
-FRAME
+PROC tChange.Pay 28 5 0x00802001
 ! PROCEDURE Pay(goal: INTEGER; coin: ARRAY OF INTEGER; VAR ans: bignum);
 LOCAL 16
 LDLW 20
@@ -428,7 +422,7 @@ FIXCOPY
 RETURN
 END
 
-PROC tChange.%main 0 6 0
+PROC tChange.%main 0 5 0
 !   goal := 10000;
 CONST 10000
 STGW tChange.goal

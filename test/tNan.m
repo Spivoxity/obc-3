@@ -43,7 +43,7 @@ MODULE tNan STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tNan.%main 0 4 0
+PROC tNan.%main 0 3 0
 !   nan := 0.0;
 FCONST 0.0
 STGF tNan.nan

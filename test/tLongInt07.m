@@ -58,7 +58,7 @@ PROC tLongInt07.Square 0 4 0
 LDLQ 12
 LDLQ 12
 QTIMES
-RETURNQ
+RETURN
 END
 
 PROC tLongInt07.%main 0 5 0

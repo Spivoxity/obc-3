@@ -62,7 +62,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tLaminae07.Tally 8 4 0
-FRAME
 ! PROCEDURE Tally;
 !   FOR a := 3 TO 250001 DO
 CONST 3
@@ -114,7 +113,6 @@ RETURN
 END
 
 PROC tLaminae07.Solve 16 3 0
-FRAME
 ! PROCEDURE Solve(x: INTEGER): INTEGER;
 !   n := 0;
 CONST 0
@@ -163,10 +161,10 @@ JUMP L7
 LABEL L8
 !   RETURN n
 LDLW -12
-RETURNW
+RETURN
 END
 
-PROC tLaminae07.%main 0 4 0
+PROC tLaminae07.%main 0 3 0
 !   Out.Int(Solve(8), 0); Out.Ln;
 CONST 0
 CONST 8

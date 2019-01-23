@@ -151,14 +151,13 @@ PROC tDomino.Ind 0 2 0
 LDLC 12
 JEQZ L7
 CONST 1
-RETURNW
+RETURN
 LABEL L7
 CONST 0
-RETURNW
+RETURN
 END
 
 PROC tDomino.Init 12 5 0
-FRAME
 ! PROCEDURE Init;
 !   FOR i := 0 TO n-1 DO
 CONST 0
@@ -216,7 +215,6 @@ RETURN
 END
 
 PROC tDomino.Compute 8 6 0
-FRAME
 ! PROCEDURE Compute(i, j: INTEGER; s: SET): INTEGER;
 !   INC(calls);
 LDGW tDomino.calls
@@ -261,7 +259,7 @@ CONST 256
 BOUND 100
 PLUS
 LDIW
-RETURNW
+RETURN
 LABEL L16
 !   IF j = 0 THEN
 LDLW 16
@@ -424,10 +422,10 @@ STGW tDomino.zero
 LABEL L31
 !   RETURN z
 LDLW -8
-RETURNW
+RETURN
 END
 
-PROC tDomino.%main 0 6 0
+PROC tDomino.%main 0 5 0
 !   Init;
 GLOBAL tDomino.Init
 CALL 0

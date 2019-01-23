@@ -84,7 +84,6 @@ RETURN
 END
 
 PROC tSuper.foo.Print 4 5 0x00100001
-FRAME
 ! PROCEDURE (VAR f: foo) Print(i: INTEGER);
 !   b := (f IS baz);
 LDLW 16
@@ -140,7 +139,7 @@ LABEL L12
 RETURN
 END
 
-PROC tSuper.baz.Print 0 5 0x00100001
+PROC tSuper.baz.Print 0 4 0x00100001
 ! PROCEDURE (VAR b: baz) Print(i: INTEGER);
 !   Out.String("baz"); Out.Int(i, 0); Out.Ln;
 CONST 4
@@ -174,7 +173,7 @@ CALL 3
 RETURN
 END
 
-PROC tSuper.Print2 0 5 0
+PROC tSuper.Print2 0 4 0
 ! PROCEDURE Print2;
 !   f.Print(2)
 CONST 2
@@ -185,7 +184,7 @@ CALL 3
 RETURN
 END
 
-PROC tSuper.%main 0 4 0
+PROC tSuper.%main 0 3 0
 !   DoPrint(bb);
 GLOBAL tSuper.baz
 GLOBAL tSuper.bb

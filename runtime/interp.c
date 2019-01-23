@@ -42,6 +42,7 @@
       switch. */
 
 #include <math.h>
+#include <string.h>
 #include "obx.h"
 #include "keiko.h"
 
@@ -216,6 +217,9 @@ enter:
      bp = sp;								
      sp = (value *) ((uchar *) bp - cp[CP_FRAME].i);			
      if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);		
+
+     // Preserve the static link if the routine starts with SAVELINK
+     memset(sp, 0, (*pc == K_SAVELINK ? cp[CP_FRAME].i - 4 : cp[CP_FRAME].i));
 
 #ifdef JTABLE
      NEXT;

@@ -45,7 +45,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tPythag07.Pythag 8 6 0
-FRAME
 ! PROCEDURE Pythag(x, y: LONGREAL): LONGREAL;
 LABEL L1
 !     Out.LongReal(x); Out.Char(' '); Out.LongReal(y); Out.Ln;
@@ -101,10 +100,10 @@ JUMP L1
 LABEL L2
 !   RETURN x
 LDLD 12
-RETURND
+RETURN
 END
 
-PROC tPythag07.%main 0 6 0
+PROC tPythag07.%main 0 5 0
 !   Out.LongReal(Pythag(FLT(1), FLT(1))); Out.Ln;
 DCONST 1.0
 DCONST 1.0

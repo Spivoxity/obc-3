@@ -58,14 +58,8 @@ static growdecl(dep);
 #define dep growbuf(dep, int)
 #define ndeps growsize(dep)
 
-#ifdef HAVE_GETOPT_LONG_ONLY
 static int nfiles;
 static char **file;
-#else
-static growdecl(file);
-#define file growbuf(file, char *)
-#define nfiles growsize(file)
-#endif
 
 #define MAXLINE 1024
 

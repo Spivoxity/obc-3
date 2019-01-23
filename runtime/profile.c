@@ -30,6 +30,9 @@
 
 #define PROFILE 1
 #include "obx.h"
+#include <string.h>
+#include <stdlib.h>
+
 
 /* STATE MACHINE */
 

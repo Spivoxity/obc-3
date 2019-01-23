@@ -20,7 +20,7 @@ In procedure tAssert2.%main
 MODULE tAssert2 STAMP 0
 ENDHDR
 
-PROC tAssert2.%main 0 4 0
+PROC tAssert2.%main 0 3 0
 !   x := 3;
 CONST 3
 STGW tAssert2.x

@@ -43,10 +43,10 @@ STGW tNasty07.y
 LDLW 12
 CONST 2
 TIMES
-RETURNW
+RETURN
 END
 
-PROC tNasty07.%main 0 4 0
+PROC tNasty07.%main 0 3 0
 !   x := 3; y := 5;
 CONST 3
 STGW tNasty07.x

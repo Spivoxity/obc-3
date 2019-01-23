@@ -21,7 +21,7 @@ END tLibErr07.
 MODULE tLibErr07 STAMP 0
 ENDHDR
 
-PROC tLibErr07.%main 0 6 0
+PROC tLibErr07.%main 0 5 0
 !   t[0] := 'a'; t[1] := 'b';
 CONST 97
 STGC tLibErr07.t

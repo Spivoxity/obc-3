@@ -32,7 +32,7 @@ END tDive07.
 MODULE tDive07 STAMP 0
 ENDHDR
 
-PROC tDive07.p 0 2 0
+PROC tDive07.p 0 1 0
 ! PROCEDURE p;
 !   p; p
 GLOBAL tDive07.p
@@ -42,7 +42,7 @@ CALL 0
 RETURN
 END
 
-PROC tDive07.%main 0 2 0
+PROC tDive07.%main 0 1 0
 !   p
 GLOBAL tDive07.p
 CALL 0

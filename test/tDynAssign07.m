@@ -43,7 +43,6 @@ MODULE tDynAssign07 STAMP 0
 ENDHDR
 
 PROC tDynAssign07.R.Assign 4 3 0x00100001
-FRAME
 ! PROCEDURE (VAR r: R) Assign;
 !   r2.x := 3;
 CONST 3
@@ -62,7 +61,6 @@ RETURN
 END
 
 PROC tDynAssign07.Assign2 4 3 0x00100001
-FRAME
 ! PROCEDURE Assign2(VAR r: R);
 !   r2.x := 3;
 CONST 3
@@ -80,7 +78,7 @@ FIXCOPY
 RETURN
 END
 
-PROC tDynAssign07.%main 0 4 0
+PROC tDynAssign07.%main 0 3 0
 !   s.Assign;
 GLOBAL tDynAssign07.S
 GLOBAL tDynAssign07.s

@@ -24,7 +24,7 @@ MODULE tValReal07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tValReal07.%main 0 4 0
+PROC tValReal07.%main 0 3 0
 !   x := SYSTEM.VAL(REAL, {0}) + 1.0E-45;
 CONST 1
 FCONST 1.0e-45

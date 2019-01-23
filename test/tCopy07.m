@@ -24,7 +24,7 @@ MODULE tCopy07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tCopy07.%main 0 6 0
+PROC tCopy07.%main 0 5 0
 !   s := "foo";
 CONST 10
 GLOBAL tCopy07.s

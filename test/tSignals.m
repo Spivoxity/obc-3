@@ -318,7 +318,6 @@ RETURN
 END
 
 PROC tSignals.MakeSig 4 4 0x00610001
-FRAME
 ! PROCEDURE MakeSig(op: CHAR; left, right: Sig; value: INTEGER);
 !   IF signal[value] # NIL THEN RETURN END;
 GLOBAL tSignals.signal
@@ -381,7 +380,7 @@ STGW tSignals.sp
 RETURN
 END
 
-PROC tSignals.Combine 0 6 0x00300001
+PROC tSignals.Combine 0 5 0x00300001
 ! PROCEDURE Combine(u, v: Sig);
 !   MakeSig('&', u, v, Bit.And(u.value, v.value));
 LDLW 16
@@ -417,7 +416,6 @@ RETURN
 END
 
 PROC tSignals.Negate 4 6 0x00100001
-FRAME
 ! PROCEDURE Negate(u: Sig): BOOLEAN;
 !   v := Bit.Xor(u.value, 0FFH);
 CONST 255
@@ -435,7 +433,7 @@ BOUND 50
 LDIW
 JEQZ L17
 CONST 0
-RETURNW
+RETURN
 LABEL L17
 !   MakeSig('~', NIL, u, v);
 LDLW -4
@@ -447,11 +445,10 @@ GLOBAL tSignals.MakeSig
 CALL 4
 !   RETURN TRUE
 CONST 1
-RETURNW
+RETURN
 END
 
 PROC tSignals.Closure 8 4 0
-FRAME
 ! PROCEDURE Closure(lo: INTEGER);
 !   i := lo;
 LDLW 12
@@ -493,8 +490,7 @@ LABEL L20
 RETURN
 END
 
-PROC tSignals.OutBits 4 6 0
-FRAME
+PROC tSignals.OutBits 4 5 0
 ! PROCEDURE OutBits(v: INTEGER);
 !   FOR j := 0 TO 7 DO
 CONST 0
@@ -522,7 +518,7 @@ LABEL L25
 RETURN
 END
 
-PROC tSignals.OutName 0 4 0x00100001
+PROC tSignals.OutName 0 3 0x00100001
 ! PROCEDURE OutName(p: Sig);
 !   Out.Char('s'); Out.Int(p.id, 0)
 CONST 115
@@ -538,7 +534,7 @@ CALL 2
 RETURN
 END
 
-PROC tSignals.OutArc 0 4 0x00300001
+PROC tSignals.OutArc 0 3 0x00300001
 ! PROCEDURE OutArc(p, q: Sig);
 !   OutName(p); Out.String(" -> "); OutName(q); Out.Ln
 LDLW 12
@@ -556,7 +552,7 @@ CALL 0
 RETURN
 END
 
-PROC tSignals.Print 0 4 0x00100001
+PROC tSignals.Print 0 3 0x00100001
 ! PROCEDURE Print(p: Sig);
 !   OutName(p); Out.String('[label="'); 
 LDLW 12
@@ -748,7 +744,6 @@ RETURN
 END
 
 PROC tSignals.PrintMarked 8 4 0
-FRAME
 ! PROCEDURE PrintMarked;
 !   FOR i := 0 TO sp-1 DO
 LDGW tSignals.sp
@@ -796,8 +791,7 @@ LABEL L37
 RETURN
 END
 
-PROC tSignals.Check 12 4 0
-FRAME
+PROC tSignals.Check 12 3 0
 ! PROCEDURE Check;
 !   notx := Bit.Xor(xxx, 0FFH); 
 CONST 255
@@ -879,8 +873,7 @@ LABEL L43
 RETURN
 END
 
-PROC tSignals.Search 24 6 0
-FRAME
+PROC tSignals.Search 24 5 0
 ! PROCEDURE Search;
 !   MakeSig('x', NIL, NIL, xxx);
 CONST 240

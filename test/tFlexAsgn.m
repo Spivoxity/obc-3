@@ -33,8 +33,7 @@ MODULE tFlexAsgn STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFlexAsgn.Sum 16 8 0x00004001
-FRAME
+PROC tFlexAsgn.Sum 16 7 0x00004001
 ! PROCEDURE Sum(a: vec): INTEGER;
 LOCAL 12
 LDLW 16
@@ -94,10 +93,10 @@ JUMP L1
 LABEL L2
 !   RETURN s
 LDLW -8
-RETURNW
+RETURN
 END
 
-PROC tFlexAsgn.%main 0 5 0
+PROC tFlexAsgn.%main 0 4 0
 !   u[0] := 3; u[1] := 1; u[2] := 4; u[3] := 1;
 CONST 3
 STGW tFlexAsgn.u

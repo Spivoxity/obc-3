@@ -50,8 +50,7 @@ IMPORT Strings STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPeriod.Period 20 6 0x00110001
-FRAME
+PROC tPeriod.Period 20 5 0x00110001
 ! PROCEDURE Period(CONST s: ARRAY OF CHAR): INTEGER;
 !   n := Strings.Length(s);
 LDLW 16
@@ -174,10 +173,10 @@ LDNW 4
 BOUND 17
 LDIW
 MINUS
-RETURNW
+RETURN
 END
 
-PROC tPeriod.%main 0 5 0
+PROC tPeriod.%main 0 4 0
 !   Out.Int(Period("RUDOLFRUDOLRRUDO"), 0); Out.Ln
 CONST 0
 CONST 17

@@ -34,12 +34,12 @@ CONST 1
 BITAND
 JEQZ L3
 CONST 3
-RETURNW
+RETURN
 LABEL L3
 ERROR E_RETURN 5
 END
 
-PROC tNoRet.%main 0 4 0
+PROC tNoRet.%main 0 3 0
 !   Out.Int(merit(8), 0); Out.Ln
 CONST 0
 CONST 8

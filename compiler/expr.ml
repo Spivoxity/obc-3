@@ -127,6 +127,9 @@ let convert e t =
           else
             edit_expr e (Const (IntVal vn, t))
         end
+    | Convert _ when kind_of t >= FloatT && kind_of (e.e_type) >= FloatT ->
+        (* Merge successive conversions to avoid loss of precision *)
+        ()
     | _ ->
         edit_expr e (Convert (copy_expr e))
   end;

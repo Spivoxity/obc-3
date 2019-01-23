@@ -51,7 +51,6 @@ MODULE tBomb07 STAMP 0
 ENDHDR
 
 PROC tBomb07.p 4 3 0x00010001
-FRAME
 ! PROCEDURE p;
 !   z := NIL;
 CONST 0
@@ -64,7 +63,7 @@ STOREW
 RETURN
 END
 
-PROC tBomb07.q1 0 3 0
+PROC tBomb07.q1 0 2 0
 ! PROCEDURE q1(n: INTEGER);
 !   IF n = 0 THEN p ELSE q2(n-1) END
 LDLW 12
@@ -80,7 +79,7 @@ CALL 1
 RETURN
 END
 
-PROC tBomb07.q2 0 3 0
+PROC tBomb07.q2 0 2 0
 ! PROCEDURE q2(n: INTEGER);
 !   IF n = 0 THEN p ELSE q3(n-1) END
 LDLW 12
@@ -96,7 +95,7 @@ CALL 1
 RETURN
 END
 
-PROC tBomb07.q3 0 3 0
+PROC tBomb07.q3 0 2 0
 ! PROCEDURE q3(n: INTEGER);
 !   IF n = 0 THEN p ELSE q1(n-1) END
 LDLW 12
@@ -112,7 +111,7 @@ CALL 1
 RETURN
 END
 
-PROC tBomb07.%main 0 3 0
+PROC tBomb07.%main 0 2 0
 !   q1(100)
 CONST 100
 GLOBAL tBomb07.q1

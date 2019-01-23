@@ -66,8 +66,7 @@ MODULE tQSet07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tQSet07.queens 4 7 0x00200001
-FRAME
+PROC tQSet07.queens 4 6 0x00200001
 ! PROCEDURE queens(k: INTEGER; VAR choice: board; rows, diagdown, diagup: SET);
 !   IF k = N THEN
 LDLW 12
@@ -174,7 +173,6 @@ RETURN
 END
 
 PROC tQSet07.print 4 4 0x00100001
-FRAME
 ! PROCEDURE print(VAR choice: board);
 !   x := 0;
 CONST 0
@@ -212,7 +210,7 @@ CALL 0
 RETURN
 END
 
-PROC tQSet07.%main 0 7 0
+PROC tQSet07.%main 0 6 0
 !   queens(0, choice, {0..7}, {0..14}, {0..14})
 CONST 32767
 CONST 32767

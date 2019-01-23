@@ -297,7 +297,7 @@ inst DCMPL 0 B.idd  { fcmpl($1.d, $2.d) }       { fcompare(DCMPL) }
 inst DCMPG 0 B.idd  { fcmpg($1.d, $2.d) }       { fcompare(DCMPG) }
 
 equiv DEQ 0         { DCMPL, PUSH 0, EQ }
-equiv DNEQ 0        { DCMPL, PUSH 0, NE }
+equiv DNEQ 0        { DCMPL, PUSH 0, NEQ }
 equiv DLT 0         { DCMPG, PUSH 0, LT }
 equiv DGT 0         { DCMPL, PUSH 0, GT }
 equiv DLEQ 0        { DCMPG, PUSH 0, LE }
@@ -379,34 +379,56 @@ inst FLEXCOPY 0 S0 {
      d[0].a = address(sp);
 }
 
-equiv FRAME 0       { FINIT 0 }
-equiv LFRAME 0      { FINIT 1 }
-
-inst FINIT {[0,1,1]} S0 { memset(sp, 0, cp[CP_FRAME].i - 4*$a) }
-
 # In the interpreter, the CALLW and CALLD instructions are implemented as 
 # two operations, an ordinary CALL followed by a SLIDE; the return address 
 # of the called routine points to the SLIDE instruction, which is 
 # responsible for copying the result.
-equiv LCALL 1       { JPROC 1, SLIDE $a }
-equiv LCALLW 1      { JPROC 1, SLIDEW $a }
-equiv LCALLQ 1      { JPROC 1, SLIDEQ $a }
-equiv LCALLF 1      { JPROC 1, SLIDEF $a }
-equiv LCALLD 1      { JPROC 1, SLIDED $a }
+equiv CALL 1        { JPROC, SLIDE $a }
+equiv CALLW 1       { JPROC, SLIDEW $a }
+equiv CALLQ 1       { JPROC, SLIDEQ $a }
+equiv CALLF 1       { JPROC, SLIDEF $a }
+equiv CALLD 1       { JPROC, SLIDED $a }
 
-equiv CALL 1        { JPROC 0, SLIDE $a }
-equiv CALLW 1       { JPROC 0, SLIDEW $a }
-equiv CALLQ 1       { JPROC 0, SLIDEQ $a }
-equiv CALLF 1       { JPROC 0, SLIDEF $a }
-equiv CALLD 1       { JPROC 0, SLIDED $a }
+# STATLINK saves a static link in a 'secret place' just before a proedure
+# call.  The secret place is chosen to be the location where the called
+# procedure will store its static link, which can be computed as a negative
+# offset from the stack pointer.  The fixed offset means that STATLINK
+# will work properly only as part of the calling sequence
+#     <static link> / STATLINK / <load proc addr> / [STKMAP] / CALL
+# and not (e.g.) if the static link is saved *before* the parameters
+# are put on the stack, or if <load proc addr> requires a stack depth
+# of more than 3.
+inst STATLINK 0 S0 {
+     /*
+         NOW           LATER
 
-inst JPROC {[0,1,1]} S0 {
-     value *sl = ($a ? valptr(*sp++) : NULL);
+         param 2       param 2
+         param 1       param 1
+     sp: stat link     proc addr |
+                       ret addr  | HEAD
+                   bp: dyn link  V
+                       stat link
+     */
+     sp[1-HEAD+SL].a = sp[0].a; sp++;
+} {
+     push_sp();
+     push_con(4*(1-HEAD+SL));
+     add_offset(0);
+     store(V_MEMW, 1);
+}
+
+# SAVELINK moves the static link from the 'secret place' to its proper
+# location in the frame of the called procedure.  Because the secret
+# place is actually the proper location already, all that is needed is
+# to protecting the static link when the frame is cleared (see the call
+# to memset in interp.c).
+inst SAVELINK 0 S0 { } { }
+
+inst JPROC 0 S0 {
      value *p = valptr(sp[0]);
      sp -= HEAD-1;
      sp[BP].a = address(bp);
      sp[PC].a = address(pc);
-     sp[SL].a = address(sl);
 
      if (interpreted(p)) {
           cp = p; pc = pointer(cp[CP_CODE]);
@@ -443,11 +465,6 @@ inst SLIDEQ 1 S0 \
     { slide($a); sp -= 2; putlong(&sp[0], getlong(rp)) } \
     { proc_call(pc, arg1, INT, V_MEMQ, 2) }
     
-equiv RETURNW 0     { RETURN }
-equiv RETURNF 0     { RETURN }
-equiv RETURND 0     { RETURN }
-equiv RETURNQ 0     { RETURN }
-
 inst RETURN 0 S0 {
      if (bp == base) {
           level--;

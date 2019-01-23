@@ -98,8 +98,8 @@ MODULE tLocalType07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tLocalType07.%2.Build 8 4 0x00008001
-LFRAME
+PROC tLocalType07.%2.Build 8 3 0x00008001
+SAVELINK
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -120,29 +120,31 @@ STLW -8
 LDLW 12
 CONST 2
 MINUS
-GLOBAL tLocalType07.%2.Build
 LDLW -4
-LCALLW 1
+STATLINK
+GLOBAL tLocalType07.%2.Build
+CALLW 1
 LDLW -8
 NCHECK 23
 STOREW
 !     t.right := Build(n-1);
 LDLW 12
 DEC
-GLOBAL tLocalType07.%2.Build
 LDLW -4
-LCALLW 1
+STATLINK
+GLOBAL tLocalType07.%2.Build
+CALLW 1
 LDLW -8
 NCHECK 24
 STNW 4
 LABEL L7
 !     RETURN t
 LDLW -8
-RETURNW
+RETURN
 END
 
-PROC tLocalType07.%3.Print 4 4 0x00100001
-LFRAME
+PROC tLocalType07.%3.Print 4 3 0x00100001
+SAVELINK
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
 LDLW 12
@@ -163,16 +165,18 @@ CALL 1
 LDLW 12
 NCHECK 35
 LOADW
-GLOBAL tLocalType07.%3.Print
 LDLW -4
-LCALL 1
+STATLINK
+GLOBAL tLocalType07.%3.Print
+CALL 1
 !     Print(t.right);
 LDLW 12
 NCHECK 36
 LDNW 4
-GLOBAL tLocalType07.%3.Print
 LDLW -4
-LCALL 1
+STATLINK
+GLOBAL tLocalType07.%3.Print
+CALL 1
 !     Out.Char(')')
 CONST 41
 ALIGNC
@@ -181,27 +185,28 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType07.First 4 3 0x00010001
-FRAME
+PROC tLocalType07.First 4 2 0x00010001
 ! PROCEDURE First;
 !   p := Build(7);
 CONST 7
-GLOBAL tLocalType07.%2.Build
 LOCAL 0
-LCALLW 1
+STATLINK
+GLOBAL tLocalType07.%2.Build
+CALLW 1
 STLW -4
 !   Print(p); Out.Ln();
 LDLW -4
-GLOBAL tLocalType07.%3.Print
 LOCAL 0
-LCALL 1
+STATLINK
+GLOBAL tLocalType07.%3.Print
+CALL 1
 GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tLocalType07.%5.Build 8 4 0x00008001
-LFRAME
+PROC tLocalType07.%5.Build 8 3 0x00008001
+SAVELINK
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 2 THEN
 LDLW 12
@@ -222,9 +227,10 @@ STLW -8
 LDLW 12
 CONST 3
 MINUS
-GLOBAL tLocalType07.%5.Build
 LDLW -4
-LCALLW 1
+STATLINK
+GLOBAL tLocalType07.%5.Build
+CALLW 1
 LDLW -8
 NCHECK 61
 STOREW
@@ -232,29 +238,31 @@ STOREW
 LDLW 12
 CONST 2
 MINUS
-GLOBAL tLocalType07.%5.Build
 LDLW -4
-LCALLW 1
+STATLINK
+GLOBAL tLocalType07.%5.Build
+CALLW 1
 LDLW -8
 NCHECK 62
 STNW 4
 !     t.right := Build(n-1);
 LDLW 12
 DEC
-GLOBAL tLocalType07.%5.Build
 LDLW -4
-LCALLW 1
+STATLINK
+GLOBAL tLocalType07.%5.Build
+CALLW 1
 LDLW -8
 NCHECK 63
 STNW 8
 LABEL L13
 !     RETURN t
 LDLW -8
-RETURNW
+RETURN
 END
 
-PROC tLocalType07.%6.Print 4 4 0x00100001
-LFRAME
+PROC tLocalType07.%6.Print 4 3 0x00100001
+SAVELINK
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
 LDLW 12
@@ -275,23 +283,26 @@ CALL 1
 LDLW 12
 NCHECK 74
 LOADW
-GLOBAL tLocalType07.%6.Print
 LDLW -4
-LCALL 1
+STATLINK
+GLOBAL tLocalType07.%6.Print
+CALL 1
 !     Print(t.mid);
 LDLW 12
 NCHECK 75
 LDNW 4
-GLOBAL tLocalType07.%6.Print
 LDLW -4
-LCALL 1
+STATLINK
+GLOBAL tLocalType07.%6.Print
+CALL 1
 !     Print(t.right);
 LDLW 12
 NCHECK 76
 LDNW 8
-GLOBAL tLocalType07.%6.Print
 LDLW -4
-LCALL 1
+STATLINK
+GLOBAL tLocalType07.%6.Print
+CALL 1
 !     Out.Char(')')
 CONST 41
 ALIGNC
@@ -300,26 +311,27 @@ CALL 1
 RETURN
 END
 
-PROC tLocalType07.Second 4 3 0x00010001
-FRAME
+PROC tLocalType07.Second 4 2 0x00010001
 ! PROCEDURE Second;
 !   p := Build(7);
 CONST 7
-GLOBAL tLocalType07.%5.Build
 LOCAL 0
-LCALLW 1
+STATLINK
+GLOBAL tLocalType07.%5.Build
+CALLW 1
 STLW -4
 !   Print(p); Out.Ln();
 LDLW -4
-GLOBAL tLocalType07.%6.Print
 LOCAL 0
-LCALL 1
+STATLINK
+GLOBAL tLocalType07.%6.Print
+CALL 1
 GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tLocalType07.%main 0 2 0
+PROC tLocalType07.%main 0 1 0
 !   First;
 GLOBAL tLocalType07.First
 CALL 0

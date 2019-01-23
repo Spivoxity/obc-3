@@ -47,10 +47,10 @@ PROC tSegSum07.f 0 2 0
 !   RETURN i+1
 LDLW 12
 INC
-RETURNW
+RETURN
 END
 
-PROC tSegSum07.%main 0 4 0
+PROC tSegSum07.%main 0 3 0
 !   u := 0; v := 0; count := 0; sum := 0;
 CONST 0
 STGW tSegSum07.u

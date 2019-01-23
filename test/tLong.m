@@ -39,10 +39,10 @@ PROC tLong.Mult 0 4 0
 LDLD 12
 LDLD 20
 DTIMES
-RETURND
+RETURN
 END
 
-PROC tLong.%main 0 6 0
+PROC tLong.%main 0 5 0
 !   x := 3.0;
 DCONST 3.0
 STGD tLong.x

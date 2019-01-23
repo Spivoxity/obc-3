@@ -79,10 +79,9 @@ usage () {
     $p "  -k n    Set runtime stack size" >&2
     $p "  -C      Build specialized runtime system into linker output" >&2
     $p "  -l lib  (with -C) Add C library to runtime system" >&2
-    $p "  -L dir  Add search directory for -l" >&2
+    $p "  -L dir  (with -C) Add search directory for -l" >&2
+    $p "  -h file (with -C) Add header file for primitives" >&2
     $p "  -p      (with -C) Use profiling runtime system" >&2
-    $p "  -r      Do not delete temporary files" >&2
-    $p "  -t dir  Set directory for temporary files" >&2
     $p >&2
     $p "  *.m, *.mod  Oberon source file to be compiled" >&2
     $p "  *.k     Bytecode file for linking" >&2
@@ -105,8 +104,8 @@ linkit () {
     if $custom; then
 	{ command $oblink -C -script $lscript $lsw -L $ROOT$libdir \
 	        $obj -o $tmp.out >$tmp.c \
-	    && command $CC $incl $stdinc $ofiles $obx_a \
-	        $libdir/oblib.o $tmp.c $libs $LIBS $DLFLAGS -o $outfile \
+	    && command $CC $incl $stdinc $ofiles $tmp.c $obx_a \
+	        $libdir/oblib.a $libs $LIBS $DLFLAGS -o $outfile \
 	    && command cat $tmp.out \>\>$outfile; } \
 	|| { /bin/rm -f $outfile; status=1; }
         /bin/rm -f $tmp.out $tmp.c
@@ -136,7 +135,6 @@ outfile=
 link=true
 status=0
 vflag=false
-libf=oblib.k
 incl=
 libs=
 obx_a=
@@ -166,7 +164,7 @@ while [ $# -gt 0 ]; do
         -b)	sw="$sw -b"; lscript=lscript-b;;
 	-I)	shift; incl="$incl -I $1";;
 	-C)	custom=true;;
-	-[lL]*)	libs="$libs $1";;
+	-[lL]*) libs="$libs $1";;
 	-p)	obx_a=$rundir/obx-p.a;;
 	*.m)    src="$src $1"
 		base=`basename $1 .m`

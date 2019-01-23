@@ -129,7 +129,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tMissing.Partition 12 4 0
-FRAME
 ! PROCEDURE Partition(m, n: INTEGER; x: INTEGER): INTEGER;
 !   i := m; j := n;
 LDLW 12
@@ -182,11 +181,10 @@ JUMP L1
 LABEL L3
 !   RETURN i
 LDLW -4
-RETURNW
+RETURN
 END
 
-PROC tMissing.Missing 20 5 0
-FRAME
+PROC tMissing.Missing 20 4 0
 ! PROCEDURE Missing(): INTEGER;
 !   p := 0; q := M; r := N;
 CONST 0
@@ -232,11 +230,10 @@ JUMP L7
 LABEL L9
 !   RETURN p
 LDLW -4
-RETURNW
+RETURN
 END
 
 PROC tMissing.Swap 4 2 0x00300001
-FRAME
 ! PROCEDURE Swap(VAR x, y: INTEGER);
 !   t := x; x := y; y := t
 LDLW 12
@@ -253,7 +250,6 @@ RETURN
 END
 
 PROC tMissing.Bundala 4 4 0
-FRAME
 ! PROCEDURE Bundala(): INTEGER;
 !   n := 0;
 CONST 0
@@ -322,7 +318,7 @@ JUMP L20
 LABEL L22
 !   RETURN n
 LDLW -4
-RETURNW
+RETURN
 END
 
 PROC tMissing.Bundala2 0 4 0
@@ -355,11 +351,10 @@ LABEL L26
 !   RETURN a[n]
 GLOBAL tMissing.a
 LDNW 4004
-RETURNW
+RETURN
 END
 
 PROC tMissing.Permute 12 4 0
-FRAME
 ! PROCEDURE Permute(m: INTEGER);
 !   FOR i := m-1 TO 1 BY -1 DO
 LDLW 12
@@ -418,7 +413,6 @@ RETURN
 END
 
 PROC tMissing.Test 12 4 0
-FRAME
 ! PROCEDURE Test;
 !   x := Random.Roll(N);
 CONST 1001
@@ -524,7 +518,7 @@ CALL 0
 RETURN
 END
 
-PROC tMissing.%main 0 2 0
+PROC tMissing.%main 0 1 0
 !   Test
 GLOBAL tMissing.Test
 CALL 0

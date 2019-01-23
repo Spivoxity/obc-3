@@ -32,14 +32,14 @@ MODULE tFac STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFac.fac 0 4 0
+PROC tFac.fac 0 3 0
 ! PROCEDURE fac(n: INTEGER): INTEGER;
 !   IF n = 0 THEN 
 LDLW 12
 JNEQZ L5
 !     RETURN 1
 CONST 1
-RETURNW
+RETURN
 LABEL L5
 !     RETURN n * fac(n-1)
 LDLW 12
@@ -48,10 +48,10 @@ DEC
 GLOBAL tFac.fac
 CALLW 1
 TIMES
-RETURNW
+RETURN
 END
 
-PROC tFac.%main 0 4 0
+PROC tFac.%main 0 3 0
 !   Out.String("The factorial of "); Out.Int(nnn, 0);
 CONST 18
 GLOBAL tFac.%1

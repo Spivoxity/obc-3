@@ -73,7 +73,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tFlex2.Foo 16 5 0x00100001
-FRAME
 ! PROCEDURE Foo(VAR m: Matrix);
 !   Out.Int(LEN(m, 0), 0); Out.Ln;
 CONST 0
@@ -139,7 +138,7 @@ LABEL L2
 RETURN
 END
 
-PROC tFlex2.p 0 4 0x00100001
+PROC tFlex2.p 0 3 0x00100001
 ! PROCEDURE p(VAR v: ARRAY OF INTEGER);
 !   Out.Int(LEN(v), 0); Out.Ln
 CONST 0
@@ -180,7 +179,7 @@ CALL 0
 RETURN
 END
 
-PROC tFlex2.%main 0 8 0
+PROC tFlex2.%main 0 7 0
 !   Foo(mm);
 CONST 4
 CONST 3

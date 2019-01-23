@@ -83,7 +83,7 @@ SUBDIRS = compiler runtime lib
 EXTRADIRS = test
 BUILD = $(ALL_INTERPS) obprof obc obb oblist
 DEBUILD = obc0 obb0 obtrace
-PRIMS = lib/oblib.o lib/primtab.o
+PRIMS = lib/primtab.o lib/oblib.a
 
 ifdef MACOS
   EXTRADIRS += macport
@@ -216,6 +216,10 @@ test0: force
 	$(MAKE) -C test all
 	cd test; ./regress -nojit
 
+test1: force
+	$(MAKE) -C test all
+	cd test; ./regress -noopt -nocode
+
 # Installation stuff:
 # This supports two kinds of installation:
 # (1) building from source, followed by 'make install'
@@ -233,7 +237,7 @@ LIBSRC = $(ALLMODS:%=$(srcdir)/lib/%.m)
 # Other files installed in {prefix}/lib
 LIB = lib/lscript lib/lscript-b $(srcdir)/lib/Builtin.m lib/_Builtin.k \
 	$(ALLMODS:%=lib/%.k) $(CHECKMODS:%=lib/%-b.k) \
-	runtime/obx.a runtime/obx-p.a $(PRIMS) \
+	runtime/obx.a runtime/obx-p.a lib/oblib.a $(srcdir)/runtime/primtab.h \
 	$(srcdir)/runtime/obx.h $(srcdir)/runtime/obcommon.h config.h
 
 # Manual pages

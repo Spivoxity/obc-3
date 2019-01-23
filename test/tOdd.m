@@ -26,7 +26,7 @@ MODULE tOdd STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOdd.%main 0 4 0
+PROC tOdd.%main 0 3 0
 !   r := TRUE;
 CONST 1
 STGC tOdd.r

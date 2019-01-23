@@ -29,7 +29,7 @@ ENDHDR
 
 PRIMDEF tGC1.GcHeapSize gc_heap_size I
 
-PROC tGC1.%main 0 4 0
+PROC tGC1.%main 0 3 0
 !   FOR i := 1 TO 128 * 1024 DO
 CONST 1
 STGW tGC1.i

@@ -29,7 +29,7 @@ MODULE tPtrVal07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPtrVal07.p 0 4 0x00100001
+PROC tPtrVal07.p 0 3 0x00100001
 ! PROCEDURE p(x: ptr);
 !   NEW(x); x.x := 3
 CONST 4
@@ -44,7 +44,7 @@ STOREW
 RETURN
 END
 
-PROC tPtrVal07.%main 0 4 0
+PROC tPtrVal07.%main 0 3 0
 !   NEW(q); q.x := 2; 
 CONST 4
 GLOBAL tPtrVal07.%1

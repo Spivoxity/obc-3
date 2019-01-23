@@ -42,7 +42,7 @@ MODULE tUnsafe STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tUnsafe.%main 0 5 0
+PROC tUnsafe.%main 0 4 0
 !   y := 3.14;
 DCONST 3.14
 STGD tUnsafe.y

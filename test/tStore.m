@@ -97,7 +97,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tStore.Find 32 6 0
-FRAME
 ! PROCEDURE Find(s: string): INTEGER;
 LOCAL -32
 LDLW 12
@@ -147,11 +146,10 @@ JUMP L6
 LABEL L8
 !   RETURN a
 LDLW -4
-RETURNW
+RETURN
 END
 
 PROC tStore.Store 28 6 0
-FRAME
 ! PROCEDURE Store(s: string; v: INTEGER);
 LOCAL -28
 LDLW 12
@@ -258,7 +256,6 @@ RETURN
 END
 
 PROC tStore.Recall 24 6 0
-FRAME
 ! PROCEDURE Recall(s: string): INTEGER;
 LOCAL -24
 LDLW 12
@@ -294,15 +291,14 @@ LDLW -4
 CONST 100
 BOUND 64
 LDIW
-RETURNW
+RETURN
 LABEL L22
 !     RETURN -1
 CONST -1
-RETURNW
+RETURN
 END
 
 PROC tStore.Test 8 4 0
-FRAME
 ! PROCEDURE Test;
 !   Out.Int(Recall("mike"), 5); Out.Int(Recall("abel"), 5); Out.Ln;
 CONST 5
@@ -424,7 +420,7 @@ LABEL L26
 RETURN
 END
 
-PROC tStore.%main 0 2 0
+PROC tStore.%main 0 1 0
 !   Test
 GLOBAL tStore.Test
 CALL 0

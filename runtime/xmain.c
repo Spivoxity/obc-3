@@ -28,6 +28,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <string.h>
+#include <stdlib.h>
+
 #define EXTERN
 #include "obx.h"
 #include "keiko.h"
@@ -63,6 +66,7 @@ const char *version =
 		       ""
 #endif
      ;
+extern const char *lib_version;
 const char *copyright = "Copyright (C) 1999--2012 J. M. Spivey";
 
 extern int vm_debug;
@@ -358,6 +362,7 @@ static void read_flags(void) {
 	       dflag++;
 	  } else if (strcmp(argv[0], "-v") == 0) {
 	       fprintf(stderr, "%s\n", version);
+	       fprintf(stderr, "%s\n", lib_version);
 	       exit(0);
 	  }
 #ifdef PROFILE

@@ -88,8 +88,7 @@ MODULE tFibTree STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFibTree.Build 4 4 0x00010001
-FRAME
+PROC tFibTree.Build 4 3 0x00010001
 ! PROCEDURE Build(n: INTEGER): tree;
 !   IF n <= 1 THEN
 LDLW 12
@@ -100,7 +99,7 @@ GLOBAL SYSTEM.GC
 CALL 0
 !     RETURN NIL
 CONST 0
-RETURNW
+RETURN
 LABEL L4
 !     NEW(t);
 CONST 8
@@ -127,10 +126,10 @@ NCHECK 45
 STNW 4
 !     RETURN t
 LDLW -4
-RETURNW
+RETURN
 END
 
-PROC tFibTree.Print 0 3 0x00100001
+PROC tFibTree.Print 0 2 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
 LDLW 12
@@ -167,14 +166,14 @@ CALL 1
 RETURN
 END
 
-PROC tFibTree.count 0 4 0x00100001
+PROC tFibTree.count 0 3 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
 JNEQZ L10
 !     RETURN 1
 CONST 1
-RETURNW
+RETURN
 LABEL L10
 !     RETURN count(t.left) + count(t.right)
 LDLW 12
@@ -188,10 +187,10 @@ LDNW 4
 GLOBAL tFibTree.count
 CALLW 1
 PLUS
-RETURNW
+RETURN
 END
 
-PROC tFibTree.%main 0 4 0
+PROC tFibTree.%main 0 3 0
 !   FOR i := 0 TO 7 DO
 CONST 0
 STGW tFibTree.i

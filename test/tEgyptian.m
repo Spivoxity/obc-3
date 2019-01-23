@@ -46,7 +46,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tEgyptian.Egyptian 28 5 0x00400001
-FRAME
 ! PROCEDURE Egyptian(a, b: INTEGER; VAR d: ARRAY OF LONGINT): INTEGER;
 !   p := a; q := b; n := 0;
 LDLW 12
@@ -98,11 +97,10 @@ JUMP L4
 LABEL L6
 !   RETURN n
 LDLW -28
-RETURNW
+RETURN
 END
 
-PROC tEgyptian.%main 4 6 0
-FRAME
+PROC tEgyptian.%main 4 5 0
 !   a := 144; b := 233;
 CONST 144
 STGW tEgyptian.a

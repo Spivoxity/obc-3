@@ -116,7 +116,6 @@ IMPORT Out STAMP
 ENDHDR
 
 PROC tSelect.Randomize 4 4 0
-FRAME
 ! PROCEDURE Randomize;
 !   FOR i := 0 TO N-1 DO a[i] := Random.Random() END;
 CONST 0
@@ -144,7 +143,6 @@ RETURN
 END
 
 PROC tSelect.Sort 12 4 0x00100001
-FRAME
 ! PROCEDURE Sort(VAR u: ARRAY OF INTEGER; N: INTEGER);
 !   r := 0;
 CONST 0
@@ -205,7 +203,6 @@ RETURN
 END
 
 PROC tSelect.Swap 4 2 0x00300001
-FRAME
 ! PROCEDURE Swap(VAR a, b: INTEGER);
 !   t := a; a := b; b := t
 LDLW 12
@@ -222,7 +219,6 @@ RETURN
 END
 
 PROC tSelect.Partition 12 4 0
-FRAME
 ! PROCEDURE Partition(m, n: INTEGER): INTEGER;
 !   i := m + Random.Roll(n-m);
 LDLW 12
@@ -311,11 +307,10 @@ BOUND 53
 STIW
 !   RETURN i
 LDLW -4
-RETURNW
+RETURN
 END
 
-PROC tSelect.Select 4 5 0
-FRAME
+PROC tSelect.Select 4 4 0
 ! PROCEDURE Select(k, m, n: INTEGER): INTEGER;
 !   IF n - m = 1 THEN
 LDLW 20
@@ -336,7 +331,7 @@ LDLW 16
 CONST 100
 BOUND 61
 LDIW
-RETURNW
+RETURN
 LABEL L23
 !     r := Partition(m, n);
 LDLW 20
@@ -356,7 +351,7 @@ LDLW -4
 CONST 100
 BOUND 65
 LDIW
-RETURNW
+RETURN
 LABEL L19
 !     ELSIF r > m+k THEN
 LDLW -4
@@ -370,7 +365,7 @@ LDLW 16
 LDLW 12
 GLOBAL tSelect.Select
 CALLW 3
-RETURNW
+RETURN
 LABEL L21
 !       RETURN Select(m+k-r-1, r+1, n)
 LDLW 20
@@ -384,11 +379,10 @@ MINUS
 DEC
 GLOBAL tSelect.Select
 CALLW 3
-RETURNW
+RETURN
 END
 
-PROC tSelect.Select2 4 4 0
-FRAME
+PROC tSelect.Select2 4 3 0
 ! PROCEDURE Select2(k, m, n: INTEGER): INTEGER;
 LABEL L26
 !     IF n - m = 1 THEN
@@ -403,7 +397,7 @@ LDLW 16
 CONST 100
 BOUND 79
 LDIW
-RETURNW
+RETURN
 LABEL L35
 !       r := Partition(m, n);
 LDLW 20
@@ -421,7 +415,7 @@ LDLW -4
 CONST 100
 BOUND 83
 LDIW
-RETURNW
+RETURN
 LABEL L31
 !       ELSIF r > k THEN
 LDLW -4
@@ -439,7 +433,7 @@ STLW 16
 JUMP L26
 END
 
-PROC tSelect.%main 0 6 0
+PROC tSelect.%main 0 5 0
 !   Randomize;
 GLOBAL tSelect.Randomize
 CALL 0

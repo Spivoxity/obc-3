@@ -21,7 +21,7 @@ MODULE tOrdSet STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tOrdSet.%main 0 4 0
+PROC tOrdSet.%main 0 3 0
 !   s := {0, 1, 2, 3, 5, 8, 13, 21};
 CONST 2105647
 STGW tOrdSet.s

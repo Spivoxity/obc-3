@@ -22,7 +22,7 @@ MODULE tInc07 STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tInc07.%main 0 4 0
+PROC tInc07.%main 0 3 0
 !   i := 10;
 CONST 10
 STGW tInc07.i

@@ -46,7 +46,6 @@ RETURN
 END
 
 PROC tBigLocal07.P 400004 4 0
-FRAME
 ! PROCEDURE P;
 !   Q(dummy); x := 4;
 LOCAL 0
@@ -82,7 +81,7 @@ CALL 0
 RETURN
 END
 
-PROC tBigLocal07.%main 0 2 0
+PROC tBigLocal07.%main 0 1 0
 !   P
 GLOBAL tBigLocal07.P
 CALL 0

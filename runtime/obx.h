@@ -37,9 +37,6 @@
 
 #include "config.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
 #include "obcommon.h"
 
 #define SLIMIT 256		/* Min stack space space left (bytes) */
@@ -171,7 +168,6 @@ primitive interp, dltrap, dlstub;
 EXTERN int saved_argc;
 EXTERN char **saved_argv;
 
-int obgetc(FILE *fp);
 void xmain_exit(int status);
 void error_exit(int status);
 
@@ -219,7 +215,6 @@ void dbl_zcheck(value *sp);
 word wrap_prim(primitive *prim);
 
 /* dynlink.c */
-void load_lib(char *fname);
 
 /* load_file -- load a file of object code */
 void load_file(FILE *bfp);
@@ -287,7 +282,6 @@ int gc_heap_size(void);
 
 extern mybool gcflag;
 void gc_init(void);
-void gc_debug(char *flags);
 void gc_dump(void);
 
 /* debug.c */

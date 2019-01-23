@@ -20,16 +20,17 @@ In procedure tPNil2.foo
 MODULE tPNil2 STAMP 0
 ENDHDR
 
-PROC tPNil2.foo 0 2 0
+PROC tPNil2.foo 0 1 0
 ! PROCEDURE foo(p: PROCEDURE); BEGIN p END foo;
+LDLW 16
+STATLINK
 LDLW 12
 NCHECK 3
-LDLW 16
-LCALL 0
+CALL 0
 RETURN
 END
 
-PROC tPNil2.%main 0 4 0
+PROC tPNil2.%main 0 3 0
 !   foo(NIL);
 CONST 0
 CONST 0

@@ -25,7 +25,7 @@ MODULE tBic STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tBic.%main 0 4 0
+PROC tBic.%main 0 3 0
 !   s := { 0 .. 15 };
 CONST 65535
 STGW tBic.s

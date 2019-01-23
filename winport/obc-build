@@ -1,11 +1,12 @@
 rel=$1
 tag=`date +%s`
-BB_ACCESS=`cat /cygdrive/z/.bitbucket`
+BB_ACCESS=`cat /z/.bitbucket`
 echo $rel $tag
 
-hg clone https://bitbucket.org/Spivey/obc-3 -u rel-$rel obc-$tag
+hg clone https://bitbucket.org/Spivey/obc-3 -u $rel obc-$tag
 cd obc-$tag
-sh winport/winconfig \
+autoreconf \
+&& ./configure \
 && make \
 && make test0 \
 && make test \
@@ -13,4 +14,4 @@ sh winport/winconfig \
   && make package \
   && curl -u $BB_ACCESS \
         https://api.bitbucket.org/2.0/repositories/Spivey/obc-3/downloads/ \
-	-F files=@`echo obc-win-*.exe`)
+	-F files=@`echo obc-win*.exe`)
