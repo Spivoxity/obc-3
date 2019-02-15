@@ -85,8 +85,7 @@ type icode =
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
   | TESTGEQ of codelab		(* Case split = DUP 1/JUMPC Lt *)
 
-  | XMARK			(* Mark needed here *)
-  | XSTKMAP of int		(* Stack map needed here *)
+  | MARK			(* Mark needed here *)
   | SEQ of icode list		(* Sequence *)
   | NOP				(* No-op *)
 
@@ -209,8 +208,7 @@ let fInst =
     | LDNW n ->		fMeta "LDNW $" [fNum n]
     | STNW n ->		fMeta "STNW $" [fNum n]
 
-    | XMARK ->		fStr "XMARK"
-    | XSTKMAP n ->	fMeta "XSTKMAP $" [fNum n]
+    | MARK ->		fStr "MARK"
     | SEQ _ ->		fStr "SEQ ..."
     | NOP ->		fStr "NOP"
 

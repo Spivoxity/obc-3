@@ -108,7 +108,7 @@ let mem_kind t =
     | (PtrT | SetT) -> IntT
     | _ -> k
 
-let load_addr = SEQ [LOAD IntT; XMARK]
+let load_addr = SEQ [LOAD IntT; MARK]
 
 let offset n = SEQ [const n; OFFSET]
 
@@ -176,10 +176,10 @@ let convert t1 t2 =
       BasicType k1, BasicType k2 -> conv k1 k2
     | _, _ -> failwith "convert"
 
-let mark_type t = if is_pointer t then XMARK else NOP
+let mark_type t = if is_pointer t then MARK else NOP
 
 let gen_call pcount rtype =
-  SEQ [XSTKMAP pcount; CALL (pcount, op_kind rtype); mark_type rtype]
+  SEQ [CALL (pcount, op_kind rtype); mark_type rtype]
 
 let call_proc lab pcount rtype =
   SEQ [GLOBAL lab; gen_call pcount rtype; mark_type rtype]
@@ -1111,11 +1111,13 @@ let transform code =
   let rec walk xs zs =
     match xs with
 	[] -> List.rev zs
-      | XMARK :: ys -> Stack.mark (); walk ys zs
-      | XSTKMAP n :: ys ->
+      | MARK :: ys -> Stack.mark (); walk ys zs
+      | CALL (n, k) :: ys ->
 	  let m = Stack.make_map 1 n in
-	  if m = null_map then walk ys zs else
-	    walk ys (STKMAP (make_map 0 (genlab ()) m) :: zs)
+          Stack.simulate (CALL (n, k));
+	  if m = null_map then walk ys (CALL (n, k) :: zs) else
+            (let mm = make_map 0 (genlab ()) m in
+	      walk ys (CALL (n, k) :: STKMAP mm :: zs))
       | x :: ys -> Stack.simulate x; walk ys (x :: zs) in
   Stack.reset (); walk code []
 
