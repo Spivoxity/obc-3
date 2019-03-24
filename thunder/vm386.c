@@ -82,6 +82,8 @@ struct _vmreg
 
 #ifndef M64X32
 
+/* Standard x86 port, using x87 for floating point by default */
+
 struct _vmreg
      reg_v0 = { "V0", rBX },
      reg_v1 = { "V1", rSI },
@@ -97,8 +99,8 @@ const vmreg vm_ireg[] = {
 
 #else
 
-/* This version includes a native amd64 port (enabled with M64X32) that 
-   still uses 32-bit addresses.  
+/* A native amd64 port (enabled with M64X32) that still uses 32-bit 
+   addresses.  Uses SSE for floating point.
 
    * We rely on the host software to supply an implementation of vm_alloc()
      that allocates storage in the bottom 4GB of the address space.  This
