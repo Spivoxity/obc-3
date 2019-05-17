@@ -337,7 +337,7 @@ inst CONVQD 0 M.dq  { flo_convq($1.q) }         { callout(long_flo, 1, FLO, 2) }
 # more than 65536 lines
 
 inst BOUND 2 T2 \
-    { if ((unsigned) $1.i > (unsigned) $2.i) error(E_BOUND, $a) }
+    { if ((unsigned) $1.i >= (unsigned) $2.i) error(E_BOUND, $a) }
 inst NCHECK 2 T1 \
     { if (pointer($1) == NULL) error(E_NULL, $a) }
 inst GCHECK 2 S1  \

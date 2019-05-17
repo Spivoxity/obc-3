@@ -3,7 +3,7 @@ MODULE tBoundErr;
 VAR a: ARRAY 5 OF INTEGER;
 
 BEGIN
-  a[6] := 7
+  a[5] := 7
 END tBoundErr.
 
 (*<<
@@ -20,10 +20,10 @@ MODULE tBoundErr STAMP 0
 ENDHDR
 
 PROC tBoundErr.%main 0 4 0
-!   a[6] := 7
+!   a[5] := 7
 CONST 7
 GLOBAL tBoundErr.a
-CONST 6
+CONST 5
 CONST 5
 BOUND 6
 STIW
