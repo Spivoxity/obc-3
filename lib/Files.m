@@ -38,7 +38,7 @@ TYPE
 
   (** File -- type of open files *)
   File* = POINTER TO FileDesc;
-  FileDesc = RECORD file: RawFile END;
+  FileDesc = RECORD file-: RawFile END;
 
 VAR
   (** stdin -- standard input file *)
