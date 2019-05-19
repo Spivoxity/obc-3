@@ -112,7 +112,7 @@ let opcode =
     | Leq -> "LEQ" | Geq -> "GEQ" | Neq -> "NEQ" 
     | And -> "AND" | Or -> "OR" | Not -> "NOT"
     | BitAnd -> "BITAND" | BitOr -> "BITOR" 
-    | BitNot -> "BITNOT" | BitXor -> "BITXOR" | BitSub -> "BITSUB"
+    | BitNot -> "BITNOT" | BitXor -> "BITXOR"
     | Inc -> "INC" | Dec -> "DEC"
     | Lsl -> "LSL" | Lsr -> "LSR" | Asr -> "ASR" | Ror -> "ROR"
     | w -> failwith (sprintf "opcode $" [fOp w])

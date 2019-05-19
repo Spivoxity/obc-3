@@ -152,7 +152,7 @@ type kind =
 type op = 
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
   | Lt | Gt | Leq | Geq | Neq | And | Or | Not
-  | In | BitAnd | BitOr | BitNot | BitXor | BitSub
+  | In | BitAnd | BitOr | BitNot | BitXor | BitShl
   | Inc | Dec | Lsl | Lsr | Asr | Ror
 
 (* opposite -- negate a comparison operator *)
@@ -175,7 +175,7 @@ let op_name =
     | Uminus -> "unary -" | Uplus -> "unary +" | Lt -> "<" | Gt -> ">" 
     | Leq -> "<=" | Geq -> ">=" | Neq -> "#" | And -> "&" | Or -> "OR" 
     | Not -> "~" | BitAnd -> "*BITAND*" | BitOr -> "*BITOR*"
-    | BitNot -> "*BITNOT*" | BitXor -> "*BITXOR*" | BitSub -> "*BITSUB*"
+    | BitNot -> "*BITNOT*" | BitXor -> "*BITXOR*" | BitShl -> "*BITSHL*"
     | In -> "IN" | Inc -> "INC" | Dec -> "DEC" 
     | Asr -> "ASR" | Lsr -> "LSR" | Lsl -> "LSL" | Ror -> "ROR"
 (* --DEBUG) *)

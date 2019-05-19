@@ -145,16 +145,13 @@ let int_binop w x y =
     | BitAnd -> integer_bitand x y
     | BitOr -> integer_bitor x y
     | BitXor -> integer_bitxor x y
-    | BitSub -> integer_bitand x (integer_bitnot y)
     | Lsl -> integer_lsl x (int_of_integer y)
     | Lsr -> integer_lsr x (int_of_integer y)
     | Asr -> integer_asr x (int_of_integer y)
-    | In -> 
-	if x < integer 0 || x >= integer 32 then
-	  raise Bound_error;
-	integer_of_bool 
-	  (integer_bitand y (integer_lsl (integer 1) (int_of_integer x)) 
-	    <> integer 0)
+    | Ror -> integer_ror x (int_of_integer y)
+    | BitShl -> 
+	if y < integer 0 || y >= integer 32 then raise Bound_error;
+        integer_lsl x (int_of_integer y)
     | _ -> failwith (sprintf "int_binop $" [fOp w])
 
 (* flo_monop -- evaluate unary floating-point operators *)

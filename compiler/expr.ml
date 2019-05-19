@@ -136,16 +136,6 @@ let convert e t =
   e.e_type <- t
 
 
-(* shift -- check shift operator *)
-let shift f e1 e2 e =
-  begin match e1.e_guts, e2.e_guts with
-      Const (x, _), Const (y, _) ->
-	let n = int_of_integer (int_value y) in
-	edit_expr e (Const (IntVal (f (int_value x) n), e1.e_type))
-    | _, _ -> ()
-  end;
-  inttype
-
 let joinable t1 t2 =
   if !Config.ob07flag then
     integral t1 && integral t2 || floating t1 && floating t2
@@ -340,6 +330,38 @@ let op_of e =
     | Monop (w, _) -> w
     | _ -> failwith "op_of"
 
+let simp e t =
+  match e.e_guts with
+      Binop (w, e1, e2) ->
+        begin
+	  match e1.e_guts, e2.e_guts with
+	      Const (x1, _), Const (x2, _) -> 
+	        let v = try do_binop w x1 x2 with 
+		      Division_by_zero ->
+			sem_error "dividing a constant by zero" 
+			  [] e.e_loc;
+			intval 0
+		    | Bound_error ->
+			sem_error "constant expression causes a bound error"
+			  [] e.e_loc;
+			intval 0 in
+		edit_expr e (Const (v, t))
+	    | _ -> ()
+	end
+    | _ -> ()
+
+let expr g t loc =
+  let e = makeExpr (g, loc) in
+  simp e t; e.e_type <- t; e
+
+let subst e g t =
+  edit_expr e g; simp e t; t
+
+let shift v x =
+  expr (Binop (BitShl,
+      expr (Const (IntVal (integer v), settype)) settype x.e_loc, x))
+    settype x.e_loc
+
 let type_mismatch cxt args lt e =
   if approx_same lt e.e_type then       
     sem_error "types do not match exactly $" [fMeta cxt args] e.e_loc
@@ -497,25 +519,7 @@ and check_subexp e env =
 	t
     | Binop (w, e1, e2) -> 
 	let t = check_binop env w e1 e2 e in
-	if not (is_errtype t) then begin
-	  match e1.e_guts, e2.e_guts with
-	      Const (x1, _), Const (x2, _) -> 
-	        let v = try 
-		    (* The expression may have been edited, so use new op *)
-		    do_binop (op_of e) x1 x2
-		  with 
-		      Division_by_zero ->
-			sem_error "this expression divides a constant by zero" 
-			  [] e.e_loc;
-			intval 0
-		    | Bound_error ->
-			sem_error 
-			  "this constant expression causes a bound error"
-			  [] e.e_loc;
-			intval 0 in
-		edit_expr e (Const (v, t))
-	    | _ -> ()
-	end;
+	if not (is_errtype t) then simp e t;
 	t
 
     | TypeTest (e1, tn) ->
@@ -530,28 +534,23 @@ and check_subexp e env =
         let check_elem =
           function
               Single x ->
-                check_assign x inttype env "in this set element" []
+                check_assign x inttype env "in this set element" [];
+                shift 1 x
             | Range (x, y) ->
                 check_assign x inttype env "in this set element" [];
-                check_assign y inttype env "in this set element" []
+                check_assign y inttype env "in this set element" [];
+                expr (Binop (BitAnd, shift (-1) x,
+                    expr (Monop (BitNot, shift (-2) y)) settype y.e_loc))
+                  settype x.e_loc in
 
-        and set_const els = 
-          let set_val =
-            function
-                Single x -> 
-                  bit_range (int_value (const_value x)) 
-                    (int_value (const_value x))
-              | Range (x, y) -> 
-                  bit_range (int_value (const_value x)) 
-                    (int_value (const_value y)) in
-          List.fold_left integer_bitor (integer 0) 
-            (List.map set_val els) in
+        let e' =
+          List.fold_left
+            (fun f1 f2 -> expr (Binop (BitOr, f1, f2)) settype e.e_loc)
+            (expr (Const (IntVal (integer 0), settype)) settype e.e_loc)
+            (List.map check_elem els) in
 
-	  List.iter check_elem els; 
-	  ( try let v = set_const els in 
-	      edit_expr e (Const (IntVal v, settype))
-	    with Not_found -> () );
-	  settype
+        edit_expr e e'.e_guts; settype
+
     | _ -> failwith "subexp"
 
 (* check_monop -- check application of unary operator *)
@@ -590,10 +589,15 @@ and check_binop env w e1 e2 e =
 	  coerce e1 t; coerce e2 t; t
 	end
 	else if same_types t1 settype && same_types t2 settype then begin
-	  let w' = match w with Plus -> BitOr | Minus -> BitSub 
-	    | Times -> BitAnd | _ -> failwith "set op" in
-	  edit_expr e (Binop (w', e1, e2));
-	  settype
+          let x =
+            match w with
+                Plus -> Binop (BitOr, e1, e2)
+              | Minus ->
+                  Binop (BitAnd, e1,
+                    expr (Monop (BitNot, e2)) inttype e2.e_loc)
+              | Times -> Binop (BitAnd, e1, e2)
+              | _ -> failwith "set op" in
+	  edit_expr e x; settype
 	end
 	else begin
 	  if not (is_errtype t1) && not (is_errtype t2) then begin
@@ -667,6 +671,9 @@ and check_binop env w e1 e2 e =
 	    sem_type2 t1 t2
 	  end
 	end;
+        edit_expr e (Binop (Neq,
+          expr (Binop (BitAnd, e2, shift 1 e1)) settype e1.e_loc,
+          expr (Const (IntVal (integer 0), settype)) settype e.e_loc));
 	boolean
     | And | Or ->
         if not (same_types t1 boolean && same_types t2 boolean) then begin
@@ -922,15 +929,28 @@ and check_builtin env p args e loc =
 
       | FltFun, [e1] -> typeconv realtype e1
 
-      | LslFun, [e1; e2] -> shift integer_lsl e1 e2 e
-      | LsrFun, [e1; e2] -> shift integer_lsr e1 e2 e
-      | AsrFun, [e1; e2] -> shift integer_asr e1 e2 e
-      | RorFun, [e1; e2] -> shift integer_ror e1 e2 e
+      | LslFun, [e1; e2] ->
+          subst e (Binop (Lsl, e1, e2)) inttype
+      | LsrFun, [e1; e2] ->
+          subst e (Binop (Lsr, e1, e2)) inttype
+      | AsrFun, [e1; e2] -> 
+          subst e (Binop (Asr, e1, e2)) inttype
+      | RorFun, [e1; e2] -> 
+          subst e (Binop (Ror, e1, e2)) inttype
       | AshFun, [e1; e2] -> 
-	  let f x n = 
-	    if n >= 0 then integer_lsl x n 
-	    else integer_asr x (-n) in
-  	  shift f e1 e2 e
+          begin match e2.e_guts with
+              Const (v, _) ->
+                let n = int_value v in
+                if n >= integer 0 then
+                  subst e (Binop (Lsl, e1, e2)) inttype
+                else
+                  subst e
+                    (Binop (Asr, e1,
+                       expr (Const (IntVal (integer_neg n), inttype))
+                         inttype e2.e_loc))
+                    inttype
+            | _ -> inttype
+          end
 
       | AbsFun, [e1] ->
 	  let t1 = check_expr e1 env in

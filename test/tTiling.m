@@ -165,13 +165,13 @@ STLW -4
 !     IF (m > 0) & (m-1 IN s) THEN
 LDLW -4
 JLEQZ L13
+LDLW 12
 CONST 1
 LDLW -4
 DEC
 CONST 32
 BOUND 37
 LSL
-LDLW 12
 BITAND
 JEQZ L13
 !       DoPred(s - {m-1, m}, u, p)  (* Horizontal *)

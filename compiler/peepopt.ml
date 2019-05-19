@@ -143,6 +143,8 @@ let ruleset1 replace =
 	replace 2 []
     | CONST n :: BINOP (IntT, BitAnd) :: _ when n = integer (-1) ->
 	replace 2 []
+    | CONST n :: BINOP (IntT, BitOr) :: _ when n = integer 0 ->
+        replace 2 []
 
     | CONST a :: BINOP (IntT, Times) :: CONST b :: BINOP (IntT, Times) :: _ ->
 	replace 4 [CONST (integer_mul a b); BINOP (IntT, Times)]

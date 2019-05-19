@@ -391,15 +391,10 @@ and gen_expr e =
 	    check (CHECK (DivZero t, expr_line e));
 	    BINOP (t, Div)]
 
-      | Binop (In, e1, e2) ->
-	  SEQ [const 1; gen_expr e1;
-	    check (SEQ [const set_size; BOUND (expr_line e)]);
-	    BINOP (IntT, Lsl); gen_expr e2;
-	    BINOP (IntT, BitAnd); const 0; BINOP (IntT, Neq)]
-
-      | Binop (BitSub, e1, e2) ->
+      | Binop (BitShl, e1, e2) ->
           SEQ [gen_expr e1; gen_expr e2;
-            MONOP (IntT, BitNot); BINOP (IntT, BitAnd)]
+            check (SEQ [const set_size; BOUND (expr_line e2)]);
+            BINOP (IntT, Lsl)]
 
       | Binop (w, e1, e2) ->
 	  let gen_it w' e1' e2' =
@@ -429,32 +424,6 @@ and gen_expr e =
 	  SEQ [gen_expr e1;
 	    check (SEQ [DUP 0; null_check e1; offset (-word_size);
               typecheck (base_type d.d_type) e])]
-
-      | Set els ->
-          let gen_element =
-            function
-                Single x ->
-                  SEQ [const 1; gen_expr x;
-                    check (SEQ [const set_size; BOUND (expr_line x)]);
-                    BINOP (IntT, Lsl)]
-              | Range (x, y) ->
-                  (* {x..y} = {0..y} * {x..31} *)
-                  SEQ [const (-1); gen_expr x;
-                    check (SEQ [const set_size; BOUND (expr_line x)]);
-                    BINOP (IntT, Lsl);		(* {x..31} *)
-                    const (-2); gen_expr y;
-                    check (SEQ [const set_size; BOUND (expr_line y)]);
-                    BINOP (IntT, Lsl);		(* {y+1..31} *)
-                    MONOP (IntT, BitNot);	(* {0..y} *)
-                    BINOP (IntT, BitAnd)] in
-
-	  if els = [] then
-	    const 0
-	  else
-	    SEQ [gen_element (List.hd els);
-	      SEQ (List.map
-		(function el -> SEQ [gen_element el; BINOP (IntT, BitOr)])
-		(List.tl els))]
 
       | _ -> failwith "gen_expr"
   end
@@ -632,21 +601,7 @@ and gen_builtin q args =
     | OddFun, [e1] -> SEQ [gen_expr e1; const 1; BINOP (IntT, BitAnd)]
 
     | AshFun, [e1; e2] -> 
-        if is_const e2 then begin
-          let n = int_of_integer (int_value (value_of e2)) in
-          if n >= 0 then
-            SEQ [gen_expr e1; const n; BINOP (IntT, Lsl)]
-          else
-            SEQ [gen_expr e1; const (-n); BINOP (IntT, Asr)]
-        end
-        else begin
-          SEQ [gen_expr e2; gen_expr e1; call_proc "ASH" 2 inttype]
-        end
-
-    | LslFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsl)]
-    | LsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Lsr)]
-    | AsrFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Asr)]
-    | RorFun, [e1; e2] -> SEQ [gen_expr e1; gen_expr e2; BINOP (IntT, Ror)]
+        SEQ [gen_expr e2; gen_expr e1; call_proc "ASH" 2 inttype]
 
     | NewProc, e1::es ->
 	let t = base_type e1.e_type in
