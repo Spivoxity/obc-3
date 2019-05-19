@@ -95,7 +95,7 @@ let rec check_expr e i0 =
 	check_all [e1; e2] i0
     | Select (e1, x) ->
 	check_expr e1 i0 
-    | (Const (_, _) | String (_, _) | Nil | Decimal _) -> i0
+    | (Const _ | String (_, _) | Nil | Decimal _) -> i0
     | FuncCall (f, args) ->
 	begin match f.e_type.t_guts with
 	    ProcType p ->

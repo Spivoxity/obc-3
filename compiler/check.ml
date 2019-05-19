@@ -733,7 +733,7 @@ and check_decl d env alloc lzy =
 	let t = check_expr e env in
 	let d =
 	  match e.e_guts with
-	      Const (v, _) -> make_def x (ConstDef v) t doc
+	      Const v -> make_def x (ConstDef v) t doc
 	    | String (str, n) -> 
 		let d = make_def x StringDef t doc in
 		d.d_lab <- str; d

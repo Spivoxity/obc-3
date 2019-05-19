@@ -108,7 +108,7 @@ and expr_guts =
   | Deref of expr
   | Sub of expr * expr 
   | Select of expr * name
-  | Const of value * otype
+  | Const of value
   | String of symbol * int
   | Nil
   | FuncCall of expr * expr list

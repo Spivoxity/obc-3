@@ -95,7 +95,7 @@ and expr_guts =
   | Deref of expr
   | Sub of expr * expr 
   | Select of expr * name
-  | Const of value * otype
+  | Const of value
   | String of symbol * int
   | Nil
   | FuncCall of expr * expr list
@@ -244,7 +244,7 @@ let rec ppExpr e =
     match e.e_guts with
 	Name x -> prf "$" [fQualId x]
       | Deref e1 -> prf "(DEREF $)" [ppExpr e1]
-      | Const (v, t) -> prf "$" [fVal v]
+      | Const v -> prf "$" [fVal v]
       | Sub (e1, e2) -> prf "(SUB $ $)" [ppExpr e1; ppExpr e2]
       | Select (e1, x) -> prf "(SELECT $ $)" [ppExpr e1; ppName x]
       | String (s, n) -> prf "(STRING $ $)" [fSym s; fNum n]

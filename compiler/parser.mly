@@ -99,6 +99,9 @@ let make_call e =
     | _ -> makeExpr (FuncCall (e, []), e.e_loc)
 
 let exp e = makeExpr (e, lloc ())
+let const (v, t) =
+  let e = makeExpr (Const v, lloc ()) in
+  e.e_type <- t; e
 let typexp tx = makeTypexpr (tx, lloc ())
 
 let has_proc ds = 
@@ -397,7 +400,7 @@ else :
   | ELSE stmts			{ Some $stmts } ;
 
 step :
-    /* empty */			{ exp (Const (IntVal (integer 1), numtype)) }
+    /* empty */			{ const (IntVal (integer 1), numtype) }
   | BY expr			{ $expr } ;
 
 expr :
@@ -420,17 +423,17 @@ term :
   | term STAR factor		{ exp (Binop (Times, $term, $factor)) } ;
 
 factor :
-    NUMBER			{ exp (Const (IntVal $NUMBER, numtype)) }
+    NUMBER			{ const (IntVal $NUMBER, numtype) }
   | DECIMAL			{ exp (Decimal $DECIMAL) }
-  | FLOCON			{ exp (Const (FloVal $FLOCON, realtype)) }
-  | DBLCON			{ exp (Const (FloVal $DBLCON, longreal)) }
-  | CHAR			{ exp (Const (IntVal (integer
-					    (int_of_char $CHAR)), character)) }
+  | FLOCON			{ const (FloVal $FLOCON, realtype) }
+  | DBLCON			{ const (FloVal $DBLCON, longreal) }
+  | CHAR			{ const (IntVal (integer
+					    (int_of_char $CHAR)), character) }
   | STRING			{ exp (String (save_string $STRING, 
 					    String.length $STRING)) }
   | NIL				{ exp Nil }
-  | TRUE                        { exp (Const (IntVal (integer 1), boolean)) }
-  | FALSE			{ exp (Const (IntVal (integer 0), boolean)) }
+  | TRUE                        { const (IntVal (integer 1), boolean) }
+  | FALSE			{ const (IntVal (integer 0), boolean) }
   | desig %prec error		{ $desig }
   | LBRACE RBRACE		{ exp (Set []) }
   | LBRACE elements RBRACE	{ exp (Set $elements) }

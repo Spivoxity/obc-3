@@ -88,7 +88,7 @@ let is_const e =
 (* value_of -- get value of constant *)
 let value_of e =
   match e.e_guts with
-      Const (v, t) -> v
+      Const v -> int_value v
     | _ -> failwith "value_of"
 
 let expr_line e = line_num e.e_loc
@@ -339,7 +339,7 @@ and gen_expr e =
     gen_condval true e
   else begin
     match e.e_guts with
-	Const (v, t) -> constant (op_kind t) v
+	Const v -> constant (op_kind e.e_type) v
 
       | Name x ->
 	  let d = get_def x in
@@ -622,7 +622,7 @@ and gen_builtin q args =
 
     | LenFun, v::_ ->
 	let n = if List.length args = 1 then 0
-	  else int_of_integer (int_value (value_of (List.nth args 1))) in
+	  else int_of_integer (value_of (List.nth args 1)) in
 	let e0 = sub_base v in
 	let us = subscripts v in
 	let rec loop i ys =
@@ -738,7 +738,7 @@ and gen_builtin q args =
 (* gen_cond -- generate code to branch on a condition *)
 and gen_cond tlab flab test =
   match test.e_guts with
-      Const (v, t) ->
+      Const v ->
 	if int_value v <> integer 0 then JUMP tlab else JUMP flab
 
     | Monop (Not, e) ->
@@ -923,10 +923,9 @@ let rec gen_stmt exit_lab s =
 	    let f =
 		function 
 		    Single e -> 
-		      let v = int_value (value_of e) in (v, v, lab)
+		      let v = value_of e in (v, v, lab)
 		  | Range (e1, e2) -> 
-		      let v1 = int_value (value_of e1)
-		      and v2 = int_value (value_of e2) in (v1, v2, lab) in
+		      (value_of e1, value_of e2, lab) in
 	    List.map f vs 
 
 	  and gen_arm lab (vs, body) =
@@ -967,10 +966,10 @@ let rec gen_stmt exit_lab s =
 	  let lab1 = label () and lab2 = label () in
 	  let memk = mem_kind var.e_type in
 	  let kind = op_kind var.e_type in
-	  let inc =  int_value (value_of step) in
+	  let inc = value_of step in
 	  let (prep, upb) =
 	    match (hi.e_guts, !tmp) with 
-		(Const (_, _), _) -> (NOP, gen_expr hi)
+		(Const _, _) -> (NOP, gen_expr hi)
 	      | (_, Some d) ->
                   ( SEQ [gen_expr hi; LOCAL d.d_offset; STORE memk],
                     SEQ [LOCAL d.d_offset; LOAD memk] ) 

@@ -267,13 +267,13 @@ STGW tSet.s
 GLOBAL tSet.Print
 CALL 0
 !   s := {2..7}-{n};
-CONST 252
 CONST 1
 LDGW tSet.n
 CONST 32
 BOUND 40
 LSL
 BITNOT
+CONST 252
 BITAND
 STGW tSet.s
 !   Print                                 (* 2 3 4 6 7 *)

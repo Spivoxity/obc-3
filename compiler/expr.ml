@@ -107,25 +107,25 @@ let lookup_typename x env =
 (* convert -- force conversion of numeric type *)
 let convert e t =
   begin match e.e_guts with
-      Const (v, _) ->
+      Const v ->
         if (kind_of t >= FloatT) then
-          edit_expr e (Const (widen v, t))
+          edit_expr e (Const (widen v))
         else begin
           let vn = int_value v in
           if same_types t shortint then begin
             if int_value v < minshort || int_value v > maxshort then
               sem_warn "the integer value $ does not fit in type SHORTINT"
                 [fInteger vn] e.e_loc;
-            edit_expr e (Const (IntVal (signext 16 vn), t))
+            edit_expr e (Const (IntVal (signext 16 vn)))
           end
           else if same_types t inttype then begin
             if (int_value v < minint || int_value v > maxint) then
               sem_warn "the integer value $ does not fit in type INTEGER"
                 [fInteger vn] e.e_loc;
-            edit_expr e (Const (IntVal (signext 32 vn), t))
+            edit_expr e (Const (IntVal (signext 32 vn)))
           end
           else
-            edit_expr e (Const (IntVal vn, t))
+            edit_expr e (Const (IntVal vn))
         end
     | Convert _ when kind_of t >= FloatT && kind_of (e.e_type) >= FloatT ->
         (* Merge successive conversions to avoid loss of precision *)
@@ -193,12 +193,12 @@ let rec is_var e =
 (* is_char_const -- test if expression is a character constant *)
 let is_char_const e =
   match e.e_guts with
-      Const (_, t) -> same_types t character
+      Const _ -> same_types e.e_type character
     | _ -> false
 
 let promote_char e =
   match e.e_guts with
-      Const (c, _) ->
+      Const c ->
         let s = String.make 1 (char_of_integer (int_value c)) in
 	edit_expr e (String (save_string s, 1));
  	e.e_type <- new_type 0 (row 2 character)
@@ -321,8 +321,10 @@ let check_deref e =
 
 let const_value e =
   match e.e_guts with
-      Const (v, _) -> v
+      Const v -> v
     | _ -> raise Not_found
+
+let int_const n = Const (IntVal (integer n))
 
 let op_of e =
   match e.e_guts with
@@ -330,12 +332,12 @@ let op_of e =
     | Monop (w, _) -> w
     | _ -> failwith "op_of"
 
-let simp e t =
+let simp e =
   match e.e_guts with
       Binop (w, e1, e2) ->
         begin
 	  match e1.e_guts, e2.e_guts with
-	      Const (x1, _), Const (x2, _) -> 
+	      Const x1, Const x2 -> 
 	        let v = try do_binop w x1 x2 with 
 		      Division_by_zero ->
 			sem_error "dividing a constant by zero" 
@@ -345,21 +347,27 @@ let simp e t =
 			sem_error "constant expression causes a bound error"
 			  [] e.e_loc;
 			intval 0 in
-		edit_expr e (Const (v, t))
+		edit_expr e (Const v)
+	    | _ -> ()
+	end
+    | Monop (w, e1) ->
+        begin 
+	  match e1.e_guts with
+	      Const x1 -> 
+		edit_expr e (Const (do_monop (op_of e) x1))
 	    | _ -> ()
 	end
     | _ -> ()
 
 let expr g t loc =
   let e = makeExpr (g, loc) in
-  simp e t; e.e_type <- t; e
+  simp e; e.e_type <- t; e
 
-let subst e g t =
-  edit_expr e g; simp e t; t
+let subst e g = edit_expr e g; simp e
 
 let shift v x =
-  expr (Binop (BitShl,
-      expr (Const (IntVal (integer v), settype)) settype x.e_loc, x))
+  expr
+    (Binop (BitShl, expr (int_const v) settype x.e_loc, x))
     settype x.e_loc
 
 let type_mismatch cxt args lt e =
@@ -381,9 +389,9 @@ and check_desig1 e env =
           let d = lookup_def x env in 
           begin match d.d_kind with
               ConstDef v ->
-                edit_expr e (Const (v, d.d_type))
+                edit_expr e (Const v)
             | EnumDef n ->
-                edit_expr e (Const (IntVal (integer n), d.d_type))
+                edit_expr e (int_const n)
             | StringDef ->
                 let n = bound d.d_type in
                 edit_expr e (String (d.d_lab, n-1))
@@ -479,7 +487,7 @@ and check_subexp e env =
   match e.e_guts with
       Name _ | Deref _ | Sub _ | Select _ ->
 	check_desig e env
-    | Const (v, t) -> t
+    | Const v -> e.e_type
     | Decimal d ->
 	(* OCaml wrongly allows 2^31 as a valid integer *)
 	let v = 
@@ -489,7 +497,7 @@ and check_subexp e env =
 	    sem_error "constant does not fit in 32 bits" [] e.e_loc;
 	    integer_of_string "0x7fffffff" 
 	  end in
-	edit_expr e (Const (IntVal v', numtype)); numtype
+	edit_expr e (Const (IntVal v')); numtype
     | String (lab, n) -> new_type 0 (row (n+1) character)
     | Nil -> niltype
     | FuncCall (p, args) -> 
@@ -507,19 +515,14 @@ and check_subexp e env =
 	  try integer_of_string ("-" ^ d) with Failure _ ->
 	    sem_error "constant does not fit in 32 bits" [] e.e_loc;
 	    integer_of_string "0x80000000" in
-	edit_expr e (Const (IntVal v, numtype)); numtype
+	edit_expr e (Const (IntVal v)); numtype
     | Monop (w, e1) -> 
 	let t = check_monop env w e1 e in
-	if not (is_errtype t) then begin 
-	  match e1.e_guts with
-	      Const (x1, _) -> 
-		edit_expr e (Const (do_monop (op_of e) x1, t))
-	    | _ -> ()
-	end;
+	if not (is_errtype t) then simp e;
 	t
     | Binop (w, e1, e2) -> 
 	let t = check_binop env w e1 e2 e in
-	if not (is_errtype t) then simp e t;
+	if not (is_errtype t) then simp e;
 	t
 
     | TypeTest (e1, tn) ->
@@ -546,7 +549,7 @@ and check_subexp e env =
         let e' =
           List.fold_left
             (fun f1 f2 -> expr (Binop (BitOr, f1, f2)) settype e.e_loc)
-            (expr (Const (IntVal (integer 0), settype)) settype e.e_loc)
+            (expr (int_const 0) settype e.e_loc)
             (List.map check_elem els) in
 
         edit_expr e e'.e_guts; settype
@@ -673,7 +676,7 @@ and check_binop env w e1 e2 e =
 	end;
         edit_expr e (Binop (Neq,
           expr (Binop (BitAnd, e2, shift 1 e1)) settype e1.e_loc,
-          expr (Const (IntVal (integer 0), settype)) settype e.e_loc));
+          expr (int_const 0) settype e.e_loc));
 	boolean
     | And | Or ->
         if not (same_types t1 boolean && same_types t2 boolean) then begin
@@ -836,12 +839,11 @@ and check_builtin env p args e loc =
       List.iter check (List.combine args p.b_argtypes)
     end;
 
-    let propagate f e1 t1 =
+    let propagate f e1 =
       begin match e1.e_guts with
-	  Const (v, _) -> edit_expr e (Const (f v, t1))
+	  Const v -> edit_expr e (Const (f v))
         | _ -> () 
-      end;
-      t1 in
+      end in
 
     let typeconv t1 e1 =
       convert e1 t1; edit_expr e e1.e_guts; t1 in
@@ -863,7 +865,7 @@ and check_builtin env p args e loc =
 	ChrFun, [e1] ->
 	  let chr v = 
 	    IntVal (integer_bitand (int_value v) (integer 255)) in
-	  propagate chr e1 character
+	  propagate chr e1; character
 
       | OrdFun, [e1] ->
 	  let t1 = check_expr e1 env in
@@ -882,11 +884,11 @@ and check_builtin env p args e loc =
 	  end;
 
 	  let id x = x in
-	  propagate id e1 inttype
+	  propagate id e1; inttype
 
       | OddFun, [e1] ->
 	  let odd v = IntVal (integer_mod (int_value v) (integer 2)) in
-	  propagate odd e1 boolean
+	  propagate odd e1; boolean
 
       | Entier, [e1] ->
 	  let t1 = check_expr e1 env in
@@ -930,27 +932,27 @@ and check_builtin env p args e loc =
       | FltFun, [e1] -> typeconv realtype e1
 
       | LslFun, [e1; e2] ->
-          subst e (Binop (Lsl, e1, e2)) inttype
+          subst e (Binop (Lsl, e1, e2)); inttype
       | LsrFun, [e1; e2] ->
-          subst e (Binop (Lsr, e1, e2)) inttype
+          subst e (Binop (Lsr, e1, e2)); inttype
       | AsrFun, [e1; e2] -> 
-          subst e (Binop (Asr, e1, e2)) inttype
+          subst e (Binop (Asr, e1, e2)); inttype
       | RorFun, [e1; e2] -> 
-          subst e (Binop (Ror, e1, e2)) inttype
+          subst e (Binop (Ror, e1, e2)); inttype
       | AshFun, [e1; e2] -> 
           begin match e2.e_guts with
-              Const (v, _) ->
+              Const v ->
                 let n = int_value v in
                 if n >= integer 0 then
-                  subst e (Binop (Lsl, e1, e2)) inttype
+                  subst e (Binop (Lsl, e1, e2))
                 else
                   subst e
                     (Binop (Asr, e1,
-                       expr (Const (IntVal (integer_neg n), inttype))
-                         inttype e2.e_loc))
-                    inttype
-            | _ -> inttype
-          end
+                       expr (Const (IntVal (integer_neg n)))
+                         inttype e2.e_loc));
+            | _ -> ()
+          end;
+          inttype
 
       | AbsFun, [e1] ->
 	  let t1 = check_expr e1 env in
@@ -958,7 +960,7 @@ and check_builtin env p args e loc =
 	    sem_error "ABS needs a numeric argument" [] 
 	      (List.nth args 0).e_loc;
 	    sem_type t1;
-	    inttype
+	    errtype
 	  end
 	  else begin 
 	    let abs = function
@@ -966,7 +968,7 @@ and check_builtin env p args e loc =
 		  IntVal (if n >= integer 0 then n else integer_neg n)
 	      | FloVal x -> 
 		  FloVal (if x >= 0.0 then x else -. x) in
-	    propagate abs e1 t1
+	    propagate abs e1; t1
 	  end
 
       | (MinFun | MaxFun), [e1] ->
@@ -1005,7 +1007,7 @@ and check_builtin env p args e loc =
 		      | _ -> 
 			  fail ();
 			  (IntVal (integer 0), IntVal (integer 0), inttype) in
-		  edit_expr e (Const ((if p.b_id = MinFun then y else z), t));
+		  edit_expr e (Const ((if p.b_id = MinFun then y else z)));
 		  t
 		with Not_found -> errtype
 		end
@@ -1020,9 +1022,7 @@ and check_builtin env p args e loc =
 	      Name x ->
 		begin try
 		  let d = lookup_typename x env in
-		  edit_expr e
-		    (Const (IntVal (integer d.d_type.t_rep.m_size), 
-		      inttype))
+		  edit_expr e (int_const d.d_type.t_rep.m_size)
 		with Not_found -> ()
 		end
 	    | _ ->
@@ -1083,8 +1083,7 @@ and check_builtin env p args e loc =
 		      if i > 0 then
 			loop (i-1) t2
 		      else begin
-			if (safe e1) then
-  			  edit_expr e (Const (IntVal (integer k), inttype));
+			if (safe e1) then edit_expr e (int_const k);
 			inttype
 		      end
 		  | FlexType t2 ->
@@ -1287,7 +1286,7 @@ and proc_value e glob =
 and check_const e env cxt =
   let t = check_expr e env in
   match e.e_guts with
-      Const (v, _) -> (t, v)
+      Const v -> (t, v)
     | _ -> 
 	sem_error "$ must be a constant" [fStr cxt] e.e_loc;
 	(t, IntVal (integer 0))
