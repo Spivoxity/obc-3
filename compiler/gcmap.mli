@@ -36,9 +36,6 @@ val null_map : gcmap
 (* ptr_map -- map for a single pointer *)
 val ptr_map : gcmap
 
-(* flex_map -- map for an open array parameter *)
-val flex_map : int -> int -> int -> gcmap -> gcmap
-
 (* shift -- shift a GC map by a specified offset *)
 val shift : int -> gcmap -> gcmap
 
@@ -51,14 +48,17 @@ val join : gcmap -> gcmap -> gcmap
 (* union -- union of a list of maps *)
 val union : gcmap list -> gcmap
 
+(* flex_map -- map for an open array parameter *)
+val flex_map : int -> int -> int -> gcmap -> gcmap
+
 (* make_bitmap -- render a GC map as a bitmap or raise Not_found *)
 val make_bitmap : int -> gcmap -> int32
 
 (* put_varmap -- output GC map for a variable *)
 val put_varmap : Symtab.symbol -> gcmap -> unit
 
-(* save_map -- a definition to map table *)
+(* save_map -- name a gcmap with a symbol *)
 val save_map : Symtab.symbol -> gcmap -> unit
 
-(* put_maps -- output saved definitions *)
+(* put_maps -- output all named maps *)
 val put_maps : unit -> unit

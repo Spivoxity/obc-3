@@ -804,7 +804,9 @@ static unsigned *map_next(unsigned *p) {
      case GC_REPEAT >> 2:
      case GC_FLEX >> 2:
 	  p += 4;
-	  while (*p % 2 == 0 && *p != GC_END) p = map_next(p);
+          if (*p % 2 == 0) {
+               while (*p != GC_END) p = map_next(p);
+          }
 	  return p+1;
 
      case GC_BLOCK >> 2:
@@ -817,9 +819,9 @@ static unsigned *map_next(unsigned *p) {
 }
 
 /* redir_map -- interpret a pointer map, redirecting each pointer */
-static void redir_map(unsigned map, void *base, int bmshift) {
+static void redir_map(unsigned map, void *origin, int bmshift) {
      int count, stride, op, ndim;
-     void *base2;
+     void *base;
      unsigned *p;
 
      if (map == 0) return;
@@ -829,12 +831,13 @@ static void redir_map(unsigned map, void *base, int bmshift) {
 	  int i = -bmshift; 
           map >>= 1;
 
-#define mrk(j)  redirect((word *) &get_word(base, i+j))
+#define mrk(j)  redirect((word *) &get_word(origin, i+j))
+
           while (map != 0) {
                switch (map & 15) {
                case 15: mrk(0);
                case 14: mrk(1);
-               case 12: mrk(2); mrk(3); break;
+               case 12: mrk(3); mrk(2); break;
                case 13: mrk(2);
                case  9: mrk(3); mrk(0); break;
                case 11: mrk(0);
@@ -858,78 +861,85 @@ static void redir_map(unsigned map, void *base, int bmshift) {
 
      p = ptrcast(unsigned, map);
 
-     if (*p % 2 == 1) {
-          /* A bitmap */
-          redir_map(*p, base, 0);
-          return;
-     }
-
      for (;;) {
           op = *p;
 
-	  if (op % 4 == 0) {
+          switch (op & 0x3) {
+          case 0:
 	       /* A pointer offset */
-	       redirect((word *) (base + (int) op));
-	       p++;
-	       continue;
-	  }
+	       redirect((word *) (origin + op));
+	       p++; break;
 
-	  switch (op >> 2) {
-	  case GC_BASE >> 2:
-	       base = ptrcast(void, p[1]);
-	       break;
 
-          case GC_POINTER >> 2:
-               redirect(ptrcast(word, p[1]));
-               break;
+          case 1:
+          case 3:
+               /* A bitmap */
+               redir_map(op, origin, 0);
+               p++; break;
+
+          default:
+               switch (op >> 2) {
+               case GC_BASE >> 2:
+                    origin = ptrcast(void, p[1]);
+                    break;
+
+               case GC_POINTER >> 2:
+                    redirect(ptrcast(word, p[1]));
+                    break;
                         
-	  case GC_REPEAT >> 2:
-	       base2 = base + p[1];
-	       count = p[2];
-	       stride = p[3];
+               case GC_REPEAT >> 2:
+                    base = origin + p[1];
+                    count = p[2];
+                    stride = p[3];
 
-	       ASSERT(count > 0);
+                    for (int i = 0; i < count; i++)
+                         redir_map(address(p+4), base + i*stride, 0);
 
-	       for (int i = 0; i < count; i++)
-		    redir_map(address(p+4), base2 + i*stride, 0);
+                    break;
 
-	       break;
+               case GC_BLOCK >> 2:
+                    base = origin + p[1];
+                    count = p[2];
 
-	  case GC_BLOCK >> 2:
-	       base2 = base + p[1];
-	       count = p[2];
+                    for (int i = 0; i < count; i++)
+                         redirect((word *) &get_word(base, i));
 
-	       for (int i = 0; i < count; i++)
-		    redirect((word *) &get_word(base2, i));
-	       break;
+                    break;
 			 
-	  case GC_MAP >> 2:
-	       redir_map((unsigned) p[1], base, 0);
-	       break;
+               case GC_MAP >> 2:
+                    redir_map((unsigned) p[1], origin, 0);
+                    break;
 
-	  case GC_FLEX >> 2:
-	       base2 = base + p[1];
-	       ndim = p[2];
-	       stride = p[3];
+               case GC_FLEX >> 2:
+                    /* Mark pointer in the local copy of an open array
+                       parameter passed by value */
 
-	       count = 1;
-	       for (int i = 0; i < ndim; i++) 
-		    count *= get_word(base2, i+1);
+                    base = origin + p[1]; /* Address of the parameter slot */
+                    ndim = p[2];
+                    stride = p[3];
+
+                    /* Compute the number of elements */
+                    count = 1;
+                    for (int i = 0; i < ndim; i++) 
+                         count *= get_word(base, i+1);
 	       
-	       base2 = ptrcast(void, get_word(base2, 0));
-	       for (int i = 0; i < count; i++)
-		    redir_map(address(p+4), base2 + i*stride, 0);
+                    /* Get address of the local copy */
+                    base = ptrcast(void, get_word(base, 0)); 
 
-	       break;
+                    for (int i = 0; i < count; i++)
+                         redir_map(address(p+4), base + i*stride, 0);
 
-	  case GC_END >> 2:
-	       return;
+                    break;
 
-	  default:
-	       panic("*bad map code %d", op);
-	  }
+               case GC_END >> 2:
+                    return;
 
-	  p = map_next(p);
+               default:
+                    panic("*bad map code %d", op);
+               }
+
+               p = map_next(p);
+          }
      }
 }
 
