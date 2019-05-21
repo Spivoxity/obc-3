@@ -1304,11 +1304,9 @@ GLOVAR tSystolic.chan 44
 DEFINE tSystolic.%gcmap
 WORD GC_BASE
 WORD tSystolic.proc
-WORD GC_MAP
 WORD 0x00001fff
 WORD GC_BASE
 WORD tSystolic.chan
-WORD GC_MAP
 WORD 0x00000fff
 WORD GC_END
 

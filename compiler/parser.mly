@@ -98,11 +98,12 @@ let make_call e =
       FuncCall _ -> e
     | _ -> makeExpr (FuncCall (e, []), e.e_loc)
 
-let exp e = makeExpr (e, lloc ())
+let expr e = makeExpr (e, lloc ())
+
 let const (v, t) =
-  let e = makeExpr (Const v, lloc ()) in
-  e.e_type <- t; e
-let typexp tx = makeTypexpr (tx, lloc ())
+  let e = expr (Const v) in e.e_type <- t; e
+
+let typexpr tx = makeTypexpr (tx, lloc ())
 
 let has_proc ds = 
   List.exists (function ProcDecl _ -> true | _ -> false) ds
@@ -192,20 +193,20 @@ vdecl :
 
 texpr :	
     tname			{ $tname }
-  | LPAR defids RPAR		{ typexp (Enum $defids) }
-  | POINTER TO texpr		{ typexp (Pointer $texpr) }
-  | ARRAY OF texpr		{ typexp (Flex $texpr) }
+  | LPAR defids RPAR		{ typexpr (Enum $defids) }
+  | POINTER TO texpr		{ typexpr (Pointer $texpr) }
+  | ARRAY OF texpr		{ typexpr (Flex $texpr) }
   | ARRAY exprs OF texpr
-      { let array n t = typexp (Array (n, t)) in
+      { let array n t = typexpr (Array (n, t)) in
         List.fold_right array $exprs $texpr }
   | abstract RECORD parent fields END
-      { typexp (Record ($abstract, $parent, $fields)) }
+      { typexpr (Record ($abstract, $parent, $fields)) }
   | abstract RECORD07 parent fields07 END
-      { typexp (Record ($abstract, $parent, $fields07)) }
-  | PROCEDURE params		{ typexp (Proc $params) } ;
+      { typexpr (Record ($abstract, $parent, $fields07)) }
+  | PROCEDURE params		{ typexpr (Proc $params) } ;
 
 tname :
-    qualid			{ typexp (TypeName $qualid) } ;
+    qualid			{ typexpr (TypeName $qualid) } ;
 
 abstract :
     /* empty */			{ false }
@@ -405,54 +406,59 @@ step :
 
 expr :
     simple %prec error		{ $simple }
-  | simple@e1 RELOP simple@e2	{ exp (Binop ($RELOP, $e1, $e2)) }
-  | simple@e1 EQUAL simple@e2	{ exp (Binop (Eq, $e1, $e2)) } 
-  | simple IS qualid		{ exp (TypeTest ($simple, $qualid)) } ;
+  | simple@e1 RELOP simple@e2	{ expr (Binop ($RELOP, $e1, $e2)) }
+  | simple@e1 EQUAL simple@e2	{ expr (Binop (Eq, $e1, $e2)) } 
+  | simple IS qualid		{ expr (TypeTest ($simple, $qualid)) } ;
 
 simple :
     term %prec error		{ $term }
-  | PLUS term			{ exp (Monop (Uplus, $term)) }
-  | MINUS term			{ exp (Monop (Uminus, $term)) }
-  | simple PLUS term		{ exp (Binop (Plus, $simple, $term)) }
-  | simple MINUS term		{ exp (Binop (Minus, $simple, $term)) }
-  | simple ADDOP term		{ exp (Binop ($ADDOP, $simple, $term)) } ;
+  | PLUS term			{ expr (Monop (Uplus, $term)) }
+  | MINUS term			{ expr (Monop (Uminus, $term)) }
+  | simple PLUS term		{ expr (Binop (Plus, $simple, $term)) }
+  | simple MINUS term		{ expr (Binop (Minus, $simple, $term)) }
+  | simple ADDOP term		{ expr (Binop ($ADDOP, $simple, $term)) } ;
 
 term :
     factor			{ $factor }
-  | term MULOP factor		{ exp (Binop ($MULOP, $term, $factor)) }
-  | term STAR factor		{ exp (Binop (Times, $term, $factor)) } ;
+  | term MULOP factor		{ expr (Binop ($MULOP, $term, $factor)) }
+  | term STAR factor		{ expr (Binop (Times, $term, $factor)) } ;
 
 factor :
     NUMBER			{ const (IntVal $NUMBER, numtype) }
-  | DECIMAL			{ exp (Decimal $DECIMAL) }
+  | DECIMAL			{ expr (Decimal $DECIMAL) }
   | FLOCON			{ const (FloVal $FLOCON, realtype) }
   | DBLCON			{ const (FloVal $DBLCON, longreal) }
   | CHAR			{ const (IntVal (integer
 					    (int_of_char $CHAR)), character) }
-  | STRING			{ exp (String (save_string $STRING, 
+  | STRING			{ expr (String (save_string $STRING, 
 					    String.length $STRING)) }
-  | NIL				{ exp Nil }
+  | NIL				{ expr Nil }
   | TRUE                        { const (IntVal (integer 1), boolean) }
   | FALSE			{ const (IntVal (integer 0), boolean) }
   | desig %prec error		{ $desig }
-  | LBRACE RBRACE		{ exp (Set []) }
-  | LBRACE elements RBRACE	{ exp (Set $elements) }
-  | NOT factor			{ exp (Monop (Not, $factor)) }
+  | LBRACE RBRACE		{ expr (Set []) }
+  | LBRACE elements RBRACE	{ expr (Set $elements) }
+  | NOT factor			{ expr (Monop (Not, $factor)) }
   | LPAR expr RPAR		{ $expr } 
   | LPAR expr %prec error	{ parse_error2 
 				    "unmatched parenthesis" (rloc 1);
 				  raise Parse_error } ;
 
 desig :
-    name			{ exp (Name $name) }
-  | desig UPARROW		{ exp (Deref $desig) }
-  | desig SUB exprs BUS		{ let sub a i = exp (Sub (a, i)) in
+    name			{ expr (Name $name) }
+  | desig UPARROW		{ expr (Deref $desig) }
+  | desig SUB exprs BUS		{ let sub a i = expr (Sub (a, i)) in
 				  List.fold_left sub $desig $exprs }
   | desig SUB exprs %prec error	{ parse_error2 
 				    "unmatched subscript bracket" (rloc 2);
     	      	    	  	  raise Parse_error }
-  | desig DOT name		{ exp (Select ($desig, $name)) }
-  | desig actuals		{ exp (FuncCall ($desig, $actuals)) } ;
+  | desig DOT name		{ expr (Select ($desig, $name)) }
+    /* We can't always tell the difference between function calls
+       and casts without knowing which identifiers are type names.
+       So everything is treated as a function call by the parser,
+       and the semantic analyser must sort things out.  Sometimes
+       it says "function call not allowed here". */
+  | desig actuals		{ expr (FuncCall ($desig, $actuals)) } ;
 
 actuals :	
     LPAR RPAR			{ [] }

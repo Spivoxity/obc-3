@@ -40,25 +40,26 @@ IMPORT Out, SYSTEM, Random;
 
 TYPE 
   tree = POINTER TO node;
-  node = ARRAY OF tree;
+  thing = RECORD this, that: tree END;
+  node = ARRAY OF thing;
 
 PROCEDURE Alloc(a: node; VAR b: node): tree;
   VAR i: INTEGER; p: tree;
 BEGIN
   (* Trash the array b *)
-  FOR i := 0 TO LEN(b)-1 DO b[i] := NIL END;
+  FOR i := 0 TO LEN(b)-1 DO b[i].this := NIL; b[i].that := NIL END;
   
   SYSTEM.GC;
 
   NEW(p, LEN(a) + Random.Roll(10));
-  FOR i := 0 TO LEN(a)-1 DO p[i] := a[i] END;
+  FOR i := 0 TO LEN(a)-1 DO p[i].this := a[i].this END;
   RETURN p
 END Alloc;  
 
 PROCEDURE Cons(l, r: tree): tree;
-  VAR a: ARRAY 2 OF tree;
+  VAR a: ARRAY 2 OF thing;
 BEGIN
-  a[0] := l; a[1] := r;
+  a[0].this := l; a[1].this := r;
   l := NIL; r := NIL;
   RETURN Alloc(a, a)
 END Cons;
@@ -78,8 +79,8 @@ BEGIN
     Out.Char('.')
   ELSE
     Out.Char('(');
-    Print(t[0]);
-    Print(t[1]);
+    Print(t[0].this);
+    Print(t[1].this);
     Out.Char(')')
   END
 END Print;
@@ -89,7 +90,7 @@ BEGIN
   IF t = NIL THEN
     RETURN 1
   ELSE
-    RETURN count(t[0]) + count(t[1])
+    RETURN count(t[0].this) + count(t[1].this)
   END
 END count;
 
@@ -122,10 +123,10 @@ PROC tFibTree3.Alloc 16 5 tFibTree3.Alloc.%map
 ! PROCEDURE Alloc(a: node; VAR b: node): tree;
 LOCAL 12
 LDLW 16
-CONST 4
+CONST 8
 TIMES
 FLEXCOPY
-!   FOR i := 0 TO LEN(b)-1 DO b[i] := NIL END;
+!   FOR i := 0 TO LEN(b)-1 DO b[i].this := NIL; b[i].that := NIL END;
 LDLW 24
 DEC
 STLW -12
@@ -139,8 +140,16 @@ CONST 0
 LDLW 20
 LDLW -4
 LDLW 24
-BOUND 49
-STIW
+BOUND 50
+INDEXD
+STOREW
+CONST 0
+LDLW 20
+LDLW -4
+LDLW 24
+BOUND 50
+INDEXD
+STNW 4
 INCL -4
 JUMP L3
 LABEL L4
@@ -154,12 +163,12 @@ GLOBAL Random.Roll
 CALLW 1
 PLUS
 CONST 1
-CONST 4
-CONST 3
+CONST 8
+CONST 0x00000007
 GLOBAL NEWFLEX
 CALLW 4
 STLW -8
-!   FOR i := 0 TO LEN(a)-1 DO p[i] := a[i] END;
+!   FOR i := 0 TO LEN(a)-1 DO p[i].this := a[i].this END;
 LDLW 16
 DEC
 STLW -16
@@ -172,16 +181,18 @@ JGT L6
 LDLW 12
 LDLW -4
 LDLW 16
-BOUND 54
-LDIW
+BOUND 55
+INDEXD
+LOADW
 LDLW -8
-NCHECK 54
+NCHECK 55
 LDLW -4
 DUP 1
 LDNW -4
 LDNW 4
-BOUND 54
-STIW
+BOUND 55
+INDEXD
+STOREW
 INCL -4
 JUMP L5
 LABEL L6
@@ -190,13 +201,13 @@ LDLW -8
 RETURN
 END
 
-PROC tFibTree3.Cons 8 5 0x00318001
+PROC tFibTree3.Cons 16 5 0x0031e001
 ! PROCEDURE Cons(l, r: tree): tree;
-!   a[0] := l; a[1] := r;
+!   a[0].this := l; a[1].this := r;
 LDLW 12
-STLW -8
+STLW -16
 LDLW 16
-STLW -4
+STLW -8
 !   l := NIL; r := NIL;
 CONST 0
 STLW 12
@@ -204,9 +215,9 @@ CONST 0
 STLW 16
 !   RETURN Alloc(a, a)
 CONST 2
-LOCAL -8
+LOCAL -16
 CONST 2
-LOCAL -8
+LOCAL -16
 GLOBAL tFibTree3.Alloc
 CALLW 4
 RETURN
@@ -255,26 +266,28 @@ CONST 40
 ALIGNC
 GLOBAL Out.Char
 CALL 1
-!     Print(t[0]);
+!     Print(t[0].this);
 LDLW 12
-NCHECK 81
+NCHECK 82
 CONST 0
 DUP 1
 LDNW -4
 LDNW 4
-BOUND 81
-LDIW
+BOUND 82
+INDEXD
+LOADW
 GLOBAL tFibTree3.Print
 CALL 1
-!     Print(t[1]);
+!     Print(t[1].this);
 LDLW 12
-NCHECK 82
+NCHECK 83
 CONST 1
 DUP 1
 LDNW -4
 LDNW 4
-BOUND 82
-LDIW
+BOUND 83
+INDEXD
+LOADW
 GLOBAL tFibTree3.Print
 CALL 1
 !     Out.Char(')')
@@ -294,25 +307,27 @@ JNEQZ L16
 CONST 1
 RETURN
 LABEL L16
-!     RETURN count(t[0]) + count(t[1])
+!     RETURN count(t[0].this) + count(t[1].this)
 LDLW 12
-NCHECK 92
+NCHECK 93
 CONST 0
 DUP 1
 LDNW -4
 LDNW 4
-BOUND 92
-LDIW
+BOUND 93
+INDEXD
+LOADW
 GLOBAL tFibTree3.count
 CALLW 1
 LDLW 12
-NCHECK 92
+NCHECK 93
 CONST 1
 DUP 1
 LDNW -4
 LDNW 4
-BOUND 92
-LDIW
+BOUND 93
+INDEXD
+LOADW
 GLOBAL tFibTree3.count
 CALLW 1
 PLUS
@@ -391,13 +406,22 @@ STRING 436F756E74203D2000
 DEFINE tFibTree3.%2
 STRING 7300
 
+! Descriptor for thing
+DEFINE tFibTree3.thing
+WORD 0x00000007
+WORD 0
+WORD tFibTree3.thing.%anc
+
+DEFINE tFibTree3.thing.%anc
+WORD tFibTree3.thing
+
 ! Pointer maps
 DEFINE tFibTree3.Alloc.%map
 WORD GC_FLEX
 WORD 12
 WORD 1
-WORD 4
-WORD 0
+WORD 8
+WORD 0x00000007
 WORD GC_END
 WORD 20
 WORD -8

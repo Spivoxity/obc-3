@@ -93,25 +93,25 @@ let downward_alloc size d =
 (* param_size -- compute space occupied by formal *)
 let param_size k t =
   let s = param_rep.m_size in
-  if is_proc t then
-    match k with
-	(ParamDef | CParamDef) -> 2 * s
-      | VParamDef -> s
-      | _ -> failwith "param_size"
-  else if scalar t then
-    match k with 
-	(ParamDef | CParamDef) ->  max s t.t_rep.m_size 
-      | VParamDef -> s
-      | _ -> failwith "param_size"
-  else if is_array t then
-    (flexity t + 1) * s
-  else if is_record t then
-    match k with
-	(ParamDef | CParamDef) -> s 
-      | VParamDef -> 2 * s
-      | _ -> failwith "param_size"
-  else
-    failwith "param_size"
+  match (k, t.t_guts) with
+      (* Arrays are address, plus n flex bounds *)
+      (_, ArrayType _) -> s
+    | (_, FlexType _) -> (flexity t + 1) * s
+
+      (* Records are address, plus desciptor if a VAR param *)
+    | ((ParamDef|CParamDef), RecordType _) -> s
+    | (VParamDef, RecordType _) -> 2*s
+
+      (* Procedure value params are code + static link *)
+    | ((ParamDef|CParamDef), ProcType _) -> 2*s
+
+      (* Scalar value params may take several words *)
+    | ((ParamDef|CParamDef), _) when scalar t -> max s t.t_rep.m_size
+
+      (* Scalar VAR params (including procedure variables) are an address *)
+    | (VParamDef, _) when scalar t -> s
+
+    | (_, _) -> failwith "param_size"
 
 (* param_alloc -- allocate space for a parameter *)
 let param_alloc head psize d = 
@@ -607,9 +607,7 @@ let rec check_stmt s env =
 
     | Skip -> ()
 
-    | ErrStmt -> failwith "check ErrStmt"
-
-    | TypeCase _ -> failwith "check TypeCase"
+    | _ -> failwith "check"
 
 and check_typecase s env =
   match s.s_guts with

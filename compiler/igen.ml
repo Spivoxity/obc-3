@@ -60,7 +60,7 @@ let push_map t =
     const 0
   else if t.t_map = ptr_map then
     (* A pointer type *)
-    const 3
+    HEXCONST (Int32.of_int 3)
   else begin
     try HEXCONST (make_bitmap 0 t.t_map) with
       Not_found ->
@@ -357,27 +357,16 @@ and gen_expr e =
 	  SEQ [gen_expr e1;
 	    if w = Uplus then NOP else MONOP (op_kind e.e_type, w)]
 
-      | Binop ((Eq | Neq | Lt | Leq | Gt | Geq) as w, e1, e2) ->
-	  let set_leq e1' e2' =
-	    SEQ [gen_expr e1'; gen_expr e2'; 
-	      MONOP (IntT, BitNot); BINOP (IntT, BitAnd);
-	      const 0; BINOP (IntT, Eq)] in
+      | Binop (Compare, e1, e2) ->
+          SEQ [gen_flexarg strtype e2; gen_flexarg strtype e1;
+	    call_proc "COMPARE" 4 inttype]
 
-	  if is_string e1.e_type then
-	    SEQ [gen_flexarg strtype e2; gen_flexarg strtype e1;
-	      call_proc "COMPARE" 4 boolean;
-	      const 0; BINOP (IntT, w)]
-	  else if w = Leq && same_types e1.e_type settype then
-	    set_leq e1 e2
-	  else if w = Geq && same_types e1.e_type settype then
-	    set_leq e2 e1
-	  else begin
-	    let k = op_kind e1.e_type in
-	    if is_const e1 && not (is_const e2) then
-	      SEQ [gen_expr e2; gen_expr e1; BINOP (k, commute w)]
-	    else
-	      SEQ [gen_expr e1; gen_expr e2; BINOP (k, w)]
-	  end
+      | Binop ((Eq | Neq | Lt | Leq | Gt | Geq) as w, e1, e2) ->
+          let k = op_kind e1.e_type in
+          if is_const e1 && not (is_const e2) then
+            SEQ [gen_expr e2; gen_expr e1; BINOP (k, commute w)]
+          else
+            SEQ [gen_expr e1; gen_expr e2; BINOP (k, w)]
 
       | Binop ((Div | Mod) as w, e1, e2) ->
 	  let t = op_kind e.e_type in
@@ -635,30 +624,22 @@ and gen_builtin q args =
 	SEQ [gen_addr e0; loop 0 us]
 
     | (IncProc | DecProc), e1::_ ->
-	begin match op_kind e1.e_type with
-	    IntT ->
-	      let k = mem_kind e1.e_type in
-	      SEQ [gen_addr e1; DUP 0; LOAD k;
-		if List.length args = 1 then const 1 else 
-		  gen_expr (List.nth args 1);
-		if q.b_id = IncProc then 
-		  BINOP (IntT, Plus)
-		else 
-		  BINOP (IntT, Minus);
-	      SWAP; STORE k]
-	  | LongT ->
-	      SEQ [
-		if List.length args = 1 then
-		  TCONST (LongT, IntVal (integer 1))
-		else
-		  gen_expr (List.nth args 1);
-		gen_addr e1;
-		if q.b_id = IncProc then
-		  call_proc "INCLONG" 3 voidtype
-		else
-		  call_proc "DECLONG" 3 voidtype]
-	  | _ -> failwith "IncProc"
-	end
+        let k1 = mem_kind e1.e_type in
+        if k1 = LongT then
+          let p = if q.b_id = IncProc then "INCLONG" else "DECLONG" in
+          SEQ [
+            if List.length args = 1 then
+              TCONST (LongT, IntVal (integer 1))
+            else
+              gen_expr (List.nth args 1);
+            gen_addr e1; call_proc p 3 voidtype]
+        else
+          let k2 = op_kind e1.e_type in
+          SEQ [gen_addr e1; DUP 0; LOAD k1;
+            if List.length args = 1 then const 1 else
+              gen_expr (List.nth args 1);
+            BINOP (k2, if q.b_id = IncProc then Plus else Minus);
+            SWAP; STORE k1]
 
     | (InclProc | ExclProc), [e1; e2] ->
 	SEQ [gen_addr e1; DUP 0; LOAD IntT;
@@ -716,12 +697,12 @@ and gen_builtin q args =
 
     | AdrFun, [e1] -> gen_addr e1
 
-    | ValFun, [e1; e2] -> gen_expr e2
+    | ValFun, [_; e2] -> gen_expr e2
 
     | BitFun, [e1; e2] ->
 	SEQ [gen_expr e1; LOAD IntT; 
           const 1; gen_expr e2; BINOP (IntT, Lsl); 
-	  BINOP (IntT, BitAnd);  const 0; BINOP (IntT, Neq)]
+	  BINOP (IntT, BitAnd); const 0; BINOP (IntT, Neq)]
 
     | GetProc, [e1; e2] ->
 	let k = mem_kind e2.e_type in

@@ -45,9 +45,13 @@ let null_map = []
 
 let ptr_map = [GC_Offset 0]
 
-let flex_map o flex stride m = 
+let flex_map o ndim stride m = 
+  (* At offset o in the frame is the address of an open array parameter
+     passed by value, with ndim dimensions and an element size of stride.
+     The parameter will be copied into a dynamically-sized area in the
+     stack frame, and the map identifies pointers in that area. *)
   if m = null_map then null_map 
-  else [GC_Flex (o, flex, stride, m)]
+  else [GC_Flex (o, ndim, stride, m)]
 
 let rec shift k m = List.map (shift_item k) m
 
@@ -103,14 +107,71 @@ and bitmap origin m =
 let make_bitmap origin m = 
   Int32.logor (Int32.shift_left (bitmap origin m) 1) Int32.one
 
-let rec put_map m = 
-  try 
+(*
+Syntax and semantics of pointer maps.
+
+The 'indirect' map that is stored in a descriptor or a procedure heading
+is either a bitmap of the address of a gcmap program.
+
+  indir = bitmap | mapaddr
+
+A program is a sequence of items.
+
+  gcmap = { item } GC_END
+
+Each item is the offset of a pointer (== 0 mod 4), a bitmap (== 1 or 3 mod 4),
+or a compound bitmap (first word == 2 mod 4)
+
+  item = offset | bitmap
+    | GC_REPEAT base count stride gcmap
+    | GC_BLOCK base count
+    | GC_FLEX offset ndim stride gcmap
+    | GC_POINTER sym
+    | GC_BASE sym
+    | GC_MAP indir
+
+Indirect maps that are bitmaps are interpreted with a shift, nonzero
+for the map describing a procedure frame to that it can cover both locals
+and paramteters.
+
+  I [ bitmap ] origin shift = B [ bitmap ] origin shift
+  I [ mapaddr ] origin shift = M [ *mapaddr ] origin
+
+A bitmap has one bit for each of up to 31 pointer locations.
+
+  B [ bitmap ] origin shift = { origin + 4*(i-shift) | i+1 in bitmap }
+
+Items are interpreted recursively with respect to an origin,
+with loops to describe regular patterns.
+
+  S [ offset ] origin = { origin + offset }
+  S [ bitmap ] origin = B [ bitmap ] origin 0
+  S [ GC_REPEAT base count stride gcmap ] origin =
+      Union { S [ gcmap ] (origin + base + i*stride) | i <- [0..count) }
+  S [ GC_BLOCK base count ] origin =
+      { origin + base + 4*i | i <- [0..count) }
+  S [ GC_POINTER sym ] origin = { sym }
+  S [ GC_FLEX offset ndim stride gcmap ] =
+      ( Special for open array params passed by value )
+
+A sequence of items share the same origin, but it can be reset by
+a GC_BASE item, used in pointer maps for global variables.
+
+  M [ item gcmap ] origin = S [ item ] origin U M [ gcmap ] origin
+  M [ GC_BASE sym gcmap ] = M [ gcmap ] sym
+
+*)
+
+let rec put_map m = put_submap m; put_sym "GC_END"
+
+and put_submap m =
+  try
     (* Don't use a bitmap for a single item *)
     (match m with [GC_Offset o] -> raise Not_found | _ -> ());
     let bm = make_bitmap 0 m in 
     put_sym (Util.hex_of_int32 bm)
   with 
-    Not_found -> List.iter put_item m; put_sym "GC_END"
+    Not_found -> List.iter put_item m
 
 and put_item =
   function
@@ -124,15 +185,6 @@ and put_item =
     | GC_Flex (offset, ndim, stride, m) ->
 	put_sym "GC_FLEX"; put_int offset; put_int ndim; put_int stride;
 	put_map m
-
-let put_submap m =
-  try
-    (* Don't use a bitmap for a single item *)
-    (match m with [GC_Offset o] -> raise Not_found | _ -> ());
-    let bm = make_bitmap 0 m in 
-    put_sym "GC_MAP"; put_sym (Util.hex_of_int32 bm)
-  with 
-    Not_found -> List.iter put_item m
 
 let put_varmap lab m =
   match m with
@@ -148,10 +200,8 @@ let save_map lab m =
 
 (* put_maps -- output saved pointer maps *)
 let put_maps () =
-  (* Don't use a bitmap, in case this is a frame map where
-     a bitmap would be interpreted specially.  After all, 
-     we're only here in any case because an earlier attempt
-     to make a bitmap failed *)
+  (* Don't try to use a bitmap: we're only here because
+     an earlier attempt to make a bitmap failed *)
   if !maps <> [] then begin
     put "! Pointer maps" [];
     List.iter (function (lab, m) -> 

@@ -1334,11 +1334,9 @@ GLOVAR tSystolic07.chan 44
 DEFINE tSystolic07.%gcmap
 WORD GC_BASE
 WORD tSystolic07.proc
-WORD GC_MAP
 WORD 0x00001fff
 WORD GC_BASE
 WORD tSystolic07.chan
-WORD GC_MAP
 WORD 0x00000fff
 WORD GC_END
 

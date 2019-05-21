@@ -334,29 +334,19 @@ let op_of e =
 
 let simp e =
   match e.e_guts with
-      Binop (w, e1, e2) ->
-        begin
-	  match e1.e_guts, e2.e_guts with
-	      Const x1, Const x2 -> 
-	        let v = try do_binop w x1 x2 with 
-		      Division_by_zero ->
-			sem_error "dividing a constant by zero" 
-			  [] e.e_loc;
-			intval 0
-		    | Bound_error ->
-			sem_error "constant expression causes a bound error"
-			  [] e.e_loc;
-			intval 0 in
-		edit_expr e (Const v)
-	    | _ -> ()
-	end
-    | Monop (w, e1) ->
-        begin 
-	  match e1.e_guts with
-	      Const x1 -> 
-		edit_expr e (Const (do_monop (op_of e) x1))
-	    | _ -> ()
-	end
+      Binop (w, { e_guts = Const x1 }, { e_guts = Const x2 }) ->
+        let v = try do_binop w x1 x2 with 
+              Division_by_zero ->
+                sem_error "dividing a constant by zero" 
+                  [] e.e_loc;
+                intval 0
+            | Bound_error ->
+                sem_error "constant expression causes a bound error"
+                  [] e.e_loc;
+                intval 0 in
+        edit_expr e (Const v)
+    | Monop (w, { e_guts = Const x }) ->
+        edit_expr e (Const (do_monop (op_of e) x))
     | _ -> ()
 
 let expr g t loc =
@@ -377,12 +367,22 @@ let type_mismatch cxt args lt e =
     sem_error "$ is needed $" [fOType lt; fMeta cxt args] e.e_loc;
   sem_type e.e_type
 
-(* check_desig -- check and annotate a designator, return its type *)
-let rec check_desig e env =
-  let t = check_desig1 e env in
-    e.e_type <- t; t
+(* check_expr -- check and annotate an expression, return its type *)
+let rec check_expr e env =
+  let t = check_subexp e env in
+  e.e_type <- t; t
 
-and check_desig1 e env =
+(* check_desig -- check and annotate a designator, return its type *)
+and check_desig e env =
+  (* A function call is not allowed as a designator, but a cast is ok *)
+  let t = check_expr e env in
+  match e.e_guts with
+      (FuncCall _ | MethodCall _) ->
+        sem_error "a function call is not allowed here" [] e.e_loc;
+        errtype
+    | _ -> t
+
+and check_subexp e env =
   match e.e_guts with
       Name x -> 
         begin try
@@ -466,27 +466,6 @@ and check_desig1 e env =
               errtype
           end
         end
-    | FuncCall _ ->
-        let t = check_expr e env in
-        begin match e.e_guts with
-            (FuncCall _ | MethodCall _) -> 
-              sem_error "a function call is not allowed here" 
-                [] e.e_loc;
-              errtype
-          | Cast _ -> t
-          | _ -> failwith "desig call"
-        end
-    | _ -> failwith "desig"
-
-(* check_expr -- check and annotate an expression, return its type *)
-and check_expr e env =
-  let t = check_subexp e env in
-  e.e_type <- t; t
-
-and check_subexp e env =
-  match e.e_guts with
-      Name _ | Deref _ | Sub _ | Select _ ->
-	check_desig e env
     | Const v -> e.e_type
     | Decimal d ->
 	(* OCaml wrongly allows 2^31 as a valid integer *)
@@ -645,18 +624,29 @@ and check_binop env w e1 e2 e =
 	  let t = join_type t1 t2 in
 	  coerce e1 t; coerce e2 t
 	end
-	else if is_string t1 && is_char_const e2 then
-	  promote_char e2
-	else if is_char_const e1 && is_string t2 then
-	  promote_char e1
 	else if (w = Eq || w = Neq) && is_address t1 && is_niltype t2 then
 	  e2.e_type <- t1
 	else if (w = Eq || w = Neq) && is_niltype t1 && is_address t2 then
 	  e1.e_type <- t2
-	else if not (is_discrete t1 && same_types t1 t2
-	    || is_string t1 && is_string t2
-	    || (w = Leq || w = Geq) && 
-		  same_types t1 settype && same_types t2 settype
+        else if (w = Leq || w = Geq) && 
+ 	    same_types t1 settype && same_types t2 settype then begin
+          let diff a b =
+            expr (Binop (BitAnd, a,
+              expr (Monop (BitNot, b)) settype e.e_loc))
+            settype e.e_loc in
+          edit_expr e
+            (Binop (Eq, (if w = Leq then diff e1 e2 else diff e2 e1),
+               expr (Const (IntVal (integer 0))) settype e.e_loc))
+	end
+	else if (is_char_const e1 || is_string t1)
+            && (is_char_const e2 || is_string t2) then begin
+	  if is_char_const e1 then promote_char e1;
+	  if is_char_const e2 then promote_char e2;
+          edit_expr e
+            (Binop (w, expr (Binop (Compare, e1, e2)) inttype e.e_loc,
+              expr (int_const 0) inttype e.e_loc))
+        end
+        else if not (is_discrete t1 && same_types t1 t2
 	    || (w = Eq || w = Neq) && scalar t1 && 
 		  (subtype t1 t2 || subtype t2 t1)) then begin
 	  if not (is_errtype t1) && not (is_errtype t2) then begin
@@ -666,6 +656,7 @@ and check_binop env w e1 e2 e =
 	  end
 	end;
 	boolean
+
     | In ->
 	if not (integral t1 && same_types t2 settype) then begin
 	  if not (is_errtype t1) && not (is_errtype t2) then begin
@@ -678,12 +669,14 @@ and check_binop env w e1 e2 e =
           expr (Binop (BitAnd, e2, shift 1 e1)) settype e1.e_loc,
           expr (int_const 0) settype e.e_loc));
 	boolean
+
     | And | Or ->
         if not (same_types t1 boolean && same_types t2 boolean) then begin
 	  sem_error "the operands of $ must have type BOOLEAN" [fOp w] e.e_loc;
 	  sem_type2 t1 t2
 	end;
 	boolean
+
     | _ -> failwith "bad binop"
 
 and check_call f args e env cast_ok =

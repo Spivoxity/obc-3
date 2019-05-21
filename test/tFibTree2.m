@@ -320,6 +320,7 @@ WORD 8
 WORD 20
 WORD 0x0000003d
 WORD GC_END
+WORD GC_END
 
 ! End of file
 ]]*)

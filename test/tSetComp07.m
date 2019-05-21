@@ -37,9 +37,9 @@ CONST 0
 EQ
 STGC tSetComp07.b
 !   b := ({3} <= y)
-CONST 8
 LDGW tSetComp07.y
 BITNOT
+CONST 8
 BITAND
 CONST 0
 EQ

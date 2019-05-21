@@ -153,7 +153,7 @@ type op =
     Plus | Minus | Times | Over | Div | Mod | Eq | Uminus | Uplus 
   | Lt | Gt | Leq | Geq | Neq | And | Or | Not
   | In | BitAnd | BitOr | BitNot | BitXor | BitShl
-  | Inc | Dec | Lsl | Lsr | Asr | Ror
+  | Inc | Dec | Lsl | Lsr | Asr | Ror | Compare
 
 (* opposite -- negate a comparison operator *)
 let opposite = 
@@ -178,6 +178,7 @@ let op_name =
     | BitNot -> "*BITNOT*" | BitXor -> "*BITXOR*" | BitShl -> "*BITSHL*"
     | In -> "IN" | Inc -> "INC" | Dec -> "DEC" 
     | Asr -> "ASR" | Lsr -> "LSR" | Lsl -> "LSL" | Ror -> "ROR"
+    | Compare -> "COMPARE"
 (* --DEBUG) *)
 
 let fOp w = fStr (op_name w)

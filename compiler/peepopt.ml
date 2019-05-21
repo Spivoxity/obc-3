@@ -171,18 +171,18 @@ let ruleset1 replace =
 
     (* Specially for INC(local) and INC(global) *)
     | LOCAL a :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
-	  :: SWAP :: STORE s1 :: _  when s = s1 ->
+	  :: SWAP :: STORE s1 :: _  ->
 	replace 7 [LOCAL a; LOAD s; CONST n; 
 	  		BINOP (IntT, Plus); LOCAL a; STORE s]
     | GLOBAL x :: DUP 0 :: LOAD s :: CONST n :: BINOP (IntT, Plus)
-	  :: SWAP :: STORE s1 :: _  when s = s1 ->
+	  :: SWAP :: STORE s1 :: _  ->
 	replace 7 [GLOBAL x; LOAD s; CONST n; 
-	      		BINOP (IntT, Plus); GLOBAL x; STORE s]
+	      		BINOP (IntT, Plus); GLOBAL x; STORE s1]
     | CONST a :: OFFSET :: DUP 0 :: LOAD s :: CONST n 
-	  :: BINOP (IntT, Plus) :: SWAP :: STORE s1 :: _ when s = s1 ->
+	  :: BINOP (IntT, Plus) :: SWAP :: STORE s1 :: _ ->
 	(* Allow use of LDN instruction *)
 	replace 8 [DUP 0; CONST a; OFFSET; LOAD s;
-	  CONST n; BINOP (IntT, Plus); SWAP; CONST a; OFFSET; STORE s]
+	  CONST n; BINOP (IntT, Plus); SWAP; CONST a; OFFSET; STORE s1]
 
     (* For simultaneous assignment *)
     | (LOCAL _ | GLOBAL _ | CONST _ as i1) :: CONST b :: 

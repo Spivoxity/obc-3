@@ -116,7 +116,7 @@ BEGIN
   x := SYSTEM.VAL(LONGREAL, xx - LONG(n) * two52)
 END UNPKLONG;
 
-PROCEDURE EASSERT(line, arg: INTEGER) IS "*eassert";
+PROCEDURE EASSERT(line, arg: INTEGER) IS "*EASSERT";
 
 PROCEDURE SysMOVE(src, dest: INTEGER; n: INTEGER) IS "*sys_move";
 PROCEDURE SysLIBERROR(CONST msg: ARRAY OF CHAR) IS "*sys_liberror";
@@ -277,7 +277,7 @@ value *sys_liberror(value *bp) {
      return bp;
 }
 
-value *eassert(value *bp) {
+value *EASSERT(value *bp) {
      int line = bp[HEAD+0].i;
      int arg = bp[HEAD+1].i;
      value *bp1 = valptr(bp[BP]);
