@@ -59,11 +59,7 @@ END count;
 
 VAR i: INTEGER; p: tree;
 
-PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
-
 BEGIN 
-  GcDebug("gs");
-
   FOR i := 0 TO 7 DO
     p := Build(i);
     SYSTEM.GC;
@@ -74,28 +70,28 @@ BEGIN
 END tFibTree407.
 
 (*<<
-[gc][gc].
+.
 Count = 1
 
-[gc][gc].
+.
 Count = 1
 
-[gc][gc][gc](..)
+(..)
 Count = 2
 
-[gc][gc][gc][gc](.(..))
+(.(..))
 Count = 3
 
-[gc][gc][gc][gc][gc][gc]((..)(.(..)))
+((..)(.(..)))
 Count = 5
 
-[gc][gc][gc][gc][gc][gc][gc][gc][gc]((.(..))((..)(.(..))))
+((.(..))((..)(.(..))))
 Count = 8
 
-[gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc](((..)(.(..)))((.(..))((..)(.(..)))))
+(((..)(.(..)))((.(..))((..)(.(..)))))
 Count = 13
 
-[gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc][gc](((.(..))((..)(.(..))))(((..)(.(..)))((.(..))((..)(.(..))))))
+(((.(..))((..)(.(..))))(((..)(.(..)))((.(..))((..)(.(..))))))
 Count = 21
 
 >>*)
@@ -151,15 +147,15 @@ PROC tFibTree407.Build 4 3 0x00010001
 !   IF n <= 1 THEN
 LDLW 12
 CONST 1
-JGT L7
+JGT L6
 !     SYSTEM.GC;
 GLOBAL SYSTEM.GC
 CALL 0
 ! t :=  NIL
 CONST 0
 STLW -4
-JUMP L5
-LABEL L7
+JUMP L4
+LABEL L6
 ! t :=  Cons(Build(n-2), Build(n-1))
 LDLW 12
 DEC
@@ -174,7 +170,7 @@ CALLW 1
 GLOBAL tFibTree407.Cons
 CALLW 2
 STLW -4
-LABEL L5
+LABEL L4
 ! RETURN t
 LDLW -4
 RETURN
@@ -184,14 +180,14 @@ PROC tFibTree407.Print 0 2 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ L11
+JNEQZ L10
 !     Out.Char('.')
 CONST 46
 ALIGNC
 GLOBAL Out.Char
 CALL 1
 RETURN
-LABEL L11
+LABEL L10
 !     Out.Char('(');
 CONST 40
 ALIGNC
@@ -221,12 +217,12 @@ PROC tFibTree407.count 4 3 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ L14
+JNEQZ L13
 ! c :=  1
 CONST 1
 STLW -4
-JUMP L12
-LABEL L14
+JUMP L11
+LABEL L13
 ! c := count(Left(t)) + count(Right(t))
 LDLW 12
 GLOBAL tFibTree407.Left
@@ -240,27 +236,20 @@ GLOBAL tFibTree407.count
 CALLW 1
 PLUS
 STLW -4
-LABEL L12
+LABEL L11
 ! RETURN c
 LDLW -4
 RETURN
 END
 
-PRIMDEF tFibTree407.GcDebug gc_debug VX
-
 PROC tFibTree407.%main 0 3 0
-!   GcDebug("gs");
-CONST 3
-GLOBAL tFibTree407.%1
-GLOBAL tFibTree407.GcDebug
-CALL 2
 !   FOR i := 0 TO 7 DO
 CONST 0
 STGW tFibTree407.i
-LABEL L15
+LABEL L14
 LDGW tFibTree407.i
 CONST 7
-JGT L16
+JGT L15
 !     p := Build(i);
 LDGW tFibTree407.i
 GLOBAL tFibTree407.Build
@@ -277,7 +266,7 @@ GLOBAL Out.Ln
 CALL 0
 !     Out.String("Count = "); Out.Int(count(p), 0); 
 CONST 9
-GLOBAL tFibTree407.%2
+GLOBAL tFibTree407.%1
 GLOBAL Out.String
 CALL 2
 CONST 0
@@ -295,8 +284,8 @@ CALL 0
 LDGW tFibTree407.i
 INC
 STGW tFibTree407.i
-JUMP L15
-LABEL L16
+JUMP L14
+LABEL L15
 RETURN
 END
 
@@ -310,38 +299,34 @@ WORD GC_POINTER
 WORD tFibTree407.p
 WORD GC_END
 
-! String "gs"
-DEFINE tFibTree407.%1
-STRING 677300
-
 ! String "Count = "
-DEFINE tFibTree407.%2
+DEFINE tFibTree407.%1
 STRING 436F756E74203D2000
 
 ! Descriptor for *anon*
-DEFINE tFibTree407.%3
+DEFINE tFibTree407.%2
 WORD 0x00000003
+WORD 0
+WORD tFibTree407.%2.%anc
+
+DEFINE tFibTree407.%2.%anc
+WORD tFibTree407.%2
+
+! Descriptor for *anon*
+DEFINE tFibTree407.%3
+WORD tFibTree407.%3.%map
 WORD 0
 WORD tFibTree407.%3.%anc
 
 DEFINE tFibTree407.%3.%anc
 WORD tFibTree407.%3
 
-! Descriptor for *anon*
-DEFINE tFibTree407.%4
-WORD tFibTree407.%4.%map
-WORD 0
-WORD tFibTree407.%4.%anc
-
-DEFINE tFibTree407.%4.%anc
-WORD tFibTree407.%4
-
 ! Descriptor for node
 DEFINE tFibTree407.node
 WORD tFibTree407.node.%map
 
 ! Pointer maps
-DEFINE tFibTree407.%4.%map
+DEFINE tFibTree407.%3.%map
 WORD GC_REPEAT
 WORD 4
 WORD 40

@@ -1,16 +1,16 @@
 MODULE tChain07;
 
 (*<<
-[ex][gc[ex][ex]][gc]2415
-[gc]2415
-[gc]2415
-[gc]2415
-[gc]2415
-[gc][gc[ex]]2415
-[gc]2415
-[gc]2415
-[gc]2415
-[gc]2415
+2415
+2415
+2415
+2415
+2415
+2415
+2415
+2415
+2415
+2415
 2415
 >>*)
 
@@ -57,14 +57,10 @@ END Test;
 
 VAR i: INTEGER;
 
-PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
-
 BEGIN
-  GcDebug('gs');
   FOR i := 1 TO 10 DO Test END;
   Out.Int((((((P+1) DIV 2) * (N MOD P)) MOD P) 
 			* ((N+1) MOD P)) MOD P, 0); Out.Ln;
-  (* GC.Dump *)
 END tChain07.
 
 (*[[
@@ -111,10 +107,10 @@ STLW -12
 !   FOR n := N TO 1 BY -1 DO 
 CONST 100000
 STLW -4
-LABEL L3
+LABEL L2
 LDLW -4
 CONST 1
-JLT L4
+JLT L3
 !     xs := Cons(3, xs);		    (* Create some garbage *)
 LDLW -12
 CONST 3
@@ -131,15 +127,15 @@ CALLW 2
 STLW -12
 !   FOR n := N TO 1 BY -1 DO 
 DECL -4
-JUMP L3
-LABEL L4
+JUMP L2
+LABEL L3
 !   s := 0;
 CONST 0
 STLW -8
-LABEL L5
+LABEL L4
 !   WHILE xs # NIL DO
 LDLW -12
-JEQZ L7
+JEQZ L6
 !     s := (s + xs.head) MOD P;
 LDLW -8
 LDLW -12
@@ -156,7 +152,7 @@ LDNW 4
 LDLW -12
 NCHECK 49
 LDNW 8
-JEQ L10
+JEQ L9
 !       Out.String("Fail 1"); Out.Ln
 CONST 7
 GLOBAL tChain07.%1
@@ -164,14 +160,14 @@ GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL L10
+LABEL L9
 !     xs := xs.tail1
 LDLW -12
 NCHECK 52
 LDNW 4
 STLW -12
-JUMP L5
-LABEL L7
+JUMP L4
+LABEL L6
 !   Out.Int(s, 0); Out.Ln;
 CONST 0
 LDLW -8
@@ -182,28 +178,21 @@ CALL 0
 RETURN
 END
 
-PRIMDEF tChain07.GcDebug gc_debug VX
-
 PROC tChain07.%main 0 3 0
-!   GcDebug('gs');
-CONST 3
-GLOBAL tChain07.%2
-GLOBAL tChain07.GcDebug
-CALL 2
 !   FOR i := 1 TO 10 DO Test END;
 CONST 1
 STGW tChain07.i
-LABEL L11
+LABEL L10
 LDGW tChain07.i
 CONST 10
-JGT L12
+JGT L11
 GLOBAL tChain07.Test
 CALL 0
 LDGW tChain07.i
 INC
 STGW tChain07.i
-JUMP L11
-LABEL L12
+JUMP L10
+LABEL L11
 !   Out.Int((((((P+1) DIV 2) * (N MOD P)) MOD P) 
 CONST 0
 CONST 2415
@@ -221,10 +210,6 @@ GLOVAR tChain07.i 4
 ! String "Fail 1"
 DEFINE tChain07.%1
 STRING 4661696C203100
-
-! String "gs"
-DEFINE tChain07.%2
-STRING 677300
 
 ! Descriptor for cell
 DEFINE tChain07.cell

@@ -74,6 +74,7 @@ ENABLE_JIT = @ENABLE_JIT@
 ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
 ABS_SRCDIR = @ABS_SRCDIR@
 ABS_BINDIR = @ABS_BINDIR@
+GC_LIB = @GC_LIB@
 # end of Configuration stuff
 
 all : revid subdirs build sanity
@@ -156,8 +157,8 @@ macport/gtklib:
 	$(MAKE) -C macport gtklib
 endif
 
-ALL_LIBS = $(EXTRA_LIBS) $(LIBS) $(MATHLIB)
-obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS) $(MATHLIB)
+ALL_LIBS = $(EXTRA_LIBS) $(LIBS) $(MATHLIB) $(GC_LIB)
+obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS) $(MATHLIB) $(GC_LIB)
 
 LINK = $(CC) $(LDFLAGS) $(RTFLAGS) -o $@ $^ $(ALL_LIBS) $(DLFLAGS)
 JITPROC = $(shell nm runtime/obx-jd.a | sed -n '/jit_proc/s/.* //p')

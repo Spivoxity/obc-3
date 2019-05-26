@@ -74,7 +74,7 @@ extern int vm_debug;
 /* Helper functions for the loader */
 
 module make_module(char *name, uchar *addr, int chksum, int nlines) {
-     module m = (module) scratch_alloc(sizeof(struct _module));
+     module m = (module) scratch_alloc(sizeof(struct _module), FALSE, "module");
      m->m_name = name;
      m->m_addr = addr;
 #ifdef PROFILE
@@ -82,7 +82,8 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
      m->m_lcount = NULL;
      if (lflag && nlines > 0) {
 	  m->m_lcount = 
-	       (unsigned *) scratch_alloc(nlines * sizeof(unsigned));
+	       (unsigned *) scratch_alloc(nlines * sizeof(unsigned),
+                                          TRUE, "line counts");
 	  memset(m->m_lcount, 0, nlines * sizeof(int));
      }
 #endif
@@ -93,7 +94,7 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
 }
 
 proc make_proc(char *name, uchar *addr) {
-     proc p = (proc) scratch_alloc(sizeof(struct _proc));
+     proc p = (proc) scratch_alloc(sizeof(struct _proc), FALSE, "proc");
      p->p_name = name;
      p->p_addr = (value *) addr;
 #ifdef PROFILE
@@ -533,7 +534,7 @@ int main(int ac, char *av[]) {
      interpreter = wrap_prim(interp);
 #endif
      dyntrap = wrap_prim(dltrap);
-#ifdef USEFFI
+#ifdef USE_FFI
      dynstub = wrap_prim(dlstub);
 #endif
 
@@ -588,7 +589,7 @@ word wrap_prim(primitive *prim) {
      return (word) prim;
 #else
      primitive **wrapper =
-          (primitive **) scratch_alloc(sizeof(primitive *));
+          (primitive **) scratch_alloc(sizeof(primitive *), TRUE, "wrapper");
      *wrapper = prim;
      return address(wrapper);
 #endif

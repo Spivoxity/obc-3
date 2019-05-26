@@ -2,7 +2,6 @@ MODULE tGC207;
 
 (*<<
 500500
-2097152
 >>*)
 
 IMPORT Out;
@@ -45,13 +44,10 @@ END Sum;
 
 VAR n: INTEGER; a: ptr;
 
-PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
-
 BEGIN
   a := NIL;
   FOR n := 1 TO 1000 DO a := Snoc(a, n) END;
   Out.Int(Sum(Reverse(a)), 0); Out.Ln;
-  Out.Int(GcHeapSize(), 0); Out.Ln
 END tGC207.
 
 (*[[
@@ -74,10 +70,10 @@ JUMP L1
 LABEL L3
 !     a := Snoc(Reverse(a.tl), a.hd)
 LDLW 12
-NCHECK 18
+NCHECK 17
 LOADW
 LDLW 12
-NCHECK 18
+NCHECK 17
 LDNW 4
 GLOBAL tGC207.Reverse
 CALLW 1
@@ -104,29 +100,29 @@ JNEQZ L6
 !     r.hd := x; r.tl := NIL
 LDLW 16
 LDLW -4
-NCHECK 28
+NCHECK 27
 STOREW
 CONST 0
 LDLW -4
-NCHECK 28
+NCHECK 27
 STNW 4
 JUMP L4
 LABEL L6
 !     r.hd := a.hd; r.tl := Snoc(a.tl, x)
 LDLW 12
-NCHECK 30
+NCHECK 29
 LOADW
 LDLW -4
-NCHECK 30
+NCHECK 29
 STOREW
 LDLW 16
 LDLW 12
-NCHECK 30
+NCHECK 29
 LDNW 4
 GLOBAL tGC207.Snoc
 CALLW 2
 LDLW -4
-NCHECK 30
+NCHECK 29
 STNW 4
 LABEL L4
 !   RETURN r
@@ -146,10 +142,10 @@ JUMP L7
 LABEL L9
 ! s := a.hd + Sum(a.tl)
 LDLW 12
-NCHECK 41
+NCHECK 40
 LOADW
 LDLW 12
-NCHECK 41
+NCHECK 40
 LDNW 4
 GLOBAL tGC207.Sum
 CALLW 1
@@ -160,8 +156,6 @@ LABEL L7
 LDLW -4
 RETURN
 END
-
-PRIMDEF tGC207.GcHeapSize gc_heap_size I
 
 PROC tGC207.%main 0 3 0
 !   a := NIL;
@@ -191,14 +185,6 @@ GLOBAL tGC207.Reverse
 CALLW 1
 GLOBAL tGC207.Sum
 CALLW 1
-GLOBAL Out.Int
-CALL 2
-GLOBAL Out.Ln
-CALL 0
-!   Out.Int(GcHeapSize(), 0); Out.Ln
-CONST 0
-GLOBAL tGC207.GcHeapSize
-CALLW 0
 GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln

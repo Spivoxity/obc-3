@@ -902,9 +902,3 @@ void jit_proc(value *bp) {
 void jit_debug(value *bp) {
      vm_debug = dflag = bp[HEAD].i;
 }
-
-/* vm_alloc -- upcall from vm to allocate code buffer */
-void *vm_alloc(int size) {
-     /* scratch_alloc will allocate whole pages */
-     return scratch_alloc(size);
-}

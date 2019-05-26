@@ -227,7 +227,11 @@ static void *get_memory(unsigned size) {
 static void *scratch_free = NULL;
 static void *scratch_limit = NULL;
 
-void *scratch_alloc(unsigned size) {
+void *scratch_alloc(unsigned size, mybool atomic, const char *reason) {
+     /* The 'atomic' argument lets us identify objects that contain no
+        pointers when the system is built with the Boehm-Demers-Weiser
+        garbage collector. */
+
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
      void *p;
 
@@ -283,7 +287,7 @@ static header *alloc_header(void) {
      header *h;
 
      if (hdr_free == NULL) 
-	  h = (header *) scratch_alloc(sizeof(header));
+	  h = (header *) scratch_alloc(sizeof(header), FALSE, "gc header");
      else {
 	  h = hdr_free;
 	  hdr_free = h->h_next;
@@ -376,7 +380,8 @@ static void page_setup(void *base, unsigned size, header *h) {
 	  /* Make sure lower index exists */
 	  if (page_table[top_part(p)] == address(empty_index))
 	       page_table[top_part(p)] = 
-		    address(scratch_alloc(sizeof(page_index)));
+		    address(scratch_alloc(sizeof(page_index),
+                                          FALSE, "page index"));
 
           (*ptrcast(page_index, page_table[top_part(p)]))[bot_part(p)]
                = address(h);
@@ -1163,7 +1168,8 @@ void gc_init(void) {
 
      if (sizeof(page_index) != PAGESIZE) panic("Bad page index size");
 
-     empty_index = (page_index *) scratch_alloc(sizeof(page_index));
+     empty_index = (page_index *) scratch_alloc(sizeof(page_index),
+                                                FALSE, "empty page index");
      for (i = 0; i < TOP_SIZE; i++) page_table[i] = address(empty_index);
 
      init_sizes();
@@ -1190,4 +1196,10 @@ void gc_debug(char *flags) {
 
 int gc_heap_size() {
      return heap_size;
+}
+
+/* vm_alloc -- upcall from vm to allocate code buffer */
+void *vm_alloc(int size) {
+     /* scratch_alloc will allocate whole pages */
+     return scratch_alloc(size, TRUE, "JIT code");
 }

@@ -262,9 +262,24 @@ AC_ARG_ENABLE(ffi,
 AC_CHECK_HEADERS(ffi.h, HAVE_FFI_H=1)
 if test "$enable_ffi" != no && test "$DYNLINK" = 1 \
     && test "$HAVE_FFI_H" = 1; then
-  AC_DEFINE(USEFFI, 1, [Define if FFI enabled])
+  AC_DEFINE(USE_FFI, 1, [Define if FFI enabled])
   AC_SEARCH_LIBS(ffi_call, ffi)
 fi
+
+# Option gc
+AC_ARG_ENABLE(gc,
+  AS_HELP_STRING([--enable-gc=option],
+    [Use 'yes' for Oberon GC, 'boehm' for Boehm library]))
+if test "$enable_gc" = boehm; then
+  GC_OBJ=gc0.o; GC_LIB=-lgc
+  AC_DEFINE(USE_BOEHM, 1, [Define to use Boehm garbage collector])
+elif test "$enable_gc" != no; then
+  GC_OBJ=gc.o; GC_LIB=
+else
+  GC_OBJ=gc0.o; GC_LIB=
+fi
+AC_SUBST(GC_OBJ)
+AC_SUBST(GC_LIB)
 
 # Option jit
 CODEPAGE=16384

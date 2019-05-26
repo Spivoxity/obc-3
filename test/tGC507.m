@@ -64,25 +64,18 @@ VAR
 
 CONST K = 50000;
 
-PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
-PROCEDURE GcHeapSize(): INTEGER IS "gc_heap_size";
-
 BEGIN
-  GcDebug("s");
-
   t := NIL;
   FOR i := 1 TO K DO
     t := Increment(Random(100), t)
   END;
   Out.Int(Size(t), 0); Out.Ln;
-  IF Ordered(t, 0, 100) THEN Out.String("ordered"); Out.Ln END;
-  Out.Int(GcHeapSize(), 0); Out.Ln
+  IF Ordered(t, 0, 100) THEN Out.String("ordered"); Out.Ln END
 END tGC507.
 
 (*<<
 50000
 ordered
-2097152
 >>*)
 
 (*[[
@@ -116,12 +109,12 @@ PROC tGC507.Size 4 3 0x00100001
 ! PROCEDURE Size(t: tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ L5
+JNEQZ L4
 ! s :=  0
 CONST 0
 STLW -4
-JUMP L3
-LABEL L5
+JUMP L2
+LABEL L4
 ! s:= t.value + Size(t.left) + Size(t.right)
 LDLW 12
 NCHECK 26
@@ -139,7 +132,7 @@ GLOBAL tGC507.Size
 CALLW 1
 PLUS
 STLW -4
-LABEL L3
+LABEL L2
 ! RETURN s
 LDLW -4
 RETURN
@@ -180,7 +173,7 @@ PROC tGC507.Increment 0 5 0x00200001
 ! PROCEDURE Increment(key: INTEGER; t: tree): tree;
 !   IF t = NIL THEN
 LDLW 16
-JNEQZ L8
+JNEQZ L7
 ! t := Cons(key, 1, NIL, NIL)
 CONST 0
 CONST 0
@@ -189,14 +182,14 @@ LDLW 12
 GLOBAL tGC507.Cons
 CALLW 4
 STLW 16
-JUMP L6
-LABEL L8
+JUMP L5
+LABEL L7
 !   ELSIF key = t.key THEN
 LDLW 12
 LDLW 16
 NCHECK 44
 LOADW
-JNEQ L10
+JNEQ L9
 ! t:= Cons(key, t.value+1, t.left, t.right)
 LDLW 16
 NCHECK 45
@@ -212,14 +205,14 @@ LDLW 12
 GLOBAL tGC507.Cons
 CALLW 4
 STLW 16
-JUMP L6
-LABEL L10
+JUMP L5
+LABEL L9
 !   ELSIF key < t.key THEN
 LDLW 12
 LDLW 16
 NCHECK 46
 LOADW
-JGEQ L12
+JGEQ L11
 ! t:= Cons(t.key, t.value, Increment(key, t.left), t.right)
 LDLW 16
 NCHECK 47
@@ -240,8 +233,8 @@ LOADW
 GLOBAL tGC507.Cons
 CALLW 4
 STLW 16
-JUMP L6
-LABEL L12
+JUMP L5
+LABEL L11
 ! t:= Cons(t.key, t.value, t.left, Increment(key, t.right))
 LDLW 16
 NCHECK 49
@@ -261,7 +254,7 @@ LOADW
 GLOBAL tGC507.Cons
 CALLW 4
 STLW 16
-LABEL L6
+LABEL L5
 ! RETURN t
 LDLW 16
 RETURN
@@ -271,17 +264,17 @@ PROC tGC507.Ordered 0 4 0x00100001
 ! PROCEDURE Ordered(t: tree; lo, hi: INTEGER): BOOLEAN;
 !   (t = NIL) OR ((lo <= t.key) & (t.key < hi) 
 LDLW 12
-JEQZ L14
+JEQZ L13
 LDLW 16
 LDLW 12
 NCHECK 56
 LOADW
-JGT L15
+JGT L14
 LDLW 12
 NCHECK 56
 LOADW
 LDLW 20
-JGEQ L15
+JGEQ L14
 LDLW 12
 NCHECK 57
 LOADW
@@ -291,7 +284,7 @@ NCHECK 57
 LDNW 8
 GLOBAL tGC507.Ordered
 CALLW 3
-JEQZ L15
+JEQZ L14
 LDLW 20
 LDLW 12
 NCHECK 58
@@ -302,35 +295,26 @@ NCHECK 58
 LDNW 12
 GLOBAL tGC507.Ordered
 CALLW 3
-JEQZ L15
-LABEL L14
+JEQZ L14
+LABEL L13
 CONST 1
 RETURN
-LABEL L15
+LABEL L14
 CONST 0
 RETURN
 END
 
-PRIMDEF tGC507.GcDebug gc_debug VX
-
-PRIMDEF tGC507.GcHeapSize gc_heap_size I
-
 PROC tGC507.%main 0 4 0
-!   GcDebug("s");
-CONST 2
-GLOBAL tGC507.%2
-GLOBAL tGC507.GcDebug
-CALL 2
 !   t := NIL;
 CONST 0
 STGW tGC507.t
 !   FOR i := 1 TO K DO
 CONST 1
 STGW tGC507.i
-LABEL L21
+LABEL L20
 LDGW tGC507.i
 CONST 50000
-JGT L22
+JGT L21
 !     t := Increment(Random(100), t)
 LDGW tGC507.t
 CONST 100
@@ -344,8 +328,8 @@ STGW tGC507.t
 LDGW tGC507.i
 INC
 STGW tGC507.i
-JUMP L21
-LABEL L22
+JUMP L20
+LABEL L21
 !   Out.Int(Size(t), 0); Out.Ln;
 CONST 0
 LDGW tGC507.t
@@ -355,28 +339,20 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   IF Ordered(t, 0, 100) THEN Out.String("ordered"); Out.Ln END;
+!   IF Ordered(t, 0, 100) THEN Out.String("ordered"); Out.Ln END
 CONST 100
 CONST 0
 LDGW tGC507.t
 GLOBAL tGC507.Ordered
 CALLW 3
-JEQZ L25
+JEQZ L24
 CONST 8
 GLOBAL tGC507.%1
 GLOBAL Out.String
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-LABEL L25
-!   Out.Int(GcHeapSize(), 0); Out.Ln
-CONST 0
-GLOBAL tGC507.GcHeapSize
-CALLW 0
-GLOBAL Out.Int
-CALL 2
-GLOBAL Out.Ln
-CALL 0
+LABEL L24
 RETURN
 END
 
@@ -394,10 +370,6 @@ WORD GC_END
 ! String "ordered"
 DEFINE tGC507.%1
 STRING 6F72646572656400
-
-! String "s"
-DEFINE tGC507.%2
-STRING 7300
 
 ! Descriptor for cell
 DEFINE tGC507.cell

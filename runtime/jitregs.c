@@ -59,7 +59,8 @@ void setup_regs(void) {
      int totregs = nireg + vm_nfreg + 1;
      assert(nireg >= 6 && nvreg >= 3);
 
-     regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg));
+     regs = (struct _reg *) scratch_alloc(totregs * sizeof(struct _reg),
+                                          TRUE, "JIT registers");
 
      nregs = 0;
      for (int i = nvreg; i < nireg; i++)

@@ -53,7 +53,7 @@ in its initialization part.
 #endif
 #include <dlfcn.h>
 
-#ifdef USEFFI
+#ifdef USE_FFI
 #include <ffi.h>
 #endif
 
@@ -78,7 +78,7 @@ void load_lib(char *fname) {
 	  panic(dlerror());
 }
 
-#ifdef USEFFI
+#ifdef USE_FFI
 #define MAXP 16
 
 typedef struct {
@@ -246,7 +246,7 @@ value *dltrap(value *bp) {
      }
 
 #ifdef DYNLINK
-#ifdef USEFFI
+#ifdef USE_FFI
      /* Build a wrapper with FFI */
      void (*fun)(void) = (void(*)(void)) dlsym(RTLD_DEFAULT, name);
 
@@ -254,11 +254,13 @@ value *dltrap(value *bp) {
           int np = strlen(tstring)-1;
           ffi_type *rtype = ffi_decode(tstring[0]);
           ffi_type **atypes =
-               (ffi_type **) scratch_alloc(np * sizeof(ffi_type *));
+               (ffi_type **) scratch_alloc(np * sizeof(ffi_type *),
+                                           TRUE, "ffi types");
           for (int i = 0; tstring[i+1] != '\0'; i++)
                atypes[i] = ffi_decode(tstring[i+1]);
 
-          wrapper *w = (wrapper *) scratch_alloc(sizeof(wrapper));
+          wrapper *w = (wrapper *) scratch_alloc(sizeof(wrapper),
+                                                 FALSE, "ffi wrapper");
           w->fun = fun;
           ffi_prep_cif(&w->cif, FFI_DEFAULT_ABI, np, rtype, atypes);
 

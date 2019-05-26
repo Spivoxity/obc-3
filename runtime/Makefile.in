@@ -52,6 +52,7 @@ VPATH = @srcdir@:../lib
 ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
 ENABLE_JIT = @ENABLE_JIT@
 PAGESIZE = @PAGESIZE@
+GC_OBJ = @GC_OBJ@
 # End
 
 all :: oblink obx.a obx-p.a
@@ -85,13 +86,14 @@ COMMON = support.o loader.o dynlink.o
 OBX = interp.o xmain.o $(COMMON)
 JIT = jit.o jitlab.o jitregs.o jitval.o
 PACK = $(AR) cr $@ $^; $(RANLIB) $@
+GC_T_OBJ = $(GC_OBJ:%.o=%-t.o)
 
-obx.a :   $(OBX) gc.o;						$(PACK)
-obx-t.a : interp-t.o xmain-t.o trace.o $(COMMON) gc-t.o;	$(PACK)
-obx-p.a : interp-p.o xmain-p.o profile.o $(COMMON) gc.o;	$(PACK)
-obx-d.a : interp-d.o xmain-d.o debug.o $(COMMON) gc.o;		$(PACK)
-obx-j.a : $(JIT) xmain-j.o $(COMMON) gc.o;			$(PACK)
-obx-jd.a : $(OBX) $(JIT) xmain.o $(COMMON) gc.o;	 	$(PACK)
+obx.a :   $(OBX) $(GC_OBJ);					$(PACK)
+obx-t.a : interp-t.o xmain-t.o trace.o $(COMMON) $(GC_T_OBJ);	$(PACK)
+obx-p.a : interp-p.o xmain-p.o profile.o $(COMMON) $(GC_OBJ);	$(PACK)
+obx-d.a : interp-d.o xmain-d.o debug.o $(COMMON) $(GC_OBJ);	$(PACK)
+obx-j.a : $(JIT) xmain-j.o $(COMMON) $(GC_OBJ);			$(PACK)
+obx-jd.a : $(OBX) $(JIT) xmain.o $(COMMON) $(GC_OBJ);	 	$(PACK)
 
 REVID := $(shell cat ../revid)
 REVDEP = xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o oblink.o
@@ -101,7 +103,7 @@ $(REVDEP): CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
 # Cancel default rule
 %.o: %.c
 
-$(OBX) gc.o trace.o profile.o debug.o : %.o : %.c
+$(OBX) gc.o gc0.o trace.o profile.o debug.o : %.o : %.c
 	$(CC) $(ALL_RTFLAGS) -c $< -o $@
 
 %-t.o : %.c

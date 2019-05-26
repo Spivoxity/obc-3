@@ -413,7 +413,6 @@ void spill(reg r) {
      mybool saved = FALSE;
 
      static unsigned tmp;
-     if (tmp == 0) tmp = address(scratch_alloc(sizeof(double)));
 
      for (int i = sp; i > 0 && *rc > 0; i--) {
           ctvalue v = &vstack[sp-i];
@@ -426,6 +425,9 @@ void spill(reg r) {
                        out the register allocator a bit. */
                     int c = *rc;
 
+                    if (tmp == 0)
+                         tmp = address(scratch_alloc(sizeof(double),
+                                                     FALSE, "JIT spill temp"));
                     if (!saved) {
                          vm_gen(choose(v->v_size, STW, STQ), r->r_reg, tmp);
                          saved = TRUE;

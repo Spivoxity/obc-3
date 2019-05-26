@@ -102,7 +102,7 @@ EXTERN char *libpath;		/* Path to dynamic library */
 EXTERN value *entry;		/* Program entry point */
 EXTERN value *gcmap;		/* Global pointer map */
 EXTERN word interpreter, dyntrap;
-#ifdef USEFFI
+#ifdef USE_FFI
 EXTERN word dynstub;
 #endif
 
@@ -266,16 +266,13 @@ uchar *getenvt(int word);
 /* gc.c */
 
 /* scratch_alloc -- allocate memory that will not be freed */
-void *scratch_alloc(unsigned bytes);
+void *scratch_alloc(unsigned bytes, mybool atomic, const char *reason);
 
-/* gc_alloc -- allocate an object for the managed heap */
+/* gc_alloc -- allocate an object on the managed heap */
 void *gc_alloc(value *desc, unsigned size, value *sp);
 
 /* gc_collect -- run the garbage collector */
-void gc_collect(value *xsp);
-
-/* gc_alloc_size -- calculate allocated size of and object */
-int gc_alloc_size(void *p);
+void gc_collect(value *sp);
 
 /* gc_heap_size -- return size of heap */
 int gc_heap_size(void);
