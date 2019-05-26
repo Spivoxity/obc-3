@@ -537,6 +537,9 @@ dir DEFINE ?
 dir STRING ?
 dir GLOVAR ??
 dir WORD ?
+dir LONG ?
+dir FLOAT ?
+dir DOUBLE ?
 dir MODULE ???
 dir ENDHDR 0
 dir IMPORT ??

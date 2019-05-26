@@ -142,6 +142,15 @@ static int const_value(char *s) {
 	  return strtoul(s, NULL, 0);
 }
 
+static longint const_long(char *s) {
+     assert(s != NULL);
+         
+     if (s[0] == '-')
+          return strtoll(s, NULL, 0);
+     else
+          return strtoull(s, NULL, 0);
+}
+
 #ifdef DEBUG
 static char *reltag[] = { "NONE", "WORD", "ADDR", "SUBR" };
 #endif
@@ -653,13 +662,33 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 
      case D_QCONST:
 	  check_inproc(dir);
-	  dcvt.q = strtoll(rands[0], NULL, 0);
+	  dcvt.q = const_long(rands[0]);
 	  gen_inst("LDKQ %d", find_dconst(dcvt.n.lo, dcvt.n.hi));
 	  break;
 
      case D_WORD:
 	  data_word(rands[0]);
 	  break;
+
+     case D_LONG:
+          dcvt.q = const_long(rands[0]);
+          put_value(dloc, dcvt.n.lo, R_WORD);
+          put_value(dloc+4, dcvt.n.hi, R_WORD);
+          dloc += 8;
+          break;
+          
+     case D_FLOAT:
+          fcvt.f = atof(rands[0]);
+          put_value(dloc, fcvt.n, R_WORD);
+          dloc += 4;
+          break;
+          
+     case D_DOUBLE:
+          dcvt.d = atof(rands[0]);
+          put_value(dloc, dcvt.n.lo, R_WORD);
+          put_value(dloc+4, dcvt.n.hi, R_WORD);
+          dloc += 8;
+          break;
 
      case D_GLOVAR:
 	  def_global(find_symbol(rands[0]), BSS, bloc, X_DATA);
