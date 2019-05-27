@@ -38,7 +38,9 @@
 #include "vm.h"
 #include "vminternal.h"
 
-// ---------------- REGISTERS ----------------
+/* #define USE_MOVW 1 */
+
+// REGISTERS
 
 /* Register numbers -- agree with binary encoding */
 #define R0  0
@@ -125,6 +127,7 @@ char *_regname[] = {
 
 char **regname = &_regname[1];
 
+/* fmt_addr -- format an address for debugging */
 static char *fmt_addr(int rs, int imm, int op) {
      static char buf[32];
 
@@ -136,6 +139,7 @@ static char *fmt_addr(int rs, int imm, int op) {
      return buf;
 }
 
+/* fmt_shift -- format a scaled register as part of an address */
 static char *fmt_shift(int r, int s) {
      static char buf[16];
 
@@ -183,7 +187,7 @@ static char *fmt_shift(int r, int s) {
 #endif
 
 
-// ---------------- OPCODES ----------------
+// OPCODES
 
 /* ALU operations */
 #define aluAND 0
@@ -225,7 +229,7 @@ static char *fmt_shift(int r, int s) {
 #define cpDBL 11
 
 
-// ---------------- INSTRUCTIONS ----------------
+// INSTRUCTIONS
 
 /*
 Rough instruction layout:
@@ -249,7 +253,7 @@ Rough instruction layout:
 // Conditional version of opn
 #define opnc(cond, x)      opcode(cond,   x, 0, 0, 0)
 
-// Floating point operations
+// Floating point operations: cp is cpSGL or cpDBL
 #define opf(x, cp)         opcode(condAL, x, 0, 0, cp)
 #define opf2(x, y, cp)     opcode(condAL, x, y, 0, cp)
 #define opf3(x, y, z, cp)  opcode(condAL, x, y, z, cp)
@@ -346,7 +350,7 @@ Rough instruction layout:
 #define opSXTH   MNEM("sxth",   opn3(0x6b, 0x7, 0xf))
 
 
-// ---------------- INSTRUCTION FORMATTING ----------------
+// INSTRUCTION FORMATTING
 
 #define IMMED (0x20<<20)
 #define RSHIFT (1<<4) // Shift amount in Rs
@@ -356,6 +360,7 @@ Rough instruction layout:
 #define imm12(imm) ((imm)&0xfff)
 
 #ifdef DEBUG
+/* decode -- decode a rotated immediate field */
 static unsigned decode(unsigned imm) {
      int shift = 2 * (imm >> 8);
      imm &= 0xff;
@@ -382,6 +387,13 @@ static void op_rri(OPDECL, int rd, int rn, int imm) {
      vm_debug2("%s %s, %s, #%s", mnem,
                regname[rd], regname[rn], fmt_val(decode(imm)));
      instr(op|IMMED, reg(rd), reg(rn), imm12(imm));
+     vm_done();
+}
+
+// rd := op imm16
+static void op_ri16(OPDECL, int rd, int imm) {
+     vm_debug2("%s %s, #%#x", mnem, regname[rd], imm);
+     instr(op, reg(rd), (imm>>12)&0xf, imm12(imm));
      vm_done();
 }
 
@@ -415,18 +427,21 @@ static void op_rr(OPDECL, int rd, int rm) {
      vm_done();
 }
 
+// compare two registers
 static void cmp_r(OPDECL, int rn, int rm) {
      vm_debug2("%s %s, %s", mnem, regname[rn], regname[rm]);
      instr(op, 0, reg(rn), reg(rm));
      vm_done();
 }
 
+// compare rn with imm
 static void cmp_i(OPDECL, int rn, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[rn], fmt_val(decode(imm)));
      instr(op|IMMED, 0, reg(rn), imm12(imm));
      vm_done();
 }
 
+// rd := op imm -- used for moves and conditional moves
 static void op_ri(OPDECL, int rd, int imm) {
      vm_debug2("%s %s, #%s", mnem, regname[rd], fmt_val(decode(imm)));
      instr(op|IMMED, reg(rd), 0, imm12(imm));
@@ -496,7 +511,7 @@ static void jump_r(OPDECL, int rm) {
      vm_done();
 }
 
-// Copy FP to int status
+// Copy FP to integer status
 static void _fmstat(OPDECL) {
      vm_debug2("%s", mnem);
      instr(op, 0xf, 0, 0);
@@ -524,7 +539,9 @@ static void _fmrs(OPDECL, int rd, int rn) {
 #define fmrs(rd, rn) _fmrs(opFMRS, rd, rn)
 
 
-// ---------------- LITERAL TABLE ----------------
+// LITERAL TABLE
+
+#ifndef USE_MOVW
 
 #define MAXLITS 256
 
@@ -532,6 +549,7 @@ static int literals[MAXLITS];
 static code_addr litloc[MAXLITS];
 static int nlits;
 
+/* make_literal -- create or reuse an entry in the literal pool */
 code_addr make_literal(int val) {
      for (int i = 0; i < nlits; i++) {
           if (literals[i] == val)
@@ -549,19 +567,13 @@ code_addr make_literal(int val) {
      return loc;
 }
 
-/* load_literal -- put literal into a specified register */
-static void load_literal(int reg, int val) {
-     code_addr loc = make_literal(val);
-     if (isfloat(reg)) vm_panic("load_literal");
-     ldst_ri(SETBIT(opLDR, UBIT), reg, PC, loc - (pc+8));
-}
+#endif
 
-
-// ---------------- VIRTUAL INSTRUCTIONS ----------------
+// VIRTUAL INSTRUCTIONS
 
 static unsigned imm_field;      /* Formatted immediate field */
 
-/* immediate -- try to format shifter operand */
+/* immediate -- try to format shifter operand and set imm_field */
 static int immediate(int imm) {
      unsigned val = imm;
      int shift = 0;
@@ -584,8 +596,16 @@ static void move_immed(int r, int imm) {
           op_ri(opMOV, r, imm_field);
      else if (immediate(~imm))
           op_ri(opMVN, r, imm_field);
-     else
-          load_literal(r, imm);
+     else {
+#ifdef USE_MOVW
+          op_ri16(opMOVW, r, imm);
+          if ((unsigned) imm >> 16 != 0)
+               op_ri16(opMOVT, r, imm>>16);
+#else
+          code_addr loc = make_literal(imm);
+          ldst_ri(SETBIT(opLDR, UBIT), r, PC, loc - (pc+8));
+#endif
+     }
 }
 
 /* const_reg -- move constant into scratch register */
@@ -783,7 +803,8 @@ static void proc_call(int ra) {
      jump_r(opBLX, ra);
 }
 
-// Register map
+
+// REGISTER MAP
 
 static unsigned regmap = 0;
 
@@ -793,7 +814,8 @@ static void write_reg(int r) {
 
 #define W(r) (write_reg(r), r)
 
-// ---------------- CODE GENERATION INTERFACE ----------------
+
+// CODE GENERATION INTERFACE
 
 #define badop() vm_unknown(__FUNCTION__, op)
 
@@ -1352,9 +1374,11 @@ static code_addr entry;
 static int locals;
 
 int vm_prelude(int n, int locs) {
-     nlits = 0;
      regmap = 0;
      locals = (locs+7)&~7;
+#ifndef USE_MOVW
+     nlits = 0;
+#endif
 
      entry = pc;
      move_reg(IP, SP);
@@ -1370,9 +1394,12 @@ void vm_chain(code_addr p) {
      code_addr loc = pc;
      branch_i(opB, 0);
      vm_patch(loc, p);
+#ifndef USE_MOVW
      nlits = 0;
+#endif
 }
 
+/* parity -- parity of a 16-bit quantity */
 int parity(unsigned short x) {
      x ^= x >> 8;               // These are single instructions on the ARM
      x ^= x >> 4;
@@ -1383,9 +1410,14 @@ int parity(unsigned short x) {
 
 /* vm_postlude -- finish compiling procedure */
 void vm_postlude(void) {
+     // Only save relevant registers r4 -- r10
      regmap &= range(4, 10);
+     
      // Must save an even number of registers overall
-     if (parity(regmap) == 0) regmap |= (regmap+0x10) & ~regmap;
+     if (parity(regmap) == 0)
+          // Add another register: e.g. if regmap = 0x0230 it becomes 0x270
+          regmap |= regmap+0x10;
+
      vm_debug2("regmap = %#x\n", regmap);
 
      // stmfd! sp, {r4-r10, fp, ip, lr}

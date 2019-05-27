@@ -741,7 +741,7 @@ void *gc_alloc(value *desc, unsigned size, value *sp) {
 
 /* Now it's time to tackle the toughest part: the garbage collector
    itself.  We use a stop-and-copy method, refined to deal with the
-   allocation of different sizes of objects from different pages.
+   allocation of different sizes of objects from different blocks.
    Garbage collection works by copying needed objects out of the old
    heap space into a new space.  When an object is copied, its
    descriptor gets overwritten with the BROKEN_HEART token, and the
@@ -956,24 +956,22 @@ static void traverse_stack(value *xsp) {
      for (value *f = xsp; f != NULL; f = valptr(f[BP])) {
 	  value *c = valptr(f[CP]);
           unsigned stkmap = 0;
-#ifdef TRACE
-	  proc x = find_proc(c);
-#endif
 
 	  /* Local variables and parameters */
-	  DEBUG_PRINT('m', ("\nFrame for %s", x->p_name));
+	  DEBUG_PRINT('m', ("\nFrame for %s", find_proc(c)->p_name));
 	  if (c[CP_MAP].i != 0) 
 	       redir_map(c[CP_MAP].i, f, FRAME_SHIFT);
 
+          /* Evaluation stack */
           if (! interpreted(c)) {
                /* Compiled primitive: f[PC].i is stack map */
                stkmap = pc;
           } else if (pc != 0 && pointer(c[CP_STKMAP]) != NULL) {
                /* Look up calling PC value in stack map table. */
                unsigned *r = (unsigned *) pointer(c[CP_STKMAP]);
-               DEBUG_PRINT('m', ("\n<SM pc=%u>", pc));
+               DEBUG_PRINT('m', ("\n<SM pc=%#x>", pc));
                while (r[0] != 0) {
-                    DEBUG_PRINT('m', (" %u", r[0]));
+                    DEBUG_PRINT('m', (" %#x", r[0]));
                     if (r[0] == pc) { stkmap = r[1]; break; }
                     r += 2;
                }
