@@ -521,7 +521,7 @@ code_addr make_literal(int val) {
      * (int *) loc = val;
 
      literals[nlits] = val;
-     litloc[nlits] = loc;
+     litloc[nlits++] = loc;
      return loc;
 }
 
