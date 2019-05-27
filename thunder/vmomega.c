@@ -58,15 +58,12 @@
 #define R_S1 17
 #define R_S2 18
 #define R_S3 19
-// S4-S7 unused
-#define R_T8 24 // One more temp
+// S4-S7, T8 unused
 #define R_T9 25 // Must contain routine address at call
 // K0, K1, GP unused
 #define R_SP 29 // Stack pointer
 #define R_FP 30 // Frame pointer
 #define R_RA 31 // Return address
-
-#define TMP2 R_T8 // Second temporary, used for scaled addressing
 
 struct _vmreg 
      reg_i0 = { "I0", R_T0 },
@@ -76,7 +73,7 @@ struct _vmreg
      reg_i4 = { "I4", R_T4 },
      reg_i5 = { "I5", R_T5 },
      reg_i6 = { "I6", R_T6 },
-     reg_i7 = { "I7", R_T8 },
+     reg_i7 = { "I7", R_T7 },
      reg_v0 = { "V0", R_S0 },
      reg_v1 = { "V1", R_S1 },
      reg_v2 = { "V2", R_S2 },
@@ -324,7 +321,7 @@ static void br_regimm(OPDECL, int rs, vmlabel lab) {
 }
 
 
-// HIGH LEVEL INSTUCTIONS
+// HIGH LEVEL INSTRUCTIONS
 
 int unsigned16(int x) { return ((x) >= 0 && (x) < 65536); }
 int signed16(int x) { return ((x) >= -32768 && (x) < 32768); }
