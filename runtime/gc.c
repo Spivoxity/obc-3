@@ -951,10 +951,11 @@ static void redir_map(unsigned map, void *origin, int bmshift) {
 /* traverse_stack -- chain down the stack, redirecting in each frame */
 static void traverse_stack(value *xsp) {
      value *sp = NULL;
-     value pc; pc.i = 0;
+     unsigned pc = 0;
 
      for (value *f = xsp; f != NULL; f = valptr(f[BP])) {
 	  value *c = valptr(f[CP]);
+          unsigned stkmap = 0;
 #ifdef TRACE
 	  proc x = find_proc(c);
 #endif
@@ -964,30 +965,26 @@ static void traverse_stack(value *xsp) {
 	  if (c[CP_MAP].i != 0) 
 	       redir_map(c[CP_MAP].i, f, FRAME_SHIFT);
 
-	  if (pc.i != 0) {
-	       /* Evaluation stack: look up calling PC value in
-		  stack map table. */
-	       if (interpreted(c)) {
-		    value *r = valptr(c[CP_STKMAP]);
-		    if (r == NULL) continue;
-		    DEBUG_PRINT('m', ("\n<SM pc=%p>", pointer(pc)));
-		    while (pointer(r[0]) != NULL) {
-			 DEBUG_PRINT('m', (" %p", pointer(r[0])));
-			 if (pointer(r[0]) == pointer(pc)) break;
-			 r += 2;
-		    }
-		    if (pointer(r[0]) != NULL) {
-			 DEBUG_PRINT('m', ("\nEval stack (%#x)", r[1].i));
-			 redir_map(r[1].i, sp, 0);
-		    }
-	       } else {
-		    /* Compiled primitive: f[PC].i is stack map */
-		    DEBUG_PRINT('m', ("\nEval stack (%#x)", pc.i));
-		    redir_map(pc.i, sp, 0);
-	       }
-	  }
+          if (! interpreted(c)) {
+               /* Compiled primitive: f[PC].i is stack map */
+               stkmap = pc;
+          } else if (pc != 0 && pointer(c[CP_STKMAP]) != NULL) {
+               /* Look up calling PC value in stack map table. */
+               unsigned *r = (unsigned *) pointer(c[CP_STKMAP]);
+               DEBUG_PRINT('m', ("\n<SM pc=%u>", pc));
+               while (r[0] != 0) {
+                    DEBUG_PRINT('m', (" %u", r[0]));
+                    if (r[0] == pc) { stkmap = r[1]; break; }
+                    r += 2;
+               }
+          }
 
-	  pc = f[PC]; sp = f + HEAD;
+          if (stkmap != 0) {
+               DEBUG_PRINT('m', ("\nEval stack (%#x)", stkmap));
+               redir_map(stkmap, sp, 0);
+          }
+
+	  pc = f[PC].i; sp = f + HEAD;
      }
 }     
      
