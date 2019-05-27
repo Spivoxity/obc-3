@@ -296,6 +296,9 @@ if test "$enable_jit" != no; then
     armv6l-*|armv7l-*|arm-*)
       ENABLE_JIT=1; VM=vmpi.o; CODEPAGE=4096
       AC_DEFINE(USE_FLUSH, 1, [Whether to flush the cache]);;
+    mipsel-*)
+      ENABLE_JIT=1; VM=vmomega.o; FLOATOPS=0
+      AC_DEFINE(USE_FLUSH, 1);;
   esac
 fi
 AC_ARG_ENABLE(floatops,

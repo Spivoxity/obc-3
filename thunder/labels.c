@@ -126,6 +126,16 @@ static void install(int kind, code_addr loc, code_addr val) {
      case CASELAB:
           * (unsigned *) loc = (unsigned) (ptr) val;
           break;
+     case HI16:
+          * (unsigned *) loc =
+               (* (unsigned *) loc & ~0xffff)
+               | (((unsigned) (ptr) val >> 16) & 0xffff);
+          break;
+     case LO16:
+          * (unsigned *) loc =
+               (* (unsigned *) loc & ~0xffff)
+               | ((unsigned) (ptr) val & 0xffff);
+          break;
      default:
           vm_panic("bad branch code");
      }

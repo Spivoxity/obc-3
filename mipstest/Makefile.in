@@ -45,7 +45,10 @@ INCLUDE = -I . -I $(top_srcdir)/runtime -I $(top_srcdir)/thunder -I ../runtime
 RTFLAGS = -rdynamic
 LIBS = -ldl -lm
 LIBDIR = /usr/mipsel-linux-gnu/lib
-OBX = interp.o xmain.o support.o loader.o dynlink.o gc.o primtab.o
+COMMON = support.o loader.o dynlink.o gc.o primtab.o
+OBX = interp.o xmain.o $(COMMON)
+OBXJ = jit.o jitlab.o jitregs.o jitval.o xmain-j.o $(COMMON)
+THUNDER = vmomega.o labels.o vmdebug.o codebuf.o
 PRIMS = Builtin Args Timer Files Conv Random
 TCLSH = tclsh
 AR = mipsel-linux-gnu-ar
@@ -53,13 +56,22 @@ RANLIB = mipsel-linux-gnu-ranlib
 
 vpath %.c $(top_srcdir)/runtime $(top_srcdir)/thunder ../runtime ../lib
 
-all: obx-mips regress sanity
+all: obxj-mips regress sanity
 
-obx-mips: $(OBX) $(PRIMS:%=%.o)
+obxj-mips: $(OBXJ) $(PRIMS:%=%.o) libthunder.a
 	$(CC) $(RTFLAGS) -o $@ $^ $(LIBS)
 
 xmain.o: xmain.c
 	$(CC) $(CFLAGS) -DREVID=\"$(REVID)\" -c $< -o $@
+
+xmain-j.o: xmain.c
+	$(CC) $(CFLAGS) -DJIT -DREVID=\"$(REVID)\" -c $< -o $@
+
+mgrep: mgrep.o libthunder.a
+	$(CC) $(CFLAGS) -o $@ $^ -static
+
+libthunder.a: $(THUNDER)
+	$(AR) cr $@ $^; $(RANLIB) $@
 
 config.h: $(srcdir)/config.h.in
 	cd .. && ./config.status --file=$(subdir)/$@
@@ -70,7 +82,7 @@ regress: $(srcdir)/regress.in
 
 sanity: force
 	env OBC_LIB=. qemu-mipsel $(LIBDIR)/ld.so.1 \
-	    --library-path $(LIBDIR) ./obx-mips ../Fac.x 19
+	    --library-path $(LIBDIR) ./obxj-mips ../Fac.x 19
 	@echo The factorial of 19 is 121645100408832000
 
 force:
@@ -81,7 +93,7 @@ force:
 
 # clean: remove object files
 clean: force
-	rm -f obx-mips *.o *.so libthunder.a *.k \
+	rm -f obxj-mips *.o *.so libthunder.a *.k \
 		a.out data out.0 out config.h code
 
 # quiteclean: remove generated files too
@@ -100,7 +112,7 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 
 ### Crude approximation
 
-$(OBX) $(PRIMS:%=%.o): \
+$(OBXJ) $(PRIMS:%=%.o): \
 	config.h \
 	$(patsubst,%,$(top_srcdir/runtime/%,\
 		obx.h obcommon.h exec.h keiko.h decode.h) \

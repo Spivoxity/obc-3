@@ -850,8 +850,8 @@ void move_longval(ctvalue src, reg rd, int offd) {
 	  move_long(src->v_reg, src->v_val, rd, offd);
 	  break;
      case V_KONQ:
-	  move_long(rCP, src->v_val, rd, offd);
-	  break;
+          move_long(rCP, src->v_val, rd, offd);
+          break;
      case V_STKQ:
 	  move_long(breg, sbase + src->v_val, rd, offd);
 	  break;
