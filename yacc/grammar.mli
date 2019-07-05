@@ -149,7 +149,7 @@ val follow : symbol -> SymSet.t
    compute First and Follow sets for SLR; and also to compute lookahead
    sets in LALR.  The |fixpoint| function encapsulates a one-pass
    fixpoint algorithm that uses Tarjan's algorithm for finding the
-   strongly connected component.  Call |fixpoint iter f kids|, where
+   strongly connected components.  Call |fixpoint iter f kids|, where
    |iter| iterates over the nodes of the graph, |f| is a vector that
    contains the seed, and |kids x| returns the successors of a node |x|.
    The final value of |f| is the least solution of the fixpoint equation,

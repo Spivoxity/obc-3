@@ -168,14 +168,24 @@ let fSymSet x = fMeta "{$}" [fList(fSym) (SymSet.elements x)]
 
 (* FIXPOINTS *)
 
-(* The following algorithm, due to Tarjan, is based on depth-first
-   search.  Each node is given a discovery time, and also a timestamp
-   is computed that is the minimum discovery time of any node
-   reachable from it.  Nodes are pushed on a stack in order of
-   discovery.  A node is the root of an SCC if its discovery time is
-   equal to its final timestamp, and if so, it is responsible for
-   popping all the nodes in the SCC off the stack, and making all
-   their F values equal. *)
+(* The following algorithm, a variant of one due to Tarjan, is based
+   on depth-first search.  Each node is given a discovery time, and
+   also a timestamp is computed that is the discovery time of an
+   ancestor node reachable from it.  Nodes are pushed on a stack in
+   order of discovery.  A node is the root of an SCC if its discovery
+   time is equal to its final timestamp, and if so, it is responsible
+   for popping all the nodes in the SCC off the stack, and making all
+   their F values equal.
+
+   Tarjan sets tstamp.(u) <- min tstamp.(u) dtime.(v) in the case
+   where v is already visited so (u,v) is a cross edge: then tstamp.(u)
+   is the minimum discovery time of any node reachable from u by a
+   sequence of tree edges followed by one cross edge.
+
+   The timestamp computed here has a different meaning: it's the dtime
+   of some node reachable from v, and guaranteed to be <= the timestamp
+   computed by the algorithm just described.  That's good enough to
+   identify roots, and avoids having to save an array of dtimes. *)
 
 (* A horrid pun to allow array notation to be used for vectors *)
 module Array = Vector
@@ -184,36 +194,39 @@ module Array = Vector
 let fixpoint iter f kids =
   let infinity = 1000000 in
   let time = ref 0 in
-  let tstamp = Vector.clone f 0 in
+  let tstamp = Vector.clone f (-1) in
   let stack = ref [] in
 
   (* traverse -- do a DFS traversal from u *)
   let rec traverse u =
-    if tstamp.(u) = 0 then begin
+    if tstamp.(u) < 0 then begin
       incr time;
+      (* td is the discovery time for u *)
       let td = !time in
       tstamp.(u) <- td;
       stack := u::!stack;
 
-      (* traverse the children *)
-      List.iter (fun v ->
-          traverse v;
-          tstamp.(u) <- min tstamp.(u) tstamp.(v);
-          f.(u) <- SymSet.union f.(u) f.(v))
-        (kids u);
+      (* Visit the children, setting tstamp(u) to the discovery time
+         of an ancestor reachable from u and collecting f values *)
+      let visit v =
+         traverse v;
+         tstamp.(u) <- min tstamp.(u) tstamp.(v);
+         f.(u) <- SymSet.union f.(u) f.(v) in
+      List.iter visit (kids u);
 
-      (* Perhaps pop a strongly connected component from the stack, 
-         setting all the f values *)
-      let fu = f.(u) in
-      let rec popscc =
-        function
-            v :: stk' when tstamp.(v) = td ->
-              tstamp.(v) <- infinity; f.(v) <- fu;
-              popscc stk'
-          | stk -> stk in
-      stack := popscc !stack 
+      (* If u is the root of an SCC, then the top of the stack holds
+         some entries v with tstamp(v) >= td.  Pop them and set their
+         f values all alike *)
+      let rec popscc () =
+        match !stack with
+            v :: stk' when tstamp.(v) >= td ->
+              tstamp.(v) <- infinity; f.(v) <- f.(u);
+              stack := stk'; popscc ()
+          | _ -> () in
+      if tstamp.(u) = td then popscc ()
     end in
 
+  (* Traverse starting from every node *)
   iter traverse
 
 

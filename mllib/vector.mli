@@ -39,6 +39,9 @@ val create : int -> ('a -> int) -> 'b -> ('a, 'b) t
 (* Make a vector with the same indices as another *)
 val clone : ('a, 'b) t -> 'c -> ('a, 'c) t
 
+(* Make a copy of a vector *)
+val copy : ('a, 'b) t -> ('a, 'b) t
+
 (* Fetch item from a vector *)
 val get : ('a, 'b) t -> 'a -> 'b
 
