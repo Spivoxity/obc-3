@@ -38,6 +38,9 @@ let create n f y =
 let clone v y = 
   { index = v.index; contents = Array.make (Array.length v.contents) y }
 
+let copy v =
+  { index = v.index; contents = Array.copy v.contents }
+
 let get v x = v.contents.(v.index x)
 
 let set v x y = v.contents.(v.index x) <- y
