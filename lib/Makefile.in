@@ -131,9 +131,11 @@ oblib.a: Builtin.o $(LIBRARY:%=%.o)
 $(CSRC:%=%.c): %.c: %.m
 	sed -e '1,/^--CODE--/d' $< >$@
 
-XYplane$(DLEXT): XYplane.c XYstubs.c
+XYPLANE_C = XYplane.c XYstubs.c
+
+XYplane$(DLEXT): $(XYPLANE_C)
 	$(CC) $(ALL_RTFLAGS) $(X_CFLAGS) $(SHL_CFLAGS) \
-		$(SHL_LFLAGS) $^ $(LIBS) $(XLIB) -o $@
+		$(SHL_LFLAGS) $(XYPLANE_C) $(LIBS) $(XLIB) -o $@
 
 %$(DLEXT): %.c
 	$(CC) $(ALL_RTFLAGS) $(SHL_CFLAGS) $(SHL_LFLAGS) $< $(LIBS) -o $@
