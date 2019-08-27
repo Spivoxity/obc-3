@@ -885,7 +885,7 @@ void end_linking(void) {
 #define sym_val(x) (known(x) ? sym_value(find_symbol(x)) : 0)
 
      /* Trailer */
-     strncpy((char *) t.magic, magic, 4);
+     memcpy((char *) t.magic, magic, 4);
      put4(t.sig, SIG);
      put4(t.primsig, 0);
      put4(t.start, start - fsize);

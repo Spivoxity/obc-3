@@ -148,7 +148,9 @@ static void scan(char *name, mybool islib)  {
 static void scan_files(void) {
      if (stdlib) {
           char buf[128];
-	  sprintf(buf, "%s%s%s", libdir, DIRSEP, lscript);
+
+	  if (snprintf(buf, 128, "%s%s%s", libdir, DIRSEP, lscript) < 0)
+               panic("lscript path truncated");
           FILE *fp = fopen(buf, "r");
 	  if (fp == NULL) {
 	       perror(buf);
@@ -157,7 +159,8 @@ static void scan_files(void) {
 
 	  while (fgets(line, MAXLINE, fp) != NULL) {
 	       line[strlen(line)-1] = '\0';
-	       sprintf(buf, "%s%s%s", libdir, DIRSEP, line);
+	       if (snprintf(buf, 128, "%s%s%s", libdir, DIRSEP, line) < 0)
+                    panic("library path truncated");
 	       scan(must_strdup(buf), TRUE);
 	  }
 
