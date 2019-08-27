@@ -385,10 +385,11 @@ stamp-h: config.h.in config.status
 	echo timestamp >stamp-h
 
 REVID := $(shell \
-    (if [ -d .hg ]; then hg id --config 'ui.report_untrusted=False' -i; \
-	elif [ -d .git ]; then git rev-parse HEAD; \
+    (if [ -d .hg ]; \
+	then echo hg-`hg id --config 'ui.report_untrusted=False' -i`; \
+	elif [ -d .git ]; then echo git-`git rev-parse HEAD`; \
 	else echo unknown; fi) \
-		| sed 's/\(............\)[0-9a-f]*/\1/' 2>/dev/null)
+		| sed 's/\(.*-............\)[0-9a-f]*/\1/' 2>/dev/null)
 
 revid: force
 	echo $(REVID) | cmp -s $@ - || echo $(REVID) >$@
