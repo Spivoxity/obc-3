@@ -5,10 +5,8 @@ else
 fi
 
 tag=`date +%s`
-export BB_AUTH_STRING=`cat ~/.bitbucket`
 echo $rel $tag
 
-hg clone https://bitbucket.org/Spivey/obc-3 -u $rel obc-$tag
+hg clone https://spivey.oriel.ox.ac.uk/hg/obc-3 -u $rel obc-$tag
 cd obc-$tag
-sh scripts/debbuild \
-&& sh scripts/bbupload
+sh scripts/debbuild

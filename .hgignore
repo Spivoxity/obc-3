@@ -237,3 +237,9 @@ oniontest
 thunder/fact
 .DS_Store
 lib/_Builtin.tmp
+plx
+mipstest/a.out
+mipstest/code
+mipstest/data
+mipstest/out
+mipstest/out.0

@@ -33,7 +33,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 3.1.0, mike@cs.ox.ac.uk)
+AC_INIT(obc, 3.1.1, mike@cs.ox.ac.uk)
 AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
