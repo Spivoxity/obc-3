@@ -31,7 +31,7 @@
 (** An execution timer *)
 MODULE Timer;
 
-(** Now -- elapsed time in milliseconds since the program started *)
+(** Now -- CPU time in milliseconds since the program started *)
 PROCEDURE Now*(): INTEGER IS "Now";
 
 END Timer.
@@ -39,31 +39,12 @@ END Timer.
 --CODE--
 
 /* Care needed: CLOCKS_PER_SEC might be 50 or it might (on a
-   POSIX system) be 1000000.  So we represent 1000t as a three-digit
-   number in base 1000, and use high-school division. */
+   POSIX system) be 1000000.  So we need to use 64-bit integers
+   for the conversion. */
 
 #include <time.h>
 
 int Now(void) {
-#define B 1000
-#define M CLOCKS_PER_SEC
-
-     clock_t t = clock();
-     unsigned t1 = t/B;
-     unsigned t2 = (t1%M)*B + t%B;
-     unsigned t3 = (t2%M)*B;
-     return ((t1/M)*B + (t2/M))*B + t3/M; 
+     unsigned long long t = clock();
+     return (int) ((1000 * t) / CLOCKS_PER_SEC);
 }
-
-/* Using y(x/y) + x%y = x repeatedly:
-
-   Mr + t3%M = B^2M(t1/M) + BM(t2/M) + M(t3/M) + t3%M
-     = B^2M(t1/M) + BM(t2/M) + B(t2%M)
-     = B^2M(t1/M) + Bt2
-     = B^2M(t1/M) + B^2(t1%M) + B(t%B)
-     = B^2t1 + B(t%B)
-     = B^2(t/B) + B(t%B)
-     = Bt 
-
-   But 0 <= t3%M < M, so r = floor(Bt/M) */
-
