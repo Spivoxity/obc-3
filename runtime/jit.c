@@ -120,7 +120,7 @@ static word prolog(const char *name) {
           push_con(0);
           push_reg(rI0);
 	  gcall(memset, 3);
-     } else if ((map & (~(-1 << FRAME_SHIFT) << 1)) != 0) {
+     } else if ((map & (~(((unsigned) -1) << FRAME_SHIFT) << 1)) != 0) {
           // A bitmap -- clear specified words
           map >>= 1;
 	  vm_gen(MOV, rI0->r_reg, 0);
