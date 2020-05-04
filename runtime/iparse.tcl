@@ -220,7 +220,7 @@ proc process {inst patts key action} {
 
 # Create an instruction
 proc inst {inst patts key act {jrule none}} {
-    process $inst $patts $key $act
+    process $inst $patts $key [string trim $act " "]
     if {[regexp {^=(.*)$} $jrule _ exp]} {
         make_expand $inst $exp
     } elseif {$jrule != "none"} {

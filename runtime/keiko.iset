@@ -54,60 +54,60 @@ inst INDEXD 0 B.x   { index($1, $2, 3) }        { add_offset(3) }
 # Load/store from address
 # LOADs :: a --> mem_s[a]
 # STOREs :: a, b --> []; mem_s[b] := a
-inst LOADW 0 M.i    { load($1, int) }           { deref(V_MEMW, INT, 1) }
-inst LOADS 0 M.i    { load($1, short) }         { deref(V_MEMS, INT, 1) }
-inst LOADC 0 M.i    { load($1, uchar) }         { deref(V_MEMC, INT, 1) }
-inst LOADF 0 M.f    { load($1, float) }         { deref(V_MEMW, FLO, 1) }
-inst STOREW 0 S2    { store($1.i, $2, int) }    { store(V_MEMW, 1) }
-inst STORES 0 S2    { store($1.i, $2, short) }  { store(V_MEMS, 1) }
-inst STOREC 0 S2    { store($1.i, $2, uchar) }  { store(V_MEMC, 1) }
-inst STOREF 0 S2    { store($1.f, $2, float) }  { store(V_MEMW, 1) }
+inst LOADW 0 M.i    { load($1, int) }            { deref(V_MEMW, INT, 1) }
+inst LOADS 0 M.i    { load($1, short) }          { deref(V_MEMS, INT, 1) }
+inst LOADC 0 M.i    { load($1, uchar) }          { deref(V_MEMC, INT, 1) }
+inst LOADF 0 M.f    { load($1, float) }          { deref(V_MEMW, FLO, 1) }
+inst STOREW 0 S2    { store($1.i, $2, int); }    { store(V_MEMW, 1) }
+inst STORES 0 S2    { store($1.i, $2, short); }  { store(V_MEMS, 1) }
+inst STOREC 0 S2    { store($1.i, $2, uchar); }  { store(V_MEMC, 1) }
+inst STOREF 0 S2    { store($1.f, $2, float); }  { store(V_MEMW, 1) }
 
 # Load/store local
 # LDLs n :: --> mem_s[bp+n]
 # STLs n :: a --> []; mem_s[bp+n] := a
 inst LDLW {[-24,-4,4] [12,32,4] 1 2} V.i \
-                    { ldl($a, int)}             {= LOCAL $a, LOADW }
-inst LDLS {1 2} V.i { ldl($a, short) }          {= LOCAL $a, LOADS }
-inst LDLC {1 2} V.i { ldl($a, uchar) }          {= LOCAL $a, LOADC }
-inst LDLF {1 2} V.f { ldl($a, float) }          {= LOCAL $a, LOADF }
+                    { ldl($a, int)}              {= LOCAL $a, LOADW }
+inst LDLS {1 2} V.i { ldl($a, short) }           {= LOCAL $a, LOADS }
+inst LDLC {1 2} V.i { ldl($a, uchar) }           {= LOCAL $a, LOADC }
+inst LDLF {1 2} V.f { ldl($a, float) }           {= LOCAL $a, LOADF }
 inst STLW {[-24,-4,4] [12,32,4] 1 2} S1 \
-                    { stl($a, $1.i, int) }      {= LOCAL $a, STOREW }
-inst STLS {1 2} S1  { stl($a, $1.i, short) }    {= LOCAL $a, STORES }
-inst STLC {1 2} S1  { stl($a, $1.i, uchar) }    {= LOCAL $a, STOREC }
-inst STLF {1 2} S1  { stl($a, $1.f, float) }    {= LOCAL $a, STOREF }
+                    { stl($a, $1.i, int); }      {= LOCAL $a, STOREW }
+inst STLS {1 2} S1  { stl($a, $1.i, short); }    {= LOCAL $a, STORES }
+inst STLC {1 2} S1  { stl($a, $1.i, uchar); }    {= LOCAL $a, STOREC }
+inst STLF {1 2} S1  { stl($a, $1.f, float); }    {= LOCAL $a, STOREF }
 
 # Load/store global
 # LDGs n :: --> mem_s[const(n)]
 # STGs n :: a --> []; mem_s[const(n)] := a
-inst LDGW {K L} V.i { ldg($a, int) }            {= LDKW $a, LOADW }
-inst LDGS {K L} V.i { ldg($a, short) }          {= LDKW $a, LOADS }
-inst LDGC {K L} V.i { ldg($a, uchar) }          {= LDKW $a, LOADC }
-inst LDGF {K L} V.f { ldg($a, float) }          {= LDKW $a, LOADF }
-inst STGW {K L} S1  { stg($a, $1.i, int) }      {= LDKW $a, STOREW }
-inst STGS {K L} S1  { stg($a, $1.i, short) }    {= LDKW $a, STORES }
-inst STGC {K L} S1  { stg($a, $1.i, uchar) }    {= LDKW $a, STOREC }
-inst STGF {K L} S1  { stg($a, $1.f, float) }    {= LDKW $a, STOREF }
+inst LDGW {K L} V.i { ldg($a, int) }             {= LDKW $a, LOADW }
+inst LDGS {K L} V.i { ldg($a, short) }           {= LDKW $a, LOADS }
+inst LDGC {K L} V.i { ldg($a, uchar) }           {= LDKW $a, LOADC }
+inst LDGF {K L} V.f { ldg($a, float) }           {= LDKW $a, LOADF }
+inst STGW {K L} S1  { stg($a, $1.i, int); }      {= LDKW $a, STOREW }
+inst STGS {K L} S1  { stg($a, $1.i, short); }    {= LDKW $a, STORES }
+inst STGC {K L} S1  { stg($a, $1.i, uchar); }    {= LDKW $a, STOREC }
+inst STGF {K L} S1  { stg($a, $1.f, float); }    {= LDKW $a, STOREF }
 
 # Indexed load/store
 # LDNs n :: a -> mem_s[a+n]
 # STNs n :: a, b -> []; mem_s[b+n] := a
 inst LDNW {[-16,32,4] 1 2} M.i \
-                    { ldn($a, $1) }             {= PUSH $a, OFFSET, LOADW }
+                    { ldn($a, $1) }              {= PUSH $a, OFFSET, LOADW }
 inst STNW {[-16,32,4] 1 2} S2 \
-                    { stn($a, $1.i, $2) }       {= PUSH $a, OFFSET, STOREW }
+                    { stn($a, $1.i, $2); }       {= PUSH $a, OFFSET, STOREW }
 
 # Double indexed load/store
 # LDIs :: a, b --> mem_s[a+s*b]
 # STIs :: a, b, c --> []; mem_s[b+s*c] := a
-inst LDIW 0 B.i     { ldi($1, $2, int) }        {= INDEXW, LOADW }
-inst LDIS 0 B.i     { ldi($1, $2, short) }      {= INDEXS, LOADS }
-inst LDIC 0 B.i     { ldi($1, $2, uchar) }      {= OFFSET, LOADC }
-inst LDIF 0 B.f     { ldi($1, $2, float) }      {= INDEXW, LOADF }
-inst STIW 0 S3      { sti($1.i, $2, $3, int) }  {= INDEXW, STOREW }
-inst STIS 0 S3      { sti($1.i, $2, $3, short) }  {= INDEXS, STORES }
-inst STIC 0 S3      { sti($1.i, $2, $3, uchar) }  {= OFFSET, STOREC }
-inst STIF 0 S3      { sti($1.f, $2, $3, float) }  {= INDEXW, STOREF }
+inst LDIW 0 B.i     { ldi($1, $2, int) }         {= INDEXW, LOADW }
+inst LDIS 0 B.i     { ldi($1, $2, short) }       {= INDEXS, LOADS }
+inst LDIC 0 B.i     { ldi($1, $2, uchar) }       {= OFFSET, LOADC }
+inst LDIF 0 B.f     { ldi($1, $2, float) }       {= INDEXW, LOADF }
+inst STIW 0 S3      { sti($1.i, $2, $3, int); }  {= INDEXW, STOREW }
+inst STIS 0 S3      { sti($1.i, $2, $3, short); }  {= INDEXS, STORES }
+inst STIC 0 S3      { sti($1.i, $2, $3, uchar); }  {= OFFSET, STOREC }
+inst STIF 0 S3      { sti($1.f, $2, $3, float); }  {= INDEXW, STOREF }
 
 # If the argument of any of the above instructions is so large that it
 # does not fit in two bytes, then it's the job of the compiler to find
@@ -116,11 +116,11 @@ inst STIF 0 S3      { sti($1.f, $2, $3, float) }  {= INDEXW, STOREF }
 
 # Loads and stores for doubles
 inst LOADD 0 M.dp   { getdbl(valptr($1)) }      { deref(V_MEMQ, FLO, 2) }
-inst STORED 0 S2dp  { putdbl(valptr($2), $1.d) } { store(V_MEMQ, 2) }
+inst STORED 0 S2dp  { putdbl(valptr($2), $1.d); } { store(V_MEMQ, 2) }
 inst LDKD {1 2} V.d { getdbl(&const($a)) }      { konst(V_KONQ, FLO, arg1, 2) }
 
 inst LOADQ 0 M.qp   { getlong(valptr($1)) }     { loadq() }
-inst STOREQ 0 S2qp  { putlong(valptr($2), $1.q) } { store(V_MEMQ, 2) }
+inst STOREQ 0 S2qp  { putlong(valptr($2), $1.q); } { store(V_MEMQ, 2) }
 inst LDKQ {1 2} V.q { getlong(&const($a)) }     { konst(V_KONQ, INT, arg1, 2) }
     
 equiv LDID 0        { INDEXD, LOADD }
@@ -139,16 +139,15 @@ equiv STGQ K        { LDKW $a, STOREQ }
 
 # ASSORTED INSTRUCTIONS
 
-inst INCL 1 S0      { indir(local($a), int)++ } {= LDLW $a, INC, STLW $a }
+inst INCL 1 S0      { indir(local($a), int)++; } {= LDLW $a, INC, STLW $a }
 equiv INCL 2        { LDLW $a, INC, STLW $a }
 
-inst DECL 1 S0      {indir(local($a), int)--}   {= LDLW $a, DEC, STLW $a }
+inst DECL 1 S0      { indir(local($a), int)--; } {= LDLW $a, DEC, STLW $a }
 equiv DECL 2        { LDLW $a, DEC, STLW $a }
 
-inst DUP {[0,2,1]} S0 \
-                    {dup($a, $s)}
-inst SWAP 0 S0      {swap($s)}
-inst POP 1 S0       {sp += $a}                  {pop(arg1)}
+inst DUP {[0,2,1]} S0 { dup($a, $s); }
+inst SWAP 0 S0      { swap($s); }
+inst POP 1 S0       { sp += $a; }                  {pop(arg1)}
 
 
 # INTEGER OPERATORS
@@ -173,8 +172,8 @@ inst LSR 0 B.i      { (unsigned) $1.i>>$2.i }   { ibinop(RSHu) }
 inst ASR 0 B.i      { $1.i >> $2.i }            { ibinop(RSH) }
 inst ROR 0 B.i      { ror($1.i, $2.i) }         { ibinop(ROR) }
 
-inst DIV 0 T2       { int_div(sp) }             { callout(int_div, 2, INT, 1) }
-inst MOD 0 T2       { int_mod(sp) }             { callout(int_mod, 2, INT, 1) }
+inst DIV 0 T2       { int_div(sp); }            { callout(int_div, 2, INT, 1) }
+inst MOD 0 T2       { int_mod(sp); }            { callout(int_mod, 2, INT, 1) }
 
 inst EQ 0 B.i       { $1.i == $2.i }            { compare(EQ) }
 inst LT 0 B.i       { $1.i < $2.i }             { compare(LT) }
@@ -183,26 +182,26 @@ inst LEQ 0 B.i      { $1.i <= $2.i }            { compare(LE) }
 inst GEQ 0 B.i      { $1.i >= $2.i }            { compare(GE) }
 inst NEQ 0 B.i      { $1.i != $2.i }            { compare(NE) }
 
-inst JEQ {S R} S2   { if ($1.i == $2.i) jump($a) } { condj(&j_eq, arg1) }
-inst JLT {S R} S2   { if ($1.i < $2.i) jump($a) }  { condj(&j_lt, arg1) }
-inst JGT {S R} S2   { if ($1.i > $2.i) jump($a) }  { condj(&j_gt, arg1) }
-inst JLEQ {S R} S2  { if ($1.i <= $2.i) jump($a) } { condj(&j_le, arg1) }
-inst JGEQ {S R} S2  { if ($1.i >= $2.i) jump($a) } { condj(&j_ge, arg1) }
-inst JNEQ {S R} S2  { if ($1.i != $2.i) jump($a) } { condj(&j_ne, arg1) }
+inst JEQ {S R} S2   { if ($1.i == $2.i) jump($a); } { condj(&j_eq, arg1) }
+inst JLT {S R} S2   { if ($1.i < $2.i) jump($a); }  { condj(&j_lt, arg1) }
+inst JGT {S R} S2   { if ($1.i > $2.i) jump($a); }  { condj(&j_gt, arg1) }
+inst JLEQ {S R} S2  { if ($1.i <= $2.i) jump($a); } { condj(&j_le, arg1) }
+inst JGEQ {S R} S2  { if ($1.i >= $2.i) jump($a); } { condj(&j_ge, arg1) }
+inst JNEQ {S R} S2  { if ($1.i != $2.i) jump($a); } { condj(&j_ne, arg1) }
 
-inst JLTZ S S1      { if ($1.i < 0) jump($a) }  {= PUSH 0, JLT $a }
-inst JGTZ S S1      { if ($1.i > 0) jump($a) }  {= PUSH 0, JGT $a }
-inst JLEQZ S S1     { if ($1.i <= 0) jump($a) } {= PUSH 0, JLEQ $a }
-inst JGEQZ S S1     { if ($1.i >= 0) jump($a) } {= PUSH 0, JGEQ $a }
+inst JLTZ S S1      { if ($1.i < 0) jump($a); }  {= PUSH 0, JLT $a }
+inst JGTZ S S1      { if ($1.i > 0) jump($a); }  {= PUSH 0, JGT $a }
+inst JLEQZ S S1     { if ($1.i <= 0) jump($a); } {= PUSH 0, JLEQ $a }
+inst JGEQZ S S1     { if ($1.i >= 0) jump($a); } {= PUSH 0, JGEQ $a }
 
 equiv JLTZ R        { PUSH 0, JLT $a }
 equiv JGTZ R        { PUSH 0, JGT $a }
 equiv JLEQZ R       { PUSH 0, JLEQ $a }
 equiv JGEQZ R       { PUSH 0, JGEQ $a }
 
-inst JNEQZ {S R} S1 { if ($1.i != 0) jump($a) } {= PUSH 0, JNEQ $a }
-inst JEQZ {S R} S1  { if ($1.i == 0) jump($a) } {= PUSH 0, JEQ $a }
-inst JUMP {S R} S0  { jump($a) }                { jump(arg1) }
+inst JNEQZ {S R} S1 { if ($1.i != 0) jump($a); } {= PUSH 0, JNEQ $a }
+inst JEQZ {S R} S1  { if ($1.i == 0) jump($a); } {= PUSH 0, JEQ $a }
+inst JUMP {S R} S0  { jump($a); }                { jump(arg1) }
 
 
 # LONGINT OPERATORS
@@ -211,8 +210,8 @@ inst QPLUS 0 B.q    { $1.q + $2.q }             { qbinop(ADDq) }
 inst QMINUS 0 B.q   { $1.q - $2.q }             { qbinop(SUBq) }
 inst QTIMES 0 B.q   { $1.q * $2.q }             { qbinop(MULq) }
 inst QUMINUS 0 M.q  { - $1.q }                  { qmonop(NEGq) }
-inst QDIV 0 T2q     { long_div(sp) }            { callout(long_div, 2, INT, 2) }
-inst QMOD 0 T2q     { long_mod(sp) }            { callout(long_mod, 2, INT, 2) }
+inst QDIV 0 T2q     { long_div(sp); }           { callout(long_div, 2, INT, 2) }
+inst QMOD 0 T2q     { long_mod(sp); }           { callout(long_mod, 2, INT, 2) }
 
 equiv QINC 0        { PUSH 1, CONVNQ, QPLUS }
 equiv QDEC 0        { PUSH 1, CONVNQ, QMINUS }
@@ -248,7 +247,7 @@ inst JRANGE {S R} S3 {
 
 # The "T2" means take two arguments, but leave one of them on the stack
 inst TESTGEQ {S R} T2 {
-     if ($1.i >= $2.i) jump($a)
+     if ($1.i >= $2.i) jump($a);
 }
 
 
@@ -337,20 +336,20 @@ inst CONVQD 0 M.dq  { flo_convq($1.q) }         { callout(long_flo, 1, FLO, 2) }
 # more than 65536 lines
 
 inst BOUND 2 T2 \
-    { if ((unsigned) $1.i >= (unsigned) $2.i) error(E_BOUND, $a) }
+    { if ((unsigned) $1.i >= (unsigned) $2.i) error(E_BOUND, $a); }
 inst NCHECK 2 T1 \
-    { if (pointer($1) == NULL) error(E_NULL, $a) }
+    { if (pointer($1) == NULL) error(E_NULL, $a); }
 inst GCHECK 2 S1  \
-    { if (valptr($1) != NULL) error(E_GLOB, $a) }
+    { if (valptr($1) != NULL) error(E_GLOB, $a); }
 inst ZCHECK 2 T1 \
-    { if ($1.i == 0) error(E_DIV, $a) }
+    { if ($1.i == 0) error(E_DIV, $a); }
 inst FZCHECK 2 T1 \
-    { if ($1.f == 0.0) error(E_FDIV, $a) }
+    { if ($1.f == 0.0) error(E_FDIV, $a); }
 inst DZCHECK 2 T1d \
-    { if ($1.d == 0.0) error(E_FDIV, $a) }
+    { if ($1.d == 0.0) error(E_FDIV, $a); }
 inst QZCHECK 2 T1q \
-    { if ($1.q == 0) error(E_DIV, $a) }
-inst ERROR 12 S0    { error($a, $b) }
+    { if ($1.q == 0) error(E_DIV, $a); }
+inst ERROR 12 S0    { error($a, $b); }
 
 
 # MORE BITS AND PIECES
@@ -371,7 +370,7 @@ inst FIXCOPY 0 S3 {
 # and a size in bytes; it copies the parameter to dynamic local space, 
 # then overwrites the parameter with the new address.
 inst FLEXCOPY 0 S0 {
-     value *d = (value *) pointer(sp[1]); int size = sp[0].i;           
+     value *d = pointer(sp[1]); int size = sp[0].i;           
      int sizew = (size+3)/4; prof_charge(sizew);                        
      sp -= sizew - 2;                                                   
      if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);              
@@ -398,17 +397,17 @@ equiv CALLD 1       { JPROC, SLIDED $a }
 # and not (e.g.) if the static link is saved *before* the parameters
 # are put on the stack, or if <load proc addr> requires a stack depth
 # of more than 3.
+#
+#        NOW           LATER
+#
+#        param 2       param 2
+#        param 1       param 1
+#    sp: stat link     proc addr |
+#                      ret addr  | HEAD
+#                  bp: dyn link  V
+#                      stat link
+#
 inst STATLINK 0 S0 {
-     /*
-         NOW           LATER
-
-         param 2       param 2
-         param 1       param 1
-     sp: stat link     proc addr |
-                       ret addr  | HEAD
-                   bp: dyn link  V
-                       stat link
-     */
      sp[1-HEAD+SL].a = sp[0].a; sp++;
 } {
      push_sp();
@@ -420,7 +419,7 @@ inst STATLINK 0 S0 {
 # SAVELINK moves the static link from the 'secret place' to its proper
 # location in the frame of the called procedure.  Because the secret
 # place is actually the proper location already, all that is needed is
-# to protecting the static link when the frame is cleared (see the call
+# to protect the static link when the frame is cleared (see the call
 # to memset in interp.c).
 inst SAVELINK 0 S0 { } { }
 
@@ -450,19 +449,19 @@ inst JPROC 0 S0 {
 }
 
 inst SLIDE 1 S0 \
-    { slide($a) } \
+    { slide($a); } \
     { proc_call(pc, arg1, 0, 0, 0) }
 inst SLIDEW 1 S0 \
-    { slide($a); sp--; sp[0].i = (*rp).i } \
+    { slide($a); sp--; sp[0].i = (*rp).i; } \
     { proc_call(pc, arg1, INT, V_MEMW, 1) }
 inst SLIDEF 1 S0 \
-    { slide($a); sp--; sp[0].f = (*rp).f } \
+    { slide($a); sp--; sp[0].f = (*rp).f; } \
     { proc_call(pc, arg1, FLO, V_MEMW, 1) }
 inst SLIDED 1 S0 \
-    { slide($a); sp -= 2; putdbl(&sp[0], getdbl(rp)) } \
+    { slide($a); sp -= 2; putdbl(&sp[0], getdbl(rp)); } \
     { proc_call(pc, arg1, FLO, V_MEMQ, 2) }
 inst SLIDEQ 1 S0 \
-    { slide($a); sp -= 2; putlong(&sp[0], getlong(rp)) } \
+    { slide($a); sp -= 2; putlong(&sp[0], getlong(rp)); } \
     { proc_call(pc, arg1, INT, V_MEMQ, 2) }
     
 inst RETURN 0 S0 {
