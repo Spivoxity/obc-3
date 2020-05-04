@@ -112,7 +112,7 @@ static ffi_type *ffi_decode(char c) {
 
 value *dlstub(value *bp) {
      value *cp = valptr(bp[CP]);
-     char *tstring = (char *) pointer(cp[CP_CODE]);
+     char *tstring = pointer(cp[CP_CODE]);
      value *sp = bp;
 
      ffi_raw avals[MAXP], rval[2];
@@ -162,7 +162,7 @@ value *dlstub(value *bp) {
           }
      }
 
-     wrapper *w = (wrapper *) pointer(cp[CP_CONST]);
+     wrapper *w = pointer(cp[CP_CONST]);
      ffi_raw_call(&w->cif, w->fun, rval, avals);
      
      switch (tstring[0]) {
@@ -225,7 +225,7 @@ primitive *find_prim(char *name) {
 
 value *dltrap(value *bp) {
      value *cp = valptr(bp[CP]);
-     char *tstring = (char *) pointer(cp[CP_CODE]);
+     char *tstring = pointer(cp[CP_CODE]);
      char *name = tstring + strlen(tstring) + 1;
      primitive *prim = NULL;
 
@@ -253,14 +253,11 @@ value *dltrap(value *bp) {
      if (fun != NULL && tstring[0] != '*') {
           int np = strlen(tstring)-1;
           ffi_type *rtype = ffi_decode(tstring[0]);
-          ffi_type **atypes =
-               (ffi_type **) scratch_alloc(np * sizeof(ffi_type *),
-                                           TRUE, "ffi types");
+          ffi_type **atypes = scratch_alloc_atomic(np * sizeof(ffi_type *));
           for (int i = 0; tstring[i+1] != '\0'; i++)
                atypes[i] = ffi_decode(tstring[i+1]);
 
-          wrapper *w = (wrapper *) scratch_alloc(sizeof(wrapper),
-                                                 FALSE, "ffi wrapper");
+          wrapper *w = scratch_alloc_atomic(sizeof(wrapper));
           w->fun = fun;
           ffi_prep_cif(&w->cif, FFI_DEFAULT_ABI, np, rtype, atypes);
 

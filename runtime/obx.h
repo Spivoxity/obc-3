@@ -266,10 +266,13 @@ uchar *getenvt(int word);
 /* gc.c */
 
 /* scratch_alloc -- allocate memory that will not be freed */
-void *scratch_alloc(unsigned bytes, mybool atomic, const char *reason);
+void *scratch_alloc(unsigned bytes);
+
+/* scratch_alloc_atomic -- allocate memory that will not contain pointers */
+void *scratch_alloc_atomic(unsigned bytes);
 
 /* gc_alloc -- allocate an object on the managed heap */
-void *gc_alloc(value *desc, unsigned size, value *sp);
+void *gc_alloc(unsigned size, value *sp);
 
 /* gc_collect -- run the garbage collector */
 void gc_collect(value *sp);

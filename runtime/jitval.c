@@ -426,8 +426,7 @@ void spill(reg r) {
                     int c = *rc;
 
                     if (tmp == 0)
-                         tmp = address(scratch_alloc(sizeof(double),
-                                                     FALSE, "JIT spill temp"));
+                         tmp = address(scratch_alloc(sizeof(double)));
                     if (!saved) {
                          vm_gen(choose(v->v_size, STW, STQ), r->r_reg, tmp);
                          saved = TRUE;

@@ -73,19 +73,29 @@ static void *grab_chunk(unsigned size) {
 }
 #endif
 
-void *scratch_alloc(unsigned size, mybool atomic, const char *reason) {
+void *scratch_alloc(unsigned size) {
      void *p = NULL;
 
 #ifdef USE_BOEHM
-     if (atomic)
-          p = GC_malloc_atomic_uncollectable(size);
-     else
-          p = GC_malloc_uncollectable(size);
+     p = GC_malloc_uncollectable(size);
 #else
      p = malloc(size);
 #endif
      
      if (p == NULL) panic("scratch_alloc failed");
+     return p;
+}
+
+void *scratch_alloc_atomic(unsigned size) {
+     void *p = NULL;
+
+#ifdef USE_BOEHM
+     p = GC_malloc_atomic_uncollectable(size);
+#else
+     p = malloc(size);
+#endif
+     
+     if (p == NULL) panic("scratch_alloc_atomic failed");
      return p;
 }
 

@@ -99,9 +99,6 @@ ifndef DYNLINK
   EXTRA_LIBS = $(XLIB)
 endif
 
-ALL_LIBS = $(EXTRA_LIBS) $(LIBS) $(MATHLIB)
-obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS) $(MATHLIB)
-
 ALL_INTERPS = obx
 
 ifdef ENABLE_JIT

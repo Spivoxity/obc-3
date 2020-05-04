@@ -74,16 +74,14 @@ extern int vm_debug;
 /* Helper functions for the loader */
 
 module make_module(char *name, uchar *addr, int chksum, int nlines) {
-     module m = (module) scratch_alloc(sizeof(struct _module), FALSE, "module");
+     module m = scratch_alloc_atomic(sizeof(struct _module));
      m->m_name = name;
      m->m_addr = addr;
 #ifdef PROFILE
      m->m_nlines = nlines;
      m->m_lcount = NULL;
      if (lflag && nlines > 0) {
-	  m->m_lcount = 
-	       (unsigned *) scratch_alloc(nlines * sizeof(unsigned),
-                                          TRUE, "line counts");
+	  m->m_lcount = scratch_alloc_atomic(nlines * sizeof(unsigned));
 	  memset(m->m_lcount, 0, nlines * sizeof(int));
      }
 #endif
@@ -94,7 +92,7 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
 }
 
 proc make_proc(char *name, uchar *addr) {
-     proc p = (proc) scratch_alloc(sizeof(struct _proc), FALSE, "proc");
+     proc p = scratch_alloc_atomic(sizeof(struct _proc));
      p->p_name = name;
      p->p_addr = (value *) addr;
 #ifdef PROFILE
@@ -588,8 +586,7 @@ word wrap_prim(primitive *prim) {
 #ifndef M64X32
      return (word) prim;
 #else
-     primitive **wrapper =
-          (primitive **) scratch_alloc(sizeof(primitive *), TRUE, "wrapper");
+     primitive **wrapper = scratch_alloc_atomic(sizeof(primitive *));
      *wrapper = prim;
      return address(wrapper);
 #endif

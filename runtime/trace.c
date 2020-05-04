@@ -112,6 +112,6 @@ void dump(void) {
 }
 
 const char *prim_name(value *p) {
-     if (pointer(p[1]) != NULL) return (char *) pointer(p[1]);
+     if (pointer(p[1]) != NULL) return pointer(p[1]);
      return "(unknown)";
 }

@@ -58,7 +58,7 @@ static char *read_string() {
 	  buf[n++] = c;
      } while (c != '\0');
 
-     p = (char *) scratch_alloc(n, TRUE, "symbol");
+     p = scratch_alloc_atomic(n);
      strcpy(p, buf);
      return p;
 }
@@ -169,10 +169,8 @@ static void read_symbols(int dseg) {
 #define debug_kind(n)
 #endif
 	  
-     modtab = (module *) scratch_alloc(nmods * sizeof(module),
-                                       FALSE, "module table");
-     proctab = (proc *) scratch_alloc(nprocs * sizeof(proc),
-                                      FALSE, "proc table");
+     modtab = scratch_alloc_atomic(nmods * sizeof(module));
+     proctab = scratch_alloc_atomic(nprocs * sizeof(proc));
 
      for (int i = 0; i < nsyms; i++) {
 	  int kind = read_int();
@@ -274,18 +272,17 @@ void load_file(FILE *bfp) {
      binfp = bfp;
 
      /* Load the code */
-     imem = (uchar *) scratch_alloc(seglen[S_CODE], TRUE, "imem");
+     imem = scratch_alloc_atomic(seglen[S_CODE]);
      binread(imem, seglen[S_CODE]);
 
      /* Load and relocate the data */
-     dmem = (uchar *) scratch_alloc(seglen[S_DATA]+seglen[S_BSS],
-                                    FALSE, "dmem");
+     dmem = scratch_alloc(seglen[S_DATA]+seglen[S_BSS]);
      binread(dmem, seglen[S_DATA]);
      relocate(seglen[S_DATA]);
      memset(dmem+seglen[S_DATA], 0, seglen[S_BSS]);
 
      /* Allocate stack */
-     stack = (uchar *) scratch_alloc(stack_size, FALSE, "stack");
+     stack = scratch_alloc(stack_size);
 
      /* Save the entry point, pointer map and library path */
      entry = (value *) &dmem[get_int(t.entry)];

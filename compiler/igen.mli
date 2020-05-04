@@ -28,13 +28,5 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-(*
-The intermediate code generator takes an abstract syntax tree that has
-been annotated by the semantic analyser, and produces abstract machine
-code by calling the functions from an instance of the record type
-|back_end|.  No errors should be detected in this part of the
-compiler, unless earlier passes are broken.
-*)
-
 (* translate -- generate intermediate code *)
 val translate : int -> Tree.program -> unit
