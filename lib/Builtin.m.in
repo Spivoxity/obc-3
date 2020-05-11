@@ -165,14 +165,14 @@ desc:	map			desc = q + align(n*elsize) + 4
 	dim k
 
 map:	-4
-	desc-q
+	desc-(q+4)
 [	GC_REPEAT		if elmap != 0
 	0
 	n
 	elsize
 	GC_MAP
 	elmap
-	GC_END		]
+	GC_END          ]		
 	GC_END
 
 size = align(n*elsize) + 4*k + 20 + (28 if elmap != 0)
@@ -182,7 +182,7 @@ Parameters NEWFLEX(elmap, elsize, k: INTEGER;
 */
 
 value *NEWFLEX(value *bp) {
-     value *elmap = valptr(bp[HEAD+0]);
+     word elmap = bp[HEAD+0].a;
      int elsize = bp[HEAD+1].i;
      int k = bp[HEAD+2].i;
      value *dim = &bp[HEAD+3];		/* Array of bounds */
@@ -196,11 +196,11 @@ value *NEWFLEX(value *bp) {
      for (i = 0; i < k; i++) n *= dim[i].i;
      if (n < 0) liberror("allocating negative size");
      arsize = align(n * elsize, 4); 
-     if (n == 0) elmap = NULL;
+     if (n == 0) elmap = 0;
 
      /* Allocate the space */
      size = arsize + 4*k + 20;
-     if (elmap != NULL) size += 28;
+     if (elmap != 0) size += 28;
 
      q = (value * ) gc_alloc(size, bp);
 
@@ -215,18 +215,18 @@ value *NEWFLEX(value *bp) {
 
      /* Fill in the map */
      map[0].i = -4;
-     map[1].i = 4 * (desc-q-1);
-     if (elmap == NULL)
+     map[1].i = 4 * (desc - (q+1));
+     if (elmap == 0) 
           map[2].i = GC_END;
      else {
           map[2].i = GC_REPEAT;
-	  map[3].i = 0;
-	  map[4].i = n;
-	  map[5].i = elsize;
-	  map[6].i = GC_MAP;
-	  map[7].a = address(elmap);
-	  map[8].i = GC_END;
-	  map[9].i = GC_END;
+          map[3].i = 0;
+          map[4].i = n;
+          map[5].i = elsize;
+          map[6].i = GC_MAP;
+          map[7].i = elmap;
+          map[8].i = GC_END;
+          map[9].i = GC_END;
      }
 
      (*--sp).a = address(q+1); 

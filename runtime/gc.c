@@ -43,7 +43,7 @@ static mybool debug[256];	/* Debugging flags */
    d - general debugging; 
    l - trace low-level allocator; 
    m - print maps;  
-   s - scribble on freed storage;
+   s - scribble on freed storage (obsolete);
    z - GC on each allocation */
 
 /* Assertions are enabled in all programs if DEBUG is defined */
