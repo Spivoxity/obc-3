@@ -461,6 +461,13 @@ static void dupe(int n) {
            v->v_scale, v->v_size);
 }
 
+static void statlink(void) {
+     push_sp();
+     push_con(4*(1-HEAD+SL));
+     add_offset(0);
+     store(V_MEMW, 1);
+}
+
 /* instr -- translate one bytecode instruction */
 static void instr(uchar *pc, int i, int arg1, int arg2) {
      reg r1, r2, r3;

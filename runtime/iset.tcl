@@ -529,7 +529,7 @@ proc gen_jitrules {f} {
     foreach i $instrs {
         if {[info exists jitrule($i)]} {
             set jrule $jitrule($i)
-            puts $f "case I_$i: $jrule; break;"
+            puts $f "case I_$i: $jrule break;"
         }
     }
 }

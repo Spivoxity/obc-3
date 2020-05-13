@@ -700,7 +700,7 @@ void *gc_alloc(unsigned size, value *sp) {
 
      if (debug['z']) gc_collect(sp);
 
-     size = round_up(size, BYTES_PER_WORD);
+     size = round_up(size+4, BYTES_PER_WORD);
 
      if (size <= MAX_SMALL_BYTES) {
 	  /* Try to allocate from the appropriate pool */
@@ -735,7 +735,7 @@ void *gc_alloc(unsigned size, value *sp) {
 
      alloc_since_gc += alloc_size;
      DEBUG_PRINT('c', ("[Alloc %d %p]", size, p));
-     return p;
+     return p+1;
 }
 
 

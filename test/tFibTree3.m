@@ -96,11 +96,7 @@ END count;
 
 VAR i: INTEGER; p: tree;
 
-PROCEDURE GcDebug(flags: ARRAY OF CHAR) IS "gc_debug";
-
 BEGIN 
-  GcDebug("s");
-
   FOR i := 0 TO 10 DO
     p := Build(i);
     SYSTEM.GC;
@@ -132,10 +128,10 @@ DEC
 STLW -12
 CONST 0
 STLW -4
-LABEL L3
+LABEL L2
 LDLW -4
 LDLW -12
-JGT L4
+JGT L3
 CONST 0
 LDLW 20
 LDLW -4
@@ -151,8 +147,8 @@ BOUND 50
 INDEXD
 STNW 4
 INCL -4
-JUMP L3
-LABEL L4
+JUMP L2
+LABEL L3
 !   SYSTEM.GC;
 GLOBAL SYSTEM.GC
 CALL 0
@@ -174,10 +170,10 @@ DEC
 STLW -16
 CONST 0
 STLW -4
-LABEL L5
+LABEL L4
 LDLW -4
 LDLW -16
-JGT L6
+JGT L5
 LDLW 12
 LDLW -4
 LDLW 16
@@ -194,8 +190,8 @@ BOUND 55
 INDEXD
 STOREW
 INCL -4
-JUMP L5
-LABEL L6
+JUMP L4
+LABEL L5
 !   RETURN p
 LDLW -8
 RETURN
@@ -228,11 +224,11 @@ PROC tFibTree3.Build 0 3 0
 !   IF n <= 1 THEN
 LDLW 12
 CONST 1
-JGT L9
+JGT L8
 !     RETURN NIL
 CONST 0
 RETURN
-LABEL L9
+LABEL L8
 !     RETURN Cons(Build(n-2), Build(n-1))
 LDLW 12
 DEC
@@ -253,14 +249,14 @@ PROC tFibTree3.Print 0 4 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ L13
+JNEQZ L12
 !     Out.Char('.')
 CONST 46
 ALIGNC
 GLOBAL Out.Char
 CALL 1
 RETURN
-LABEL L13
+LABEL L12
 !     Out.Char('(');
 CONST 40
 ALIGNC
@@ -302,11 +298,11 @@ PROC tFibTree3.count 0 5 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12
-JNEQZ L16
+JNEQZ L15
 !     RETURN 1
 CONST 1
 RETURN
-LABEL L16
+LABEL L15
 !     RETURN count(t[0].this) + count(t[1].this)
 LDLW 12
 NCHECK 93
@@ -334,21 +330,14 @@ PLUS
 RETURN
 END
 
-PRIMDEF tFibTree3.GcDebug gc_debug VX
-
 PROC tFibTree3.%main 0 3 0
-!   GcDebug("s");
-CONST 2
-GLOBAL tFibTree3.%2
-GLOBAL tFibTree3.GcDebug
-CALL 2
 !   FOR i := 0 TO 10 DO
 CONST 0
 STGW tFibTree3.i
-LABEL L17
+LABEL L16
 LDGW tFibTree3.i
 CONST 10
-JGT L18
+JGT L17
 !     p := Build(i);
 LDGW tFibTree3.i
 GLOBAL tFibTree3.Build
@@ -383,8 +372,8 @@ CALL 0
 LDGW tFibTree3.i
 INC
 STGW tFibTree3.i
-JUMP L17
-LABEL L18
+JUMP L16
+LABEL L17
 RETURN
 END
 
@@ -401,10 +390,6 @@ WORD GC_END
 ! String "Count = "
 DEFINE tFibTree3.%1
 STRING 436F756E74203D2000
-
-! String "s"
-DEFINE tFibTree3.%2
-STRING 7300
 
 ! Descriptor for thing
 DEFINE tFibTree3.thing
