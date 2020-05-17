@@ -171,21 +171,21 @@ decl :
   | TYPE tdecls			{ [TypeDecl $tdecls] } ;
 
 cdecls :
-    cdecl %prec INFINITY        { [$cdecl] }
+    /* empty */ %prec INFINITY	{ [] }
   | cdecl cdecls		{ $cdecl :: $cdecls } ;
 
 cdecl :
     doc defid EQUAL expr semi	{ ConstDecl ($defid, $expr, $doc) } ;
 
 tdecls :
-    tdecl %prec INFINITY        { [$tdecl] }
+    /* empty */ %prec INFINITY	{ [] }
   | tdecl tdecls		{ $tdecl :: $tdecls } ;
 
 tdecl :	
     doc defid EQUAL texpr semi { ($defid, $texpr, $doc) } ;
 
 vdecls :
-    vdecl %prec INFINITY        { [$vdecl] }
+    /* empty */ %prec INFINITY	{ [] }
   | vdecl vdecls		{ $vdecl :: $vdecls } ;
 
 vdecl :
