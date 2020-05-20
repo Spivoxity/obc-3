@@ -180,7 +180,7 @@ static char *_regname[] = {
 static char **regname = &_regname[1];
 
 static char *fmt_addr(int rb, int imm, int rx, int s) {
-     static char buf[32], sbuf[32];
+     static char buf[32], sbuf[16];
 
      if (rb == NOREG && rx == NOREG)
           sprintf(buf, "%s", fmt_val(imm));
