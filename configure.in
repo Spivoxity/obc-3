@@ -33,7 +33,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 3.2alpha, mike@cs.ox.ac.uk)
+AC_INIT(obc, 3.2alpha, mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues)
 AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
@@ -60,8 +60,6 @@ SIG=[`echo $PACKAGE_VERSION | sed -e 's/alpha/.90/' \
 	-e 's/0\([0-9][0-9]\)/\1/' -e 's/\.//g' -e 's/^/0x00/'`]
 AC_DEFINE_UNQUOTED(SIG, $SIG, [Version signature for symbol tables])
 AC_SUBST(SIG)
-AC_SUBST(PACKAGE_TRACKER, https://bitbucket.org/Spivey/obc-3/issues)
-AC_DEFINE_UNQUOTED(PACKAGE_TRACKER, "$PACKAGE_TRACKER", [Bug tracker])
 DOS_VERSION=`echo $PACKAGE_VERSION | sed 's/\./-/g'`
 
 ABS_SRCDIR=`cd $srcdir; pwd`

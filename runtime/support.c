@@ -50,8 +50,7 @@ void panic(const char *msg, ...) {
      va_end(va);
      fprintf(stderr, "\n");
      if (bug)
-	  fprintf(stderr, "Please report bugs to %s or %s\n",
-                  PACKAGE_TRACKER, PACKAGE_BUGREPORT);
+	  fprintf(stderr, "Please report bugs to %s\n", PACKAGE_BUGREPORT);
      fflush(stderr);
      error_exit(3);
 }
