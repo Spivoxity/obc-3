@@ -390,12 +390,14 @@ static void op_rri(OPDECL, int rd, int rn, int imm) {
      vm_done();
 }
 
+#ifdef USE_MOVW
 // rd := op imm16
 static void op_ri16(OPDECL, int rd, int imm) {
      vm_debug2("%s %s, #%#x", mnem, regname[rd], imm);
      instr(op, reg(rd), (imm>>12)&0xf, imm12(imm));
      vm_done();
 }
+#endif
 
 // rd := rm shift rs
 static void shift_r(OPDECL, int rd, int rm, int rs) {

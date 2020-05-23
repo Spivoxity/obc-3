@@ -24,9 +24,7 @@ BEGIN
   b := 'a' = 3;
   b := TRUE & 3;
   x := 9999999999;
-  x := Max(f^);
-  
-  foo()^ := NIL
+  x := Max(f^)
 END eAssign.
 
 (*<<
@@ -121,11 +119,7 @@ type INTEGER
 
 "eAssign.m", line 27: open array parameter 'a' should have type ARRAY OF
 INTEGER
->   x := Max(f^);
+>   x := Max(f^)
 >            ^^
 > This expression has type ARRAY OF CHAR
-
-"eAssign.m", line 29: a function call is not allowed here
->   foo()^ := NIL
->   ^^^^^
 >>*)
