@@ -326,12 +326,20 @@ let ruleset2 replace =
         replace 2 []
 
     (* Eliminate simple pops and swaps *)
+    | LDNW n :: SWAP :: POP 1 :: _ ->
+        replace 3 [SWAP; POP 1; LDNW n]
+    | DUP 0 :: SWAP :: _ ->
+        replace 2 [DUP 0]
+    | DUP n :: POP 1 :: _ ->
+        replace 2 []
     | i1 :: POP 1 :: _ when simple i1 -> 
 	replace 2 []
     | i1 :: i2 :: SWAP :: _  when simple i1 && simple i2 ->
 	replace 3 [i2; i1]
     | i1 :: SWAP :: POP 1 :: _ when simple i1 ->
         replace 3 [POP 1; i1]
+    | i1 :: i2 :: SWAP :: POP 1 :: _ when simple i2 ->
+        replace 4 [i1; POP 1; i2]
     | CHECK (NullPtr, a) :: CONST n :: SWAP :: _ ->
         replace 3 [CONST n; SWAP; CHECK (NullPtr, a)]
 

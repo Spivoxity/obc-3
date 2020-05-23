@@ -283,28 +283,27 @@ let rec gen_addr v =
     | _ -> failwith "gen_addr"
 
 (* gen_bound -- generate code to push k'th bound of array *)
-and gen_bound k e0 =
+and gen_bound d k e0 =
   let rec bound i t =
     match t.t_guts with
 	ArrayType (n, t1) ->
 	  if i = 0 then n else bound (i-1) t1
       | _ -> failwith "gen_bound 2" in
   
-  (* Expect the address of e0 on the stack *)
+  (* Expect the address of e0 on the stack at offset d *)
   let f = flexity e0.e_type in
   if k >= f then
-    SEQ [POP 1; const (bound (k-f) (flex_base e0.e_type))]
+    SEQ [const (bound (k-f) (flex_base e0.e_type))]
   else begin
     match e0.e_guts with
 	Name x ->
 	  (* An open array parameter *)
 	  let d = get_def x in
-	  SEQ [POP 1; 
-	    local d.d_level (d.d_offset + (k+1) * word_size); LOAD IntT]
+	  SEQ [local d.d_level (d.d_offset + (k+1) * word_size); LOAD IntT]
       | Deref p ->
 	  SEQ [
 	    (* Get descriptor address *)
-	    offset (-word_size); load_addr;
+	    DUP d; offset (-word_size); load_addr;
 	    (* Fetch k'th dimension *)
 	    offset (bound_offset + k * word_size); LOAD IntT]
       | _ -> failwith "gen_bound"
@@ -317,20 +316,20 @@ and gen_subscript e0 us =
 	  if not (is_flex t) then
 	    SEQ [const t.t_rep.m_size; BINOP (IntT, Times)]
 	  else begin
-	    SEQ [DUP 1; gen_bound i e0; BINOP (IntT, Times);
+	    SEQ [gen_bound 1 i e0; BINOP (IntT, Times);
 	      loop (i+1) [] (base_type t)]
 	  end
       | x::xs ->
-	  SEQ [DUP 1; gen_bound i e0; BINOP (IntT, Times);
+	  SEQ [gen_bound 1 i e0; BINOP (IntT, Times);
 	    gen_expr x;
-	    check (SEQ [DUP 2; gen_bound i e0; BOUND (expr_line x)]);
+	    check (SEQ [gen_bound 2 i e0; BOUND (expr_line x)]);
 	    BINOP (IntT, Plus);
 	    loop (i+1) xs (base_type t)] in
   match us with
       [] -> const 0
     | x::xs ->
 	SEQ [gen_expr x; 
-	  check (SEQ [DUP 1; gen_bound 0 e0; BOUND (expr_line x)]);
+	  check (SEQ [gen_bound 1 0 e0; BOUND (expr_line x)]);
 	  loop 1 xs (base_type e0.e_type)]
 
 (* gen_expr -- generate code to push the value of an expression *)
@@ -568,7 +567,7 @@ and gen_flexarg t a =
       SEQ [gen_addr a;
 	const (t1.t_rep.m_size);
 	SEQ (List.map 
-	  (fun i -> SEQ [DUP 1; gen_bound i a; BINOP (IntT, Times)])
+	  (fun i -> SEQ [gen_bound 1 i a; BINOP (IntT, Times)])
 	  (Util.range 0 (flexity a.e_type - 1)));
         SWAP]
     end
@@ -577,7 +576,7 @@ and gen_flexarg t a =
     let us = subscripts a in
     SEQ [gen_addr e0;
       SEQ (List.map
-	(fun i -> SEQ [DUP 0; gen_bound (List.length us + i) e0; SWAP])
+	(fun i -> SEQ [gen_bound 0 (List.length us + i) e0; SWAP])
 	(List.rev (Util.range 0 (flexity t - 1))));
       gen_subscript e0 us; OFFSET]
   end
@@ -616,10 +615,10 @@ and gen_builtin q args =
 	let us = subscripts v in
 	let rec loop i ys =
 	  match ys with
-	      [] -> gen_bound (i+n) e0
+	      [] -> SEQ [gen_bound 0 (i+n) e0; SWAP; POP 1]
 	    | (x::xs) ->
 		SEQ [gen_expr x; 
-		  check (SEQ [DUP 1; gen_bound i e0; BOUND (expr_line x)]); 
+		  check (SEQ [gen_bound 1 i e0; BOUND (expr_line x)]); 
 		  POP 1; loop (i+1) xs] in
 	SEQ [gen_addr e0; loop 0 us]
 
