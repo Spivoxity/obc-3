@@ -377,7 +377,7 @@ and check_desig e env =
   (* A function call is not allowed as a designator, but a cast is ok *)
   let t = check_expr e env in
   match e.e_guts with
-      (FuncCall _ | MethodCall _) ->
+      (FuncCall _ | MethodCall _) when not !Config.extensions ->
         sem_error "a function call is not allowed here" [] e.e_loc;
         errtype
     | _ -> t
