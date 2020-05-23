@@ -152,11 +152,26 @@ static void *grab_chunk(unsigned size) {
 #endif
 
 #ifdef WINDOWS
-#include <windows.h>
-
 #ifdef M64X32
+
+/* Win64 */
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#else
+__attribute__((dllimport)) void *
+     GetModuleHandleA(const char *lpModuleName);
+__attribute__((dllimport)) void *
+     GetProcAddress(void *hModule, const char *lpProcName);
+
+#define INVALID_HANDLE_VALUE ((void *) (-1))
+#define MEM_COMMIT 0x1000
+#define MEM_RESERVE 0x2000
+#define PAGE_READWRITE 0x04
+#endif
+
 /* With thanks to the LuaJIT people */
-typedef long (*ntavm_ptr)(HANDLE, void **, ULONG, size_t *, ULONG, ULONG);
+typedef long (*ntavm_ptr)(void *, void **, unsigned long, size_t *,
+                          unsigned long, unsigned long);
 
 #define NTAVM_ZEROBITS 1
 
@@ -164,7 +179,7 @@ static void *grab_chunk(unsigned size0) {
      static ntavm_ptr ntavm = NULL;
 
      if (ntavm == NULL) {
-          HANDLE module = GetModuleHandleA("ntdll.dll");
+          void *module = GetModuleHandleA("ntdll.dll");
           ntavm = (ntavm_ptr)
                GetProcAddress(module, "NtAllocateVirtualMemory");
      }
@@ -175,11 +190,27 @@ static void *grab_chunk(unsigned size0) {
            MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
      return p;
 }
-#else 
+
+#else
+
+/* Win32 */
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#else
+__attribute__((dllimport)) void * __attribute__((__stdcall__))
+     VirtualAlloc (void *lpAddress, unsigned long dwSize,
+                   unsigned long flAllocationType, unsigned long flProtect);
+
+#define MEM_COMMIT 0x1000
+#define MEM_RESERVE 0x2000
+#define PAGE_READWRITE 0x04
+#endif
+
 static void *grab_chunk(unsigned size) {
      return VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE,
 			 PAGE_READWRITE);
 }
+
 #endif
 #endif
 
@@ -700,7 +731,7 @@ void *gc_alloc(unsigned size, value *sp) {
 
      if (debug['z']) gc_collect(sp);
 
-     size = round_up(size+4, BYTES_PER_WORD);
+     size = round_up(size, BYTES_PER_WORD);
 
      if (size <= MAX_SMALL_BYTES) {
 	  /* Try to allocate from the appropriate pool */
@@ -735,7 +766,7 @@ void *gc_alloc(unsigned size, value *sp) {
 
      alloc_since_gc += alloc_size;
      DEBUG_PRINT('c', ("[Alloc %d %p]", size, p));
-     return p+1;
+     return p;
 }
 
 

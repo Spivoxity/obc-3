@@ -142,11 +142,11 @@ char *lib_version =
 
 value *NEW(value *bp) {
      value *desc = valptr(bp[HEAD+0]);
-     int size = bp[HEAD+1].i;
+     int size = bp[HEAD+1].i+4;
      value *sp = bp;
      value *p = gc_alloc(size, bp);
-     p[-1].a = address(desc);
-     (*--sp).a = address(p);
+     p[0].a = address(desc);
+     (*--sp).a = address(p+1);
      return sp;
 }
 
@@ -189,7 +189,7 @@ value *NEWFLEX(value *bp) {
      value *sp = bp;
 
      int size, arsize, i, n;
-     value *q, *desc, *map;
+     value *p, *desc, *map;
 
      /* Compute no. of elements */
      n = 1;
@@ -199,14 +199,14 @@ value *NEWFLEX(value *bp) {
      if (n == 0) elmap = 0;
 
      /* Allocate the space */
-     size = arsize + 4*k + 16;
+     size = arsize + 4*k + 20;
      if (elmap != 0) size += 28;
 
-     q = (value * ) gc_alloc(size, bp);
+     p = (value * ) gc_alloc(size, bp);
 
-     desc = q + arsize/4;
+     desc = p + arsize/4 + 1;
      map = desc + k + 1;
-     q[-1].a = address(desc);
+     p[0].a = address(desc);
 
      /* Fill in the descriptor */
      desc[DESC_MAP].a = address(map);
@@ -215,7 +215,7 @@ value *NEWFLEX(value *bp) {
 
      /* Fill in the map */
      map[0].i = -4;
-     map[1].i = 4 * (desc-q);
+     map[1].i = 4 * (desc-(p+1));
      if (elmap == 0) 
           map[2].i = GC_END;
      else {
@@ -229,7 +229,7 @@ value *NEWFLEX(value *bp) {
           map[9].i = GC_END;
      }
 
-     (*--sp).a = address(q); 
+     (*--sp).a = address(p+1); 
      return sp;
 }
 
