@@ -62,28 +62,26 @@ inst INDEXD 0 B.x \
 # Load/store from address
 # LOADs :: a --> mem_s[a]
 # STOREs :: a, b --> []; mem_s[b] := a
-inst LOADW 0 M.i \
-    { load($1, int) }               { deref(V_MEMW, INT, 1); }
+equiv LOADW 0	{ LDNW 0 }
+equiv STOREW 0  { STNW 0 }
 inst LOADS 0 M.i \
-    { load($1, short) }             { deref(V_MEMS, INT, 1); }
+    { load($1, short) }             { deref(V_MEMS, INT, 1, 0); }
 inst LOADC 0 M.i \
-    { load($1, uchar) }             { deref(V_MEMC, INT, 1); }
+    { load($1, uchar) }             { deref(V_MEMC, INT, 1, 0); }
 inst LOADF 0 M.f \
-    { load($1, float) }             { deref(V_MEMW, FLO, 1); }
-inst STOREW 0 S2 \
-    { store($1.i, $2, int); }       { store(V_MEMW, 1); }
+    { load($1, float) }             { deref(V_MEMW, FLO, 1, 0); }
 inst STORES 0 S2 \
-    { store($1.i, $2, short); }     { store(V_MEMS, 1); }
+    { store($1.i, $2, short); }     { store(V_MEMS, 1, 0); }
 inst STOREC 0 S2 \
-    { store($1.i, $2, uchar); }     { store(V_MEMC, 1); }
+    { store($1.i, $2, uchar); }     { store(V_MEMC, 1, 0); }
 inst STOREF 0 S2 \
-    { store($1.f, $2, float); }     { store(V_MEMW, 1); }
+    { store($1.f, $2, float); }     { store(V_MEMW, 1, 0); }
 
 # Load/store local
 # LDLs n :: --> mem_s[bp+n]
 # STLs n :: a --> []; mem_s[bp+n] := a
 inst LDLW {[-24,-4,4] [12,32,4] 1 2} V.i \
-    { ldl($a, int)}                 {= LOCAL $a, LOADW }
+    { ldl($a, int)}                 {= LOCAL $a, LDNW 0 }
 inst LDLS {1 2} V.i \
     { ldl($a, short) }              {= LOCAL $a, LOADS }
 inst LDLC {1 2} V.i \
@@ -91,7 +89,7 @@ inst LDLC {1 2} V.i \
 inst LDLF {1 2} V.f \
     { ldl($a, float) }              {= LOCAL $a, LOADF }
 inst STLW {[-24,-4,4] [12,32,4] 1 2} S1 \
-    { stl($a, $1.i, int); }         {= LOCAL $a, STOREW }
+    { stl($a, $1.i, int); }         {= LOCAL $a, STNW 0 }
 inst STLS {1 2} S1 \
     { stl($a, $1.i, short); }       {= LOCAL $a, STORES }
 inst STLC {1 2} S1 \
@@ -103,7 +101,7 @@ inst STLF {1 2} S1 \
 # LDGs n :: --> mem_s[const(n)]
 # STGs n :: a --> []; mem_s[const(n)] := a
 inst LDGW {K L} V.i \
-    { ldg($a, int) }                {= LDKW $a, LOADW }
+    { ldg($a, int) }                {= LDKW $a, LDNW 0 }
 inst LDGS {K L} V.i \
     { ldg($a, short) }              {= LDKW $a, LOADS }
 inst LDGC {K L} V.i \
@@ -111,7 +109,7 @@ inst LDGC {K L} V.i \
 inst LDGF {K L} V.f \
     { ldg($a, float) }              {= LDKW $a, LOADF }
 inst STGW {K L} S1 \
-    { stg($a, $1.i, int); }         {= LDKW $a, STOREW }
+    { stg($a, $1.i, int); }         {= LDKW $a, STNW 0 }
 inst STGS {K L} S1 \
     { stg($a, $1.i, short); }       {= LDKW $a, STORES }
 inst STGC {K L} S1 \
@@ -122,16 +120,16 @@ inst STGF {K L} S1 \
 # Indexed load/store
 # LDNs n :: a -> mem_s[a+n]
 # STNs n :: a, b -> []; mem_s[b+n] := a
-inst LDNW {[-16,-4,4] [4,32,4] 1 2} M.i \
-    { ldn($a, $1) }                 {= PUSH $a, OFFSET, LOADW }
-inst STNW {[-16,-4,4] [4,32,4] 1 2} S2 \
-    { stn($a, $1.i, $2); }          {= PUSH $a, OFFSET, STOREW }
+inst LDNW {[-16,32,4] 1 2} M.i \
+    { ldn($a, $1) }                 { deref(V_MEMW, INT, 1, arg1); }
+inst STNW {[-16,32,4] 1 2} S2 \
+    { stn($a, $1.i, $2); }          { store(V_MEMW, 1, arg1); }    
 
 # Double indexed load/store
 # LDIs :: a, b --> mem_s[a+s*b]
 # STIs :: a, b, c --> []; mem_s[b+s*c] := a
 inst LDIW 0 B.i \
-    { ldi($1, $2, int) }            {= INDEXW, LOADW }
+    { ldi($1, $2, int) }            {= INDEXW, LDNW 0 }
 inst LDIS 0 B.i \
     { ldi($1, $2, short) }          {= INDEXS, LOADS }
 inst LDIC 0 B.i \
@@ -139,7 +137,7 @@ inst LDIC 0 B.i \
 inst LDIF 0 B.f \
     { ldi($1, $2, float) }          {= INDEXW, LOADF }
 inst STIW 0 S3 \
-    { sti($1.i, $2, $3, int); }     {= INDEXW, STOREW }
+    { sti($1.i, $2, $3, int); }     {= INDEXW, STNW 0 }
 inst STIS 0 S3 \
     { sti($1.i, $2, $3, short); }   {= INDEXS, STORES }
 inst STIC 0 S3 \
@@ -154,16 +152,16 @@ inst STIF 0 S3 \
 
 # Loads and stores for doubles
 inst LOADD 0 M.dp \
-    { getdbl(valptr($1)) }          { deref(V_MEMQ, FLO, 2); }
+    { getdbl(valptr($1)) }          { deref(V_MEMQ, FLO, 2, 0); }
 inst STORED 0 S2dp \
-    { putdbl(valptr($2), $1.d); }   { store(V_MEMQ, 2); }
+    { putdbl(valptr($2), $1.d); }   { store(V_MEMQ, 2, 0); }
 inst LDKD {1 2} V.d \
     { getdbl(&const($a)) }          { konst(V_KONQ, FLO, arg1, 2); }
 
 inst LOADQ 0 M.qp \
     { getlong(valptr($1)) }         { loadq(); }
 inst STOREQ 0 S2qp \
-    { putlong(valptr($2), $1.q); }  { store(V_MEMQ, 2); }
+    { putlong(valptr($2), $1.q); }  { store(V_MEMQ, 2, 0); }
 inst LDKQ {1 2} V.q \
     { getlong(&const($a)) }         { konst(V_KONQ, INT, arg1, 2); }
     

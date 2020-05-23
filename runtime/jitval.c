@@ -618,10 +618,15 @@ ctvalue fix_const(int i, mybool rflag) {
 }
 
 /* deref -- perform load operation on top of stack */
-void deref(valkind vkind, int ty, int size) {
-     ctvalue v = peek(1);
+void deref(valkind vkind, int ty, int size, int off) {
+     ctvalue v;
      reg r1;
 
+     if (off != 0) {
+          push_con(off); add_offset(0);
+     }
+
+     v = peek(1);
      switch (v->v_op) {
      case V_ADDR:
 #ifndef M64X32
@@ -667,12 +672,12 @@ static void unalias(int a, ctvalue v) {
 }
 
 /* store -- perform store operation on top of stack */
-void store(valkind vkind, int s) {
+void store(valkind vkind, int s, int off) {
      reg r1;
-     ctvalue v = &vstack[sp-1];
+     ctvalue v = peek(1);
      int ty = v->v_type;
 
-     deref(vkind, vstack[sp-2].v_type, s);
+     deref(vkind, vstack[sp-2].v_type, s, off);
      if (same(v, &vstack[sp-2])) {
 	  /* Store into same location as load: mostly for
 	     SLIDEW / RESULTW */

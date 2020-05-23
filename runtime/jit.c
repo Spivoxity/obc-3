@@ -92,11 +92,6 @@ static uchar *pcbase, *pclimit;	/* Code addresses */
 
 static vmlabel stack_oflo, retlab;
 
-#define push_con(k) push(V_CON, INT, k, NULL, 1)
-#define push_reg(r) push(V_REG, INT, 0, r, 1)
-#define konst(op, ty, i, s) push(op, ty, 4*(CP_CONST+i), NULL, s)
-#define local(i)  push(V_ADDR, INT, i, rBP, 1)
-
 /* prolog -- generate code for procedure prologue */
 static word prolog(const char *name) {
      int frame = jit_cxt[CP_FRAME].i;
@@ -446,7 +441,7 @@ static void loadq(void) {
         allocating at least one register.  So we're cautious about
         letting it remain unevaluated on the stack if it uses an 
         index register. */
-     deref(V_MEMQ, INT, 2); 
+     deref(V_MEMQ, INT, 2, 0); 
 #ifndef M64X32
      ctvalue v = peek(1);
      if (v->v_reg != NULL && member(v->v_reg, INT)
@@ -463,9 +458,7 @@ static void dupe(int n) {
 
 static void statlink(void) {
      push_sp();
-     push_con(4*(1-HEAD+SL));
-     add_offset(0);
-     store(V_MEMW, 1);
+     store(V_MEMW, 1, 4*(1-HEAD+SL));
 }
 
 /* instr -- translate one bytecode instruction */

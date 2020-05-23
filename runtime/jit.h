@@ -146,6 +146,11 @@ void ldst_item(int op, reg rs, int i);
 #define push(k, t, v, r, s) pushx(k, t, v, r, NULL, 0, s)
 #define push2(k, t, r, r2, x, s) pushx(k, t, 0, r, r2, x, s)
 
+#define push_con(k) push(V_CON, INT, k, NULL, 1)
+#define push_reg(r) push(V_REG, INT, 0, r, 1)
+#define konst(op, ty, i, s) push(op, ty, 4*(CP_CONST+i), NULL, s)
+#define local(i)  push(V_ADDR, INT, i, rBP, 1)
+
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);
 ctvalue move_from_frame(int i);
@@ -156,8 +161,8 @@ void flush_stack(int a, int b);
 #define flush(a) flush_stack(a, STACK)
 void spill(reg r);
 
-void deref(valkind vkind, int ty, int size);
-void store(valkind vkind, int s);
+void deref(valkind vkind, int ty, int size, int off);
+void store(valkind vkind, int s, int off);
 void add_offset(int scale);
 
 void save_stack(codepoint lab);
