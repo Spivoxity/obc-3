@@ -146,7 +146,7 @@ CALL 0
 RETURN
 END
 
-PROC tLen2.S 0 3 0x00100001
+PROC tLen2.S 0 4 0x00100001
 ! PROCEDURE S(p: f);
 !   Out.Int(LEN(p^), 0); Out.Ln
 CONST 0

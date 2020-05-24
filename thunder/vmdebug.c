@@ -123,4 +123,15 @@ char *fmt_val(int v) {
 
      return buf;
 }
+
+char *fmt_val64(uint64 v) {
+     static char buf[32];
+
+     if (vm_aflag)
+          sprintf(buf, "<addr64>");
+     else
+          sprintf(buf, "%#llx", v);
+
+     return buf;
+}
 #endif

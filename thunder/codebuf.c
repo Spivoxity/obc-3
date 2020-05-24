@@ -69,6 +69,13 @@ void word(int x) {
      pc += 4;
 }
 
+/* qword -- contribute a 64-bit quantity */
+void qword(uint64 x) {
+     // Assume unaligned store is OK
+     * (uint64 *) pc = x;
+     pc += 8;
+}
+
 /* vm_literal_align -- allocate aligned space in code buffer */
 void *vm_literal_align(int n, int a) {
      vm_space(n+a);

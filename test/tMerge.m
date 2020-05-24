@@ -270,7 +270,7 @@ LDLW -4
 RETURN
 END
 
-PROC tMerge.arraystreamrec.Done 0 3 0x00100001
+PROC tMerge.arraystreamrec.Done 0 4 0x00100001
 ! PROCEDURE (s: arraystream) Done(): BOOLEAN;
 !   RETURN s.i >= LEN(s.a^)
 LDLW 12

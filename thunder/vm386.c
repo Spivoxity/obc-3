@@ -374,6 +374,7 @@ static char *fmt_addr(int rb, int imm, int rx, int s) {
 #define opMOVW_m 	MNEM("movw", pfx(0x66, 0x89))
 #define opMOVB_m 	MNEM("movb", 0x88)
 #define opMOVL_i 	MNEM("mov", 0xb8) // Load immediate into register
+#define opMOVQ_i        MNEM("movq", pfx(REX_W, 0xb8))
 #define opLEA		MNEM("lea", 0x8d) // Load effective address
 #define opLEA64		MNEM("lea64", pfx(REX_W, 0x8d))
 
@@ -649,6 +650,13 @@ static void instr_regi32(OPDECL, int r, int imm) {
      vm_done();
 }
 
+/* instr_regi64 -- opcode packed with register plus a 64-bit immediate */
+static void instr_regi64(OPDECL, int r, uint64 imm) {
+     vm_debug2("%s %s, #%s", mnem, regname[r], fmt_val64(imm));
+     opcode(op), packreg(r), qword(imm);
+     vm_done();
+}
+
 /* instr_rr -- opcode plus two registers */
 static void instr_rr(OPDECL, int r1, int r2) {
      vm_debug2("%s %s, %s", mnem, regname[r1], regname[r2]);
@@ -818,6 +826,8 @@ static void move_i(int rd, int imm) {
      else
           instr_regi32(opMOVL_i, rd, imm);
 }
+
+#define move_i64(rd, imm)  instr_regi64(opMOVQ_i, rd, imm)
 
 /* Swap registers */
 #define swap(r1, r2) instr_rr(opXCHG, r1, r2)
@@ -1282,13 +1292,13 @@ static void post_call(void) {
 #define arg_r(r)  push_r(r)
 #define arg_i(a)  push_i(a)
 
-void call_r(int ra) {
+static void call_r(int ra) {
      instr2_r(opCALL, ra);
      post_call();
 }
 
-void call_i(int a) {
-     instr_tgt(opCALL_i, (code_addr) (address) a);
+static void call_a(void *a) {
+     instr_tgt(opCALL_i, (code_addr) a);
      post_call();
 }     
 
@@ -1438,14 +1448,13 @@ static void move_args() {
 static void call_r(int ra) {
      funreg = ra;
      move_args();
-     // instr2_m(opCALL, funreg, 2);
      instr2_r(opCALL32, funreg);
 }
 
-static void call_i(int a) {
+static void call_a(void *a) {
      move_args();
-     // instr2_m(opCALL, NOREG, a+2);
-     instr_tgt(opCALL_i, (code_addr) (address) a);
+     move_i64(rAX, (uint64) a);
+     instr2_r(opCALL32, rAX);
 }     
 
 int vm_prelude(int n, int locs) {
@@ -1523,6 +1532,20 @@ void vm_gen1r(operation op, vmreg rega) {
      }
 }
 
+void vm_gen1a(operation op, void *a) {
+     vm_debug1(op, 1, fmt_val64((uint64) a));
+     vm_space(0);
+
+     switch (op) {
+     case CALL:
+          call_a(a);
+          break;
+
+     default:
+	  badop();
+     }
+}
+
 void vm_gen1i(operation op, int a) {
      vm_debug1(op, 1, fmt_val(a));
      vm_space(0);
@@ -1534,10 +1557,6 @@ void vm_gen1i(operation op, int a) {
 
      case ARG:
           arg_i(a);
-          break;
-
-     case CALL:
-          call_i(a);
           break;
 
      default:
@@ -1684,6 +1703,22 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
      default:
           vm_load_store(op, ra, NOREG, b, NOREG, 0);
+     }
+}
+
+void vm_gen2ra(operation op, vmreg rega, void *b) {
+     int ra = rega->vr_reg;
+
+     vm_debug1(op, 2, rega->vr_name, fmt_val64((uint64) b));
+     vm_space(0);
+
+     switch (op) {
+     case MOV: 
+          move_i64(ra, (uint64) b); break;
+          break;
+
+     default:
+          badop();
      }
 }
 
@@ -2195,15 +2230,12 @@ void vm_patch(code_addr loc, code_addr lab) {
 
 #ifdef M64X32
 int vm_tramp(funptr f) {
-     uint64 a = (uint64) f;
      code_addr p = vm_literal(12);
      code_addr q = p;
 
      // mov ax, #addr64
      *q++ = 0x48; *q++ = 0xb8;
-     for (int i = 0; i < 8; i++) {
-          *q++ = a & 0xff; a >>= 8;
-     }
+     * (funptr *) q = f; q += 8;
      // jmp ax
      *q++ = 0xff; *q++ = 0xe0;
 

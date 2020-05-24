@@ -776,34 +776,10 @@ static void gen_args(int n) {
      pop(n);
 }
 
-#ifndef M64X32
-#define func_wrapper(f) ((word) (f))
-#else
-// Only a few wrappers are generally needed on amd64, but we
-// allow extra room to allow experiments with soft float
-
-#define NWRAP 128
-
-static word wrapper[NWRAP];
-static void *wrfunc[NWRAP];
-int nwrap = 0;
-
-word func_wrapper(void *f) {
-     for (int i = 0; i < nwrap; i++)
-          if (wrfunc[i] == f) return wrapper[i];
-
-     assert(nwrap < NWRAP);
-     int j = nwrap++;
-     word w = vm_wrap(f);
-     wrapper[j] = w; wrfunc[j] = f;
-     return w;
-}
-#endif
-
 /* gcall -- call with arguments on stack */
 void gcall(void *f, int n) {
      gen_args(n);
-     vm_gen(CALL, func_wrapper(f));
+     vm_gen1a(CALL, f);
 }
 
 /* gcallr -- indirect function call */

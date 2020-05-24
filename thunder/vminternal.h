@@ -31,6 +31,7 @@
 #define pc vm_pc
 #define byte vm_byte
 #define word vm_word
+#define qword vm_qword
 #define modify vm_modify
 #define fmt_val vm_fmt_val
 #define fmt_lab vm_fmt_lab
@@ -63,6 +64,7 @@ void vm_space(int space);
 void byte(int x);
 void modify(int bit);
 void word(int x);
+void qword(uint64 x);
 int vm_prelude(int n, int locs);
 void vm_postlude(void);
 void vm_chain(code_addr p);
@@ -79,6 +81,7 @@ void vm_debug1(int op, int nrands, ...);
 void vm_debug2(const char *fmt, ...);
 void vm_done(void);
 char *fmt_val(int v);
+char *fmt_val64(uint64 v);
 char *fmt_lab(vmlabel lab);
 #else
 #define vm_debug1(op, nrands, ...)

@@ -225,9 +225,11 @@ void vm_label(vmlabel lab);
 void vm_gen0(operation op);
 void vm_gen1r(operation op, vmreg a);
 void vm_gen1i(operation op, int a);
+void vm_gen1a(operation op, void *a);
 void vm_gen1j(operation op, vmlabel lab);
 void vm_gen2rr(operation op, vmreg a, vmreg b);
 void vm_gen2ri(operation op, vmreg a, int b);
+void vm_gen2ra(operation op, vmreg a, void *b);
 void vm_gen2rj(operation op, vmreg a, vmlabel b);
 void vm_gen3rrr(operation op, vmreg a, vmreg b, vmreg c);
 void vm_gen3rri(operation op, vmreg a, vmreg b, int c);
@@ -279,11 +281,11 @@ extern int vm_aflag;
 
 #define vm_gen1(op, a)                                                  \
      _Generic(a, default: vm_gen1r, intcases(vm_gen1i),                 \
-              vmlabel: vm_gen1j)(op, a)
+              vmlabel: vm_gen1j, void *: vm_gen1a)(op, a)
 
 #define vm_gen2(op, a, b)                                               \
      _Generic(b, default: vm_gen2rr, intcases(vm_gen2ri),               \
-              vmlabel: vm_gen2rj)(op, a, b)
+              vmlabel: vm_gen2rj, void *: vm_gen1a)(op, a, b)
 
 #define vm_gen3(op, a, b, c)                                            \
      _Generic(c, default: vm_gen3rrr, intcases(vm_gen3rri),             \
