@@ -779,7 +779,7 @@ static void gen_args(int n) {
 /* gcall -- call with arguments on stack */
 void gcall(void *f, int n) {
      gen_args(n);
-     vm_gen1a(CALL, f);
+     vm_gen(CALL, f);
 }
 
 /* gcallr -- indirect function call */

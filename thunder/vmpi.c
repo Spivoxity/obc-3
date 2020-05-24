@@ -861,9 +861,6 @@ void vm_gen1i(operation op, int a) {
      vm_space(0);
 
      switch (op) {
-     case CALL:
-	  proc_call(const_reg(a)); break;
-
      case PREP:
 	  assert(a <= 3);
 	  argp = a;
@@ -873,6 +870,19 @@ void vm_gen1i(operation op, int a) {
           argp--;
           move_immed(R(argp), a);
           break;
+
+     default:
+	  badop();
+     }
+}
+
+void vm_gen1a(operation op, void *a) {
+     vm_debug1(op, 1, fmt_val(a));
+     vm_space(0);
+
+     switch (op) {
+     case CALL:
+       proc_call(const_reg((uint) a)); break;
 
      default:
 	  badop();
@@ -979,6 +989,22 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
      default:
           vm_load_store_ri(op, ra, NOREG, b);
+     }
+}
+
+void vm_gen2ra(operation op, vmreg rega, void *b) {
+     int ra = rega->vr_reg;
+
+     vm_debug1(op, 2, rega->vr_name, fmt_val(b));
+     vm_space(0);
+
+     switch (op) {
+     case MOV: 
+	  move_immed(W(ra), (uint) b);
+          break;
+
+     default:
+	  badop();
      }
 }
 
