@@ -73,8 +73,13 @@ extern int vm_debug;
 
 /* Helper functions for the loader */
 
-module make_module(char *name, uchar *addr, int chksum, int nlines) {
+void make_module(char *name, uchar *addr, int chksum, int nlines) {
      module m = scratch_alloc_atomic(sizeof(struct _module));
+     static int nm = 0;
+
+     if (modtab == NULL)
+          modtab = scratch_alloc_atomic(nmods * sizeof(module));
+
      m->m_name = name;
      m->m_addr = addr;
 #ifdef PROFILE
@@ -88,11 +93,17 @@ module make_module(char *name, uchar *addr, int chksum, int nlines) {
 #ifdef OBXDEB
      debug_message("module %s %#x", name, chksum);
 #endif
-     return m;
+     if (nm >= nmods) panic("Too many modules");
+     modtab[nm++] = m;
 }
 
-proc make_proc(char *name, uchar *addr) {
+void make_proc(char *name, uchar *addr) {
      proc p = scratch_alloc_atomic(sizeof(struct _proc));
+     static int np = 0;
+
+     if (proctab == NULL)
+          proctab = scratch_alloc_atomic(nprocs * sizeof(proc));
+
      p->p_name = name;
      p->p_addr = (value *) addr;
 #ifdef PROFILE
@@ -103,7 +114,8 @@ proc make_proc(char *name, uchar *addr) {
      debug_message("proc %s %#x %#x %d", name, address(addr), 
 		   p->p_addr[CP_CODE].a, p->p_addr[CP_SIZE].i);
 #endif
-     return p;
+     if (np >= nprocs) panic("Too many procs");
+     proctab[np++] = p;
 }
 
 void make_symbol(const char *kind, char *name, uchar *addr) {

@@ -161,7 +161,6 @@ static void relocate(int size) {
 static void read_symbols(int dseg) {
      uchar *addr;
      int chksum, nlines;
-     int nm = 0, np = 0;
 #ifdef DEBUG
      const char *kname;
 #define debug_kind(n) kname = n
@@ -169,9 +168,6 @@ static void read_symbols(int dseg) {
 #define debug_kind(n)
 #endif
 	  
-     modtab = scratch_alloc_atomic(nmods * sizeof(module));
-     proctab = scratch_alloc_atomic(nprocs * sizeof(proc));
-
      for (int i = 0; i < nsyms; i++) {
 	  int kind = read_int();
 	  char *name = read_string(); 
@@ -182,13 +178,13 @@ static void read_symbols(int dseg) {
 	       addr = dmem + read_int(); 
 	       chksum = read_int();
 	       nlines = read_int();
-	       modtab[nm++] = make_module(name, addr, chksum, nlines);
+	       make_module(name, addr, chksum, nlines);
 	       break;
 
 	  case X_PROC:
 	       debug_kind("Proc");
 	       addr = dmem + read_int(); 
-	       proctab[np++] = make_proc(name, addr);
+	       make_proc(name, addr);
 	       break;
 		    
 	  case X_DATA:
@@ -213,10 +209,6 @@ static void read_symbols(int dseg) {
 	  if (dflag >= 1) printf("%s %s = %p\n", kname, name, addr);
 #endif
      }
-
-     if (nm != nmods || np != nprocs)
-	  panic("*symbol counts don't match (mods %d/%d, procs %d/%d)\n",
-		nm, nmods, np, nprocs);
 
      /* Calculate module lengths */
      addr = dmem + dseg;

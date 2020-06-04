@@ -219,8 +219,8 @@ word wrap_prim(primitive *prim);
 /* load_file -- load a file of object code */
 void load_file(FILE *bfp);
 
-module make_module(char *name, uchar *addr, int chsum, int nlines);
-proc make_proc(char *name, uchar *addr);
+void make_module(char *name, uchar *addr, int chsum, int nlines);
+void make_proc(char *name, uchar *addr);
 void make_symbol(const char *kind, char *name, uchar *addr);
 
 void panic(const char *, ...);
