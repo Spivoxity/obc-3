@@ -394,7 +394,6 @@ static char *fmt_addr(int rb, int imm, int rx, int s) {
 #define opJMP		MNEM2("jmp", 0xff, 4)
 #define opJMP_i		MNEM("jmp", 0xe9)
 #define opCALL		MNEM2("call", 0xff, 2)
-#define opCALL32	MNEM2("call32", pfx(ADDR32, 0xff), 2)
 #define opCALL_i	MNEM("call", 0xe8)
 #define opTEST		MNEM("test", 0x85)
 #define opTESTq		MNEM("testq", pfx(REX_W, 0x85))
@@ -1448,13 +1447,13 @@ static void move_args() {
 static void call_r(int ra) {
      funreg = ra;
      move_args();
-     instr2_r(opCALL32, funreg);
+     instr2_r(opCALL, funreg);
 }
 
 static void call_a(void *a) {
      move_args();
      move_i64(rAX, (uint64) a);
-     instr2_r(opCALL32, rAX);
+     instr2_r(opCALL, rAX);
 }     
 
 int vm_prelude(int n, int locs) {
