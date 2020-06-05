@@ -63,6 +63,9 @@ union value {
 #define codeaddr(p) ((p) - imem)
 #define codeptr(v) (imem + (v).a)
 
+#define codeaddr(p) ((p) - imem)
+#define codeptr(v) (imem + (v).a)
+
 typedef struct _proc *proc;
 typedef struct _module *module;
 typedef struct _arc *arc;
@@ -217,10 +220,9 @@ void dbl_zcheck(value *sp);
 
 word wrap_prim(primitive *prim);
 
-/* dynlink.c */
-
 /* load_file -- load a file of object code */
 void load_file(FILE *bfp);
+void load_image(void);
 
 void make_module(char *name, uchar *addr, int chsum, int nlines);
 void make_proc(char *name, uchar *addr);

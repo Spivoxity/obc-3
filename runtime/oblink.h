@@ -83,6 +83,7 @@ EXTERN int zflag;		/* Whether to compress the bytecode */
 EXTERN mybool sflag;		/* Whether to suppress symbol table */
 EXTERN mybool gflag;		/* Whether to output extra debugging info */
 EXTERN mybool custom;           /* Whether to output a primitive table */
+EXTERN mybool preload;          /* Whether to output C source  */
 EXTERN mybool linecount;
 EXTERN int stack_size;
 
@@ -103,6 +104,7 @@ int sym_value(symbol s);
 mybool known(const char *name);
 void fix_data(uchar *base, int bss);
 int write_symtab(void);
+void preload_symtab(FILE *binfp);
 void module_data(symbol s, unsigned checksum, int nlines);
 
 void init_labels(void);

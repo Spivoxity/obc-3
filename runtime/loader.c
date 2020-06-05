@@ -33,47 +33,9 @@
 #include "exec.h"
 #include <string.h>
 
-static FILE *binfp;
-
-static int binread(void *buf, int size) {
-     return fread(buf, 1, size, binfp);
-}
-
-static int bingetc(void) {
-     char buf[1];
-     if (binread(buf, 1) == 0) return EOF;
-     return buf[0];
-}
-
-/* read_string -- input a null-terminated string, allocate space dynamically */
-static char *read_string() {
-     int n = 0;
-     int c;
-     char *p;
-     char buf[256];
-     
-     do {
-	  c = bingetc();
-	  if (c == EOF) panic("*unexpected EOF");
-	  buf[n++] = c;
-     } while (c != '\0');
-
-     p = scratch_alloc_atomic(n);
-     strcpy(p, buf);
-     return p;
-}
-
 /* get_int -- get a 4-byte value in portable byte order */
 static int get_int(uchar *p) {
      return (p[3]<<24) + (p[2]<<16) + (p[1]<<8) + p[0];
-}
-
-
-/* read_int -- input a 4-byte value in portable byte order */
-static int read_int() {
-     uchar buf[4];
-     binread(buf, 4);
-     return get_int(buf);
 }
 
 /* Here is the still centre of the whirling vortex that is byte-order
@@ -110,53 +72,93 @@ static int read_int() {
 
 #define REL_BLOCK 4096
 
+static void reloc(int base, const uchar rbuf[], int size) {
+     for (int i = 0; i < size; i += WORD_SIZE) {
+          int rbits = reloc_bits(rbuf, i/WORD_SIZE);
+
+#ifdef DEBUG
+          if (dflag > 3)
+               printf("Reloc %d %d\n", base+i, rbits);
+#endif
+
+          if (rbits == R_NONE) continue;
+
+          value *p = (value *) &dmem[base+i];
+          unsigned m = get_int((uchar *) p);
+
+          switch (rbits) {
+          case R_WORD:
+               (*p).i = m;
+               break;
+          case R_ADDR:
+               if ((m & IBIT) == 0)
+                    (*p).a = address(dmem + m);
+               else
+                    (*p).a = codeaddr(imem + (m & ~IBIT));
+               break;
+          case R_SUBR:
+               switch (m) {
+               case INTERP: (*p).a = interpreter; break;
+               case DLTRAP: (*p).a = dyntrap; break;
+               default:
+                    panic("bad subr code %x\n", m);
+               }
+               break;
+          }
+     }
+}
+
+#ifndef PRELOAD
+static FILE *binfp;
+
+static int binread(void *buf, int size) {
+     return fread(buf, 1, size, binfp);
+}
+
 /* relocate -- read relocation data */
 static void relocate(int size) {
-     uchar reloc[REL_BLOCK];
-     int n, m;
-     value *p;
+     uchar rbuf[REL_BLOCK];
+     int n;
 
      for (int base = 0; base < size; base += n) {
 	  n = min(size - base, REL_BLOCK * CODES_PER_BYTE * WORD_SIZE);
 	  int nbytes = (n/WORD_SIZE+CODES_PER_BYTE-1)/CODES_PER_BYTE;
-	  binread(reloc, nbytes);
-
-	  for (int i = 0; i < n; i += WORD_SIZE) {
-	       int rbits = reloc_bits(reloc, i/WORD_SIZE);
-
-#ifdef DEBUG
-	       if (dflag > 3)
-		    printf("Reloc %d %d\n", base+i, rbits);
-#endif
-
-               if (rbits == R_NONE) continue;
-
-	       p = (value *) &dmem[base+i];
-	       m = get_int((uchar *) p);
-
-	       switch (rbits) {
-	       case R_WORD:
-		    (*p).i = m;
-		    break;
-	       case R_ADDR:
-                    if ((m & IBIT) == 0)
-                         (*p).a = address(dmem + m);
-                    else
-                         (*p).a = codeaddr(imem + (m & ~IBIT));
-		    break;
-	       case R_SUBR:
-		    switch (m) {
-		    case INTERP: (*p).a = interpreter; break;
-                    case DLTRAP: (*p).a = dyntrap; break;
-		    default:
-			 panic("bad subr code %x\n", m);
-		    }
-		    break;
-	       }
-	  }
+	  binread(rbuf, nbytes);
+          reloc(base, rbuf, n);
      }
 }
 	       
+static int bingetc(void) {
+     char buf[1];
+     if (binread(buf, 1) == 0) return EOF;
+     return buf[0];
+}
+
+/* read_int -- input a 4-byte value in portable byte order */
+static int read_int() {
+     uchar buf[4];
+     binread(buf, 4);
+     return get_int(buf);
+}
+
+/* read_string -- input a null-terminated string, allocate space dynamically */
+static char *read_string() {
+     int n = 0;
+     int c;
+     char *p;
+     char buf[256];
+     
+     do {
+	  c = bingetc();
+	  if (c == EOF) panic("*unexpected EOF");
+	  buf[n++] = c;
+     } while (c != '\0');
+
+     p = scratch_alloc_atomic(n);
+     strcpy(p, buf);
+     return p;
+}
+
 /* read_symbols -- read symbol table */
 static void read_symbols(int dseg) {
      uchar *addr;
@@ -285,3 +287,48 @@ void load_file(FILE *bfp) {
      /* Read the symbols */
      if (nsyms > 0) read_symbols(seglen[S_DATA]);
 }
+#else
+extern const uchar preload_imem[], preload_dmem[], preload_reloc[];
+extern const unsigned preload_segsize[];
+extern const unsigned preload_entry, preload_gcmap, preload_libdir;
+extern const unsigned preload_nprocs, preload_nmods;
+extern const struct _sym { int kind; char *name; int val; } preload_syms[];
+
+#define segsize preload_segsize
+
+/* load_image -- unpack preloaded image */
+void load_image(void) {
+     code_size = segsize[S_CODE];
+     stack_size = segsize[S_STACK];
+     nmods = preload_nmods;
+     nprocs = preload_nprocs;
+     nsyms = nmods+nprocs;
+
+     imem = (uchar *) preload_imem;
+     dmem = scratch_alloc(segsize[S_DATA]+segsize[S_BSS]);
+     memcpy(dmem, preload_dmem, segsize[S_DATA]);
+     reloc(0, preload_reloc, segsize[S_DATA]);
+     memset(dmem+segsize[S_DATA], 0, segsize[S_BSS]);
+     stack = scratch_alloc(stack_size);
+
+     for (int i = 0; i < nsyms; i++) {
+          struct _sym *s = &preload_syms[i];
+          switch (s->kind) {
+          case X_PROC:
+               make_proc(s->name, dmem + s->val);
+               break;
+          case X_MODULE:
+               make_module(s->name, dmem + s->val, 0, 0);
+               break;
+          default:
+               panic("Bad symbol code");
+          }
+     }
+
+     entry = (value *) &dmem[preload_entry];
+     gcmap = (value *) &dmem[preload_gcmap];
+
+     if (preload_libdir != 0)
+	  libpath = (char *) &dmem[preload_libdir];
+}
+#endif

@@ -33,9 +33,26 @@
 #include "keiko.h"
 
 static FILE *binfp;		/* File for code output */
+static int count = 0;
 
 /* binwrite -- output code */
 static void binwrite(void *buf, int size) {
+     if (preload) {
+          for (int i = 0; i < size; i++) {
+               if (count == 0)
+                    fprintf(binfp, "     ");
+               else if (count < 8)
+                    fprintf(binfp, ", ");
+               else {
+                    fprintf(binfp, ",\n     ");
+                    count = 0;
+               }
+               fprintf(binfp, "%#x", ((uchar *) buf)[i]);
+               count++;
+          }
+          return;
+     }
+     
      int UNUSED nwritten = fwrite(buf, 1, size, binfp);
 }
 
@@ -843,6 +860,20 @@ void init_linker(char *outname, char *interp) {
      buf_init(const_sym, 256, 1, symbol, "constant pool");
      buf_init(prims, 256, 1, int, "primitives");
 
+     if (preload) {
+          binfp = fopen(outname, "w");
+          if (binfp == NULL) {
+               perror(outname);
+               exit(2);
+          }
+          
+          fprintf(binfp, "/* Preloaded Kieko code */\n\n");
+          fprintf(binfp, "#include \"obx.h\"\n");
+          fprintf(binfp, "#include \"exec.h\"\n\n");
+          fprintf(binfp, "const unsigned char preload_imem[] = {\n");
+          return;
+     }
+
      binfp = fopen(outname, "wb");
      if (binfp == NULL) {
 	  perror(outname);
@@ -855,6 +886,8 @@ void init_linker(char *outname, char *interp) {
      start = ftell(binfp);
 }
 
+#define sym_val(x) (known(x) ? sym_value(find_symbol(x)) : 0)
+
 /* end_linking -- write later parts of object file */
 void end_linking(void) {
      trailer t;
@@ -866,23 +899,57 @@ void end_linking(void) {
           iloc++;
      }
 
+     fix_data(dbuf, dloc);
+     rloc = (dloc/WORD_SIZE+CODES_PER_BYTE-1)/CODES_PER_BYTE;
+     buf_grow(rbuf);
+
+     if (preload) {
+          if (count > 0) fprintf(binfp, "\n");
+          fprintf(binfp, "};\n\n");
+
+          fprintf(binfp, "const unsigned char preload_dmem[] = {\n");
+          count = 0;
+          binwrite(dbuf, dloc);
+          if (count > 0) fprintf(binfp, "\n");
+          fprintf(binfp, "};\n\n");
+
+          fprintf(binfp, "const unsigned char preload_reloc[] = {\n");
+          count = 0;
+          binwrite(rbuf, rloc);
+          if (count > 0) fprintf(binfp, "\n");
+          fprintf(binfp, "};\n\n");
+
+          fprintf(binfp, "const unsigned preload_segsize[] = {\n");
+          fprintf(binfp, "     %u, %u, %u, %u\n",
+                  iloc, dloc, bloc, stack_size);
+          fprintf(binfp, "};\n\n");
+
+          preload_symtab(binfp);
+
+          fprintf(binfp, "const unsigned preload_entry = %u;\n",
+                  sym_val("MAIN"));
+          fprintf(binfp, "const unsigned preload_gcmap = %u;\n",
+                  sym_val("GCMAP"));
+          fprintf(binfp, "const unsigned preload_libdir = %u;\n",
+                  sym_val("LIBDIR"));
+          fprintf(binfp, "const unsigned preload_nprocs = %u;\n", nprocs);
+          fprintf(binfp, "const unsigned preload_nmods = %u;\n", nmods);
+
+          fclose(binfp);
+          return;
+     }
+
      csize = ftell(binfp) - start;
      if (csize != iloc) {
 	  fprintf(stderr, "csize = %d, iloc = %d\n", csize, iloc);
 	  panic("*Wrong code size");
      }
 
-     fix_data(dbuf, dloc);
-     rloc = (dloc/WORD_SIZE+CODES_PER_BYTE-1)/CODES_PER_BYTE;
-     buf_grow(rbuf);
-
      binwrite(dbuf, dloc);
      binwrite(rbuf, rloc);
      if (!sflag) symcount = write_symtab();
 
      fsize = ftell(binfp) + sizeof(trailer);
-
-#define sym_val(x) (known(x) ? sym_value(find_symbol(x)) : 0)
 
      /* Trailer */
      memcpy((char *) t.magic, magic, 4);

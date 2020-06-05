@@ -58,6 +58,7 @@ END Fac;
 BEGIN
   Args.GetArg(1, buf);
   n := SHORT(Conv.IntVal(buf));
+  ASSERT(n >= 0);
 
   byte('A');
 

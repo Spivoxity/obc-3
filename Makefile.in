@@ -171,6 +171,20 @@ obxj : runtime/obx-j.a $(PRIMS) thunder/libthunder.a
 obxjd : runtime/obx-jd.a $(PRIMS) thunder/libthunder.a
 	$(LINK) $(CFLAGS_JIT) -u $(JITPROC)
 
+### Experimental preloading
+pfac: pfac.o runtime/obx-preload.a $(PRIMS)
+	$(LINK) -u NEW
+
+pfac.o: CFLAGS += -I runtime -I .
+
+pfac.c: $(srcdir)/Fac.m
+	compiler/obc1 -x -g -pl -I lib $(srcdir)/Fac.m >Fac.k
+	runtime/oblink -g -pl -L lib Fac.k -p -o $@
+
+runtime/obx-preload.a: force
+	$(MAKE) -C $(@D) $(@F)
+### End
+
 oblist : ObList.k runtime/oblink lib/Files.k
 
 ifndef WINDOWS

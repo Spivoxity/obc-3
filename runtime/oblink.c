@@ -273,7 +273,7 @@ static struct option longopts[] = {
 /* get_options -- analyse arguments */
 static void get_options(int argc, char **argv) {
      for (;;) {
-	  int c = getopt_long_only(argc, argv, "dvsgCi:L:R:o:k:", 
+	  int c = getopt_long_only(argc, argv, "dvsgCpi:L:R:o:k:", 
 				   longopts, NULL);
 
 	  if (c == -1) break;
@@ -291,6 +291,8 @@ static void get_options(int argc, char **argv) {
 	       gflag = TRUE; break;
           case 'C':
                custom = TRUE; break;
+          case 'p':
+               preload = TRUE; break;
 	  case 'i':
 	       interp = optarg; break;
 	  case 'L':
@@ -362,7 +364,7 @@ int main(int argc, char **argv) {
 	  save_string("LIBDIR", rtlibdir);
      end_linking();
 
-     if (custom)
+     if (custom && !preload)
           dump_prims();
 
      return status;

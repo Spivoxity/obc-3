@@ -94,9 +94,12 @@ obx-p.a : interp-p.o xmain-p.o profile.o $(COMMON) $(GC_OBJ);	$(PACK)
 obx-d.a : interp-d.o xmain-d.o debug.o $(COMMON) $(GC_OBJ);	$(PACK)
 obx-j.a : $(JIT) xmain-j.o $(COMMON) $(GC_OBJ);			$(PACK)
 obx-jd.a : $(OBX) $(JIT) xmain.o $(COMMON) $(GC_OBJ);	 	$(PACK)
+obx-preload.a : interp.o xmain-preload.o \
+	support.o loader-preload.o dynlink.o $(GC_OBJ);		$(PACK)
 
 REVID := $(shell cat ../revid)
-REVDEP = xmain.o xmain-t.o xmain-p.o xmain-d.o xmain-j.o oblink.o
+REVDEP = xmain.o xmain-t.o xmain-p.o xmain-d.o \
+	xmain-j.o xmain-preload.o oblink.o
 $(REVDEP): ../revid
 $(REVDEP): CFLAGS := $(CFLAGS) -DREVID=\"$(REVID)\"
 
@@ -120,6 +123,9 @@ $(JIT): %.o : %.c
 
 %-j.o : %.c
 	$(CC) $(ALL_RTFLAGS) -DJIT -c $< -o $@
+
+%-preload.o : %.c
+	$(CC) $(ALL_RTFLAGS) -DPRELOAD -c $< -o $@
 
 keiko.h: keiko.iset iset.tcl util.tcl iparse.tcl
 	$(TCLSH) $(srcdir)/iset.tcl $(srcdir)/keiko.iset \
