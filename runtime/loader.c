@@ -142,7 +142,7 @@ static void relocate(int size) {
                     if ((m & IBIT) == 0)
                          (*p).a = address(dmem + m);
                     else
-                         (*p).a = address(imem + (m & ~IBIT));
+                         (*p).a = codeaddr(imem + (m & ~IBIT));
 		    break;
 	       case R_SUBR:
 		    switch (m) {

@@ -535,10 +535,10 @@ inst JPROC 0 S0 \
     { value *p = valptr(sp[0]);
       sp -= HEAD-1;
       sp[BP].a = address(bp);
-      sp[PC].a = address(pc);
+      sp[PC].a = codeaddr(pc);
 
       if (interpreted(p)) {
-          cp = p; pc = pointer(cp[CP_CODE]);
+          cp = p; pc = codeptr(cp[CP_CODE]);
           goto enter;
       }
 
@@ -580,7 +580,7 @@ inst RETURN 0 S0 \
           return sp;
       }
 
-      rp = sp; sp = bp; pc = pointer(sp[PC]);
+      rp = sp; sp = bp; pc = codeptr(sp[PC]);
       bp = valptr(sp[BP]); cp = valptr(bp[CP]);
       do_find_proc;
 #ifdef PROFILE

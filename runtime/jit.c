@@ -137,8 +137,8 @@ static word prolog(const char *name) {
 static int stack_map(uchar *pc) {
      value *r = valptr(jit_cxt[CP_STKMAP]);
      if (r == NULL) return 0;
-     while (pointer(r[0]) != NULL) {
-	  if (pointer(r[0]) == pc) return r[1].i;
+     while (r[0].a != 0) {
+	  if (codeptr(r[0]) == pc) return r[1].i;
 	  r += 2;
      }
      return 0;
@@ -863,7 +863,7 @@ void jit_compile(value *cp) {
 #endif
 
      jit_cxt = cp; 
-     pcbase = pointer(jit_cxt[CP_CODE]);
+     pcbase = codeptr(jit_cxt[CP_CODE]);
      pclimit = pcbase + jit_cxt[CP_SIZE].i;
 
      init_regs();
