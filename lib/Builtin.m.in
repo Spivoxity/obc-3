@@ -35,8 +35,6 @@ IMPORT SYSTEM;
 CONST version =
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
 
-VAR reason: INTEGER;
-
 PROCEDURE HALT(n: INTEGER) IS "xmain_exit";
 
 PROCEDURE NEW(desc: SYSTEM.PTR; size: INTEGER): SYSTEM.PTR IS "*NEW";
