@@ -80,15 +80,3 @@ module Idle : sig
   val add : ?prio:int -> (unit -> bool) -> id
   val remove : id -> unit
 end
-
-module Io : sig
-  type channel = Glib.Io.channel
-  type condition = [ `IN | `OUT | `PRI | `ERR | `HUP | `NVAL ]
-  type id
-  val channel_of_descr : Unix.file_descr -> channel
-  val add_watch :
-    cond:condition list -> callback:(condition list -> bool) -> ?prio:int -> channel -> id
-  val remove : id -> unit
-  val read : channel -> buf:string -> pos:int -> len:int -> int
-  val read_chars : channel -> buf:string -> pos:int -> len:int -> int
-end

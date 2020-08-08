@@ -29,14 +29,13 @@
  *)
 
 open Print
-open Unix
 open Util
 
 let interp = ref "obxdeb"
 let trace = ref false
 
-let deb_in = ref Pervasives.stdout
-let deb_out = ref Pervasives.stdin
+let deb_in = ref stdout
+let deb_out = ref stdin
 let child = ref 0
 
 let send fmt args =
@@ -112,6 +111,8 @@ let peek_string addr =
 
 let connection = ref Unix.stdin
 let cleanup = ref (fun () -> ())
+
+open Unix
 
 let startup args sock addr =
   listen sock 1;

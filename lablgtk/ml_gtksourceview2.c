@@ -21,6 +21,15 @@
 /**************************************************************************/
 
 #include <assert.h>
+
+#include <glib.h>
+
+/* Defend against deprecation warnings from gtksourceview headers */
+#ifdef G_CONST_RETURN
+#undef G_CONST_RETURN
+#define G_CONST_RETURN const
+#endif
+
 #include <gtksourceview/gtksourceview.h>
 #include <gtksourceview/gtksourcelanguagemanager.h>
 #include <gtksourceview/gtksourceiter.h>
@@ -303,15 +312,11 @@ ML_1 (gtk_source_view_get_draw_spaces,
 ML_2 (gtk_source_view_set_draw_spaces,
       GtkSourceView_val, Flags_Source_draw_spaces_flags_val, Unit)
 
-
 /* This code was taken from gedit */
 /* assign a unique name */
-static G_CONST_RETURN gchar *
-get_widget_name (GtkWidget *w)
+static const gchar *get_widget_name(GtkWidget *w)
 {
-        const gchar *name;
-
-        name = gtk_widget_get_name (w);
+        const gchar *name = gtk_widget_get_name (w);
         g_return_val_if_fail (name != NULL, NULL);
 
         if (strcmp (name, g_type_name (GTK_WIDGET_TYPE (w))) == 0)
