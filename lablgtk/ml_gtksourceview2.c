@@ -22,6 +22,8 @@
 
 #include <assert.h>
 
+#include <glib.h>
+
 /* Defend against deprecation warnings from gtksourceview headers */
 #ifdef G_CONST_RETURN
 #undef G_CONST_RETURN
