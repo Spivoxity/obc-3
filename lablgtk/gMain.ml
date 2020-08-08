@@ -53,7 +53,5 @@ module Timeout = Glib.Timeout
 
 module Idle = Glib.Idle
 
-module Io = Glib.Io
-
 let selection = GData.clipboard Gdk.Atom.primary
 let clipboard = GData.clipboard Gdk.Atom.clipboard

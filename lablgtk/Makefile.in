@@ -93,11 +93,21 @@ liblablgtk.a: $(COBJS)
 	ar cr $@ $^
 	$(RANLIB) $@	
 
+WARN = -w s
+
+gobject.cmo: WARN += -w -52
+
 gtkThread.cmi: gtkThread.mli
 	ocamlc $(MLFLAGS) $(INCLUDE) -c -thread -o $@ $<
 
 gtkThread.cmo: gtkThread.ml
-	ocamlc $(MLFLAGS) $(INCLUDE) -c -thread -w s -o $@ $<
+	ocamlc $(MLFLAGS) $(WARN) $(INCLUDE) -c -thread -o $@ $<
+
+%.cmi: %.mli
+	ocamlc $(MLFLAGS) $(INCLUDE) -c -o $@ $< 
+
+%.cmo: %.ml
+	ocamlc $(MLFLAGS) $(WARN) $(INCLUDE) -c -o $@ $< 
 
 CCOPTS = -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' \
 	-ccopt -Wno-deprecated-declarations
@@ -122,12 +132,6 @@ propcc varcc: %: %.ml
 
 #propcc.ml varcc.ml: %.ml: %.ml4
 #	camlp4 pa_o.cmo pa_op.cmo pr_o.cmo -impl $< >$@
-
-%.cmo: %.ml
-	ocamlc $(MLFLAGS) $(INCLUDE) -c -w s -o $@ $< 
-
-%.cmi: %.mli
-	ocamlc $(MLFLAGS) $(INCLUDE) -c -o $@ $< 
 
 clean: force
 	rm -f *.cma *.cmi *.cmo *.o *.a propcc varcc

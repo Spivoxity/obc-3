@@ -41,13 +41,10 @@ module Main : sig
   val pending : unit -> bool
   val is_running : t -> bool
   val quit : t -> unit
-  val destroy : t -> unit
   type locale_category =
     [ `ALL | `COLLATE | `CTYPE | `MESSAGES | `MONETARY | `NUMERIC | `TIME ]
   val setlocale : locale_category -> string option -> string 
 end
-
-val int_of_priority : [< `HIGH | `DEFAULT | `HIGH_IDLE | `DEFAULT_IDLE | `LOW] -> int
 
 (** @gtkdoc glib glib-The-Main-Event-Loop *)
 module Timeout : sig
@@ -61,128 +58,6 @@ module Idle : sig
   type id
   val add : ?prio:int -> (unit -> bool) -> id
   val remove : id -> unit
-end
-
-(** {3 IO Channels} *)
-
-(** IO Channels
-   @gtkdoc glib glib-IO-Channels *)
-module Io : sig
-  (** Io condition, called from the main loop *)
-
-  type channel
-  type condition = [ `ERR | `HUP | `IN | `NVAL | `OUT | `PRI]
-  type id
-  val channel_of_descr : Unix.file_descr -> channel
-  val add_watch :
-    cond:condition list -> callback:(condition list -> bool) -> ?prio:int -> channel -> id
-  val remove : id -> unit
-  val read : channel -> buf:string -> pos:int -> len:int -> int
-  val read_chars : channel -> buf:string -> pos:int -> len:int -> int
-end
-
-(** {3 Message Logging} *)
-
-(** @gtkdoc glib glib-Message-Logging *)
-module Message : sig
-  type log_level =
-    [ `CRITICAL
-    | `DEBUG
-    | `ERROR
-    | `FLAG_FATAL
-    | `FLAG_RECURSION
-    | `INFO
-    | `MESSAGE
-    | `WARNING]
-  val log_level : [< log_level|`CUSTOM of int] -> int
-  type log_handler
-  val set_log_handler :
-    ?domain:string ->
-    levels:log_level list -> 
-    (level:int -> string -> unit) -> log_handler
-  val remove_log_handler : log_handler -> unit
-  val set_always_fatal : log_level list -> unit
-  val set_fatal_mask :
-    ?domain:string -> [log_level|`CUSTOM of int] list -> unit
-
-  val log :
-    ?domain:string ->
-    [log_level|`CUSTOM of int] -> ('a, unit, string, unit) format4 -> 'a
-end
-
-(*
-module Thread : sig
-  val init : unit -> unit (* Call only once! *)
-  val enter : unit -> unit
-  val leave : unit -> unit
-end
-*)
-
-(** {3 Character Sets} *)
-
-(** Character Set Conversion 
-    @gtkdoc glib glib-Character-Set-Conversion *)
-module Convert :  sig
-  type error = 
-    | NO_CONVERSION
-        (** Conversion between the requested character sets is not supported *)
-    | ILLEGAL_SEQUENCE (** Invalid byte sequence in conversion input *)
-    | FAILED (** Conversion failed for some reason *)
-    | PARTIAL_INPUT (** Partial character sequence at end of input *)
-    | BAD_URI (** URI is invalid *)
-    | NOT_ABSOLUTE_PATH (** Pathname is not an absolute path *)
-  exception Error of error * string
-
-  val convert :
-    string -> to_codeset:string -> from_codeset:string -> string
-      (** @raise Error . *)
-  val convert_with_fallback :
-    ?fallback:string ->
-    to_codeset:string -> from_codeset:string -> string -> string
-      (** @raise Error . *)
-
-  (** All internal strings are encoded in utf8: you should use
-      the following conversion functions *)
-
-  val locale_from_utf8 : string -> string 
-    (** Converts the input string from [UTF-8] to the encoding of the
-        current locale. If the locale's encoding is [UTF-8], the string
-        is simply validated and returned unmodified.
-        @raise Error if the conversion fails
-        @raise Error if the string is not a valid [UTF-8] string *)
-
-  val locale_to_utf8 : string -> string (** @raise Error . *)
-    (** Converts the input string from the encoding of the current locale
-        to [UTF-8]. If the locale's encoding is [UTF-8], the string is
-        simply validated and returned unmodified.
-        @raise Error if the conversion fails
-        @raise Error if the string is not a valid [UTF-8] string *)
-
-  val filename_from_utf8 : string -> string (** @raise Error . *)
-  val filename_to_utf8 : string -> string (** @raise Error . *)
-  val filename_from_uri : string -> string option * string
-      (** @raise Error . *)
-  val filename_to_uri : ?hostname:string -> string -> string
-      (** @raise Error . *)
-
-  val get_charset : unit -> bool * string
-    (** Obtains the character set for the current locale.
-        @return the pair [u,s] where [u] is true if the character set is
-        [UTF-8] and [s] is the character set name *)
-end
-
-(** @gtkdoc glib glib-Simple-XML-Subset-Parser *)
-module Markup : sig
-  type error =
-    | BAD_UTF8
-    | EMPTY
-    | PARSE
-    | UNKNOWN_ELEMENT
-    | UNKNOWN_ATTRIBUTE
-    | INVALID_CONTENT
-  exception Error of error * string
-
-  val escape_text : string -> string
 end
 
 (** {3 Miscellaneous Utility Functions} *)

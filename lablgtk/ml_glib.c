@@ -200,54 +200,6 @@ CAMLprim void ml_raise_gerror(GError *err)
     ml_raise_generic_gerror (err);
 }
 
-/* Logging */
-static void
-ml_g_log_func(const gchar *log_domain,
-	      GLogLevelFlags log_level,
-	      const gchar *message,
-	      gpointer data)
-{
-    value msg, *clos_p = data;
-    msg = copy_string (message);
-    callback2_exn(*clos_p, Val_int(log_level), msg);
-}
-
-ML_1 (Log_level_val, ID, Val_int)
-
-CAMLprim value ml_g_log_set_handler (value domain, value levels, value clos)
-{
-    value *clos_p = ml_global_root_new (clos);
-    int id = g_log_set_handler (String_option_val(domain), 
-				Int_val(levels),
-                                ml_g_log_func, clos_p);
-    CAMLparam1(domain);
-    value ret = alloc_small(3,0);
-    Field(ret,0) = domain;
-    Field(ret,1) = Val_int(id);
-    Field(ret,2) = (value)clos_p;
-    CAMLreturn(ret);
-}
-
-CAMLprim value ml_g_log_remove_handler (value hnd)
-{
-    if (Field(hnd,2) != 0) {
-        g_log_remove_handler (String_option_val(Field(hnd,0)),
-			      Int_val(Field(hnd,1)));
-        ml_global_root_destroy ((value*)Field(hnd,2));
-        Field(hnd,2) = 0;
-    }
-    return Val_unit;
-}
-
-ML_1(g_log_set_always_fatal, Int_val, Unit)
-ML_2(g_log_set_fatal_mask, String_option_val, Int_val, Unit)
-
-CAMLprim value ml_g_log (value domain, value level, value msg)
-{
-  g_log (String_option_val(domain), Int_val(level), "%s", String_val(msg));
-  return Val_unit;
-}
-
 /* Main loop handling */
 
 /* for 1.3 compatibility */
@@ -256,13 +208,35 @@ CAMLprim value ml_g_log (value domain, value level, value msg)
 #define	g_main_new(is_running)	g_main_loop_new (NULL, is_running)
 #endif
 
-#define GMainLoop_val(val) ((GMainLoop*)Addr_val(val))
+/* More compatibility changes to avoid deprecation warnings: these just
+   replicate the compatibility definitions from glib/deprecated/gmain.h,
+   but without the warnings. */
+#ifdef g_main_iteration
+#undef g_main_iteration
+#define g_main_iteration(may_block) g_main_context_iteration(NULL, may_block)
+#endif
+
+#ifdef g_main_pending
+#undef g_main_pending
+#define g_main_pending() g_main_context_pending(NULL)
+#endif
+
+#ifdef g_main_is_running
+#undef g_main_is_running
+#define g_main_is_running(loop) g_main_loop_is_running(loop)
+#endif
+
+#ifdef g_main_quit
+#undef g_main_quit
+#define g_main_quit(loop) g_main_loop_quit(loop)
+#endif
+
+#define GMainLoop_val(val) ((GMainLoop *) Addr_val(val))
 ML_1 (g_main_new, Bool_val, Val_addr)
 ML_1 (g_main_iteration, Bool_val, Val_bool)
 ML_0 (g_main_pending, Val_bool)
 ML_1 (g_main_is_running, GMainLoop_val, Val_bool)
 ML_1 (g_main_quit, GMainLoop_val, Unit)
-ML_1 (g_main_destroy, GMainLoop_val, Unit)
 
 static gboolean ml_g_source_func (gpointer data)
 {
@@ -296,101 +270,6 @@ CAMLprim value ml_g_idle_add (value o_prio, value clos)
 }
 
 ML_1 (g_source_remove, Int_val, Unit)
-
-/* GIOChannel */
-
-Make_Val_final_pointer (GIOChannel, g_io_channel_ref, g_io_channel_unref, 0)
-Make_Val_final_pointer_ext (GIOChannel, _noref, Ignore, g_io_channel_unref, 20)
-#define GIOChannel_val(val) ((GIOChannel*)Pointer_val(val))
-
-#ifndef _WIN32
-ML_1 (g_io_channel_unix_new, Int_val, Val_GIOChannel_noref)
-
-#else
-CAMLprim value ml_g_io_channel_unix_new(value wh)
-{
-  return Val_GIOChannel_noref
-    (g_io_channel_unix_new
-     (_open_osfhandle((intnat)*(HANDLE*)Data_custom_val(wh), O_BINARY)));
-}
-#endif
-
-static gboolean ml_g_io_channel_watch(GIOChannel *s, GIOCondition c,
-                                      gpointer data)
-{
-    value res, cond, *clos_p = data;
-    cond = ml_lookup_flags_getter (ml_table_io_condition, c);
-    res = callback_exn (*clos_p, cond);
-    if (Is_exception_result (res))
-      {
-	CAML_EXN_LOG("GIOChannel watch");
-	return FALSE;
-      }
-    return Bool_val(res);
-}
-
-Make_Flags_val(Io_condition_val)
-
-CAMLprim value ml_g_io_add_watch(value cond, value clos, value prio, value io)
-{
-    return Val_long (
-      g_io_add_watch_full(GIOChannel_val(io),
-                          Option_val(prio,Int_val,G_PRIORITY_DEFAULT),
-                          Flags_Io_condition_val(cond),
-                          ml_g_io_channel_watch,
-                          ml_global_root_new(clos),
-                          ml_global_root_destroy) );
-}
-
-CAMLprim value ml_g_io_channel_read(value io, value str, value offset,
-                                    value count)
-{
-  gsize read;
-  switch (g_io_channel_read(GIOChannel_val(io), 
-			    String_val(str) + Int_val(offset),
-			    Int_val(count),
-			    &read)) {
-  case G_IO_ERROR_NONE:
-    return Val_int( read );
-  case G_IO_ERROR_INVAL:
-    ml_raise_glib("g_io_channel_read: G_IO_ERROR_INVAL");
-  case G_IO_ERROR_AGAIN:
-  default:
-    ml_raise_glib("g_io_channel_read: G_IO_ERROR_AGAIN");
-  }
-  /* no one reaches here... */
-  return Val_unit;
-}
-#ifdef HASGTK22
-CAMLprim value ml_g_io_channel_read_chars(value io, value str, value offset,
-                                    value count)
-{
-  gsize read;
-  GError *err = NULL;
-  GIOStatus result = 
-    g_io_channel_read_chars(GIOChannel_val(io), 
-		      String_val(str) + Int_val(offset),
-		      Int_val(count),
-		      &read, 
-		      &err);
-  if (err != NULL) ml_raise_gerror(err);
-  switch (result) {
-  case G_IO_STATUS_NORMAL:
-    return Val_int( read );
-  case G_IO_STATUS_EOF:
-    ml_raise_glib("g_io_channel_read_chars G_IO_STATUS_EOF");
-  case G_IO_STATUS_AGAIN:
-    ml_raise_glib("g_io_channel_read_chars: G_IO_STATUS_AGAIN");
-  case G_IO_STATUS_ERROR:
-  default:
-    ml_raise_glib("g_io_channel_read_chars: G_IO_STATUS_ERROR");
-  }
-  /* no one reaches here... */
-  return Val_unit;
-}
-#else
-Unsupported_22(g_io_channel_read_chars)
-#endif
 
 /* single-linked lists */
 
@@ -433,132 +312,6 @@ CAMLprim GSList *GSList_val (value list, gpointer (*func)(value))
     }
     return res;
 }
-
-/* Character Set Conversion */
-
-static value
-caml_copy_string_len_and_free (char *str, size_t len)
-{
-  value v;
-  g_assert (str != NULL);
-  v = alloc_string (len);
-  memcpy (String_val(v), str, len);
-  g_free (str);
-  return v;
-}
-
-CAMLprim value ml_g_convert(value str, value to, value from)
-{
-  gsize bw=0;
-  gchar* c_res;
-  GError *error=NULL;
-  c_res = g_convert(String_val(str),string_length(str),
-                    String_val(to),String_val(from),
-                    NULL,&bw,&error);
-  if (error != NULL) ml_raise_gerror(error);
-  return caml_copy_string_len_and_free (c_res, bw);
-}
-
-CAMLprim value ml_g_convert_with_fallback(value fallback, value to, value from, value str)
-{
-  gsize bw=0;
-  gchar* c_res;
-  GError *error=NULL;
-  c_res = g_convert_with_fallback(String_val(str),string_length(str),
-				  String_val(to),String_val(from),
-				  String_option_val(fallback),
-				  NULL,&bw,&error);
-  if (error != NULL) ml_raise_gerror(error);
-  return caml_copy_string_len_and_free (c_res, bw);
-}
-
-#define Make_conversion(cname) \
-CAMLprim value ml_##cname(value str) { \
-  gsize bw=0; \
-  gchar* c_res; \
-  GError *error=NULL; \
-  c_res = cname(String_val(str),string_length(str),NULL,&bw,&error); \
-  if (error != NULL) ml_raise_gerror(error); \
-  return caml_copy_string_len_and_free (c_res, bw); \
-}
-
-/* Make_conversion(g_locale_to_utf8) */
-Make_conversion(g_filename_to_utf8)
-/* Make_conversion(g_locale_from_utf8) */
-Make_conversion(g_filename_from_utf8)
-
-CAMLprim value ml_g_filename_from_uri (value uri)
-{
-  GError *err = NULL;
-  gchar *hostname, *result;
-  result = g_filename_from_uri (String_val(uri), &hostname, &err);
-  if (err != NULL) ml_raise_gerror(err);
-  {
-    CAMLparam0();
-    CAMLlocal3(v_h, v_f, v_p);
-    v_h = Val_option(hostname, copy_string_g_free);
-    v_f = copy_string_g_free (result);
-    v_p = alloc_small(2, 0);
-    Field(v_p, 0) = v_h;
-    Field(v_p, 1) = v_f;
-    CAMLreturn(v_p);
-  }
-}
-
-CAMLprim value ml_g_filename_to_uri (value hostname, value uri)
-{
-  GError *err = NULL;
-  gchar *result;
-  result = g_filename_to_uri (String_val(uri), String_option_val(hostname), &err);
-  if (err != NULL) ml_raise_gerror(err);
-  return copy_string_g_free(result);
-}
-
-CAMLprim value ml_g_get_charset()
-{
-  CAMLparam0();
-  CAMLlocal1(couple);
-  gboolean r;
-  G_CONST_RETURN char *c;
-  r = g_get_charset(&c);
-  couple = alloc_tuple(2);
-  Store_field(couple,0,Val_bool(r));
-  Store_field(couple,1,Val_string(c));
-  CAMLreturn(couple);
-}
-
-CAMLprim value ml_g_utf8_validate(value s)
-{
-  return Val_bool(g_utf8_validate(SizedString_val(s),NULL));
-}
-
-
-ML_1 (g_unichar_tolower, Int_val, Val_int)
-ML_1 (g_unichar_toupper, Int_val, Val_int)
-ML_1 (g_unichar_totitle, Int_val, Val_int)
-
-ML_1 (g_unichar_digit_value, Int_val, Val_int)
-ML_1 (g_unichar_xdigit_value, Int_val, Val_int)
-
-#define UNI_BOOL(f) ML_1(g_unichar_##f, Int_val, Val_bool)
-UNI_BOOL(validate)
-UNI_BOOL(isalnum)
-UNI_BOOL(isalpha)
-UNI_BOOL(iscntrl)
-UNI_BOOL(isdigit)
-UNI_BOOL(isgraph)
-UNI_BOOL(islower)
-UNI_BOOL(isprint)
-UNI_BOOL(ispunct)
-UNI_BOOL(isspace)
-UNI_BOOL(isupper)
-UNI_BOOL(isxdigit)
-UNI_BOOL(istitle)
-UNI_BOOL(isdefined)
-UNI_BOOL(iswide)
-#undef UNI_BOOL
-
-ML_1 (g_markup_escape_text, SizedString_val, copy_string_g_free)
 
 ML_0 (g_get_prgname, copy_string_or_null)
 ML_1 (g_set_prgname, String_val, Unit)
