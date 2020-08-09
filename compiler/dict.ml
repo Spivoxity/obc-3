@@ -293,6 +293,13 @@ let basic_types =
   [voidtype; bytetype; shortint; inttype; longint; character; boolean; 
     realtype; longreal; settype; ptrtype; longptr; sysbyte]
 
+(* Useful allocation stuff *)
+
+(* align -- increase offset to next multiple of alignment *)
+let align alignment offset =
+  let margin = !offset mod alignment in
+  if margin <> 0 then offset := !offset - margin + alignment
+
 let pointer d =
   (PointerType d, addr_rep, ptr_map)
 
@@ -306,13 +313,17 @@ let flex t = (FlexType t, void_rep, null_map)
 
 let strtype = new_type 0 (flex character)
 
-let record abs parent loc size fields =
+let record abs parent loc size0 fields =
   let depth = 
     match parent.t_guts with RecordType r -> r.r_depth+1 | _ -> 0 in
   let newrec = { r_depth = depth; r_abstract = abs; r_parent = parent; 
 		    r_loc = loc; r_fields = fields; r_methods = [] } in
+  let almt =
+    List.fold_left (fun m d -> max m d.d_type.t_rep.m_align) 1 fields in
+  let size = ref size0 in
+  align almt size;
   (RecordType newrec, 
-    { m_size = size; m_align = max_align },
+    { m_size = !size; m_align = almt },
     local_map fields)
 
 let proctype p = (ProcType p, addr_rep, null_map)
@@ -573,13 +584,6 @@ let is_string t =
 
 let is_address t =
   is_pointer t || is_proc t || is_niltype t || same_types t ptrtype
-
-(* Useful allocation stuff *)
-
-(* align -- increase offset to next multiple of alignment *)
-let align alignment offset =
-  let margin = !offset mod alignment in
-  if margin <> 0 then offset := !offset - margin + alignment
 
 
 (* Initial environment *)
