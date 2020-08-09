@@ -1087,17 +1087,22 @@ let type_code t =
         (shortint, 'S'); (longint, 'L'); (realtype, 'F'); (longreal, 'D');
         (voidtype, 'V'); (ptrtype, 'P'); (longptr, 'Q')]
   with Not_found ->
-    if is_flex t then 'X' (* addr+bound *)
-    else if is_array t || is_pointer t then 'P' (* 32-bit pointer *)
-    else failwith (sprintf "Can't pass $" [fOType t])
+    if (is_array t && flexity t = 0) || is_pointer t || is_record t
+      || same_types t ptrtype then 'P' (* 32-bit pointer *)
+    else if is_array t && flexity t = 1 then 'X' (* addr+bound *)
+    else if same_types t longptr then 'Q' (* 64-bit pointer *)
+    else failwith (sprintf "Can't pass value type $" [fOType t])
+
+let vparam_code t =
+  if scalar t || (is_array t && flexity t = 0) then 'P'
+  else if is_array t && flexity t = 1 then 'X' (* addr+bound *)
+  else if is_record t then 'X' (* addr+desc *)
+  else failwith (sprintf "Can't pass VAR type $" [fOType t])
 
 let param_code d =
   match d.d_kind with
       ParamDef|CParamDef -> type_code d.d_type
-    | VParamDef ->
-       if is_flex d.d_type then 'X' (* addr+bound *)
-       else if scalar d.d_type || is_array d.d_type then 'P'
-       else failwith "Can't pass VParam"
+    | VParamDef -> vparam_code d.d_type
     | _ -> failwith "param_code"
 
 (* gen_proc -- generate code for a procedure, ignore other declarations *)
