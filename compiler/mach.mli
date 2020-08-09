@@ -36,11 +36,9 @@ define the representation of the primitive types of Oberon;
 |proc_rep| defines the representation of closures.
 
 |addr_size| is the size of an address in the target machine, and
-|max_align| is the maximum alignment constraint of any primitive type.
-Arrays and records are always aligned to a multiple of |max_align|, so
-that all their elements will be correctly aligned.  |frame_head level|
-is the size of the fixed part of a procedure frame for static level
-|level|.
+|max_align| is the maximum alignment constraint of any primitive type,
+used to round up the size of stack frames.  |frame_head level| is the
+size of the fixed part of a procedure frame for static level |level|.
 *)
 
 open Eval
