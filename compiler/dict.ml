@@ -117,6 +117,7 @@ and rec_data =
   { r_depth: int;		(* Extension depth *)
     r_abstract: bool;		(* Whether abstract *)
     r_parent: otype;		(* Parent type (voidtype if none) *)
+    r_loc: Error.location;      (* Location of type expr *)
     r_fields: def list;		(* List of fields *)
     mutable r_methods: def list	} (* List of methods *)
 
@@ -305,11 +306,11 @@ let flex t = (FlexType t, void_rep, null_map)
 
 let strtype = new_type 0 (flex character)
 
-let record abs parent size fields =
+let record abs parent loc size fields =
   let depth = 
     match parent.t_guts with RecordType r -> r.r_depth+1 | _ -> 0 in
   let newrec = { r_depth = depth; r_abstract = abs; r_parent = parent; 
-		    r_fields = fields; r_methods = [] } in
+		    r_loc = loc; r_fields = fields; r_methods = [] } in
   (RecordType newrec, 
     { m_size = size; m_align = max_align },
     local_map fields)
