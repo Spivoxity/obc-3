@@ -123,7 +123,8 @@ no actual parameter will match
 
 "eExpr.m", line 15: cannot create instance of abstract record type
 >   NEW(p);
->   ^^^
+>       ^
+> This expression has type POINTER TO ar
 
 "eExpr.m", line 16: NEW expects 1 argument
 >   NEW(q, 2);
@@ -135,7 +136,8 @@ no actual parameter will match
 
 "eExpr.m", line 17: cannot create instance of abstract record type
 >   NEW(x)
->   ^^^
+>       ^
+> This expression has type POINTER TO ar
 
 "eExpr.m", line 23: LEN requires 1 or 2 arguments
 >   LEN; LEN(1, 2, 3); LEN(1);

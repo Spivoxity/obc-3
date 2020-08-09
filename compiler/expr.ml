@@ -1020,9 +1020,12 @@ and check_builtin env p args e loc =
  		  RecordType r ->
  		    if List.length args <> 1 then
  		      sem_error "NEW expects 1 argument" [] loc;
- 		    if r.r_abstract then
- 		      sem_error 
- 			"cannot create instance of abstract record type" [] loc
+ 		    if r.r_abstract then begin
+ 		      sem_error
+                        "cannot create instance of abstract record type"
+                        [] e1.e_loc;
+                      sem_type t1
+                    end
  		| ArrayType _ ->
 		    if List.length args <> 1 then
 		      sem_error "NEW expects 1 argument" [] loc
