@@ -106,6 +106,7 @@ and rec_data =
   { r_depth: int;		(* Extension depth *)
     r_abstract: bool;		(* Whether abstract *)
     r_parent: otype;		(* Parent type (voidtype if none) *)
+    r_loc: Error.location;      (* Location of type expr *)
     r_fields: def list;		(* List of fields *)
     mutable r_methods: def list	} (* List of methods *)
 
@@ -191,7 +192,7 @@ val row : int -> otype -> typespec
 val flex : otype -> typespec
 
 (* record -- make a record type *)
-val record : bool -> otype -> int -> def list -> typespec
+val record : bool -> otype -> Error.location -> int -> def list -> typespec
 
 (* proctype -- make a procedure type *)
 val proctype : proc_data -> typespec

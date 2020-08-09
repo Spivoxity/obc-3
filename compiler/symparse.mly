@@ -179,7 +179,7 @@ tguts :
       { (EnumType $int, int_rep, null_map) }
   | LPAR recflag symbol int otype push defs RPAR
       { desc := $symbol; 
-	let t = record $recflag $otype $int (top_block !env) in
+	let t = record $recflag $otype no_loc $int (top_block !env) in
 	decr level; env := pop_block !env; t }
   | LPAR ARRAY int otype RPAR	{ row $int $otype }
   | LPAR FLEX otype RPAR	{ flex $otype }

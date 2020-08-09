@@ -717,7 +717,7 @@ and check_typecons tx name env lzy =
 	let env' = add_block fields0 env in
 	check_decls fields env' (upward_alloc offset) lzy;
 	align max_align offset;
-	new_type !level (record abs pt !offset (top_block env'))
+	new_type !level (record abs pt tx.tx_loc !offset (top_block env'))
     | Proc heading ->
 	let d = 
 	  check_heading Procedure (makeDefId (anon, Private, no_loc)) 

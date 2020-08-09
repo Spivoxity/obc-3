@@ -195,18 +195,19 @@ texpr :
   | ARRAY exprs OF texpr
       { let array n t = typexp (Array (n, t)) in
         List.fold_right array $exprs $texpr }
-  | abstract RECORD parent fields END
-      { typexp (Record ($abstract, $parent, $fields)) }
-  | abstract RECORD07 parent fields07 END
-      { typexp (Record ($abstract, $parent, $fields07)) }
+  /* Don't factor these, or the location data will be wrong */
+  | RECORD parent fields END
+      { typexp (Record (false, $parent, $fields)) }
+  | RECORD07 parent fields07 END
+      { typexp (Record (false, $parent, $fields07)) }
+  | ABSTRACT RECORD parent fields END
+      { typexp (Record (true, $parent, $fields)) }
+  | ABSTRACT RECORD07 parent fields07 END
+      { typexp (Record (true, $parent, $fields07)) }
   | PROCEDURE params		{ typexp (Proc $params) } ;
 
 tname :
     qualid			{ typexp (TypeName $qualid) } ;
-
-abstract :
-    /* empty */			{ false }
-  | ABSTRACT			{ true } ;
 
 parent :
     /* empty */			{ None }
