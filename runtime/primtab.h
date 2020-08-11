@@ -40,6 +40,7 @@ typedef void type_V;
 
 /* How to fetch each kind of argument */
 #define arg_C(j)  align_byte(bp[HEAD+j].i)
+#define arg_S(j)  align_short(bp[HEAD+j].i)
 #define arg_I(j)  bp[HEAD+j].i
 #define arg_F(j)  bp[HEAD+j].f
 #define arg_P(j)  pointer(bp[HEAD+j])
@@ -50,6 +51,7 @@ typedef void type_V;
 
 /* How to return each kind of result via ob_res */
 #define res_C(v)  ob_res.i = v
+#define res_S(v)  ob_res.i = v
 #define res_I(v)  ob_res.i = v
 #define res_F(v)  ob_res.f = v
 #define res_P(v)  ob_res.a = address(v)

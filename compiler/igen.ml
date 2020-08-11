@@ -1130,6 +1130,7 @@ let gen_procdef d loc fsize body ret =
 
 let type_code t =
   if same_types t inttype then 'I'
+  else if same_types t shortint then 'S'
   else if same_types t character || same_types t boolean then 'C'
   else if same_types t longint then 'L'
   else if same_types t realtype then 'F'
