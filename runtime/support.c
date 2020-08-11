@@ -31,6 +31,7 @@
 #include "obx.h"
 #include <stdarg.h>
 #include <string.h>
+#include <errno.h>
 
 /* Assorted runtime support routines */
 
@@ -308,38 +309,7 @@ int obgetc(FILE *fp) {
 #endif
 }
 
-#ifdef SPECIALS
-/* Specials for the compiler course */
-
-value *clotab[256];
-int nclo = 0;
-
-int pack(value *code, uchar *env) {
-     unsigned tag, val;
-
-     for (tag = 0; tag < nclo; tag++)
-	  if (clotab[tag] == code) break;
-
-     if (tag == nclo) {
-	  if (nclo == 256) panic("Out of closure tags");
-	  clotab[nclo++] = code;
-     }
-
-     if (env != NULL && (env <= stack || env > stack + stack_size)) 
-	  panic("Bad luck in pack");
-
-     val = (env == NULL ? 0 : env - stack);
-
-     return (tag << 24) | val;
+/* get_errno -- fetch the value of errno, for use as a primitive */
+int get_errno(void) {
+     return errno;
 }
-
-value *getcode(int word) {
-     unsigned tag = ((unsigned) word) >> 24;
-     return clotab[tag];
-}
-
-uchar *getenvt(int word) {
-     unsigned val = ((unsigned) word) & 0xffffff;
-     return (val == 0 ? NULL : stack + val);
-}
-#endif
