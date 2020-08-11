@@ -152,22 +152,6 @@ static inline void putlong(value *v, longint x) {
 #define cond_break()
 #endif
 
-#ifdef SPECIALS
-#define casejump(x, n0)                                 \
-     {                                                  \
-          int n = n0;                                   \
-          pc0 = pc; pc += 4*n;                          \
-          while (n > 0) {                               \
-               if (x == get2(pc0)) {                    \
-                    jump(get2(pc0+2));                  \
-                    break;                              \
-               }                                        \
-               pc0 += 4; n--;                           \
-          }                                             \
-     }
-#endif
-
-
 /* interp -- main loop of the interpreter */
 void interp(value *sp0) {
      register value *cp = valptr(sp0[CP]);
