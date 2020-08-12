@@ -43,10 +43,15 @@ void usage(void)
 
 int dflag = 0;
 
-int startup(int argc, char **argv)
-{
+int startup(int argc, char **argv) {
      int i, status;
      char cmdbuf[MAX];
+
+     sprintf(cmdbuf, "GDK_EXE_PREFIX=%s", obclib);
+     putenv(cmdbuf);
+
+     sprintf(cmdbuf, "GDK_PIXBUF_MODULE_FILE=%s\\gdk-pixbuf.loaders", obclib);
+     putenv(cmdbuf);
 
      sprintf(cmdbuf, "%s\\%s", obclib, DEBUGGER);
      arg(cmdbuf); 
