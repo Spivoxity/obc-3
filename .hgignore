@@ -241,5 +241,6 @@ mipstest/code
 mipstest/data
 mipstest/out
 mipstest/out.0
+winport/.strip
 lib/_Builtin.tmp
 plx

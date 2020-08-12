@@ -45,3 +45,9 @@ DisableProgramGroupPage=yes
 InfoAfterFile=README.txt
 OutputBaseFilename=@WIN_INSTALL@
 OutputDir=.
+; For x86, these two are blank, meaning "install on any architecture"
+;   and "install in 32-bit mode".
+; For x64, they are both "x64", meaning "install only on x64"
+;   and "if x64 then install in 64-bit mode".
+ArchitecturesAllowed=@WIN_ARCH@
+ArchitecturesInstallIn64BitMode=@WIN_ARCH@
