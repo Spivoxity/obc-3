@@ -104,7 +104,9 @@ case $host in
     if test "$enable_m64x32" != no; then
       AC_DEFINE(M64X32, 1, [Define for 64-bit runtime with 32-bit pointers])
       AC_DEFINE(USE_SSE, 1, [Define to use SSE2 in place of x87 floats])
-    fi;;
+    fi
+    # Architecture for windows installation
+    AC_SUBST(WIN_ARCH, x64);;
 esac
 
 case $host in
