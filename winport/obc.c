@@ -30,10 +30,10 @@
 
 #include "wrap.h"
 
-#define COMPILER "obc1.exe"
-#define LINKER "oblink.exe"
-#define RUNTIME "obx.exe"
-#define RUNTIMEJ "obxj.exe"
+#define COMPILER "libexec\\obc1.exe"
+#define LINKER "libexec\\oblink.exe"
+#define RUNTIME "libexec\\obx.exe"
+#define RUNTIMEJ "libexec\\obxj.exe"
 #define SRCEXT "m"
 #define SRCEXT2 "mod"
 #define OBJEXT "k"
@@ -110,14 +110,12 @@ char *sws[MAXARGS], *lsws[MAXARGS];
 
 int compile(char *src, char *obj)
 {
-     char cmdbuf[MAX];
      int i, status;
 
-     sprintf(cmdbuf, "%s\\%s", obclib, COMPILER);
-     arg(cmdbuf);
+     command("%s\\%s", obcdir, COMPILER);
      for (i = 0; i < n_sws; i++) arg(sws[i]);
-     arg("-pl"); arg("-g"); arg("-I"); arg(obclib); arg(src);
-     status = redir_command(cmdbuf, vflag, obj);
+     arg("-pl"); arg("-g"); arg("-I"); argf("%s\\lib", obcdir); arg(src);
+     status = redirect(vflag, obj);
      if (status != 0) unlink(obj);
      return status;
 }
@@ -143,16 +141,16 @@ int linkit(int n_objs, char *objfile[], char *exefile)
      atexit(rm_tmp);
 
      /* Run the linker */
-     sprintf(cmdbuf, "%s\\%s", obclib, LINKER); 
-     arg(cmdbuf); arg("-L"); arg(obclib);
+     command("%s\\%s", obcdir, LINKER); 
+     arg("-L"); argf("%s\\lib", obcdir);
      for (i = 0; i < n_lsws; i++) arg(lsws[i]);
      for (i = 0; i < n_objs; i++) arg(objfile[i]);
      arg("-pl"); arg("-g"); arg("-o"); arg(linker_tmp);
-     status = command(cmdbuf, vflag);
+     status = launch(vflag);
      if (status != 0) return status;
 
      /* Concatenate linker output with runtime */
-     sprintf(cmdbuf, "%s\\%s", obclib, runtime);
+     sprintf(cmdbuf, "%s\\%s", obcdir, runtime);
      if (vflag) 
 	  fprintf(stderr, "Concatenating %s + %s --> %s\n", 
 		  cmdbuf, linker_tmp, exefile);
@@ -173,15 +171,13 @@ int linkit(int n_objs, char *objfile[], char *exefile)
 
 void versions(void)
 {
-     char **s, cmdbuf[MAX];
+     char **s;
      static char *progs[] = { COMPILER, LINKER, RUNTIME, NULL };
      
      printf("Oxford Oberon-2 compiler driver version %s [build %s]\n", 
 	    PACKAGE_VERSION, REVID);
      for (s = progs; *s != NULL; s++) {
-	  sprintf(cmdbuf, "%s\\%s", obclib, *s);
-	  arg(cmdbuf); arg("-v");
-	  command(cmdbuf, 0);
+	  command("%s\\%s", obcdir, *s); arg("-v"); launch(0);
      }
 }
 
@@ -215,7 +211,7 @@ int main(int argc, char *argv[])
      static char *srcs[MAXARGS], *objs[MAXARGS];
      char *aout = "aout.exe";
 
-     check_path(COMPILER);
+     find_path();
 
      if (argc <= 1) usage();
 

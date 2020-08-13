@@ -32,8 +32,8 @@
 #include "wrap.h"
 #include <windows.h>
 
-#define DEBUGGER "obdb1.exe"
-#define MONITOR "obxdeb.exe"
+#define DEBUGGER "libexec\\obdb1.exe"
+#define MONITOR "libexec\\obxdeb.exe"
 
 void usage(void)
 {
@@ -45,35 +45,31 @@ int dflag = 0;
 
 int startup(int argc, char **argv) {
      int i, status;
-     char cmdbuf[MAX];
+     char buf[MAX];
 
-     sprintf(cmdbuf, "GDK_EXE_PREFIX=%s", obclib);
-     putenv(cmdbuf);
+     sprintf(buf, "XDG_DATA_DIRS=%s\\share", obcdir);
+     putenv(buf);
 
-     sprintf(cmdbuf, "GDK_PIXBUF_MODULE_FILE=%s\\gdk-pixbuf.loaders", obclib);
-     putenv(cmdbuf);
+     sprintf(buf, "GDK_PIXBUF_MODULE_FILE=%s\\pixlib\\gdk-pixbuf.loaders",
+	     obcdir);
+     putenv(buf);
 
-     sprintf(cmdbuf, "%s\\%s", obclib, DEBUGGER);
-     arg(cmdbuf); 
+     command("%s\\%s", obcdir, DEBUGGER);
      if (dflag) arg("-d");
-     arg("-I"); arg(obclib); 
-     arg("-i"); argf("%s\\%s", obclib, MONITOR);
-     arg("-R"); arg(obclib);
+     arg("-I"); argf("%s\\lib", obcdir); 
+     arg("-i"); argf("%s\\%s", obcdir, MONITOR);
+     arg("-R"); argf("%s\\resources", obcdir);
      for (i = 0; i < argc; i++) arg(argv[i]);
-     status = command(cmdbuf, 0);
+     status = launch(0);
      return status;
 }
 
 void versions(void)
 {
-     char argbuf[MAX];
-
      printf("Oxford Oberon-2 debugger driver version %s [build %s]\n", 
 	    PACKAGE_VERSION, REVID);
-     sprintf(argbuf, "%s\\%s", obclib, DEBUGGER);
-     arg(argbuf); arg("-v"); command(argbuf, 0);
-     sprintf(argbuf, "%s\\%s", obclib, MONITOR);
-     arg(argbuf); arg("-v"); command(argbuf, 0);
+     command("%s\\%s", obcdir, DEBUGGER); arg("-v"); launch(1);
+     command("%s\\%s", obcdir, MONITOR); arg("-v"); launch(1);
      exit(0);
 }
 
@@ -86,7 +82,7 @@ int main(int argc, char *argv[])
 {
      int i, status = 0;
 
-     check_path(DEBUGGER);
+     find_path();
 
      for (i = 1; i < argc; i++) {
 	  char *s = argv[i];

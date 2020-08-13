@@ -30,7 +30,7 @@
 
 #include "wrap.h"
 
-#define BROWSER "obb1.exe"
+#define BROWSER "libexec\\obb1.exe"
 
 void usage(void)
 {
@@ -42,24 +42,18 @@ void usage(void)
 int browse(char *module)
 {
      int status;
-     char cmdbuf[MAX];
-
-     sprintf(cmdbuf, "%s\\%s", obclib, BROWSER);
-     arg(cmdbuf); arg("-I"); arg(obclib); arg(module);
-     status = command(cmdbuf, 0);
+     command("%s\\%s", obcdir, BROWSER);
+     arg("-I"); argf("%s\\lib", obcdir);
+     arg(module);
+     status = launch(0);
      return status;
 }
 
 void versions(void)
 {
-     char argbuf[MAX];
-
      printf("Oxford Oberon-2 browser driver version %s [build %s]\n", 
 	    PACKAGE_VERSION, REVID);
-
-     sprintf(argbuf, "%s\\%s", obclib, BROWSER);
-     arg(argbuf); arg("-v");
-     command(argbuf, 0);
+     command("%s\\%s", obcdir, BROWSER); arg("-v"); launch(0);
 }
 
 int main(int argc, char *argv[])
@@ -68,7 +62,7 @@ int main(int argc, char *argv[])
 
      if (argc != 2) usage();
 
-     check_path(BROWSER);
+     find_path();
 
      if (strcmp(argv[1], "-v") == 0) {
 	  versions();
