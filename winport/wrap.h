@@ -36,17 +36,16 @@
 #include "config.h"
 
 #define ENVNAME "OBC"
-#define OBCLIB "C:\\Program Files\\Oxford Oberon-2 Compiler"
 
 #define MAXARGS 64
 #define MAX 256
 #define ARGSPACE 1024
 
-extern char *obclib;
+extern char *obcdir;
 
+void command(char *fmt, ...);
 void arg(char *s);
 void argf(char *fmt, ...);
-int command(char *prog, int verbose);
-int redir_command(char *prog, int verbose, char *outfile);
-
-void check_path(char *prog);
+int launch(int verbose);
+int redirect(int verbose, char *outfile);
+void find_path(void);

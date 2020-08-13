@@ -1,5 +1,5 @@
 # GdkPixbuf Image Loader Modules file
-"lib/libpixbufloader-png.dll"
+"..\\pixlib\\libpixbufloader-png.dll"
 "png" 5 "gdk-pixbuf" "PNG" "LGPL"
 "image/png" ""
 "png" ""

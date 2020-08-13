@@ -29,7 +29,7 @@
 ;
 
 [Code]
-{ Under WinNT, add the installation directory to the system path }
+{ Under WinNT, add the bin subdirectory to the system path }
 
 { SplitPath -- split a path into individual directories }
 procedure SplitPath(path: string; var dirs: TStringList);
@@ -107,5 +107,5 @@ end;
 { CurStepChanged -- event procedure called for each step of installation }
 procedure CurStepChanged(step: TSetupStep);
 begin
-  if step = ssDone then AddToPath('{app}')
+  if step = ssDone then AddToPath('{app}\\bin')
 end;

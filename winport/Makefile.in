@@ -51,21 +51,26 @@ GTKROOT = @GTKROOT@
 all: files
 
 LIBSRC = Builtin.m $(ALLMODS:%=%.m)
-LIBOBJ = $(ALLMODS:%=%.k) $(CHECKMODS:%=%-b.k) _Builtin.k 
+LIBOBJ = $(ALLMODS:%=%.k) $(CHECKMODS:%=%-b.k)
 LIBTXT = lscript-b lscript _Builtin.k
 
 # Executables needing stripping
-INSTALL1 = ../obx.exe ../obxj.exe ../obprof.exe ../obxdeb.exe \
-	../runtime/oblink.exe
+BINARY1 = ../obprof.exe
+LIBEXEC1 = ../obx.exe ../obxj.exe ../obxdeb.exe ../runtime/oblink.exe
+INSTALL1 = $(BINARY1) $(LIBEXEC1)
 
 # Executables that don't need stripping
-INSTALL2 =  ../compiler/obc1.exe ../compiler/obb1.exe ../debugger/obdb1.exe
+LIBEXEC2 =  ../compiler/obc1.exe ../compiler/obb1.exe ../debugger/obdb1.exe
+INSTALL2 = $(LIBEXEC2)
 
 # Files built here
-INSTALL3 = oblist.exe obc.exe obb.exe obdb.exe \
-	$(LIBSRC) $(LIBTXT) $(LIBOBJ) README.txt Fac.m
+BINARY3 = oblist.exe obc.exe obb.exe obdb.exe
+FILES3 = $(LIBSRC) $(LIBOBJ) $(LIBTXT) README.txt Fac.m
+INSTALL3 = $(BINARY3) $(FILES3)
 
-INSTALL = $(INSTALL1) $(INSTALL2) $(INSTALL3)
+EXTRA = gdk-pixbuf.loaders
+
+INSTALL = $(INSTALL1) $(INSTALL2) $(INSTALL3) $(EXTRA)
 
 files: $(INSTALL) .strip
 
@@ -92,6 +97,8 @@ $(LIBTXT): %: ../lib/%;					$(TEXT)
 %-b.k: %.m ../compiler/obc1.exe
 	../compiler/obc1 -O -g -x -b $< >$@
 
+### INSTALLER
+
 package: $(TARGET)
 
 $(TARGET): setup.iss $(INSTALL)
@@ -114,7 +121,7 @@ DLLS := $(shell (ldd ../debugger/obdb1.exe; ldd $(PNGLOADER)) \
 
 GEN = tclsh geniss.tcl
 
-SPECS = def.lang language.dtd language.rng language2.rng; \
+SPECS = def.lang language.dtd language.rng language2.rng
 SPECDIR = share/gtksourceview-2.0/language-specs
 
 STYLES = classic.xml styles.rng
@@ -122,16 +129,27 @@ STYLEDIR = share/gtksourceview-2.0/styles
 
 THEMEDIR = share/themes/Default/gtk-2.0-key
 
+# Directory structure
+#
+#  /:         README.txt Fac.m
+#  bin:       obc.exe obb.exe obdb.exe oblist.exe obprof.exe
+#  libexec:   obx obxj obxdeb oblink obc1 obb1 obdb1 + GTK DLLs for obdb
+#  lib:       file.m file.k for Oberon lib modules
+#  share:     gtksourceview styles + gtkrc
+#  pixlib:    libpixbufloader-png.dll gdk-pixbuf.loaders
+#  resources: GUI resources
+
 files.iss: Makefile geniss.tcl
 	(echo "[Files]"; \
-	  $(GEN) . $(INSTALL); \
-	  $(GEN) . $(DLLS:%=$(GTKROOT)/bin/%); \
+	  $(GEN) . README.txt Fac.m; \
+	  $(GEN) bin $(BINARY1) $(BINARY3); \
+	  $(GEN) libexec $(LIBEXEC1) $(LIBEXEC2) $(DLLS:%=$(GTKROOT)/bin/%); \
+	  $(GEN) lib $(LIBSRC) $(LIBOBJ) $(LIBTXT); \
 	  $(GEN) $(SPECDIR) $(SPECS:%=$(GTKROOT)/$(SPECDIR)/%); \
 	  $(GEN) $(STYLEDIR) $(STYLES:%=$(GTKROOT)/$(STYLEDIR)/%); \
 	  $(GEN) $(THEMEDIR) $(GTKROOT)/$(THEMEDIR)/gtkrc; \
-	  $(GEN) . gdk-pixbuf.loaders; \
-	  $(GEN) lib $(PNGLOADER); \
-	  $(GEN) . $(RESOURCES:%=$(RESDIR)/%)) >$@
+	  $(GEN) pixlib gdk-pixbuf.loaders $(PNGLOADER); \
+	  $(GEN) resources $(RESOURCES:%=$(RESDIR)/%)) >$@
 
 obc.exe obb.exe obdb.exe: %.exe: %.o wrap.o
 	$(CC) $(CFLAGS) -o $@ $^

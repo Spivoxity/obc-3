@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include <windows.h>
 
+static char cmd[MAX];
 static char argspace[ARGSPACE];
 static char *args[MAXARGS];
 int nargs = 0;
@@ -50,6 +51,16 @@ void arg(char *s) {
      argptr += strlen(argptr)+1;
 }
 
+void command(char *fmt, ...) {
+     va_list va;
+     va_start(va, fmt);
+     vsprintf(cmd, fmt, va);
+     va_end(va);
+
+     nargs = 0;
+     arg(cmd);
+}
+
 void argf(char *fmt, ...) {
      char buf[MAX];
      va_list va;
@@ -59,11 +70,11 @@ void argf(char *fmt, ...) {
      arg(buf);
 }
 
-int command(char *prog, int verbose) {
+int launch(int verbose) {
      int i, status;
 
      if (verbose) {
-	  fprintf(stderr, "Running %s", prog);
+	  fprintf(stderr, "Running %s", cmd);
 	  for (i = 1; i < nargs; i++)
 	       fprintf(stderr, " %s", args[i]);
 	  fprintf(stderr, "\n");
@@ -72,7 +83,7 @@ int command(char *prog, int verbose) {
      fflush(stderr);
 
      args[nargs] = NULL;
-     status = spawnvp(P_WAIT, prog, (char * const *) args);
+     status = spawnvp(P_WAIT, cmd, (char * const *) args);
      if (verbose && status != 0) 
           fprintf(stderr, "*** Command returned status %d\n", status);
 
@@ -81,7 +92,7 @@ int command(char *prog, int verbose) {
      return status;
 }
 
-int redir_command(char *prog, int verbose, char *outfile)
+int redirect(int verbose, char *outfile)
 {
      int old_stdout, new_stdout, status;
 
@@ -91,45 +102,38 @@ int redir_command(char *prog, int verbose, char *outfile)
      dup2(new_stdout, 1);
      close(new_stdout);
 
-     status = command(prog, verbose);
+     status = launch(verbose);
 
      dup2(old_stdout, 1);
      close(old_stdout);
      return status;
 }
 
-char *obclib;
+char *obcdir;
 
-void check_path(char *prog) {
+void find_path(void) {
      static char exedir[MAX];
-     char argbuf[MAX];
-     char *p;
+     char *p; int count;
 
      /* Trust the environment variable */
-     obclib = getenv(ENVNAME);
+     obcdir = getenv(ENVNAME);
 
-     /* Try the directory containing the executable */
-     if (obclib == NULL) {
+     /* Try the parent of the directory containing the executable */
+     if (obcdir == NULL) {
 	  GetModuleFileName(NULL, exedir, MAX);
-	  p = strrchr(exedir, '\\');
-	  if (p != NULL) {
+	  p = exedir + strlen(exedir);
+	  count = 0;
+	  while (p > exedir && count < 2)
+	       if (*--p == '\\') count++;
+	  if (p > exedir) {
 	       *p = '\0';
-	       obclib = exedir;
+	       obcdir = exedir;
 	  }
      }
 
-     /* In the last resort, look in the standard place */
-     if (obclib == NULL) 
-	  obclib = OBCLIB;
 
-     /* Check we can find the specified program */
-     sprintf(argbuf, "%s\\%s", obclib, prog);
-     if (access(argbuf, R_OK) < 0) {
-	  fprintf(stderr, "I can't find the program %s in directory %s!\n",
-		  prog, obclib);
-	  fprintf(stderr, "Please define environment variable %s", ENVNAME);
-	  fprintf(stderr, " as the directory where it is installed.\n");
-	  fprintf(stderr, "If that doesn't work, something else is wrong.\n");
+     if (obcdir == NULL) {
+	  fprintf(stderr, "Can't find the OBC directory\n");
 	  exit(2);
      }
 }
