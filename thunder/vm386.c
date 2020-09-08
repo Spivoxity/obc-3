@@ -206,6 +206,12 @@ static char *fmt_addr(int rb, int imm, int rx, int s) {
      return buf;
 }
 
+#ifdef M64X32
+#define fmt_ptr(a) fmt_val64((uint64) a)
+#else
+#define fmt_ptr(a) fmt_val((int) a)
+#endif
+
 /* When Thunder is compiled for debugging, numeric opcodes are accompanied
    by textual mnemonics as they are passed around, and the act of generating
    an instruction is optionally augmented with printing the instruction in
@@ -649,12 +655,14 @@ static void instr_regi32(OPDECL, int r, int imm) {
      vm_done();
 }
 
+#ifdef M64X32
 /* instr_regi64 -- opcode packed with register plus a 64-bit immediate */
 static void instr_regi64(OPDECL, int r, uint64 imm) {
      vm_debug2("%s %s, #%s", mnem, regname[r], fmt_val64(imm));
      opcode(op), packreg(r), qword(imm);
      vm_done();
 }
+#endif
 
 /* instr_rr -- opcode plus two registers */
 static void instr_rr(OPDECL, int r1, int r2) {
@@ -1532,7 +1540,7 @@ void vm_gen1r(operation op, vmreg rega) {
 }
 
 void vm_gen1a(operation op, void *a) {
-     vm_debug1(op, 1, fmt_val64((uint64) a));
+     vm_debug1(op, 1, fmt_ptr(a));
      vm_space(0);
 
      switch (op) {
@@ -1708,12 +1716,16 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 void vm_gen2ra(operation op, vmreg rega, void *b) {
      int ra = rega->vr_reg;
 
-     vm_debug1(op, 2, rega->vr_name, fmt_val64((uint64) b));
+     vm_debug1(op, 2, rega->vr_name, fmt_ptr(b));
      vm_space(0);
 
      switch (op) {
      case MOV: 
-          move_i64(ra, (uint64) b); break;
+#ifdef M64X32
+          move_i64(ra, (uint64) b);
+#else
+	  move_i(ra, (int) b);
+#endif
           break;
 
      default:
