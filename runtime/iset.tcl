@@ -535,9 +535,39 @@ proc gen_jitrules {f} {
 }
 
 
+# SANITY CHECKS
+proc check-rhs {kind op rhs} {
+    global instrs status
+
+    foreach instr $rhs {
+        set i [lindex $instr 0]
+        if {[lsearch $instrs $i] < 0} {
+            puts "Instruction $i undefined in $kind $op"
+            set status 1
+        }
+    }
+}
+
+proc sanity {} {
+    global macro expand
+
+    # Assembler macros
+    foreach op [array names macro] {
+        check-rhs "macro" $op $macro($op)
+    }
+
+    # JIT expansions
+    foreach op [array names expand] {
+        check-rhs "expansion of" $op $expand($op)
+    }
+}
+
+
 # MAIN PROGRAM
 
 readfile $infile
+
+sanity
 
 if {$status != 0} {exit $status}
 

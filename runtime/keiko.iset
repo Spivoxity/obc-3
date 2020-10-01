@@ -401,8 +401,8 @@ equiv DEQ 0     { DCMPL, PUSH 0, EQ }
 equiv DNEQ 0    { DCMPL, PUSH 0, NEQ }
 equiv DLT 0     { DCMPG, PUSH 0, LT }
 equiv DGT 0     { DCMPL, PUSH 0, GT }
-equiv DLEQ 0    { DCMPG, PUSH 0, LE }
-equiv DGEQ 0    { DCMPL, PUSH 0, GE }
+equiv DLEQ 0    { DCMPG, PUSH 0, LEQ }
+equiv DGEQ 0    { DCMPL, PUSH 0, GEQ }
 
 equiv DJEQ R    { DCMPL, JEQZ $a }
 equiv DJNEQ R   { DCMPL, JNEQZ $a }
