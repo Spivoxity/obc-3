@@ -42,7 +42,7 @@ END tPeriod.
 >>*)
 
 (*[[
-!! (SYMFILE #tPeriod STAMP #tPeriod.%main 1)
+!! (SYMFILE #tPeriod STAMP #tPeriod.%main 1 #tPeriod.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPeriod STAMP 0

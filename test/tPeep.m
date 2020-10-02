@@ -25,7 +25,7 @@ In procedure tPeep.%main
 >>*)
 
 (*[[
-!! (SYMFILE #tPeep STAMP #tPeep.%main 1)
+!! (SYMFILE #tPeep STAMP #tPeep.%main 1 #tPeep.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPeep STAMP 0

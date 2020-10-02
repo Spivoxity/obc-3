@@ -18,7 +18,7 @@ foo
 >>*)
 
 (*[[
-!! (SYMFILE #tSuper3 STAMP #tSuper3.%main 1)
+!! (SYMFILE #tSuper3 STAMP #tSuper3.%main 1 #tSuper3.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSuper3 STAMP 0

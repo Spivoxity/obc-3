@@ -38,7 +38,7 @@ END tEgyptian.
 >>*)
 
 (*[[
-!! (SYMFILE #tEgyptian STAMP #tEgyptian.%main 1)
+!! (SYMFILE #tEgyptian STAMP #tEgyptian.%main 1 #tEgyptian.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tEgyptian STAMP 0

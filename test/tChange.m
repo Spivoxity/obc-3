@@ -87,7 +87,7 @@ END tChange.
 >>*)
 
 (*[[
-!! (SYMFILE #tChange STAMP #tChange.%main 1)
+!! (SYMFILE #tChange STAMP #tChange.%main 1 #tChange.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tChange STAMP 0

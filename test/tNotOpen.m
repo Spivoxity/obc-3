@@ -17,7 +17,7 @@ In procedure Files.raw
 >>*)
 
 (*[[
-!! (SYMFILE #tNotOpen STAMP #tNotOpen.%main 1)
+!! (SYMFILE #tNotOpen STAMP #tNotOpen.%main 1 #tNotOpen.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tNotOpen STAMP 0

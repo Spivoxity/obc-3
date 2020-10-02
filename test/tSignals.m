@@ -280,7 +280,7 @@ s108 -> s255
 >>*)
 
 (*[[
-!! (SYMFILE #tSignals STAMP #tSignals.%main 1)
+!! (SYMFILE #tSignals STAMP #tSignals.%main 1 #tSignals.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSignals STAMP 0

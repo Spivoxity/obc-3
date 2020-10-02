@@ -37,7 +37,7 @@ END tCast.
 >>*)
 
 (*[[
-!! (SYMFILE #tCast STAMP #tCast.%main 1)
+!! (SYMFILE #tCast STAMP #tCast.%main 1 #tCast.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCast STAMP 0

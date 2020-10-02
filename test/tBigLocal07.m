@@ -27,7 +27,7 @@ END tBigLocal07.
 >>*)
 
 (*[[
-!! (SYMFILE #tBigLocal07 STAMP #tBigLocal07.%main 1)
+!! (SYMFILE #tBigLocal07 STAMP #tBigLocal07.%main 1 #tBigLocal07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBigLocal07 STAMP 0

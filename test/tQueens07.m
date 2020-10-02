@@ -54,7 +54,7 @@ BEGIN
 END tQueens07.
 
 (*[[
-!! (SYMFILE #tQueens07 STAMP #tQueens07.%main 1)
+!! (SYMFILE #tQueens07 STAMP #tQueens07.%main 1 #tQueens07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tQueens07 STAMP 0

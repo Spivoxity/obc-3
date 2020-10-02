@@ -11,7 +11,7 @@ BEGIN
 END tPi07.
 
 (*[[
-!! (SYMFILE #tPi07 STAMP #tPi07.%main 1)
+!! (SYMFILE #tPi07 STAMP #tPi07.%main 1 #tPi07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPi07 STAMP 0

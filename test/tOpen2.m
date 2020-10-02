@@ -25,7 +25,7 @@ BEGIN
 END tOpen2.
 
 (*[[
-!! (SYMFILE #tOpen2 STAMP #tOpen2.%main 1)
+!! (SYMFILE #tOpen2 STAMP #tOpen2.%main 1 #tOpen2.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tOpen2 STAMP 0

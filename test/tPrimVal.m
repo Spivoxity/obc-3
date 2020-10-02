@@ -14,7 +14,7 @@ END tPrimVal.
 >>*)
 
 (*[[
-!! (SYMFILE #tPrimVal STAMP #tPrimVal.%main 1)
+!! (SYMFILE #tPrimVal STAMP #tPrimVal.%main 1 #tPrimVal.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPrimVal STAMP 0

@@ -138,7 +138,7 @@ END tRand64.
 >>*)
 
 (*[[
-!! (SYMFILE #tRand64 STAMP #tRand64.%main 1)
+!! (SYMFILE #tRand64 STAMP #tRand64.%main 1 #tRand64.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tRand64 STAMP 0

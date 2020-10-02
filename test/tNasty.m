@@ -27,7 +27,7 @@ BEGIN
 END tNasty.
 
 (*[[
-!! (SYMFILE #tNasty STAMP #tNasty.%main 1)
+!! (SYMFILE #tNasty STAMP #tNasty.%main 1 #tNasty.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tNasty STAMP 0

@@ -5,7 +5,7 @@ MODULE tSelfRep07; IMPORT Out; CONST x = "MODULE tSelfRep07; IMPORT Out; CONST x
 >>*)
 
 (*[[
-!! (SYMFILE #tSelfRep07 STAMP #tSelfRep07.%main 1)
+!! (SYMFILE #tSelfRep07 STAMP #tSelfRep07.%main 1 #tSelfRep07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSelfRep07 STAMP 0

@@ -17,7 +17,7 @@ BEGIN
 END tCopy.
 
 (*[[
-!! (SYMFILE #tCopy STAMP #tCopy.%main 1)
+!! (SYMFILE #tCopy STAMP #tCopy.%main 1 #tCopy.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCopy STAMP 0

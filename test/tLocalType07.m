@@ -91,7 +91,7 @@ BEGIN
 END tLocalType07.
 
 (*[[
-!! (SYMFILE #tLocalType07 STAMP #tLocalType07.%main 1)
+!! (SYMFILE #tLocalType07 STAMP #tLocalType07.%main 1 #tLocalType07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLocalType07 STAMP 0

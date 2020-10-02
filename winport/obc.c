@@ -34,9 +34,9 @@
 #define LINKER "libexec\\oblink.exe"
 #define RUNTIME "libexec\\obx.exe"
 #define RUNTIMEJ "libexec\\obxj.exe"
-#define SRCEXT "m"
-#define SRCEXT2 "mod"
 #define OBJEXT "k"
+
+static const char *srcexts[] = { "m", "mod", "Mod", "obn", "ob2" };
 
 char *runtime = RUNTIMEJ;
 
@@ -200,7 +200,8 @@ void usage(void)
      p("  -k n    Set runtime stack size");
      p("  -07     Compile Oberon-07 source");
      p("");
-     p("  *.m, *.mod  Oberon source file to be compiled");
+     p("  *.m     Oberon source file to be compiled");
+     p("          (extensions .mod, .Mod, .obn, .ob2 also allowed)");
      p("  *.k     Bytecode file for linking");
      exit(2);
 }
@@ -254,18 +255,20 @@ int main(int argc, char *argv[])
 	  }	       
 	  else if (s[0] == '-')
 	       usage();
-	  else if (has_ext(s, SRCEXT)) {
-	       srcs[n_src++] = s;
-	       objs[n_obj++] = strdup(changext(basename(s), OBJEXT));
-	  }
-	  else if (has_ext(s, SRCEXT2)) {
-	       srcs[n_src++] = s;
-	       objs[n_obj++] = strdup(changext(basename(s), OBJEXT));
-	  }
 	  else if (has_ext(s, OBJEXT))
 	       objs[n_obj++] = s;
-	  else
-	       usage();
+          else {
+               for (int i = 0; srcexts[i] != NULL; i++) {
+                    if (has_ext(s, srcexts[i])) {
+                         srcs[n_src++] = s;
+                         objs[n_obj++] =
+                              strdup(changext(basename(s), OBJEXT));
+                         break;
+                    }
+               }
+
+               if (srcexts[i] == NULL) usage();
+          }
      }
 
      if (vflag) versions();

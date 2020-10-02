@@ -29,7 +29,7 @@ END tMob07.
 >>*)
 
 (*[[
-!! (SYMFILE #tMob07 STAMP #tMob07.%main 1)
+!! (SYMFILE #tMob07 STAMP #tMob07.%main 1 #tMob07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tMob07 STAMP 0

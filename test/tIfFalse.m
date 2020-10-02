@@ -13,7 +13,7 @@ BEGIN
 END tIfFalse.
 
 (*[[
-!! (SYMFILE #tIfFalse STAMP #tIfFalse.%main 1)
+!! (SYMFILE #tIfFalse STAMP #tIfFalse.%main 1 #tIfFalse.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tIfFalse STAMP 0

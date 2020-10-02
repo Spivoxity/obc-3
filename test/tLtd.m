@@ -16,7 +16,7 @@ yes
 >>*)
 
 (*[[
-!! (SYMFILE #tLtd STAMP #tLtd.%main 1)
+!! (SYMFILE #tLtd STAMP #tLtd.%main 1 #tLtd.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLtd STAMP 0

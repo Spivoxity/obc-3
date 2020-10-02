@@ -25,7 +25,7 @@ Pass
 >>*)
 
 (*[[
-!! (SYMFILE #tNewBug STAMP #tNewBug.%main 1)
+!! (SYMFILE #tNewBug STAMP #tNewBug.%main 1 #tNewBug.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tNewBug STAMP 0

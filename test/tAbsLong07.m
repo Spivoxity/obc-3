@@ -16,7 +16,7 @@ END tAbsLong07.
 >>*)
 
 (*[[
-!! (SYMFILE #tAbsLong07 STAMP #tAbsLong07.%main 1)
+!! (SYMFILE #tAbsLong07 STAMP #tAbsLong07.%main 1 #tAbsLong07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tAbsLong07 STAMP 0

@@ -30,6 +30,7 @@
 
 open Print
 open Symtab
+open Symfile
 open Dict
 open Mach
 
@@ -57,22 +58,26 @@ let init =
 
 let import m objchk =
   try 
-    let f = Util.search_path (extern m ^ ".k") !Config.libpath in
-    let (env, chksum, _) = Symfile.import f in
-    if chksum <> objchk then
+    let symfile = Symfile.import m in
+    if symfile.y_checksum <> objchk then
       fprintf stderr "? Symbol file for $ has wrong checksum\n" [fId m];
-    Hashtbl.add modules m env;
+    Hashtbl.add modules m symfile;
     List.iter (fun d ->
       match d.d_kind with
 	  EnumDef n -> 
 	    if is_enum d.d_type then
 	      Hashtbl.add enum_dict 
 		(d.d_type.t_module, d.d_type.t_id, n) d
-	| _ -> ()) (top_block env)
+	| _ -> ()) (top_block symfile.y_env)
   with Not_found ->
     fprintf stderr "? Couldn't find symbol file for $\n" [fId m]
 
-let get_module m = Hashtbl.find modules m
+let get_module m =
+  let symfile = Hashtbl.find modules m in symfile.y_env
+
+let module_source m =
+  let symfile = Hashtbl.find modules m in
+  Debconf.find_source symfile.y_fname
 
 let find_enum t v = 
   Hashtbl.find enum_dict 

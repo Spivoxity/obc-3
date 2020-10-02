@@ -28,7 +28,7 @@ END tGeraint.
 >>*)
 
 (*[[
-!! (SYMFILE #tGeraint STAMP #tGeraint.%main 1)
+!! (SYMFILE #tGeraint STAMP #tGeraint.%main 1 #tGeraint.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGeraint STAMP 0

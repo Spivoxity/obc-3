@@ -18,7 +18,7 @@ END tAggreg07.
 >>*)
 
 (*[[
-!! (SYMFILE #tAggreg07 STAMP #tAggreg07.%main 1)
+!! (SYMFILE #tAggreg07 STAMP #tAggreg07.%main 1 #tAggreg07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tAggreg07 STAMP 0

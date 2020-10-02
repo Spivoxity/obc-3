@@ -15,7 +15,7 @@ BEGIN
 END tComp.
 
 (*[[
-!! (SYMFILE #tComp STAMP #tComp.%main 1)
+!! (SYMFILE #tComp STAMP #tComp.%main 1 #tComp.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tComp STAMP 0

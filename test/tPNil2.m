@@ -14,7 +14,7 @@ In procedure tPNil2.foo
 >>*)
 
 (*[[
-!! (SYMFILE #tPNil2 STAMP #tPNil2.%main 1)
+!! (SYMFILE #tPNil2 STAMP #tPNil2.%main 1 #tPNil2.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPNil2 STAMP 0

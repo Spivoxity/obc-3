@@ -56,7 +56,7 @@ BEGIN
 END tDivMod07.
 
 (*[[
-!! (SYMFILE #tDivMod07 STAMP #tDivMod07.%main 1)
+!! (SYMFILE #tDivMod07 STAMP #tDivMod07.%main 1 #tDivMod07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDivMod07 STAMP 0

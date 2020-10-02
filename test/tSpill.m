@@ -46,7 +46,7 @@ END tSpill.
 >>*)
 
 (*[[
-!! (SYMFILE #tSpill STAMP #tSpill.%main 1)
+!! (SYMFILE #tSpill STAMP #tSpill.%main 1 #tSpill.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSpill STAMP 0

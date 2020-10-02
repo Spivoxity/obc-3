@@ -24,7 +24,7 @@ BEGIN
 END tFGH.
 
 (*[[
-!! (SYMFILE #tFGH STAMP #tFGH.%main 1)
+!! (SYMFILE #tFGH STAMP #tFGH.%main 1 #tFGH.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFGH STAMP 0

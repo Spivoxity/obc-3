@@ -27,7 +27,7 @@ S
 >>*)
 
 (*[[
-!! (SYMFILE #tPParam STAMP #tPParam.%main 1)
+!! (SYMFILE #tPParam STAMP #tPParam.%main 1 #tPParam.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPParam STAMP 0

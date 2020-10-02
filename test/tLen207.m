@@ -52,7 +52,7 @@ END tLen207.
 >>*)
 
 (*[[
-!! (SYMFILE #tLen207 STAMP #tLen207.%main 1)
+!! (SYMFILE #tLen207 STAMP #tLen207.%main 1 #tLen207.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLen207 STAMP 0

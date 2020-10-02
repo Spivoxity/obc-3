@@ -18,7 +18,7 @@ END tStif07.
 >>*)
 
 (*[[
-!! (SYMFILE #tStif07 STAMP #tStif07.%main 1)
+!! (SYMFILE #tStif07 STAMP #tStif07.%main 1 #tStif07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tStif07 STAMP 0

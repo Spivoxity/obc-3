@@ -35,7 +35,7 @@ BEGIN
 END tMeth.
 
 (*[[
-!! (SYMFILE #tMeth STAMP #tMeth.%main 1)
+!! (SYMFILE #tMeth STAMP #tMeth.%main 1 #tMeth.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tMeth STAMP 0

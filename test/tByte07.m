@@ -16,7 +16,7 @@ END tByte07.
 >>*)
 
 (*[[
-!! (SYMFILE #tByte07 STAMP #tByte07.%main 1)
+!! (SYMFILE #tByte07 STAMP #tByte07.%main 1 #tByte07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tByte07 STAMP 0

@@ -14,7 +14,7 @@ BEGIN
 END tPNil07.
 
 (*[[
-!! (SYMFILE #tPNil07 STAMP #tPNil07.%main 1)
+!! (SYMFILE #tPNil07 STAMP #tPNil07.%main 1 #tPNil07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPNil07 STAMP 0

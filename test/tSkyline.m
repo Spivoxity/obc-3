@@ -103,7 +103,7 @@ END tSkyline.
 >>*)
 
 (*[[
-!! (SYMFILE #tSkyline STAMP #tSkyline.%main 1)
+!! (SYMFILE #tSkyline STAMP #tSkyline.%main 1 #tSkyline.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSkyline STAMP 0

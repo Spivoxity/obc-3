@@ -15,7 +15,7 @@ END tInc.
 >>*)
 
 (*[[
-!! (SYMFILE #tInc STAMP #tInc.%main 1)
+!! (SYMFILE #tInc STAMP #tInc.%main 1 #tInc.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tInc STAMP 0

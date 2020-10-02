@@ -38,7 +38,7 @@ BEGIN
 END tFCmp07.
 
 (*[[
-!! (SYMFILE #tFCmp07 STAMP #tFCmp07.%main 1)
+!! (SYMFILE #tFCmp07 STAMP #tFCmp07.%main 1 #tFCmp07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFCmp07 STAMP 0

@@ -69,7 +69,7 @@ OK3
 >>*)
 
 (*[[
-!! (SYMFILE #tCover STAMP #tCover.%main 1)
+!! (SYMFILE #tCover STAMP #tCover.%main 1 #tCover.m)
 !! (PROCEDURE #proc9* 29 #tCover.proc9 !1 (PROC 0 VOID))
 !! (CHKSUM STAMP)
 !! 

@@ -53,7 +53,7 @@ END tNestFunc07.
 >>*)
 
 (*[[
-!! (SYMFILE #tNestFunc07 STAMP #tNestFunc07.%main 1)
+!! (SYMFILE #tNestFunc07 STAMP #tNestFunc07.%main 1 #tNestFunc07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tNestFunc07 STAMP 0

@@ -85,7 +85,7 @@ bc
 >>*)
 
 (*[[
-!! (SYMFILE #tString07 STAMP #tString07.%main 1)
+!! (SYMFILE #tString07 STAMP #tString07.%main 1 #tString07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tString07 STAMP 0

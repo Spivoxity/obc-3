@@ -22,7 +22,7 @@ OK
 >>*)
 
 (*[[
-!! (SYMFILE #tLongBool STAMP #tLongBool.%main 1)
+!! (SYMFILE #tLongBool STAMP #tLongBool.%main 1 #tLongBool.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLongBool STAMP 0

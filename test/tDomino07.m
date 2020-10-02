@@ -142,7 +142,7 @@ BEGIN
 END tDomino07.
 
 (*[[
-!! (SYMFILE #tDomino07 STAMP #tDomino07.%main 1)
+!! (SYMFILE #tDomino07 STAMP #tDomino07.%main 1 #tDomino07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDomino07 STAMP 0

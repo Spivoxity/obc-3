@@ -25,7 +25,7 @@ A Blip
 >>*)
 
 (*[[
-!! (SYMFILE #tAbsImport STAMP #tAbsImport.%main 1)
+!! (SYMFILE #tAbsImport STAMP #tAbsImport.%main 1 #tAbsImport.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tAbsImport STAMP 0

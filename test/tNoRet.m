@@ -19,7 +19,7 @@ In procedure tNoRet.merit
 >>*)
 
 (*[[
-!! (SYMFILE #tNoRet STAMP #tNoRet.%main 1)
+!! (SYMFILE #tNoRet STAMP #tNoRet.%main 1 #tNoRet.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tNoRet STAMP 0

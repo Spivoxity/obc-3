@@ -18,7 +18,7 @@ In procedure tWithErr.%main
 >>*)
 
 (*[[
-!! (SYMFILE #tWithErr STAMP #tWithErr.%main 1)
+!! (SYMFILE #tWithErr STAMP #tWithErr.%main 1 #tWithErr.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tWithErr STAMP 0

@@ -23,7 +23,7 @@ END tProcVarParam.
 >>*)
 
 (*[[
-!! (SYMFILE #tProcVarParam STAMP #tProcVarParam.%main 1)
+!! (SYMFILE #tProcVarParam STAMP #tProcVarParam.%main 1 #tProcVarParam.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tProcVarParam STAMP 0

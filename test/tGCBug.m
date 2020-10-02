@@ -29,7 +29,7 @@ BEGIN
 END tGCBug.
 
 (*[[
-!! (SYMFILE #tGCBug STAMP #tGCBug.%main 1)
+!! (SYMFILE #tGCBug STAMP #tGCBug.%main 1 #tGCBug.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGCBug STAMP 0

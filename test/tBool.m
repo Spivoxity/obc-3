@@ -16,7 +16,7 @@ BEGIN
 END tBool.
 
 (*[[
-!! (SYMFILE #tBool STAMP #tBool.%main 1)
+!! (SYMFILE #tBool STAMP #tBool.%main 1 #tBool.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBool STAMP 0

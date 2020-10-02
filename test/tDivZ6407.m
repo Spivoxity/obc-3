@@ -14,7 +14,7 @@ BEGIN
 END tDivZ6407.
 
 (*[[
-!! (SYMFILE #tDivZ6407 STAMP #tDivZ6407.%main 1)
+!! (SYMFILE #tDivZ6407 STAMP #tDivZ6407.%main 1 #tDivZ6407.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDivZ6407 STAMP 0

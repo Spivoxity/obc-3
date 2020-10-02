@@ -17,7 +17,7 @@ BEGIN
 END tAssert07.
 
 (*[[
-!! (SYMFILE #tAssert07 STAMP #tAssert07.%main 1)
+!! (SYMFILE #tAssert07 STAMP #tAssert07.%main 1 #tAssert07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tAssert07 STAMP 0

@@ -92,7 +92,7 @@ END tIter207.
 >>*)
 
 (*[[
-!! (SYMFILE #tIter207 STAMP #tIter207.%main 1)
+!! (SYMFILE #tIter207 STAMP #tIter207.%main 1 #tIter207.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tIter207 STAMP 0

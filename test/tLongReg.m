@@ -23,7 +23,7 @@ BEGIN
 END tLongReg.
 
 (*[[
-!! (SYMFILE #tLongReg STAMP #tLongReg.%main 1)
+!! (SYMFILE #tLongReg STAMP #tLongReg.%main 1 #tLongReg.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLongReg STAMP 0

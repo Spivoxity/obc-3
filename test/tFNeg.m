@@ -15,7 +15,7 @@ BEGIN
 END tFNeg.
 
 (*[[
-!! (SYMFILE #tFNeg STAMP #tFNeg.%main 1)
+!! (SYMFILE #tFNeg STAMP #tFNeg.%main 1 #tFNeg.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFNeg STAMP 0

@@ -17,7 +17,7 @@ BEGIN
 END tLongCmp07.
 
 (*[[
-!! (SYMFILE #tLongCmp07 STAMP #tLongCmp07.%main 1)
+!! (SYMFILE #tLongCmp07 STAMP #tLongCmp07.%main 1 #tLongCmp07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLongCmp07 STAMP 0

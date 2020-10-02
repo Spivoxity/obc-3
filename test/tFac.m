@@ -25,7 +25,7 @@ BEGIN
 END tFac.
 
 (*[[
-!! (SYMFILE #tFac STAMP #tFac.%main 1)
+!! (SYMFILE #tFac STAMP #tFac.%main 1 #tFac.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFac STAMP 0

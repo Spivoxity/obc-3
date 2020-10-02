@@ -313,7 +313,7 @@ To make 999 from 100 4 25 50 2 8:
 >>*)
 
 (*[[
-!! (SYMFILE #tCDown207 STAMP #tCDown207.%main 1)
+!! (SYMFILE #tCDown207 STAMP #tCDown207.%main 1 #tCDown207.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCDown207 STAMP 0

@@ -49,7 +49,7 @@ BEGIN
 END tOver07.
 
 (*[[
-!! (SYMFILE #tOver07 STAMP #tOver07.%main 1)
+!! (SYMFILE #tOver07 STAMP #tOver07.%main 1 #tOver07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tOver07 STAMP 0

@@ -29,7 +29,7 @@ BEGIN
 END tSamson.
 
 (*[[
-!! (SYMFILE #tSamson STAMP #tSamson.%main 1)
+!! (SYMFILE #tSamson STAMP #tSamson.%main 1 #tSamson.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSamson STAMP 0

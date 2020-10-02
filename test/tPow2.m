@@ -47,7 +47,7 @@ END tPow2.
 >>*)
 
 (*[[
-!! (SYMFILE #tPow2 STAMP #tPow2.%main 1)
+!! (SYMFILE #tPow2 STAMP #tPow2.%main 1 #tPow2.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPow2 STAMP 0

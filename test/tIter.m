@@ -95,7 +95,7 @@ END tIter.
 >>*)
 
 (*[[
-!! (SYMFILE #tIter STAMP #tIter.%main 1)
+!! (SYMFILE #tIter STAMP #tIter.%main 1 #tIter.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tIter STAMP 0

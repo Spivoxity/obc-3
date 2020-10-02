@@ -118,7 +118,8 @@ let rec has_children x v =
 	else
 	  false
     | Module m ->
-	List.exists showable (top_block (Info.get_module m))
+        let env = Info.get_module m in
+	List.exists showable (top_block env)
     | Dummy -> failwith "has_children"
     | DotDotDot -> false
 
@@ -188,7 +189,8 @@ class varsview_impl (peer : GTree.view) =
     end in
 
   let insert_module ?parent m =
-    if List.exists showable (top_block (Info.get_module m)) then
+    let env = Info.get_module m in
+    if List.exists showable (top_block env) then
       insert ?parent (Module m) void_value in
 
   let get_children iter =

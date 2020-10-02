@@ -56,5 +56,5 @@ let flash_msg = ref (fun msg -> ())
 
 let flash_message fmt args = !flash_msg (sprintf fmt args)
 
-let find_source m =
-  Util.search_path (Symtab.extern m ^ ".m") !Config.libpath
+let find_source f =
+  Util.search_path f !Config.libpath

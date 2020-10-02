@@ -67,7 +67,7 @@ END tInorder07.
 >>*)
 
 (*[[
-!! (SYMFILE #tInorder07 STAMP #tInorder07.%main 1)
+!! (SYMFILE #tInorder07 STAMP #tInorder07.%main 1 #tInorder07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tInorder07 STAMP 0

@@ -206,7 +206,7 @@ BEGIN
 END tMerge.
 
 (*[[
-!! (SYMFILE #tMerge STAMP #tMerge.%main 1)
+!! (SYMFILE #tMerge STAMP #tMerge.%main 1 #tMerge.m)
 !! (DEF !1 (POINTER))
 !! (DEF !2 (POINTER))
 !! (PROCEDURE #NewMergeStream* 118 #tMerge.NewMergeStream !3 (PROC 2 =2

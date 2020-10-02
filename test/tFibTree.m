@@ -81,7 +81,7 @@ BEGIN
 END tFibTree.
 
 (*[[
-!! (SYMFILE #tFibTree STAMP #tFibTree.%main 1)
+!! (SYMFILE #tFibTree STAMP #tFibTree.%main 1 #tFibTree.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFibTree STAMP 0

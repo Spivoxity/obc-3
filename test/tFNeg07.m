@@ -15,7 +15,7 @@ BEGIN
 END tFNeg07.
 
 (*[[
-!! (SYMFILE #tFNeg07 STAMP #tFNeg07.%main 1)
+!! (SYMFILE #tFNeg07 STAMP #tFNeg07.%main 1 #tFNeg07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFNeg07 STAMP 0

@@ -28,6 +28,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-val export: Dict.def -> Dict.docstring -> Dict.def list -> int
+open Dict
 
-val import: string -> Dict.environment * int * Dict.docstring
+(* export -- write a symbol file and return the checksum *)
+val export: def -> docstring -> def list -> string -> int
+
+(* import -- read a symbol file *)
+val import: Symtab.ident -> symfile

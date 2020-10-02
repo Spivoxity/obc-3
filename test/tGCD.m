@@ -21,7 +21,7 @@ BEGIN
 END tGCD.
 
 (*[[
-!! (SYMFILE #tGCD STAMP #tGCD.%main 1)
+!! (SYMFILE #tGCD STAMP #tGCD.%main 1 #tGCD.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGCD STAMP 0

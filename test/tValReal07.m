@@ -17,7 +17,7 @@ END tValReal07.
 >>*)
 
 (*[[
-!! (SYMFILE #tValReal07 STAMP #tValReal07.%main 1)
+!! (SYMFILE #tValReal07 STAMP #tValReal07.%main 1 #tValReal07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tValReal07 STAMP 0

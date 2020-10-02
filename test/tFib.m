@@ -22,7 +22,7 @@ BEGIN
 END tFib.
 
 (*[[
-!! (SYMFILE #tFib STAMP #tFib.%main 1)
+!! (SYMFILE #tFib STAMP #tFib.%main 1 #tFib.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFib STAMP 0

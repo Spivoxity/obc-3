@@ -83,11 +83,19 @@ usage () {
     $p "  -h file (with -C) Add header file for primitives" >&2
     $p "  -p      (with -C) Use profiling runtime system" >&2
     $p >&2
-    $p "  *.m, *.mod  Oberon source file to be compiled" >&2
+    $p "  *.m     Oberon source file to be compiled" >&2
+    $p "          (extensions .mod, .Mod, .obn, .ob2 also allowed)" >&2
     $p "  *.k     Bytecode file for linking" >&2
     $p "  *.c     File of primitives coded in C" >&2
     $p "  *.o     File of object code for primitives" >&2
     exit 2
+}
+
+srcfile () {
+    src="$src $1"
+    base=`basename $1 $2`
+    obj="$obj $base.k"
+    nsrc=`expr $nsrc + 1`
 }
 
 command () {
@@ -166,14 +174,11 @@ while [ $# -gt 0 ]; do
 	-C)	custom=true;;
 	-[lL]*) libs="$libs $1";;
 	-p)	obx_a=$rundir/obx-p.a;;
-	*.m)    src="$src $1"
-		base=`basename $1 .m`
-		obj="$obj $base.k"
-		nsrc=`expr $nsrc + 1`;;
-	*.mod)  src="$src $1"
-		base=`basename $1 .mod`
-		obj="$obj $base.k"
-		nsrc=`expr $nsrc + 1`;;
+	*.m)    srcfile $1 .m;;
+	*.mod)  srcfile $1 .mod;;
+        *.Mod)  srcfile $1 .Mod;;
+        *.obn)  srcfile $1 .obn;;
+        *.ob2)  srcfile $1 .ob2;;
 	*.k)	obj="$obj $1"
 		nobj=`expr $nobj + 1`;;
 	*.c)	cfiles="$cfiles $1"

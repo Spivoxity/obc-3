@@ -375,7 +375,7 @@ Solution:
 >>*)
 
 (*[[
-!! (SYMFILE #tSudoku STAMP #tSudoku.%main 1)
+!! (SYMFILE #tSudoku STAMP #tSudoku.%main 1 #tSudoku.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSudoku STAMP 0

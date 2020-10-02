@@ -59,7 +59,7 @@ END tSwap.
 >>*)
 
 (*[[
-!! (SYMFILE #tSwap STAMP #tSwap.%main 1)
+!! (SYMFILE #tSwap STAMP #tSwap.%main 1 #tSwap.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSwap STAMP 0

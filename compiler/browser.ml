@@ -30,6 +30,7 @@
 
 open Print
 open Symtab
+open Symfile
 open Eval
 open Dict
 open Config
@@ -228,26 +229,23 @@ let main () =
   if List.length !fns <> 1 then usage ();
   let modname = List.hd !fns in
   current := intern modname;
-  let (env, st, doc) = 
-    try 
-      Symfile.import 
-	(Util.search_path (modname ^ ".k") !Config.libpath)
-    with Not_found ->
+  let symfile =  
+    try Symfile.import !current with Not_found ->
       fprintf stderr "? The interface file for '$' cannot be found\n" 
 	[fStr modname];
       exit 1 in
 
   begin try
     source := 
-      open_in_bin (Util.search_path (modname ^ ".m") !Config.libpath);
+      open_in_bin (Util.search_path symfile.y_fname !Config.libpath);
     show_doc := true
   with Not_found ->
     fprintf stderr "? Can't find source file: omitting comments\n" [];
     flush stderr
   end;
 
-  printf "$DEFINITION $;\n\n" [fDoc doc; fStr modname];
-  List.iter print_def (top_block env);
+  printf "$DEFINITION $;\n\n" [fDoc symfile.y_doc; fStr modname];
+  List.iter print_def (top_block symfile.y_env);
   printf "END $.\n" [fStr modname]
 
 let crash fmt args =

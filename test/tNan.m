@@ -36,7 +36,7 @@ S1S2S3S4S5
 >>*)
 
 (*[[
-!! (SYMFILE #tNan STAMP #tNan.%main 1)
+!! (SYMFILE #tNan STAMP #tNan.%main 1 #tNan.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tNan STAMP 0

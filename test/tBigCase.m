@@ -219,7 +219,7 @@ END tBigCase.
 >>*)
 
 (*[[
-!! (SYMFILE #tBigCase STAMP #tBigCase.%main 1)
+!! (SYMFILE #tBigCase STAMP #tBigCase.%main 1 #tBigCase.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBigCase STAMP 0

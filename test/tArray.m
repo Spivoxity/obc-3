@@ -22,7 +22,7 @@ BEGIN
 END tArray.
 
 (*[[
-!! (SYMFILE #tArray STAMP #tArray.%main 1)
+!! (SYMFILE #tArray STAMP #tArray.%main 1 #tArray.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tArray STAMP 0

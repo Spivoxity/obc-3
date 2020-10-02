@@ -65,7 +65,7 @@ BEGIN
 END tFlex207.
 
 (*[[
-!! (SYMFILE #tFlex207 STAMP #tFlex207.%main 1)
+!! (SYMFILE #tFlex207 STAMP #tFlex207.%main 1 #tFlex207.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFlex207 STAMP 0

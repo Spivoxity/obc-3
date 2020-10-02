@@ -39,6 +39,9 @@ val import : Symtab.ident -> int -> unit
 (* get_module -- fetch symbol table for module *)
 val get_module : Symtab.ident -> Dict.environment
 
+(* module_source -- find source file for module *)
+val module_source : Symtab.ident -> string
+
 (* get_debug -- get debugging info for a procedure or other object *)
 val get_debug : Symtab.symbol -> Dict.def
 

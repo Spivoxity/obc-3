@@ -43,7 +43,7 @@ BEGIN
 END tCases07.
 
 (*[[
-!! (SYMFILE #tCases07 STAMP #tCases07.%main 1)
+!! (SYMFILE #tCases07 STAMP #tCases07.%main 1 #tCases07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCases07 STAMP 0

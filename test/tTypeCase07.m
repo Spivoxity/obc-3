@@ -38,7 +38,7 @@ END tTypeCase07.
 >>*)
 
 (*[[
-!! (SYMFILE #tTypeCase07 STAMP #tTypeCase07.%main 1)
+!! (SYMFILE #tTypeCase07 STAMP #tTypeCase07.%main 1 #tTypeCase07.m)
 !! (TYPE #Obj* !1 (POINTER))
 !! (TARGET =1 !2 (RECORD #tTypeCase07.Empty 0 VOID))
 !! (CHKSUM STAMP)

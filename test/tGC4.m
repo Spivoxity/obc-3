@@ -44,7 +44,7 @@ BEGIN
 END tGC4.
 
 (*[[
-!! (SYMFILE #tGC4 STAMP #tGC4.%main 1)
+!! (SYMFILE #tGC4 STAMP #tGC4.%main 1 #tGC4.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGC4 STAMP 0

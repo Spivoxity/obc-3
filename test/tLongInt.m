@@ -45,7 +45,7 @@ Good!
 >>*)
 
 (*[[
-!! (SYMFILE #tLongInt STAMP #tLongInt.%main 1)
+!! (SYMFILE #tLongInt STAMP #tLongInt.%main 1 #tLongInt.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLongInt STAMP 0

@@ -15,7 +15,7 @@ END tDNeg.
 >>*)
 
 (*[[
-!! (SYMFILE #tDNeg STAMP #tDNeg.%main 1)
+!! (SYMFILE #tDNeg STAMP #tDNeg.%main 1 #tDNeg.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDNeg STAMP 0

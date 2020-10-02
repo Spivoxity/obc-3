@@ -26,7 +26,7 @@ In procedure tLocProc.A
 >>*)
 
 (*[[
-!! (SYMFILE #tLocProc STAMP #tLocProc.%main 1)
+!! (SYMFILE #tLocProc STAMP #tLocProc.%main 1 #tLocProc.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLocProc STAMP 0

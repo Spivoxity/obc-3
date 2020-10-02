@@ -41,7 +41,7 @@ END tRecur07.
 >>*)
 
 (*[[
-!! (SYMFILE #tRecur07 STAMP #tRecur07.%main 1)
+!! (SYMFILE #tRecur07 STAMP #tRecur07.%main 1 #tRecur07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tRecur07 STAMP 0

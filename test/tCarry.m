@@ -20,7 +20,7 @@ END tCarry.
 >>*)
 
 (*[[
-!! (SYMFILE #tCarry STAMP #tCarry.%main 1)
+!! (SYMFILE #tCarry STAMP #tCarry.%main 1 #tCarry.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCarry STAMP 0

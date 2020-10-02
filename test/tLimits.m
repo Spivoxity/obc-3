@@ -85,7 +85,7 @@ BEGIN
 END tLimits.
 
 (*[[
-!! (SYMFILE #tLimits STAMP #tLimits.%main 1)
+!! (SYMFILE #tLimits STAMP #tLimits.%main 1 #tLimits.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLimits STAMP 0

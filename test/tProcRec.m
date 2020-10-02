@@ -28,7 +28,7 @@ Clear
 >>*)
 
 (*[[
-!! (SYMFILE #tProcRec STAMP #tProcRec.%main 1)
+!! (SYMFILE #tProcRec STAMP #tProcRec.%main 1 #tProcRec.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tProcRec STAMP 0

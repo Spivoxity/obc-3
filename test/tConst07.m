@@ -26,7 +26,7 @@ END tConst07.
 >>*)
 
 (*[[
-!! (SYMFILE #tConst07 STAMP #tConst07.%main 1)
+!! (SYMFILE #tConst07 STAMP #tConst07.%main 1 #tConst07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tConst07 STAMP 0

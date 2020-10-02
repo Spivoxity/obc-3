@@ -278,7 +278,7 @@ BEGIN
 END tCDown107.
 
 (*[[
-!! (SYMFILE #tCDown107 STAMP #tCDown107.%main 1)
+!! (SYMFILE #tCDown107 STAMP #tCDown107.%main 1 #tCDown107.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCDown107 STAMP 0

@@ -31,7 +31,7 @@ BEGIN
 END tHide.
 
 (*[[
-!! (SYMFILE #tHide STAMP #tHide.%main 1)
+!! (SYMFILE #tHide STAMP #tHide.%main 1 #tHide.m)
 !! (DEF ?1 #xPrelude 2 #blob (RECORD #xPrelude.blob 8 VOID
 !!     (FIELD #x 0 INTEGER)
 !!     (FIELD #y* 4 INTEGER)))

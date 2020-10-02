@@ -18,7 +18,7 @@ BEGIN
 END tFJump07.
 
 (*[[
-!! (SYMFILE #tFJump07 STAMP #tFJump07.%main 1)
+!! (SYMFILE #tFJump07 STAMP #tFJump07.%main 1 #tFJump07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFJump07 STAMP 0

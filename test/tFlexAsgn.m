@@ -26,7 +26,7 @@ END tFlexAsgn.
 >>*)
 
 (*[[
-!! (SYMFILE #tFlexAsgn STAMP #tFlexAsgn.%main 1)
+!! (SYMFILE #tFlexAsgn STAMP #tFlexAsgn.%main 1 #tFlexAsgn.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFlexAsgn STAMP 0

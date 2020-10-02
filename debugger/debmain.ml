@@ -201,7 +201,7 @@ class main_window () =
     (* Add a module to the menu *)
     method add_module m =
       try
-	let fname = Debconf.find_source m in
+	let fname = Info.module_source m in
 	incr modcount;
 	let format = if !modcount < 10 then "_$ $" else "$ $" in
 	let item = 

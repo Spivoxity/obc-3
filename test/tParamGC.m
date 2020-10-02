@@ -30,7 +30,7 @@ END tParamGC.
 >>*)
 
 (*[[
-!! (SYMFILE #tParamGC STAMP #tParamGC.%main 1)
+!! (SYMFILE #tParamGC STAMP #tParamGC.%main 1 #tParamGC.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tParamGC STAMP 0

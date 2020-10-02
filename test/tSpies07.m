@@ -52,7 +52,7 @@ END tSpies07.
 >>*)
 
 (*[[
-!! (SYMFILE #tSpies07 STAMP #tSpies07.%main 1)
+!! (SYMFILE #tSpies07 STAMP #tSpies07.%main 1 #tSpies07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSpies07 STAMP 0

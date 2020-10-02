@@ -35,7 +35,7 @@ END tUnsafe.
 >>*)
 
 (*[[
-!! (SYMFILE #tUnsafe STAMP #tUnsafe.%main 1)
+!! (SYMFILE #tUnsafe STAMP #tUnsafe.%main 1 #tUnsafe.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tUnsafe STAMP 0

@@ -74,7 +74,7 @@ END tWild.
 >>*)
 
 (*[[
-!! (SYMFILE #tWild STAMP #tWild.%main 1)
+!! (SYMFILE #tWild STAMP #tWild.%main 1 #tWild.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tWild STAMP 0

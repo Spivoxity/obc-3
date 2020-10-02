@@ -31,16 +31,17 @@
 open Print
 open Tree
 
-let export (Module (m, _, _, defs, doc)) =
-  Symfile.export (get_def m) doc !defs
+let export (Module (m, _, _, defs, doc)) fname =
+  Symfile.export (get_def m) doc !defs fname
 
-let compiler base_name in_file =
-  Symtab.current := Symtab.intern base_name;
-  Lexer.init ();
-  let chan = try open_in_bin in_file 
+let compiler in_file =
+  let base = Filename.basename in_file in
+  Symtab.current := Symtab.intern (Filename.remove_extension base);
+  let inchan = try open_in_bin in_file 
     with Sys_error s -> fprintf stderr "$\n" [fStr s]; exit 1 in
-  let lexbuf = Lexing.from_channel chan in
-  Error.init_errors in_file chan lexbuf;
+  let lexbuf = Lexing.from_channel inchan in
+  Lexer.init ();
+  Error.init_errors in_file inchan lexbuf;
   let prog = 
     try Parser.program Lexer.token lexbuf with
       Yyparse.Parse_error -> exit 1 in
@@ -50,7 +51,7 @@ let compiler base_name in_file =
   (* (DEBUG-- *)
   if !Config.debug > 0 then print_tree stdout prog;
   (* --DEBUG) *)
-  let stamp = export prog in
+  let stamp = export prog base in
   Igen.translate stamp prog
 
 (* (DEBUG-- *)
@@ -97,24 +98,15 @@ let spec =
     "-rsb", Arg.Set Config.lcflag, " Keywords and built-ins in lower case";
     "-07", Arg.Set Config.ob07flag, " Oberon-07 language rules"]
 
-let usage () = Arg.usage spec "Usage:"; exit 2
+let usage () = Arg.usage spec "Usage: obc1 [flags] module.m"; exit 2
 
 let obc = 
   let fns = ref [] in
   Arg.parse spec (function s -> fns := !fns @ [s]) "Usage:";
   if List.length !fns <> 1 then usage ();
   let in_file = List.hd !fns in
-  let base = Filename.basename in_file in
-  let base_name =
-    if Filename.check_suffix in_file ".m" then 
-      Filename.chop_suffix base ".m"
-    else if Filename.check_suffix in_file ".mod" then 
-      Filename.chop_suffix base ".mod"
-    else
-      usage () in
   if !Config.debug = 0 then
-    catch_failure (compiler base_name) in_file
+    catch_failure compiler in_file
   else
-    compiler base_name in_file;
-
+    compiler in_file;
   exit 0
