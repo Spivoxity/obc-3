@@ -37,7 +37,7 @@ END tPythag.
 >>*)
 
 (*[[
-!! (SYMFILE #tPythag STAMP #tPythag.%main 1)
+!! (SYMFILE #tPythag STAMP #tPythag.%main 1 #tPythag.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPythag STAMP 0

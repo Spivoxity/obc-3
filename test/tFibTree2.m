@@ -88,7 +88,7 @@ Count = 21
 >>*)
 
 (*[[
-!! (SYMFILE #tFibTree2 STAMP #tFibTree2.%main 1)
+!! (SYMFILE #tFibTree2 STAMP #tFibTree2.%main 1 #tFibTree2.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFibTree2 STAMP 0

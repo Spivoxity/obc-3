@@ -44,7 +44,7 @@ BEGIN
 END tMixIt07.
 
 (*[[
-!! (SYMFILE #tMixIt07 STAMP #tMixIt07.%main 1)
+!! (SYMFILE #tMixIt07 STAMP #tMixIt07.%main 1 #tMixIt07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tMixIt07 STAMP 0

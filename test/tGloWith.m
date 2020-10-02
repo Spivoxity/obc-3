@@ -25,7 +25,7 @@ none
 >>*)
 
 (*[[
-!! (SYMFILE #tGloWith STAMP #tGloWith.%main 1)
+!! (SYMFILE #tGloWith STAMP #tGloWith.%main 1 #tGloWith.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGloWith STAMP 0

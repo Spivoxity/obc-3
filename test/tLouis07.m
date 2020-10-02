@@ -31,7 +31,7 @@ Two 3.14000
 >>*)
 
 (*[[
-!! (SYMFILE #tLouis07 STAMP #tLouis07.%main 1)
+!! (SYMFILE #tLouis07 STAMP #tLouis07.%main 1 #tLouis07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLouis07 STAMP 0

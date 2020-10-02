@@ -20,7 +20,7 @@ END tBitmap.
 >>*)
 
 (*[[
-!! (SYMFILE #tBitmap STAMP #tBitmap.%main 1)
+!! (SYMFILE #tBitmap STAMP #tBitmap.%main 1 #tBitmap.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBitmap STAMP 0

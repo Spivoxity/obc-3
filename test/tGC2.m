@@ -48,7 +48,7 @@ BEGIN
 END tGC2.
 
 (*[[
-!! (SYMFILE #tGC2 STAMP #tGC2.%main 1)
+!! (SYMFILE #tGC2 STAMP #tGC2.%main 1 #tGC2.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGC2 STAMP 0

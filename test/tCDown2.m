@@ -280,7 +280,7 @@ To make 999 from 100 4 25 50 2 8:
 >>*)
 
 (*[[
-!! (SYMFILE #tCDown2 STAMP #tCDown2.%main 1)
+!! (SYMFILE #tCDown2 STAMP #tCDown2.%main 1 #tCDown2.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCDown2 STAMP 0

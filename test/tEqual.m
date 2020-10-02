@@ -48,7 +48,7 @@ END tEqual.
 >>*)
 
 (*[[
-!! (SYMFILE #tEqual STAMP #tEqual.%main 1)
+!! (SYMFILE #tEqual STAMP #tEqual.%main 1 #tEqual.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tEqual STAMP 0

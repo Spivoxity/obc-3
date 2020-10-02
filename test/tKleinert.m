@@ -32,7 +32,7 @@ OK
 >>*)
 
 (*[[
-!! (SYMFILE #tKleinert STAMP #tKleinert.%main 1)
+!! (SYMFILE #tKleinert STAMP #tKleinert.%main 1 #tKleinert.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tKleinert STAMP 0

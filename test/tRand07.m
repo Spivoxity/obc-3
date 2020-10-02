@@ -262,7 +262,7 @@ END tRand07.
 >>*)
 
 (*[[
-!! (SYMFILE #tRand07 STAMP #tRand07.%main 1)
+!! (SYMFILE #tRand07 STAMP #tRand07.%main 1 #tRand07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tRand07 STAMP 0

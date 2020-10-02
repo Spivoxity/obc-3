@@ -21,7 +21,7 @@ END tDblArg.
 >>*)
 
 (*[[
-!! (SYMFILE #tDblArg STAMP #tDblArg.%main 1)
+!! (SYMFILE #tDblArg STAMP #tDblArg.%main 1 #tDblArg.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDblArg STAMP 0

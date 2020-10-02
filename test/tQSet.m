@@ -59,7 +59,7 @@ BEGIN
 END tQSet.
 
 (*[[
-!! (SYMFILE #tQSet STAMP #tQSet.%main 1)
+!! (SYMFILE #tQSet STAMP #tQSet.%main 1 #tQSet.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tQSet STAMP 0

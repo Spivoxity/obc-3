@@ -73,7 +73,7 @@ END tZeck07.
 >>*)
 
 (*[[
-!! (SYMFILE #tZeck07 STAMP #tZeck07.%main 14)
+!! (SYMFILE #tZeck07 STAMP #tZeck07.%main 14 #tZeck07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tZeck07 STAMP 0

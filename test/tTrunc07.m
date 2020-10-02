@@ -21,7 +21,7 @@ END tTrunc07.
 >>*)
 
 (*[[
-!! (SYMFILE #tTrunc07 STAMP #tTrunc07.%main 1)
+!! (SYMFILE #tTrunc07 STAMP #tTrunc07.%main 1 #tTrunc07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tTrunc07 STAMP 0

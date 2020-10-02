@@ -36,7 +36,7 @@ three
 >>*)
 
 (*[[
-!! (SYMFILE #tCompLong STAMP #tCompLong.%main 1)
+!! (SYMFILE #tCompLong STAMP #tCompLong.%main 1 #tCompLong.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCompLong STAMP 0

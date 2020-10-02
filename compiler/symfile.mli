@@ -28,6 +28,14 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-val export: Dict.def -> Dict.docstring -> Dict.def list -> int
+type symfile =
+  { y_env: Dict.environment;
+    y_checksum: int;
+    y_doc: Dict.docstring;
+    y_fname: string }
 
-val import: string -> Dict.environment * int * Dict.docstring
+(* export -- write a symbol file and return the checksum *)
+val export: Dict.def -> Dict.docstring -> Dict.def list -> string -> int
+
+(* import -- read a symbol file *)
+val import: Symtab.ident -> symfile

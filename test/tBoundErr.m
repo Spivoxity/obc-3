@@ -13,7 +13,7 @@ In procedure tBoundErr.%main
 >>*)
 
 (*[[
-!! (SYMFILE #tBoundErr STAMP #tBoundErr.%main 1)
+!! (SYMFILE #tBoundErr STAMP #tBoundErr.%main 1 #tBoundErr.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBoundErr STAMP 0

@@ -20,7 +20,7 @@ BEGIN
 END tReal07.
 
 (*[[
-!! (SYMFILE #tReal07 STAMP #tReal07.%main 1)
+!! (SYMFILE #tReal07 STAMP #tReal07.%main 1 #tReal07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tReal07 STAMP 0

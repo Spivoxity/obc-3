@@ -36,7 +36,7 @@ BEGIN
 END tDigits207.
 
 (*[[
-!! (SYMFILE #tDigits207 STAMP #tDigits207.%main 1)
+!! (SYMFILE #tDigits207 STAMP #tDigits207.%main 1 #tDigits207.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDigits207 STAMP 0

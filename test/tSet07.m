@@ -47,7 +47,7 @@ END tSet07.
 >>*)
 
 (*[[
-!! (SYMFILE #tSet07 STAMP #tSet07.%main 1)
+!! (SYMFILE #tSet07 STAMP #tSet07.%main 1 #tSet07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSet07 STAMP 0

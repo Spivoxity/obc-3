@@ -20,7 +20,7 @@ True
 >>*)
 
 (*[[
-!! (SYMFILE #tSetConst STAMP #tSetConst.%main 1)
+!! (SYMFILE #tSetConst STAMP #tSetConst.%main 1 #tSetConst.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSetConst STAMP 0

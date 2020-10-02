@@ -30,7 +30,7 @@ END tCPSFib.
 >>*)
 
 (*[[
-!! (SYMFILE #tCPSFib STAMP #tCPSFib.%main 1)
+!! (SYMFILE #tCPSFib STAMP #tCPSFib.%main 1 #tCPSFib.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCPSFib STAMP 0

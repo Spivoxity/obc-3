@@ -11,7 +11,7 @@ BEGIN
 END tBigInt07.
 
 (*[[
-!! (SYMFILE #tBigInt07 STAMP #tBigInt07.%main 1)
+!! (SYMFILE #tBigInt07 STAMP #tBigInt07.%main 1 #tBigInt07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBigInt07 STAMP 0

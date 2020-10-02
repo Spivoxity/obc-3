@@ -22,7 +22,7 @@ BEGIN
 END tPtrVal.  
 
 (*[[
-!! (SYMFILE #tPtrVal STAMP #tPtrVal.%main 1)
+!! (SYMFILE #tPtrVal STAMP #tPtrVal.%main 1 #tPtrVal.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPtrVal STAMP 0

@@ -18,7 +18,7 @@ END tSysMove.
 >>*)
 
 (*[[
-!! (SYMFILE #tSysMove STAMP #tSysMove.%main 1)
+!! (SYMFILE #tSysMove STAMP #tSysMove.%main 1 #tSysMove.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSysMove STAMP 0

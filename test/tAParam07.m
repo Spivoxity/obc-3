@@ -29,7 +29,7 @@ BEGIN
 END tAParam07.
 
 (*[[
-!! (SYMFILE #tAParam07 STAMP #tAParam07.%main 1)
+!! (SYMFILE #tAParam07 STAMP #tAParam07.%main 1 #tAParam07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tAParam07 STAMP 0

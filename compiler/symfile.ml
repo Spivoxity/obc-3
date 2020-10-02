@@ -329,12 +329,12 @@ let do_fixups () =
     end
   done
     
-let export m doc glodefs = 
+let export m doc glodefs fname = 
   ntypes := 0; 
   Hashtbl.clear out_table;
-  xprintf "(SYMFILE #$ $ #$ $$)" 
+  xprintf "(SYMFILE #$ $ #$ $$ #$)" 
     [fId m.d_tag; fHex Config.signature; fSym m.d_lab; 
-      fNum m.d_line; fDoc doc];
+      fNum m.d_line; fDoc doc; fStr fname];
   List.iter 
     (function d -> 
       if !Config.debug_info || d.d_export <> Private then out_def d; 
@@ -347,15 +347,22 @@ let export m doc glodefs =
 
 (* Importing *)
 
+type symfile =
+  { y_env: Dict.environment;
+    y_checksum: int;
+    y_doc: Dict.docstring;
+    y_fname: string }
+
 let import name = 
-  let chan = open_in name in
+  let fname = Util.search_path (extern name ^ ".k") !Config.libpath in
+  let chan = open_in fname in
   let lexbuf = Lexing.from_channel chan in
   Symlex.line := 1;
-  let (env, chksum, doc) = 
+  let (env, chk, doc, sname) = 
     try Symparse.file Symlex.token lexbuf 
     with Yyparse.Parse_error ->
       failwith (sprintf "symfile syntax at $ (line $ in $)" 
-	[fStr (Lexing.lexeme lexbuf); fNum !Symlex.line; fStr name]) in
+	[fStr (Lexing.lexeme lexbuf); fNum !Symlex.line; fStr fname]) in
   close_in chan;
-  (env, chksum, doc)
+  { y_env = env; y_checksum = chk; y_doc = doc; y_fname = sname }
 

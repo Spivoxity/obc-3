@@ -23,7 +23,7 @@ END tFold.
 >>*)
 
 (*[[
-!! (SYMFILE #tFold STAMP #tFold.%main 1)
+!! (SYMFILE #tFold STAMP #tFold.%main 1 #tFold.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFold STAMP 0

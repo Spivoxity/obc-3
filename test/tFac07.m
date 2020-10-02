@@ -27,7 +27,7 @@ BEGIN
 END tFac07.
 
 (*[[
-!! (SYMFILE #tFac07 STAMP #tFac07.%main 1)
+!! (SYMFILE #tFac07 STAMP #tFac07.%main 1 #tFac07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFac07 STAMP 0

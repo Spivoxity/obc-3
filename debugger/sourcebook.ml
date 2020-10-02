@@ -210,7 +210,7 @@ class sourcebook_impl (peer : GPack.notebook) =
       with Not_found ->
 	(* Page not loaded yet *)
 	try 
-	  let fname = Debconf.find_source m in self#create_page m fname
+	  let fname = Info.module_source m in self#create_page m fname
 	with Not_found ->
 	  (* Can't find the file *)
 	  Debconf.flash_message "Can't find source for module $" [fId m];

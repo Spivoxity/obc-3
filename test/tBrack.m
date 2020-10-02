@@ -200,7 +200,7 @@ BEGIN
 END tBrack.
 
 (*[[
-!! (SYMFILE #tBrack STAMP #tBrack.%main 1)
+!! (SYMFILE #tBrack STAMP #tBrack.%main 1 #tBrack.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBrack STAMP 0

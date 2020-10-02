@@ -41,7 +41,7 @@ BEGIN
 END tSuper2.
 
 (*[[
-!! (SYMFILE #tSuper2 STAMP #tSuper2.%main 1)
+!! (SYMFILE #tSuper2 STAMP #tSuper2.%main 1 #tSuper2.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSuper2 STAMP 0

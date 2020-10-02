@@ -18,7 +18,7 @@ Hello world
 >>*)
 
 (*[[
-!! (SYMFILE #tFlexAss07 STAMP #tFlexAss07.%main 1)
+!! (SYMFILE #tFlexAss07 STAMP #tFlexAss07.%main 1 #tFlexAss07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFlexAss07 STAMP 0

@@ -9,7 +9,7 @@ BEGIN
 END tSetComp.
 
 (*[[
-!! (SYMFILE #tSetComp STAMP #tSetComp.%main 1)
+!! (SYMFILE #tSetComp STAMP #tSetComp.%main 1 #tSetComp.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSetComp STAMP 0

@@ -25,7 +25,7 @@ BEGIN
 END tLong.
 
 (*[[
-!! (SYMFILE #tLong STAMP #tLong.%main 1)
+!! (SYMFILE #tLong STAMP #tLong.%main 1 #tLong.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLong STAMP 0

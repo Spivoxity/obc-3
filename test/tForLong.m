@@ -29,7 +29,7 @@ END tForLong.
 >>*)
 
 (*[[
-!! (SYMFILE #tForLong STAMP #tForLong.%main 1)
+!! (SYMFILE #tForLong STAMP #tForLong.%main 1 #tForLong.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tForLong STAMP 0

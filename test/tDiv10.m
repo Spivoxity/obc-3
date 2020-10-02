@@ -34,7 +34,7 @@ Done
 >>*)
 
 (*[[
-!! (SYMFILE #tDiv10 STAMP #tDiv10.%main 1)
+!! (SYMFILE #tDiv10 STAMP #tDiv10.%main 1 #tDiv10.m)
 !! (CONST #inv10* INTEGER 3277)
 !! (CHKSUM STAMP)
 !! 

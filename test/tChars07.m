@@ -19,7 +19,7 @@ BEGIN
 END tChars07.
 
 (*[[
-!! (SYMFILE #tChars07 STAMP #tChars07.%main 1)
+!! (SYMFILE #tChars07 STAMP #tChars07.%main 1 #tChars07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tChars07 STAMP 0

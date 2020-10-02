@@ -41,7 +41,7 @@ END tRecur.
 >>*)
 
 (*[[
-!! (SYMFILE #tRecur STAMP #tRecur.%main 1)
+!! (SYMFILE #tRecur STAMP #tRecur.%main 1 #tRecur.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tRecur STAMP 0

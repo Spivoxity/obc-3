@@ -19,7 +19,7 @@ BEGIN
 END tOdd.
 
 (*[[
-!! (SYMFILE #tOdd STAMP #tOdd.%main 1)
+!! (SYMFILE #tOdd STAMP #tOdd.%main 1 #tOdd.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tOdd STAMP 0

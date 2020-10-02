@@ -21,7 +21,7 @@ BEGIN
 END tSuck07.
 
 (*[[
-!! (SYMFILE #tSuck07 STAMP #tSuck07.%main 1)
+!! (SYMFILE #tSuck07 STAMP #tSuck07.%main 1 #tSuck07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSuck07 STAMP 0

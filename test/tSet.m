@@ -53,7 +53,7 @@ END tSet.
 >>*)
 
 (*[[
-!! (SYMFILE #tSet STAMP #tSet.%main 1)
+!! (SYMFILE #tSet STAMP #tSet.%main 1 #tSet.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSet STAMP 0

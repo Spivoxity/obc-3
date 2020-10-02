@@ -111,7 +111,7 @@ END tMedian.
 >>*)
 
 (*[[
-!! (SYMFILE #tMedian STAMP #tMedian.%main 1)
+!! (SYMFILE #tMedian STAMP #tMedian.%main 1 #tMedian.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tMedian STAMP 0

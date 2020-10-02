@@ -15,7 +15,7 @@ BEGIN
 END tLibErr07.
   
 (*[[
-!! (SYMFILE #tLibErr07 STAMP #tLibErr07.%main 1)
+!! (SYMFILE #tLibErr07 STAMP #tLibErr07.%main 1 #tLibErr07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLibErr07 STAMP 0

@@ -30,6 +30,7 @@
 
 open Tree
 open Symtab
+open Symfile
 open Dict
 open Gcmap
 open Mach
@@ -927,13 +928,15 @@ let check_import (int, ext, stamp) env =
       [] int.x_loc
   else begin
     try
-      let (env', st, doc) = 
-	if ext = intern_sys "SYSTEM" then
-	  (sysenv (), 0, None)
-	else 
-	  Symfile.import
-	    (Util.search_path (extern ext ^ ".k") !Config.libpath) in
-      stamp := st;
+      let env' =
+        if ext = intern_sys "SYSTEM" then begin
+           stamp := 0; sysenv ()
+        end else begin
+        let symfile = Symfile.import ext in
+
+           stamp := symfile.y_checksum;
+           symfile.y_env
+        end in
       add_def (make_def int (ModDef (ext, env')) voidtype None) env
     with Not_found ->
       sem_error "the interface file for '$' cannot be found" 

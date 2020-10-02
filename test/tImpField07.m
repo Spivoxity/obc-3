@@ -11,7 +11,7 @@ END tImpField07.
 >>*)
 
 (*[[
-!! (SYMFILE #tImpField07 STAMP #tImpField07.%main 1)
+!! (SYMFILE #tImpField07 STAMP #tImpField07.%main 1 #tImpField07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tImpField07 STAMP 0

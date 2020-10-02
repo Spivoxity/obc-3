@@ -18,7 +18,7 @@ BEGIN
 END tFJump.
 
 (*[[
-!! (SYMFILE #tFJump STAMP #tFJump.%main 1)
+!! (SYMFILE #tFJump STAMP #tFJump.%main 1 #tFJump.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFJump STAMP 0

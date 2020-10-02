@@ -24,7 +24,7 @@ BEGIN
 END tForDown.
 
 (*[[
-!! (SYMFILE #tForDown STAMP #tForDown.%main 1)
+!! (SYMFILE #tForDown STAMP #tForDown.%main 1 #tForDown.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tForDown STAMP 0

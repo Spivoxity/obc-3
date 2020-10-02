@@ -67,7 +67,7 @@ END tForQuick.
 >>*)
 
 (*[[
-!! (SYMFILE #tForQuick STAMP #tForQuick.%main 1)
+!! (SYMFILE #tForQuick STAMP #tForQuick.%main 1 #tForQuick.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tForQuick STAMP 0

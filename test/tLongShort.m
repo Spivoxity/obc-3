@@ -21,7 +21,7 @@ END tLongShort.
 >>*)
 
 (*[[
-!! (SYMFILE #tLongShort STAMP #tLongShort.%main 1)
+!! (SYMFILE #tLongShort STAMP #tLongShort.%main 1 #tLongShort.m)
 !! (PROCEDURE #P* 8 #tLongShort.P !1 (PROC 2 INTEGER
 !!     (PARAM #x 12 LONGREAL)))
 !! (CHKSUM STAMP)

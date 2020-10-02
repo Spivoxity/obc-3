@@ -50,7 +50,7 @@ BEGIN
 END tLongJump.
 
 (*[[
-!! (SYMFILE #tLongJump STAMP #tLongJump.%main 1)
+!! (SYMFILE #tLongJump STAMP #tLongJump.%main 1 #tLongJump.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLongJump STAMP 0

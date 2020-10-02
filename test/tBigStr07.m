@@ -23,7 +23,7 @@ BEGIN
 END tBigStr07.
 
 (*[[
-!! (SYMFILE #tBigStr07 STAMP #tBigStr07.%main 1)
+!! (SYMFILE #tBigStr07 STAMP #tBigStr07.%main 1 #tBigStr07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBigStr07 STAMP 0

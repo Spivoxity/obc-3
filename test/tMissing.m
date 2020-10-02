@@ -120,7 +120,7 @@ END tMissing.
 >>*)
 
 (*[[
-!! (SYMFILE #tMissing STAMP #tMissing.%main 1)
+!! (SYMFILE #tMissing STAMP #tMissing.%main 1 #tMissing.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tMissing STAMP 0

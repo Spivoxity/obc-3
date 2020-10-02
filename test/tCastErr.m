@@ -16,7 +16,7 @@ In procedure tCastErr.%main
 >>*)
 
 (*[[
-!! (SYMFILE #tCastErr STAMP #tCastErr.%main 1)
+!! (SYMFILE #tCastErr STAMP #tCastErr.%main 1 #tCastErr.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCastErr STAMP 0

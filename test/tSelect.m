@@ -107,7 +107,7 @@ END tSelect.
 >>*)
 
 (*[[
-!! (SYMFILE #tSelect STAMP #tSelect.%main 1)
+!! (SYMFILE #tSelect STAMP #tSelect.%main 1 #tSelect.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSelect STAMP 0

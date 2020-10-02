@@ -44,7 +44,7 @@ END tBomb07.
   
 
 (*[[
-!! (SYMFILE #tBomb07 STAMP #tBomb07.%main 1)
+!! (SYMFILE #tBomb07 STAMP #tBomb07.%main 1 #tBomb07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBomb07 STAMP 0

@@ -38,7 +38,7 @@ END tWith.
 >>*)
 
 (*[[
-!! (SYMFILE #tWith STAMP #tWith.%main 1)
+!! (SYMFILE #tWith STAMP #tWith.%main 1 #tWith.m)
 !! (TYPE #Obj* !1 (POINTER))
 !! (TARGET =1 !2 (RECORD #tWith.Empty 0 VOID))
 !! (CHKSUM STAMP)

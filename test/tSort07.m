@@ -75,7 +75,7 @@ END tSort07.
 >>*)
 
 (*[[
-!! (SYMFILE #tSort07 STAMP #tSort07.%main 1)
+!! (SYMFILE #tSort07 STAMP #tSort07.%main 1 #tSort07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSort07 STAMP 0

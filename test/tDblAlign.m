@@ -26,7 +26,7 @@ END tDblAlign.
 >>*)
 
 (*[[
-!! (SYMFILE #tDblAlign STAMP #tDblAlign.%main 1)
+!! (SYMFILE #tDblAlign STAMP #tDblAlign.%main 1 #tDblAlign.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDblAlign STAMP 0

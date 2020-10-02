@@ -25,7 +25,7 @@ BEGIN
 END tEcho07.
 
 (*[[
-!! (SYMFILE #tEcho07 STAMP #tEcho07.%main 1)
+!! (SYMFILE #tEcho07 STAMP #tEcho07.%main 1 #tEcho07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tEcho07 STAMP 0

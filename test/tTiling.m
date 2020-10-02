@@ -92,7 +92,7 @@ END tTiling.
 >>*)
 
 (*[[
-!! (SYMFILE #tTiling STAMP #tTiling.%main 1)
+!! (SYMFILE #tTiling STAMP #tTiling.%main 1 #tTiling.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tTiling STAMP 0

@@ -61,7 +61,7 @@ END tBinIO07.
 >>*)
 
 (*[[
-!! (SYMFILE #tBinIO07 STAMP #tBinIO07.%main 1)
+!! (SYMFILE #tBinIO07 STAMP #tBinIO07.%main 1 #tBinIO07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBinIO07 STAMP 0

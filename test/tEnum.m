@@ -33,7 +33,7 @@ BEGIN
 END tEnum.
 
 (*[[
-!! (SYMFILE #tEnum STAMP #tEnum.%main 1)
+!! (SYMFILE #tEnum STAMP #tEnum.%main 1 #tEnum.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tEnum STAMP 0

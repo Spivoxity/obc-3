@@ -63,7 +63,7 @@ BEGIN
 END tSuper.
 
 (*[[
-!! (SYMFILE #tSuper STAMP #tSuper.%main 1)
+!! (SYMFILE #tSuper STAMP #tSuper.%main 1 #tSuper.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSuper STAMP 0

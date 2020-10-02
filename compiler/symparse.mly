@@ -47,7 +47,7 @@ open Gcmap
 %token<Dict.otype>	BASICTYPE
 %token<Dict.export> 	MARK
 
-%start <Dict.environment * int * Dict.docstring> file
+%start <Dict.environment * int * Dict.docstring * string> file
 
 %{
 let modname = ref anon
@@ -89,10 +89,10 @@ let use_type k = Hashtbl.find in_table k
 %%
 
 file :
-    header defs chksum  	{ (!env, $chksum, $header) } ;
+    header defs chksum  	{ (!env, $chksum, fst $header, snd $header) } ;
 
 header :
-    LPAR SYMFILE ident HEX symbol int doc RPAR
+    LPAR SYMFILE ident HEX symbol@s1 int doc symbol@s2 RPAR
       { if int_of_string $HEX <> Config.signature then begin
 	  sem_error 
 	    "symbol table for '$' is from wrong version of compiler"
@@ -102,8 +102,8 @@ header :
 	modname := $ident; env := new_block empty_env; level := 0;
         let d = 
 	  make_def (intern "*body*") Private ProcDef bodytype $int None in
-	d.d_lab <- $symbol; debug d;
-        $doc } ;
+	d.d_lab <- $s1; debug d;
+        ($doc, $s2) } ;
 
 chksum :
     LPAR CHKSUM HEX RPAR	{ int_of_string $HEX } ;

@@ -30,7 +30,7 @@ END tPack07.
 >>*)
 
 (*[[
-!! (SYMFILE #tPack07 STAMP #tPack07.%main 1)
+!! (SYMFILE #tPack07 STAMP #tPack07.%main 1 #tPack07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPack07 STAMP 0

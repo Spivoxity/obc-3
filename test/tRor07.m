@@ -29,7 +29,7 @@ END tRor07.
 >>*)
 
 (*[[
-!! (SYMFILE #tRor07 STAMP #tRor07.%main 1)
+!! (SYMFILE #tRor07 STAMP #tRor07.%main 1 #tRor07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tRor07 STAMP 0

@@ -79,7 +79,7 @@ ordered
 >>*)
 
 (*[[
-!! (SYMFILE #tGC507 STAMP #tGC507.%main 1)
+!! (SYMFILE #tGC507 STAMP #tGC507.%main 1 #tGC507.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGC507 STAMP 0

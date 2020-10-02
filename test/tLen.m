@@ -28,7 +28,7 @@ END tLen.
 >>*)
 
 (*[[
-!! (SYMFILE #tLen STAMP #tLen.%main 1)
+!! (SYMFILE #tLen STAMP #tLen.%main 1 #tLen.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tLen STAMP 0

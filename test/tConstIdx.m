@@ -18,7 +18,7 @@ END tConstIdx.
 >>*)
 
 (*[[
-!! (SYMFILE #tConstIdx STAMP #tConstIdx.%main 1)
+!! (SYMFILE #tConstIdx STAMP #tConstIdx.%main 1 #tConstIdx.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tConstIdx STAMP 0

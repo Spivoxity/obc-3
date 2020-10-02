@@ -25,7 +25,7 @@ BEGIN
 END tEcho.
 
 (*[[
-!! (SYMFILE #tEcho STAMP #tEcho.%main 1)
+!! (SYMFILE #tEcho STAMP #tEcho.%main 1 #tEcho.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tEcho STAMP 0

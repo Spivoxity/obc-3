@@ -64,7 +64,7 @@ END tQuicksort.
 >>*)
 
 (*[[
-!! (SYMFILE #tQuicksort STAMP #tQuicksort.%main 1)
+!! (SYMFILE #tQuicksort STAMP #tQuicksort.%main 1 #tQuicksort.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tQuicksort STAMP 0

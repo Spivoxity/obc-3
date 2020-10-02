@@ -63,7 +63,7 @@ BEGIN
 END tGC3.
 
 (*[[
-!! (SYMFILE #tGC3 STAMP #tGC3.%main 1)
+!! (SYMFILE #tGC3 STAMP #tGC3.%main 1 #tGC3.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGC3 STAMP 0

@@ -24,7 +24,7 @@ BEGIN
 END tForDown07.
 
 (*[[
-!! (SYMFILE #tForDown07 STAMP #tForDown07.%main 1)
+!! (SYMFILE #tForDown07 STAMP #tForDown07.%main 1 #tForDown07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tForDown07 STAMP 0

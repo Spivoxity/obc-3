@@ -18,7 +18,7 @@ END tTypeRef.
 >>*)
 
 (*[[
-!! (SYMFILE #tTypeRef STAMP #tTypeRef.%main 1)
+!! (SYMFILE #tTypeRef STAMP #tTypeRef.%main 1 #tTypeRef.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tTypeRef STAMP 0

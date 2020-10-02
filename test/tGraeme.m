@@ -73,7 +73,7 @@ aCar(15)
 >>*)
 
 (*[[
-!! (SYMFILE #tGraeme STAMP #tGraeme.%main 1)
+!! (SYMFILE #tGraeme STAMP #tGraeme.%main 1 #tGraeme.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tGraeme STAMP 0

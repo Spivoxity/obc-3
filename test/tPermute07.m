@@ -393,7 +393,7 @@ Move  0<-5 2<-5 3<-1 4<-5 1<-6
 >>*)
 
 (*[[
-!! (SYMFILE #tPermute07 STAMP #tPermute07.%main 1)
+!! (SYMFILE #tPermute07 STAMP #tPermute07.%main 1 #tPermute07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tPermute07 STAMP 0

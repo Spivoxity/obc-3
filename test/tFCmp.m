@@ -38,7 +38,7 @@ BEGIN
 END tFCmp.
 
 (*[[
-!! (SYMFILE #tFCmp STAMP #tFCmp.%main 1)
+!! (SYMFILE #tFCmp STAMP #tFCmp.%main 1 #tFCmp.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFCmp STAMP 0

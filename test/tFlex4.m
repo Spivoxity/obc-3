@@ -48,7 +48,7 @@ BEGIN
 END tFlex4.
 
 (*[[
-!! (SYMFILE #tFlex4 STAMP #tFlex4.%main 1)
+!! (SYMFILE #tFlex4 STAMP #tFlex4.%main 1 #tFlex4.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tFlex4 STAMP 0

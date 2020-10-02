@@ -24,7 +24,7 @@ BEGIN
 END tShort07.
 
 (*[[
-!! (SYMFILE #tShort07 STAMP #tShort07.%main 1)
+!! (SYMFILE #tShort07 STAMP #tShort07.%main 1 #tShort07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tShort07 STAMP 0

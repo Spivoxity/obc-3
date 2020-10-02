@@ -116,7 +116,7 @@ END tTreeCopy07.
 >>*)
 
 (*[[
-!! (SYMFILE #tTreeCopy07 STAMP #tTreeCopy07.%main 1)
+!! (SYMFILE #tTreeCopy07 STAMP #tTreeCopy07.%main 1 #tTreeCopy07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tTreeCopy07 STAMP 0

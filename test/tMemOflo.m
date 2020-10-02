@@ -13,7 +13,7 @@ OK
 >>*)
 
 (*[[
-!! (SYMFILE #tMemOflo STAMP #tMemOflo.%main 1)
+!! (SYMFILE #tMemOflo STAMP #tMemOflo.%main 1 #tMemOflo.m)
 !! (GLOBAL #string* #tMemOflo.string !1 (ARRAY 33554432 CHAR))
 !! (CHKSUM STAMP)
 !! 

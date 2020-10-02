@@ -8,7 +8,7 @@ BEGIN
 END tCaseEmpty.
 
 (*[[
-!! (SYMFILE #tCaseEmpty STAMP #tCaseEmpty.%main 1)
+!! (SYMFILE #tCaseEmpty STAMP #tCaseEmpty.%main 1 #tCaseEmpty.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCaseEmpty STAMP 0

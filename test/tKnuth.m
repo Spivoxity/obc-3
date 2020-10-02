@@ -88,7 +88,7 @@ END tKnuth.
 >>*)
 
 (*[[
-!! (SYMFILE #tKnuth STAMP #tKnuth.%main 1)
+!! (SYMFILE #tKnuth STAMP #tKnuth.%main 1 #tKnuth.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tKnuth STAMP 0

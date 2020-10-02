@@ -18,7 +18,7 @@ END tBic.
 >>*)
 
 (*[[
-!! (SYMFILE #tBic STAMP #tBic.%main 1)
+!! (SYMFILE #tBic STAMP #tBic.%main 1 #tBic.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tBic STAMP 0

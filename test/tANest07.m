@@ -25,7 +25,7 @@ END tANest07.
 >>*)
 
 (*[[
-!! (SYMFILE #tANest07 STAMP #tANest07.%main 1)
+!! (SYMFILE #tANest07 STAMP #tANest07.%main 1 #tANest07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tANest07 STAMP 0

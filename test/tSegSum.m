@@ -35,7 +35,7 @@ END tSegSum.
 >>*)
 
 (*[[
-!! (SYMFILE #tSegSum STAMP #tSegSum.%main 1)
+!! (SYMFILE #tSegSum STAMP #tSegSum.%main 1 #tSegSum.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSegSum STAMP 0

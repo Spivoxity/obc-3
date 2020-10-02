@@ -35,7 +35,7 @@ END tCaseRange.
 >>*)
 
 (*[[
-!! (SYMFILE #tCaseRange STAMP #tCaseRange.%main 1)
+!! (SYMFILE #tCaseRange STAMP #tCaseRange.%main 1 #tCaseRange.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tCaseRange STAMP 0

@@ -64,7 +64,7 @@ BEGIN
 END tChain.
 
 (*[[
-!! (SYMFILE #tChain STAMP #tChain.%main 1)
+!! (SYMFILE #tChain STAMP #tChain.%main 1 #tChain.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tChain STAMP 0

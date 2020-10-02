@@ -22,7 +22,7 @@ END tBigMap.
 >>*)
 
 (*[[
-!! (SYMFILE #tBigMap STAMP #tBigMap.%main 1)
+!! (SYMFILE #tBigMap STAMP #tBigMap.%main 1 #tBigMap.m)
 !! (GLOBAL #exp1* #tBigMap.exp1 !1 (ARRAY 500000 !2 (POINTER)))
 !! (TARGET =2 !3 (RECORD #tBigMap.ExpTree 4 VOID
 !!     (FIELD #value 0 INTEGER)))

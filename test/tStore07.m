@@ -90,7 +90,7 @@ BEGIN
 END tStore07.
 
 (*[[
-!! (SYMFILE #tStore07 STAMP #tStore07.%main 1)
+!! (SYMFILE #tStore07 STAMP #tStore07.%main 1 #tStore07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tStore07 STAMP 0

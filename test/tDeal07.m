@@ -85,7 +85,7 @@ END tDeal07.
 >>*)
 
 (*[[
-!! (SYMFILE #tDeal07 STAMP #tDeal07.%main 1)
+!! (SYMFILE #tDeal07 STAMP #tDeal07.%main 1 #tDeal07.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tDeal07 STAMP 0

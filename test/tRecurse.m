@@ -40,7 +40,7 @@ BEGIN
 END tRecurse.
 
 (*[[
-!! (SYMFILE #tRecurse STAMP #tRecurse.%main 1)
+!! (SYMFILE #tRecurse STAMP #tRecurse.%main 1 #tRecurse.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tRecurse STAMP 0

@@ -17,7 +17,7 @@ END tSysVal.
 >>*)
 
 (*[[
-!! (SYMFILE #tSysVal STAMP #tSysVal.%main 1)
+!! (SYMFILE #tSysVal STAMP #tSysVal.%main 1 #tSysVal.m)
 !! (CHKSUM STAMP)
 !! 
 MODULE tSysVal STAMP 0
