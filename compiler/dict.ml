@@ -137,6 +137,13 @@ and builtin =
     b_nargs: int;
     b_argtypes: otype list }
 
+(* symfile -- info from an imported module *)
+type symfile =
+  { y_env: environment;
+    y_checksum: int;
+    y_doc: docstring;
+    y_fname: string }
+
 let add_def m d = IdMap.add d.d_tag d m
 
 let add_block b (Env vs) = 

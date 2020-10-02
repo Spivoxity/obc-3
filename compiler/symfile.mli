@@ -28,14 +28,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-type symfile =
-  { y_env: Dict.environment;
-    y_checksum: int;
-    y_doc: Dict.docstring;
-    y_fname: string }
+open Dict
 
 (* export -- write a symbol file and return the checksum *)
-val export: Dict.def -> Dict.docstring -> Dict.def list -> string -> int
+val export: def -> docstring -> def list -> string -> int
 
 (* import -- read a symbol file *)
 val import: Symtab.ident -> symfile

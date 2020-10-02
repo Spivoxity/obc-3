@@ -347,22 +347,16 @@ let export m doc glodefs fname =
 
 (* Importing *)
 
-type symfile =
-  { y_env: Dict.environment;
-    y_checksum: int;
-    y_doc: Dict.docstring;
-    y_fname: string }
-
 let import name = 
   let fname = Util.search_path (extern name ^ ".k") !Config.libpath in
   let chan = open_in fname in
   let lexbuf = Lexing.from_channel chan in
   Symlex.line := 1;
-  let (env, chk, doc, sname) = 
+  let symfile = 
     try Symparse.file Symlex.token lexbuf 
     with Yyparse.Parse_error ->
       failwith (sprintf "symfile syntax at $ (line $ in $)" 
 	[fStr (Lexing.lexeme lexbuf); fNum !Symlex.line; fStr fname]) in
   close_in chan;
-  { y_env = env; y_checksum = chk; y_doc = doc; y_fname = sname }
+  symfile
 

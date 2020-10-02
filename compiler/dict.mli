@@ -126,6 +126,13 @@ and builtin =
     b_nargs: int;
     b_argtypes: otype list }
 
+(* symfile -- info from an imported module *)
+type symfile =
+  { y_env: environment;
+    y_checksum: int;
+    y_doc: docstring;
+    y_fname: string }
+
 val numtype : otype
 val bytetype : otype
 val shortint : otype
