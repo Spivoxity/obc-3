@@ -36,7 +36,6 @@ let bugaddr = "@PACKAGE_BUGREPORT@"
 let tracker = "@PACKAGE_TRACKER@"
 
 let optflag = ref true
-let tailflag = ref false
 let boundchk = ref true
 let warnings = ref true
 let debug_info = ref false
@@ -45,7 +44,6 @@ let linecount = ref false
 let debug = ref 0
 let libpath = ref ["."]
 let lcflag = ref false
-let forflag = ref false
 let ob07flag = ref false
 
 let set_debug n = 

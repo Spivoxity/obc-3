@@ -864,15 +864,6 @@ let rec gen_stmt exit_lab s =
 		gen_addr v;
 	      gen_addr e; const t.t_rep.m_size; FIXCOPY]
 
-      | SimAssign pairs ->
-          (* Compute all l-values and r-values first, before doing
-             any of the assignments. Consider, e.g., i, a[i] := a[i], i *)
-          SEQ [
-            SEQ (List.map (fun (e1, e2) ->
-              SEQ [gen_expr e2; gen_addr e1]) pairs);
-            SEQ (List.map (fun (e1, e2) ->
-              let t = e1.e_type in STORE (mem_kind t)) pairs)]
-
       | ProcCall e ->
 	  SEQ [gen_expr e;
 	    if size_of e = 0 then NOP else POP (count_of e.e_type)]

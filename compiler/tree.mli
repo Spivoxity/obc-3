@@ -80,7 +80,6 @@ and stmt =
 
 and stmt_guts =
     Assign of expr * expr
-  | SimAssign of (expr * expr ) list
   | ProcCall of expr
   | Return of expr option
   | IfStmt of (expr * stmt) list * stmt

@@ -334,13 +334,6 @@ stmts1 :
 
 stmt0 :
     desig ASSIGN expr		{ Assign ($desig, $expr) }
-  | desig COMMA desigs ASSIGN expr COMMA exprs
-      { if List.length $desigs = List.length $exprs then
-	  SimAssign (List.combine ($desig::$desigs) ($expr::$exprs))
-        else begin
-          syn_error "Wrong number of expressions on RHS" [] (lloc ());
-          Skip
-        end }
   | desig			{ ProcCall (make_call $desig) } ;
 
 stmt1 :

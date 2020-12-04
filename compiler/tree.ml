@@ -67,7 +67,6 @@ and stmt =
 
 and stmt_guts =
     Assign of expr * expr
-  | SimAssign of (expr * expr) list
   | ProcCall of expr
   | Return of expr option
   | IfStmt of (expr * stmt) list * stmt
@@ -279,9 +278,6 @@ let rec ppStmt s =
     match s.s_guts with
         Assign (e1, e2) -> 
 	  prf "(ASSIGN $ $)" [ppExpr e1; ppExpr e2]
-      | SimAssign pairs ->
-	  let ppPair (e1, e2) = fMeta "($ $)" [ppExpr e1; ppExpr e2] in
-	  prf "(SIMASSIGN$)" [fTail(ppPair) pairs]
       | ProcCall e -> prf "$" [ppExpr e]
       | Return eo ->
 	  (match eo with
