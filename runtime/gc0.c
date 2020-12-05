@@ -86,28 +86,24 @@ void *scratch_alloc(unsigned size) {
      return p;
 }
 
+#ifdef USE_BOEHM
 void *scratch_alloc_atomic(unsigned size) {
      void *p = NULL;
 
-#ifdef USE_BOEHM
      p = GC_malloc_atomic_uncollectable(size);
-#else
-     p = malloc(size);
-#endif
-     
      if (p == NULL) panic("scratch_alloc_atomic failed");
      return p;
 }
+#endif
 
-void *gc_alloc(value *desc, unsigned size, value *sp) {
+void *gc_alloc(unsigned size, value *sp) {
 #ifdef USE_BOEHM
      value *p = GC_malloc(size+4);
 #else
      value *p = malloc(size+4);
 #endif
      if (p == NULL) panic("malloc failed");
-     (*p).a = address(desc);
-     return p+1;
+     return p;
 }
 
 int gc_heap_size(void) {

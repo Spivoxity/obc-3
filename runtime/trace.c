@@ -82,12 +82,12 @@ char *fmt_inst(uchar *pc) {
 void dump(void) {
      for (int k = 0; k < nprocs; k++) {
 	  proc p = proctab[k];
-	  value *cp = p->p_addr;
+	  value *cp = ptrcast(value, p->p_addr);
 	  uchar *pc, *limit;
 
 	  if (! interpreted(cp)) continue;
 	  
-	  pc = pointer(cp[CP_CODE]); limit = pc + cp[CP_SIZE].i;
+	  pc = codeptr(cp[CP_CODE].a); limit = pc + cp[CP_SIZE].i;
 
 	  printf("Procedure %s:\n", proctab[k]->p_name);
 	  while (pc < limit) {

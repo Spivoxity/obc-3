@@ -92,6 +92,8 @@ static uchar *pcbase, *pclimit;	/* Code addresses */
 
 static vmlabel stack_oflo, retlab;
 
+#define addr32(a) ((int) (ptrtype) a)
+
 /* prolog -- generate code for procedure prologue */
 static word prolog(const char *name) {
      int frame = jit_cxt[CP_FRAME].i;
@@ -102,7 +104,7 @@ static word prolog(const char *name) {
      vm_gen(LDW, rCP->r_reg, rBP->r_reg, 4*CP);
 
      /* Check for stack overflow */
-     vm_gen(BGEu, rBP->r_reg, address(stack + SLIMIT + frame), lab);
+     vm_gen(BGEu, rBP->r_reg, addr32(stack + SLIMIT + frame), lab);
      vm_label(stack_oflo);
      push_reg(rBP);
      gcall(stkoflo, 1);
@@ -138,7 +140,7 @@ static int stack_map(uchar *pc) {
      value *r = valptr(jit_cxt[CP_STKMAP]);
      if (r == NULL) return 0;
      while (r[0].a != 0) {
-	  if (codeptr(r[0]) == pc) return r[1].i;
+	  if (codeptr(r[0].a) == pc) return r[1].i;
 	  r += 2;
      }
      return 0;
@@ -489,7 +491,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
           r2 = ralloc_suggest(INT, r1); unlock(1);
 	  vm_gen(BGEu, r1->r_reg, arg1, lab);
           vm_gen(LSH, r2->r_reg, r1->r_reg, 2);
-          vm_gen(LDW, r2->r_reg, r2->r_reg, address(a));
+          vm_gen(LDW, r2->r_reg, r2->r_reg, addr32(a));
 	  vm_gen(JUMP, r2->r_reg);
 	  vm_label(lab);
 
@@ -614,7 +616,7 @@ static void instr(uchar *pc, int i, int arg1, int arg2) {
 	  r3 = ralloc(INT); 
 	  pop(2); unlock(2); 
 	  flex_space(r2);
-	  vm_gen(BLTu, rSP->r_reg, address(stack + SLIMIT), stack_oflo);
+	  vm_gen(BLTu, rSP->r_reg, addr32(stack + SLIMIT), stack_oflo);
           vm_gen(LDW, r3->r_reg, r1->r_reg, 0);
           vm_gen(STW, rSP->r_reg, r1->r_reg, 0);
           push_reg(r2);
@@ -846,7 +848,7 @@ static int serial;              /* Serial number for anonymous procedures */
 
 /* jit_compile -- replace a bytecode routine with native code */
 void jit_compile(value *cp) {
-     proc p = find_proc(cp);
+     proc p = find_proc(dsegaddr(cp));
      const char *pname;
      static char name[16];
 
@@ -863,7 +865,7 @@ void jit_compile(value *cp) {
 #endif
 
      jit_cxt = cp; 
-     pcbase = codeptr(jit_cxt[CP_CODE]);
+     pcbase = codeptr(jit_cxt[CP_CODE].a);
      pclimit = pcbase + jit_cxt[CP_SIZE].i;
 
      init_regs();

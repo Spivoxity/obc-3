@@ -175,7 +175,7 @@ obxjd : runtime/obx-jd.a $(PRIMS) thunder/libthunder.a
 pfac: pfac.o runtime/obx-preload.a $(PRIMS)
 	$(LINK) -u NEW
 
-pfac.o: CFLAGS += -I runtime -I .
+pfac.o: CFLAGS += -I runtime -I $(top_srcdir)/runtime -I .
 
 pfac.c: $(srcdir)/Fac.m
 	compiler/obc1 -x -g -pl -I lib $(srcdir)/Fac.m >Fac.k
@@ -396,9 +396,10 @@ stamp-h: config.h.in config.status
 	echo timestamp >stamp-h
 
 REVID := $(shell \
-    (if [ -d .hg ]; \
+    (if [ -d .hg ] || [ -d ../.hg ]; \
 	then echo hg-`hg id --config 'ui.report_untrusted=False' -i`; \
-	elif [ -d .git ]; then echo git-`git rev-parse HEAD`; \
+	elif [ -d .git ] || [ -d ../.git ]; \
+		then echo git-`git rev-parse HEAD`; \
 	else echo unknown; fi) \
 		| sed 's/\(.*-............\)[0-9a-f]*/\1/' 2>/dev/null)
 

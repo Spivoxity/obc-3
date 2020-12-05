@@ -42,19 +42,19 @@ inst LDKF {1 2} V.f \
 
 # Push address of local
 # LOCAL n :: --> bp+n
-inst LOCAL {[0] 1 2} V.x \
-    { local($a) }                   { local(arg1); }
+inst LOCAL {[0] 1 2} V.a \
+    { stkaddr(local($a)) }          { local(arg1); }
 
 # Compute indexed address
 # INDEXs :: a, b --> a + s * b
-inst OFFSET 0 B.x \
-    { pointer($1) + $2.i }          { add_offset(0); }
-inst INDEXS 0 B.x \
-    { index($1, $2, 1) }            { add_offset(1); }
-inst INDEXW 0 B.x \
-    { index($1, $2, 2) }            { add_offset(2); }
-inst INDEXD 0 B.x \
-    { index($1, $2, 3) }            { add_offset(3); }
+inst OFFSET 0 B.a \
+    { $1.a + $2.i }                 { add_offset(0); }
+inst INDEXS 0 B.a \
+    { $1.a + ($2.i<<1) }            { add_offset(1); }
+inst INDEXW 0 B.a \
+    { $1.a + ($2.i<<2) }            { add_offset(2); }
+inst INDEXD 0 B.a \
+    { $1.a + ($2.i<<3) }            { add_offset(3); }
 
 
 # LOADS AND STORES
@@ -490,7 +490,7 @@ inst FLEXCOPY 0 S0 \
       sp -= sizew - 2;                                                   
       if ((uchar *) sp < stack + SLIMIT) error(E_STACK, 0);              
       memcpy(sp, pointer(d[0]), size);                                   
-      d[0].a = address(sp); }
+      d[0].a = stkaddr(sp); }
 
 # In the interpreter, the CALLW and CALLD instructions are implemented as 
 # two operations, an ordinary CALL followed by a SLIDE; the return address 
@@ -534,17 +534,17 @@ inst SAVELINK 0 S0 { } { }
 inst JPROC 0 S0 \
     { value *p = valptr(sp[0]);
       sp -= HEAD-1;
-      sp[BP].a = address(bp);
+      sp[BP].a = stkaddr(bp);
       sp[PC].a = codeaddr(pc);
 
       if (interpreted(p)) {
-          cp = p; pc = codeptr(cp[CP_CODE]);
+          cp = p; pc = codeptr(cp[CP_CODE].a);
           goto enter;
       }
 
 #ifdef PROFILE
       /* Calling a native-code routine */
-      prof_enter(p, ticks, PROF_PRIM);
+      prof_enter(dsegaddr(p), ticks, PROF_PRIM);
       ticks = 0;
 #endif
 #ifdef OBXDEB
@@ -575,16 +575,16 @@ inst RETURN 0 S0 \
     { if (bp == base) {
           level--;
 #ifdef PROFILE
-          prof_exit(NULL, ticks);
+          prof_exit(0, ticks);
 #endif
           return sp;
       }
 
-      rp = sp; sp = bp; pc = codeptr(sp[PC]);
+      rp = sp; sp = bp; pc = codeptr(sp[PC].a);
       bp = valptr(sp[BP]); cp = valptr(bp[CP]);
       do_find_proc;
 #ifdef PROFILE
-      prof_exit(cp, ticks);
+      prof_exit(dsegaddr(cp), ticks);
       ticks = 0;
 #endif
       cond_break(); }
@@ -595,9 +595,9 @@ inst LNUM 2 S0 \
        if (lflag) {
            static module m = NULL; /* Cache most recent module */
            ticks--;
-           if (m == NULL || cp < (value *) m->m_addr 
-               || cp >= (value *) (m->m_addr + m->m_length)) {
-                m = find_module(cp);
+           if (m == NULL || dsegaddr(cp) < m->m_addr 
+               || dsegaddr(cp) >= m->m_addr + m->m_length) {
+                m = find_module(dsegaddr(cp));
            }
            m->m_lcount[$a-1]++; 
        }
@@ -617,20 +617,6 @@ inst BREAK 2 S0 \
 #endif
 }
 
-if {[info exists SPECIALS]} {
-
-# SPECIALS FOR COMPILERS COURSE
-
-inst CASEJUMP 1 S1 \
-    { casejump($1.i, $a); }
-zinst CASEARM 2R
-
-inst PACK 0 B.i \
-    { pack(valptr($2), pointer($1)); }
-inst UNPACK 0 S0 \
-    { sp--; sp[0].a = address(getcode(sp[1].i)); 
-      sp[1].a = address(getenvt(sp[1].i)); }
-}
 
 # DIRECTIVES
 

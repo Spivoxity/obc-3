@@ -53,7 +53,7 @@
 #ifdef TRACE
 #define DISASS 1
 #undef JTABLE
-#define do_find_proc if (dflag > 1) thisproc = find_proc(cp)
+#define do_find_proc if (dflag > 1) thisproc = find_proc(dsegaddr(cp))
 #else
 #define do_find_proc
 #endif
@@ -107,9 +107,6 @@ static inline void putlong(value *v, longint x) {
 #define subs(p, n, t)   ((t *) (p))[n]
 #define const(n)        cp[CP_CONST+n]
 #define jump(lab)       pc = pc0 + lab
-
-#define index(x, y, s)  pointer(x) + (y.i << s)
-
 
 #define load(x, t)      indir(pointer(x), t)
 #define store(x, y, t)  indir(pointer(y), t) = x
@@ -171,7 +168,7 @@ static inline void putlong(value *v, longint x) {
 /* interp -- main loop of the interpreter */
 value *interp(value *sp0) {
      register value *cp = valptr(sp0[CP]);
-     uchar *pc = codeptr(cp[CP_CODE]);
+     uchar *pc = codeptr(cp[CP_CODE].a);
      register uchar *pc0 = NULL;
      register value *sp = sp0;
      register value *rp = NULL;
@@ -211,7 +208,7 @@ enter:
      do_find_proc;
 
 #ifdef PROFILE
-     prof_enter(cp, ticks, PROF_CALL);
+     prof_enter(dsegaddr(cp), ticks, PROF_CALL);
 #endif
 
      bp = sp;								
@@ -229,7 +226,7 @@ enter:
 	  if (dflag > 1) {
 	       printf("pc=%s+%ld(%p) sp=%p bp=%p cp=%p",
 		      thisproc->p_name,
-                      (long) (pc - (uchar *) pointer(cp[CP_CODE])),
+                      (long) (pc - codeptr(cp[CP_CODE].a)),
                       pc, sp, bp, cp);
 	       fflush(stdout);
 	       for (int i = 0; i < 8; i++) printf(" %x", sp[i].i);

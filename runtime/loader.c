@@ -92,7 +92,7 @@ static void reloc(int base, const uchar rbuf[], int size) {
                break;
           case R_ADDR:
                if ((m & IBIT) == 0)
-                    (*p).a = address(dmem + m);
+                    (*p).a = dsegaddr(dmem + m);
                else
                     (*p).a = codeaddr(imem + (m & ~IBIT));
                break;
@@ -161,7 +161,7 @@ static char *read_string() {
 
 /* read_symbols -- read symbol table */
 static void read_symbols(int dseg) {
-     uchar *addr;
+     word addr;
      int chksum, nlines;
 #ifdef DEBUG
      const char *kname;
@@ -177,7 +177,7 @@ static void read_symbols(int dseg) {
 	  switch (kind) {
 	  case X_MODULE:
 	       debug_kind("Module");
-	       addr = dmem + read_int(); 
+	       addr = dsegaddr(dmem + read_int()); 
 	       chksum = read_int();
 	       nlines = read_int();
 	       make_module(name, addr, chksum, nlines);
@@ -185,39 +185,34 @@ static void read_symbols(int dseg) {
 
 	  case X_PROC:
 	       debug_kind("Proc");
-	       addr = dmem + read_int(); 
+	       addr = dsegaddr(dmem + read_int()); 
 	       make_proc(name, addr);
 	       break;
 		    
 	  case X_DATA:
 	       debug_kind("Data");
-	       addr = dmem + read_int(); 
+	       addr = dsegaddr(dmem + read_int()); 
 	       make_symbol("data", name, addr);
 	       break;
 
 	  case X_LINE:
 	       debug_kind("Line");
-	       addr = imem + read_int();
+	       addr = codeaddr(imem + read_int());
 	       make_symbol("line", name, addr);
 	       break;
 
 	  default:
 	       debug_kind("Unknown"); 
-	       addr = NULL;
+	       addr = 0;
 	       panic("*bad symbol %s", name);
 	  }
 
 #ifdef DEBUG
-	  if (dflag >= 1) printf("%s %s = %p\n", kname, name, addr);
+	  if (dflag >= 1) printf("%s %s = %#x\n", kname, name, addr);
 #endif
      }
 
-     /* Calculate module lengths */
-     addr = dmem + dseg;
-     for (int i = nmods-1; i >= 0; i--) {
-	  modtab[i]->m_length = addr - modtab[i]->m_addr;
-	  addr = modtab[i]->m_addr;
-     }
+     fix_sizes(dseg);
 }
 
 /* load_file -- load a file of object code */
@@ -271,13 +266,18 @@ void load_file(FILE *bfp) {
 
      /* Load and relocate the data */
      dmem = scratch_alloc(seglen[S_DATA]+seglen[S_BSS]);
+#ifdef SEG64
+     data_vbase = map_segment(dmem, seglen[S_DATA]+seglen[S_BSS]);
+#endif
      binread(dmem, seglen[S_DATA]);
      relocate(seglen[S_DATA]);
      memset(dmem+seglen[S_DATA], 0, seglen[S_BSS]);
 
      /* Allocate stack */
      stack = scratch_alloc(stack_size);
-
+#ifdef SEG64
+     stack_vbase = map_segment(stack, stack_size);
+#endif
      /* Save the entry point, pointer map and library path */
      entry = (value *) &dmem[get_int(t.entry)];
      gcmap = (value *) &dmem[get_int(t.gcmap)];
@@ -294,37 +294,44 @@ extern const unsigned preload_entry, preload_gcmap, preload_libdir;
 extern const unsigned preload_nprocs, preload_nmods;
 extern const struct _sym { int kind; char *name; int val; } preload_syms[];
 
-#define segsize preload_segsize
+#define seglen preload_segsize
 
 /* load_image -- unpack preloaded image */
 void load_image(void) {
-     code_size = segsize[S_CODE];
-     stack_size = segsize[S_STACK];
+     code_size = seglen[S_CODE];
+     stack_size = seglen[S_STACK];
      nmods = preload_nmods;
      nprocs = preload_nprocs;
      nsyms = nmods+nprocs;
 
      imem = (uchar *) preload_imem;
-     dmem = scratch_alloc(segsize[S_DATA]+segsize[S_BSS]);
-     memcpy(dmem, preload_dmem, segsize[S_DATA]);
-     reloc(0, preload_reloc, segsize[S_DATA]);
-     memset(dmem+segsize[S_DATA], 0, segsize[S_BSS]);
+     dmem = scratch_alloc(seglen[S_DATA]+seglen[S_BSS]);
+#ifdef SEG64
+     data_vbase = map_segment(dmem, seglen[S_DATA]+seglen[S_BSS]);
+#endif
+     memcpy(dmem, preload_dmem, seglen[S_DATA]);
+     reloc(0, preload_reloc, seglen[S_DATA]);
+     memset(dmem+seglen[S_DATA], 0, seglen[S_BSS]);
      stack = scratch_alloc(stack_size);
+#ifdef SEG64
+     stack_vbase = map_segment(stack, stack_size);
+#endif
 
      for (int i = 0; i < nsyms; i++) {
-          struct _sym *s = &preload_syms[i];
+          const struct _sym *s = &preload_syms[i];
           switch (s->kind) {
           case X_PROC:
-               make_proc(s->name, dmem + s->val);
+               make_proc(s->name, dsegaddr(dmem + s->val));
                break;
           case X_MODULE:
-               make_module(s->name, dmem + s->val, 0, 0);
+               make_module(s->name, dsegaddr(dmem + s->val), 0, 0);
                break;
           default:
                panic("Bad symbol code");
           }
      }
 
+     fix_sizes(seglen[S_DATA]);
      entry = (value *) &dmem[preload_entry];
      gcmap = (value *) &dmem[preload_gcmap];
 

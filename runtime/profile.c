@@ -42,7 +42,7 @@ typedef struct _trans *trans;
 struct _state {
      int s_num;			/* Serial number */
      int s_depth;		/* Number of procs in history */
-     value **s_history;		/* The history list */
+     word *s_history;		/* The history list */
      unsigned s_calls;		/* No. of calls */
      unsigned s_rec;		/* No. of recursive calls */
      counter s_time;		/* Time charged so far */
@@ -52,14 +52,14 @@ struct _state {
 
 struct _trans {			
      state t_from, t_to;
-     value *t_addr;
+     word t_addr;
      trans t_hlink;
 };
 
 #define MBIT 0x1
-#define mark(p) ptrcast(value, address(p) | MBIT)
-#define ptr(p) ptrcast(value, address(p) & ~MBIT)
-#define marked(p) (address(p) & MBIT)
+#define mark(p)   ((p) | MBIT)
+#define ptr(p)    ((p) & ~MBIT)
+#define marked(p) ((p) & MBIT)
 
 /* format_count -- format a counter as a decimal string */
 static char *format_count(counter n) {
@@ -74,7 +74,7 @@ static char *format_count(counter n) {
      return buf;
 }
 
-#define SPONTANEOUS ((value *) -1)
+#define SPONTANEOUS (-1)
 
 static struct _proc no_proc = {
      "*no-proc*",		/* name */
@@ -83,8 +83,8 @@ static struct _proc no_proc = {
      NULL, NULL			/* parents children */
 };
 
-static proc find_node(value *p) {
-     if (p == NULL)
+static proc find_node(word p) {
+     if (p == 0)
 	  return &no_proc;
      else
 	  return find_proc(p);
@@ -93,7 +93,7 @@ static proc find_node(value *p) {
 #ifdef DEBUG
 static void dump_state(state s, mybool stats) {
      int n = s->s_depth, x = 3;
-     value **hist = s->s_history;
+     word *hist = s->s_history;
      char buf[64];
 
      printf("> State %d:\n", s->s_num);
@@ -129,9 +129,9 @@ static state s_head = NULL, s_tail;
 #define HSIZE 32771		/* Not a power of 2! */
 static trans *trtable;
 #define hash(s0, a) \
-     (((address(s0) << 4) ^ address(addr)) % HSIZE)
+     (((((int) (ptrtype) (s0)) << 4) ^ (addr)) % HSIZE)
 
-static state make_state(value *addr, int n, value **history) {
+static state make_state(word addr, int n, word *history) {
      state s;
      unsigned h = hash(NULL, addr);
      trans t;
@@ -157,15 +157,15 @@ static state make_state(value *addr, int n, value **history) {
 
      for (s = t->t_to; s != NULL; s = s->s_next)
 	  if (s->s_depth == n 
-	      && memcmp(s->s_history, history, n * sizeof(value *)) == 0)
+	      && memcmp(s->s_history, history, n * sizeof(word)) == 0)
 	       return s;
 
      /* If all else fails, make a new state */
      s = scratch_alloc_atomic(sizeof(struct _state));
      s->s_num = n_states++;
      s->s_depth = n;
-     s->s_history = scratch_alloc_atomic(n * sizeof(value *));
-     memcpy(s->s_history, history, n * sizeof(value *));
+     s->s_history = scratch_alloc_atomic(n * sizeof(word));
+     memcpy(s->s_history, history, n * sizeof(word));
      s->s_calls = s->s_rec = s->s_time = 0;
      s->s_next = t->t_to;
      t->t_to = s;
@@ -185,9 +185,9 @@ static state make_state(value *addr, int n, value **history) {
 
 #define MAXDEPTH 128
 
-static state next_state(state s0, value *addr) {
+static state next_state(state s0, word addr) {
      state s;
-     value **h0 = s0->s_history;
+     word *h0 = s0->s_history;
      int n = 0, n0 = s0->s_depth;
      trans t;
 
@@ -203,7 +203,7 @@ static state next_state(state s0, value *addr) {
 	  s = s0;
      else {
 	  /* Compute the history list for the desired state */
-          static value *history[MAXDEPTH];
+          static word history[MAXDEPTH];
 	  for (int k = 0; k < n0; k++)
 	       history[k] = (ptr(h0[k]) == addr ? mark(h0[k]) : h0[k]);
 	  history[n0] = addr;
@@ -265,7 +265,7 @@ static void flat_charge(proc p, counter t) {
 #endif
 
 /* prof_enter -- record procedure entry */
-void prof_enter(value *addr, counter ticks, int why) {
+void prof_enter(word addr, counter ticks, int why) {
      tot_ticks += ticks;
 
      if (gflag) {
@@ -317,7 +317,7 @@ void prof_enter(value *addr, counter ticks, int why) {
 }
 
 /* prof_exit -- record procedure exit */
-void prof_exit(value *addr, counter ticks)  {
+void prof_exit(word addr, counter ticks)  {
      tot_ticks += ticks;
      
      if (gflag) {
@@ -329,7 +329,7 @@ void prof_exit(value *addr, counter ticks)  {
 #endif
      } else {
 	  flat_charge(currproc, ticks);
-	  if (addr != NULL) currproc = find_node(addr);
+	  if (addr != 0) currproc = find_node(addr);
      }
 }
 
@@ -343,7 +343,7 @@ void prof_init(void) {
 	       for (int i = 0; i < HSIZE; i++) trtable[i] = NULL;
 	  }
 	       
-	  state s = make_state(NULL, 0, NULL);
+	  state s = make_state(0, 0, NULL);
 	  s->s_calls++;
 	  psp = 0;
 	  pstack[psp] = prof_state = s;
@@ -373,7 +373,7 @@ struct _arc {
 
 
 /* find_arc -- find or create arc from SRC to DST */
-static arc find_arc(value *src, value *dst) {
+static arc find_arc(word src, word dst) {
      proc psrc = find_node(src);
      proc pdst = find_node(dst);
      arc a;
@@ -405,7 +405,7 @@ static void graph_stats(void) {
      for (state s = s_head; s != NULL; s = s->s_chain) {
 	  int n = s->s_depth;
 	  counter t = s->s_time;
-	  value **hist = s->s_history;
+	  word *hist = s->s_history;
 	  proc p;
 
 #ifdef DEBUG

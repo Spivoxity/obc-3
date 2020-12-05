@@ -139,12 +139,13 @@ char *lib_version =
   "Oxford Oberon-2 library version @VERSION@ [build @REVID@]";
 
 value *NEW(value *bp) {
-     value *desc = valptr(bp[HEAD+0]);
+     word desc = bp[HEAD+0].a;
      int size = bp[HEAD+1].i+4;
      value *sp = bp;
-     value *p = gc_alloc(size, bp);
-     p[0].a = address(desc);
-     (*--sp).a = address(p+1);
+     word p = gc_alloc(size, bp);
+     value *q = ptrcast(value, p);
+     q[0].a = desc;
+     (*--sp).a = p+4;
      return sp;
 }
 
@@ -187,7 +188,8 @@ value *NEWFLEX(value *bp) {
      value *sp = bp;
 
      int size, arsize, i, n;
-     value *p, *desc, *map;
+     word p, desc, map;
+     value *q, *pdesc, *pmap;
 
      /* Compute no. of elements */
      n = 1;
@@ -200,34 +202,36 @@ value *NEWFLEX(value *bp) {
      size = arsize + 4*k + 20;
      if (elmap != 0) size += 28;
 
-     p = (value * ) gc_alloc(size, bp);
+     p = gc_alloc(size, bp);
+     desc = p + arsize + 4;
+     map = desc + 4*k + 4;
 
-     desc = p + arsize/4 + 1;
-     map = desc + k + 1;
-     p[0].a = address(desc);
+     q = ptrcast(value, p);
+     pdesc = ptrcast(value, desc);
+     pmap = ptrcast(value, map);
+     q[0].a = desc;
 
      /* Fill in the descriptor */
-     desc[DESC_MAP].a = address(map);
-     dim = &bp[HEAD+3];			/* In case our stack moved */
-     for (i = 0; i < k; i++) desc[DESC_BOUND+i].i = dim[i].i;
+     pdesc[DESC_MAP].a = map;
+     for (i = 0; i < k; i++) pdesc[DESC_BOUND+i].i = dim[i].i;
 
      /* Fill in the map */
-     map[0].i = -4;
-     map[1].i = 4 * (desc-(p+1));
+     pmap[0].i = -4;
+     pmap[1].i = desc-(p+4);
      if (elmap == 0) 
-          map[2].i = GC_END;
+          pmap[2].i = GC_END;
      else {
-          map[2].i = GC_REPEAT;
-          map[3].i = 0;
-          map[4].i = n;
-          map[5].i = elsize;
-          map[6].i = GC_MAP;
-          map[7].i = elmap;
-          map[8].i = GC_END;
-          map[9].i = GC_END;
+          pmap[2].i = GC_REPEAT;
+          pmap[3].i = 0;
+          pmap[4].i = n;
+          pmap[5].i = elsize;
+          pmap[6].i = GC_MAP;
+          pmap[7].i = elmap;
+          pmap[8].i = GC_END;
+          pmap[9].i = GC_END;
      }
 
-     (*--sp).a = address(p+1); 
+     (*--sp).a = p+4; 
      return sp;
 }
 

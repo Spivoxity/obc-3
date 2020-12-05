@@ -73,7 +73,7 @@ extern int vm_debug;
 
 /* Helper functions for the loader */
 
-void make_module(char *name, uchar *addr, int chksum, int nlines) {
+void make_module(char *name, word addr, int chksum, int nlines) {
      module m = scratch_alloc_atomic(sizeof(struct _module));
      static int nm = 0;
 
@@ -81,7 +81,7 @@ void make_module(char *name, uchar *addr, int chksum, int nlines) {
           modtab = scratch_alloc_atomic(nmods * sizeof(module));
 
      m->m_name = name;
-     m->m_addr = addr;
+     m->m_addr =addr;
 #ifdef PROFILE
      m->m_nlines = nlines;
      m->m_lcount = NULL;
@@ -97,7 +97,7 @@ void make_module(char *name, uchar *addr, int chksum, int nlines) {
      modtab[nm++] = m;
 }
 
-void make_proc(char *name, uchar *addr) {
+void make_proc(char *name, word addr) {
      proc p = scratch_alloc_atomic(sizeof(struct _proc));
      static int np = 0;
 
@@ -105,24 +105,36 @@ void make_proc(char *name, uchar *addr) {
           proctab = scratch_alloc_atomic(nprocs * sizeof(proc));
 
      p->p_name = name;
-     p->p_addr = (value *) addr;
+     p->p_addr = addr;
 #ifdef PROFILE
      p->p_calls = p->p_rec = p->p_self = p->p_child = 0;
      p->p_parents = p->p_children = NULL;
 #endif
 #ifdef OBXDEB
-     debug_message("proc %s %#x %#x %d", name, address(addr), 
-		   p->p_addr[CP_CODE].a, p->p_addr[CP_SIZE].i);
+     value *cp = ptrcast(value, p->p_addr);
+     debug_message("proc %s %#x %#x %d", name, addr,
+                   cp[CP_CODE].a, cp[CP_SIZE].i);
 #endif
      if (np >= nprocs) panic("Too many procs");
      proctab[np++] = p;
 }
 
-void make_symbol(const char *kind, char *name, uchar *addr) {
+void make_symbol(const char *kind, char *name, word addr) {
 #ifdef OBXDEB
-     debug_message("%s %s %#x", kind, name, address(addr));
+     debug_message("%s %s %#x", kind, name, addr);
 #endif
 }
+
+/* fix_sizes -- calculate module lengths */
+void fix_sizes(int dseg) {
+     word p = dsegaddr(dmem + dseg);
+
+     for (int i = nmods-1; i >= 0; i--) {
+	  modtab[i]->m_length = p - modtab[i]->m_addr;
+	  p = modtab[i]->m_addr;
+     }
+}     
+
 
 /* Runtime errors */
 
@@ -134,7 +146,7 @@ void make_symbol(const char *kind, char *name, uchar *addr) {
 
 static void backtrace(value *bp) {
      value *fp = bp, *cp = valptr(bp[CP]);
-     proc p = find_proc(cp);
+     proc p = find_proc(dsegaddr(cp));
      int n, j;
      proc fbuf[NBUF];
      
@@ -147,7 +159,7 @@ static void backtrace(value *bp) {
 	  fp = valptr(fp[BP]);	/* Base pointer of next frame */
 	  if (fp == NULL) break;
 	  cp = valptr(fp[CP]);	/* Constant pool of next frame */
-	  fbuf[n%NBUF] = p = find_proc(cp);
+	  fbuf[n%NBUF] = p = find_proc(dsegaddr(cp));
 	  if (n < TOP)
 	       fprintf(stderr, "   called from %s\n", p->p_name);
      }
@@ -211,7 +223,7 @@ void error_stop(const char *msg, int val, int line, value *bp, uchar *pc) {
      sprintf(buf, msg, val);
      debug_break(cp, bp, pc, "error %d %s", line, buf);
 #else
-     module mod = find_module(cp);
+     module mod = find_module(dsegaddr(cp));
 
      fprintf(stderr, "Runtime error: ");
      fprintf(stderr, msg, val);
@@ -260,9 +272,9 @@ static void run(value *prog) {
      sp = (value *) (stack + stack_size) - 32; 
 
      sp -= HEAD; 
-     sp[BP].a = address(NULL); 
-     sp[PC].a = address(NULL); 
-     sp[CP].a = address(prog);
+     sp[BP].a = 0;
+     sp[PC].a = 0;
+     sp[CP].a = dsegaddr(prog);
      primcall(prog, sp);
 }
 
@@ -458,9 +470,8 @@ static void jit_test(void) {
      module m = modtab[nmods-2];
      for (int i = 0; i < nprocs; i++) {
           proc p = proctab[i];
-          if ((uchar *) p->p_addr >= m->m_addr
-              && (uchar *) p->p_addr < m->m_addr + m->m_length)
-               jit_compile(p->p_addr);
+          if (p->p_addr >= m->m_addr && p->p_addr < m->m_addr + m->m_length)
+               jit_compile(ptrcast(value, p->p_addr));
      }
 }
 #endif
@@ -589,6 +600,7 @@ int main(int ac, char *av[]) {
 	  printf("Starting program at address %ld\n",
                  (long) ((uchar *) entry - dmem));
 #endif
+
      run(entry);
      xmain_exit(0);
 }
@@ -607,9 +619,10 @@ word wrap_prim(primitive *prim) {
 #ifndef M64X32
      return (word) prim;
 #else
-     primitive **wrapper = scratch_alloc_atomic(sizeof(primitive *));
+     word addr = virtual_alloc_atomic(sizeof(primitive *));
+     primitive **wrapper = ptrcast(primitive *, addr);
      *wrapper = prim;
-     return address(wrapper);
+     return addr;
 #endif
 #endif
 }

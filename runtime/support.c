@@ -262,10 +262,10 @@ void put_long(value *v, longint x) {
 #endif
 
 /* find_symbol -- find a procedure from its CP. Works for modules too. */
-proc find_symbol(value *p, proc *table, int nelem) {
+proc find_symbol(word p, proc *table, int nelem) {
      int a = 0, b = nelem;
 
-     if (p == NULL) return NULL;
+     if (p == 0) return NULL;
      if (nelem == 0 || p < table[0]->p_addr) return NULL;
 
      /* Binary search */

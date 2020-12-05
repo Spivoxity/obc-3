@@ -54,17 +54,36 @@ union value {
      word a;
 };
 
-#define valptr(v) ((value *) (ptrtype) ((v).a))
-#define pointer(v) ((void *) (ptrtype) ((v).a))
+#define valptr(v)  ptrcast(value, (v).a)
+#define pointer(v) ptrcast(void, (v).a)
 
-#define address(p) ((word) (ptrtype) (p))
+#ifdef SEG64
+
+#define SEGBITS 20
+#define NSEGMENTS 4096
+
+#define stkaddr(p) (stack_vbase + ((uchar *) (p) - stack))
+#define dsegaddr(p) (data_vbase + ((uchar *) (p) - dmem))
+#define ptrcast(t, a) ((t *) physmap(a))
+
+extern void *segmap[];
+EXTERN word stack_vbase, data_vbase;
+
+static inline void *physmap(word a) {
+     return segmap[a >> SEGBITS] + (a & ((1 << SEGBITS)-1));
+}
+
+#else
+
+#define pun_memory(p) ((word) (ptrtype) (p))
+#define stkaddr(p) pun_memory(p)
+#define dsegaddr(p) pun_memory(p)
 #define ptrcast(t, a) ((t *) (ptrtype) (a))
 
-#define codeaddr(p) ((p) - imem)
-#define codeptr(v) (imem + (v).a)
+#endif
 
 #define codeaddr(p) ((p) - imem)
-#define codeptr(v) (imem + (v).a)
+#define codeptr(v) (imem + (v))
 
 typedef struct _proc *proc;
 typedef struct _module *module;
@@ -76,7 +95,7 @@ typedef uint64_t counter;
 
 struct _proc {
      const char *p_name;	/* Procedure name */
-     value *p_addr;		/* Address of descriptor in data space */
+     word p_addr;		/* Address of descriptor in data space */
 #ifdef PROFILE
      int p_index;		/* Position in listing */
      unsigned p_calls;		/* Call count */
@@ -90,7 +109,7 @@ struct _proc {
 
 struct _module {
      char *m_name;		/* Layout must match proc */
-     uchar *m_addr;
+     word m_addr;
      int m_length;
 #ifdef PROFILE
      int m_nlines;
@@ -156,8 +175,8 @@ EXTERN char *debug_socket;
 
 /* profile.c */
 #ifdef PROFILE
-void prof_enter(value *p, counter ticks, int why);
-void prof_exit(value *p, counter ticks);
+void prof_enter(word p, counter ticks, int why);
+void prof_exit(word p, counter ticks);
 void prof_init(void);
 void prof_reset(proc p);
 void profile(FILE *fp);
@@ -224,9 +243,10 @@ word wrap_prim(primitive *prim);
 void load_file(FILE *bfp);
 void load_image(void);
 
-void make_module(char *name, uchar *addr, int chsum, int nlines);
-void make_proc(char *name, uchar *addr);
-void make_symbol(const char *kind, char *name, uchar *addr);
+void make_module(char *name, word addr, int chsum, int nlines);
+void make_proc(char *name, word addr);
+void make_symbol(const char *kind, char *name, word addr);
+void fix_sizes(int dseg);
 
 void panic(const char *, ...);
 void obcopy(char *dst, int dlen, const char *src, int slen, value *bp);
@@ -237,7 +257,7 @@ void rterror(int num, int line, value *bp);
 void stkoflo(value *bp);
 #define liberror(msg) error_stop(msg, 0, 0, bp, NULL)
 
-proc find_symbol(value *p, proc *table, int nelem);
+proc find_symbol(word p, proc *table, int nelem);
 #define find_proc(cp) find_symbol(cp, proctab, nprocs)
 #define find_module(cp) ((module) find_symbol(cp, (proc *) modtab, nmods))
 
@@ -273,11 +293,28 @@ uchar *getenvt(int word);
 /* scratch_alloc -- allocate memory that will not be freed */
 void *scratch_alloc(unsigned bytes);
 
+#ifdef USE_BOEHM
 /* scratch_alloc_atomic -- allocate memory that will not contain pointers */
 void *scratch_alloc_atomic(unsigned bytes);
+#else
+#define scratch_alloc_atomic(bytes) scratch_alloc(bytes)
+#endif
+
+#ifdef SEG64
+
+word virtual_alloc(unsigned bytes);
+word map_segment(void *base, unsigned length);
+#define virtual_alloc_atomic(bytes) virtual_alloc(bytes)
+
+#else
+
+#define virtual_alloc(bytes) pun_memory(scratch_alloc(bytes))
+#define virtual_alloc_atomic(bytes) pun_memory(scratch_alloc_atomic(bytes))
+
+#endif
 
 /* gc_alloc -- allocate an object on the managed heap */
-void *gc_alloc(unsigned size, value *sp);
+word gc_alloc(unsigned size, value *sp);
 
 /* gc_collect -- run the garbage collector */
 void gc_collect(value *sp);
