@@ -57,7 +57,7 @@ union value {
 #define valptr(v)  ptrcast(value, (v).a)
 #define pointer(v) ptrcast(void, (v).a)
 
-#ifdef SEG64
+#ifdef SEGMEM
 
 #define SEGBITS 20
 #define NSEGMENTS 4096
@@ -300,7 +300,7 @@ void *scratch_alloc_atomic(unsigned bytes);
 #define scratch_alloc_atomic(bytes) scratch_alloc(bytes)
 #endif
 
-#ifdef SEG64
+#ifdef SEGMEM
 
 word virtual_alloc(unsigned bytes);
 word map_segment(void *base, unsigned length);

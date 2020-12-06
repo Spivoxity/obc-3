@@ -106,7 +106,7 @@ static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
    save brain cells, we assume a word has 32 bits; there are lots of
    constants that need changing if that is not true.  */
 
-#ifndef SEG64
+#ifndef SEGMEM
 
 #ifdef HAVE_MMAP
 #include <fcntl.h>
@@ -265,7 +265,7 @@ void *scratch_alloc(unsigned size) {
      return p;
 }
 
-#else // SEG64
+#else // SEGMEM
 
 #include <stdlib.h>
 

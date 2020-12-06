@@ -266,7 +266,7 @@ void load_file(FILE *bfp) {
 
      /* Load and relocate the data */
      dmem = scratch_alloc(seglen[S_DATA]+seglen[S_BSS]);
-#ifdef SEG64
+#ifdef SEGMEM
      data_vbase = map_segment(dmem, seglen[S_DATA]+seglen[S_BSS]);
 #endif
      binread(dmem, seglen[S_DATA]);
@@ -275,7 +275,7 @@ void load_file(FILE *bfp) {
 
      /* Allocate stack */
      stack = scratch_alloc(stack_size);
-#ifdef SEG64
+#ifdef SEGMEM
      stack_vbase = map_segment(stack, stack_size);
 #endif
      /* Save the entry point, pointer map and library path */
@@ -306,14 +306,14 @@ void load_image(void) {
 
      imem = (uchar *) preload_imem;
      dmem = scratch_alloc(seglen[S_DATA]+seglen[S_BSS]);
-#ifdef SEG64
+#ifdef SEGMEM
      data_vbase = map_segment(dmem, seglen[S_DATA]+seglen[S_BSS]);
 #endif
      memcpy(dmem, preload_dmem, seglen[S_DATA]);
      reloc(0, preload_reloc, seglen[S_DATA]);
      memset(dmem+seglen[S_DATA], 0, seglen[S_BSS]);
      stack = scratch_alloc(stack_size);
-#ifdef SEG64
+#ifdef SEGMEM
      stack_vbase = map_segment(stack, stack_size);
 #endif
 

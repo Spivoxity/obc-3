@@ -142,10 +142,10 @@ esac
 AC_SUBST(WIN_INSTALL, obc-$WIN-$DOS_VERSION)
 AC_SUBST(LD)
 
-AC_ARG_ENABLE(seg64,
-  AS_HELP_STRING([--enable-seg64], [use segmented addressing]))
-if test "$enable_seg64" = yes; then
-  AC_DEFINE(SEG64, 1, [Define to use segmented addressing])
+AC_ARG_ENABLE(segmem,
+  AS_HELP_STRING([--enable-segmem], [use segmented addressing]))
+if test "$enable_segmem" = yes; then
+  AC_DEFINE(SEGMEM, 1, [Define to use segmented addressing])
 fi
 
 # Checks for programs

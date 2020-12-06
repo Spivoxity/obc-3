@@ -461,10 +461,6 @@ actuals :
 				    "unmatched parenthesis" (rloc 1);
 				  raise Parse_error } ;
 
-desigs :
-    desig			{ [$desig] }
-  | desig COMMA desigs		{ $desig :: $desigs } ;
-
 exprs :	
     expr %prec error		{ [$expr] }
   | expr COMMA exprs		{ $expr :: $exprs } ;
