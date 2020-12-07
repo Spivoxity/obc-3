@@ -1032,7 +1032,7 @@ void dump_prims(void) {
           char *name = tstring + strlen(tstring) + 1;
 
           if (*tstring == '*')
-               printf("void %s(value *bp);\n\n", name);
+               printf("value *%s(value *bp);\n\n", name);
           else {
                int proto = 1;
 

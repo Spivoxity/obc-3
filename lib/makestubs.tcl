@@ -61,7 +61,7 @@ proc defprim {name tstring} {
     global prims
     
     if {$tstring == "*"} {
-        puts "void ${name}(value *bp);\n"
+        puts "value *${name}(value *bp);\n"
         lappend prims $name
     } else {
         set proto 1

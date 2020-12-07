@@ -317,7 +317,7 @@ word map_segment(void *base, unsigned length);
 word gc_alloc(unsigned size, value *sp);
 
 /* gc_collect -- run the garbage collector */
-void gc_collect(value *sp);
+value *gc_collect(value *sp);
 
 /* gc_heap_size -- return size of heap */
 int gc_heap_size(void);
