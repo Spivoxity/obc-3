@@ -279,6 +279,7 @@ void *scratch_alloc(unsigned size) {
 void *scratch_alloc(unsigned size) {
      void *p = malloc(size);
      if (p == NULL) panic("malloc failed");
+     memset(p, 0, size);
      return p;
 }
 
@@ -494,6 +495,14 @@ static void make_free(hdrptr h) {
      insert(free_list[index], h);
 }
 
+#ifdef SEGMEM
+/* contig -- test if blocks are physically contiguous */
+#define contig(h1, h2) \
+     voidptr(hdr(h1)->h_memory) + hdr(h1)->h_size \
+          == voidptr(hdr(h2)->h_memory)
+#endif
+
+
 /* free_block -- free a block, merging it with its neighbours */
 static hdrptr free_block(hdrptr h, mybool mapped) {
      /* Mapped is true if this memory is being recycled: it's already
@@ -524,7 +533,11 @@ static hdrptr free_block(hdrptr h, mybool mapped) {
 
      if (mapped) memset(voidptr(hdr(h)->h_memory), 0, hdr(h)->h_size);
 
-     if (prev != 0 && hdr(prev)->h_objsize == 0) {
+     if (prev != 0 && hdr(prev)->h_objsize == 0
+#ifdef SEGMEM
+         && contig(prev, h)
+#endif
+          ) {
 	  DEBUG_PRINT('l', ("Merging with prev\n"));
 	  unlink(prev);
 	  hdr(prev)->h_size += hdr(h)->h_size;
@@ -534,7 +547,11 @@ static hdrptr free_block(hdrptr h, mybool mapped) {
 	  h = prev;
      }
 
-     if (next != 0 && hdr(next)->h_objsize == 0) {
+     if (next != 0 && hdr(next)->h_objsize == 0
+#ifdef SEGMEM
+         && contig(h, next)
+#endif
+          ) {
 	  DEBUG_PRINT('l', ("Merging with next\n"));
 	  unlink(next);
 	  hdr(next)->h_memory = hdr(h)->h_memory;
@@ -1127,11 +1144,12 @@ static void mask_signals(void) {
 static void unmask_signals(void) {
      sigprocmask(SIG_SETMASK, &oldmask, NULL);
 }
-#endif
+#else
 
-#ifdef WINDOWS
+/* On Windows and other systems, just forget it */
 #define mask_signals()
 #define unmask_signals()
+
 #endif
 
 void gc_dump(void) {
@@ -1193,8 +1211,8 @@ void gc_dump(void) {
 #endif
 }
 
-void gc_collect(value *sp) {
-     if (!gcflag) return;
+value *gc_collect(value *sp) {
+     if (!gcflag) return sp;
 
      GC_TRACE("[gc");
      mask_signals();
@@ -1225,6 +1243,7 @@ void gc_collect(value *sp) {
      unmask_signals();
      alloc_since_gc = 0;
      GC_TRACE("]");
+     return sp;
 }
 
 /* gc_init -- initialise everything */

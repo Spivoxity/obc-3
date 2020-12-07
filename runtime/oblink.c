@@ -364,8 +364,7 @@ int main(int argc, char **argv) {
 	  save_string("LIBDIR", rtlibdir);
      end_linking();
 
-     if (custom && !preload)
-          dump_prims();
+     if (custom) dump_prims();
 
      return status;
 }

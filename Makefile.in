@@ -297,7 +297,8 @@ install:: force
 	for f in $(LIB); do $(INSTALL_DATA) $$f $(libdir)/obc; done
 	for f in $(LIBX); do $(INSTALL_PROG) $$f $(libdir)/obc; done
 	for f in $(RES); do $(INSTALL_DATA) $$f $(libdir)/obc/resources; done
-	for f in $(MAN); do $(INSTALL_DATA) man/$$f $(mandir)/man1; done
+	for f in $(MAN); do \
+		$(INSTALL_DATA) $(top_srcdir)/man/$$f $(mandir)/man1; done
 
 ifdef ENABLE_DEBUGGER
   ifdef MACOS
