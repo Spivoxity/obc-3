@@ -100,8 +100,6 @@ static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
 #define round_down(x, n) ((x)/(n)*(n))
 #define round_up(x, n)   round_down((x)+(n)-1, n)
 
-#define voidptr(p) ptrcast(void, p)
-
 /* Most of the manipulations here are done in terms of words, and to
    save brain cells, we assume a word has 32 bits; there are lots of
    constants that need changing if that is not true.  */
@@ -213,13 +211,11 @@ static void *get_memory(unsigned size) {
 
 /* SCRATCH ALLOCATOR */
 
-/* Scratch storage is managed quite separately from the heap, since
-   combining the two would gain little efficiency at the expense of a
-   lot of complexity.  We allocate whole pages (e.g. for the page
-   table) on page boundaries. Scratch blocks must be aligned on an
-   8-byte boundary for architectures that don't support unaligned
-   loads and stores of uint64_t, a type that is used for profiling 
-   counts. */
+/* Scratch storage is managed separately from the heap.  We allocate
+  whole pages (e.g. for the page table) on page boundaries. Scratch
+  blocks must be aligned on an 8-byte boundary for architectures that
+  don't support unaligned loads and stores of uint64_t, a type that is
+  used for profiling counts. */
 
 #define SCRATCH_ALIGN 8
 
@@ -267,15 +263,29 @@ void *scratch_alloc(unsigned size) {
 
 #else // SEGMEM
 
+/* To permit the use of malloc() as the only way of getting storage,
+   we can simulate segmented memory in software.  The key to this is
+   the inlined routine physmap defined in obx.h, which convert a
+   32-bit 'address' into a geniuine native pointer.  It is implicitly
+   used in the macros ptrcast, valptr and pointer by which the
+   interpreter interprets one of these addresses as a pointer.
+
+   A 32-bit address splits as 12 + 20 bits, with a 12-bit segment
+   number, and index into segmap, and a 20-bit offset within the
+   segment.  The segmap array gives the base address (64 bits) for a
+   piece of storage obtained from malloc.  These segments do not have
+   to be contiguous with each other.  We can deal with pieces of
+   memory bigger than 1MB by allocating several slots in segmap to
+   them, and exploit the fact that incrementing virtual addresses will
+   carry from the offset into the segment bits.
+
+   The garbage collector operates entirely within the 'virtual' address
+   space, and completely independently splits the virtual addresses as
+   10 + 10 + 12 bits to access the 'page table'.  Adjust it if you like! */
+
 #include <stdlib.h>
 
-#define SEGMENT (1 << SEGBITS)
-
-/* To permit the use of malloc() as the only way of getting storage, we
-   can simulate segmented memory in software! */
-
-/* scratch_alloc is just a synonym for malloc().  It allocates space
-   outside the segment map. */
+/* scratch_alloc -- allocate storage without making it addressible */
 void *scratch_alloc(unsigned size) {
      void *p = malloc(size);
      if (p == NULL) panic("malloc failed");
@@ -283,10 +293,10 @@ void *scratch_alloc(unsigned size) {
      return p;
 }
 
-void *segmap[NSEGMENTS];
-
+void *segmap[NSEGMENTS]; // Base of each segment as a (maybe 64-bit) pointer
 static int nsegs = 1; // Segment 0 used for NULL
 
+/* map_segment -- allocate segment registers */
 word map_segment(void *p, unsigned len) {
      word base = nsegs * SEGMENT;
 
@@ -298,6 +308,7 @@ word map_segment(void *p, unsigned len) {
      return base;
 }
 
+/* get_chunk -- allocate a chunk of storage and make it addressible */
 word get_chunk(unsigned size) {
      void *p = scratch_alloc(size);
      return map_segment(p, size);
@@ -305,6 +316,7 @@ word get_chunk(unsigned size) {
 
 static word alloc_ptr = 0, alloc_limit;
 
+/* virtual_alloc -- allocate unreclaimable storage that is addressible */
 word virtual_alloc(unsigned size) {
      word p;
 
@@ -330,10 +342,24 @@ word virtual_alloc(unsigned size) {
    of object, given by the h_objsize field; this makes it possible to
    find the start of an object given a pointer to its interior.  Also,
    heap blocks are given a timestamp that allows us to identify during
-   GC which semispace they belong to. */
+   GC which semispace they belong to. 
 
+   We may as well use 32-bit pointers for headers and allocate the
+   space for them in addressible scratch storage.  This works well
+   except with SEGMEM, where it's going to be faster to use actual
+   pointers. */
+
+#ifndef SEGMEM
 typedef word hdrptr;
 #define hdr(h) ptrcast(header, h)
+#define header_alloc() virtual_alloc(sizeof(header))
+#else
+typedef struct _header *hdrptr;
+#define hdr(h) h
+#define header_alloc() scratch_alloc(sizeof(header))
+#endif
+
+#define voidptr(a) ptrcast(void, a)
 
 typedef struct _header {
      word h_memory;		/* The block itself */
@@ -353,18 +379,17 @@ static hdrptr alloc_header(void) {
      hdrptr h;
 
      if (hdr_free == 0)
-	  h = virtual_alloc(sizeof(header));
+	  h = header_alloc();
      else {
 	  h = hdr_free;
 	  hdr_free = hdr(h)->h_next;
      }
 
-     header *hp = hdr(h);
-     hp->h_memory = 0;
-     hp->h_size = 0;
-     hp->h_objsize = 0;
-     hp->h_epoch = 0;
-     hp->h_next = hp->h_prev = 0;
+     hdr(h)->h_memory = 0;
+     hdr(h)->h_size = 0;
+     hdr(h)->h_objsize = 0;
+     hdr(h)->h_epoch = 0;
+     hdr(h)->h_next = hdr(h)->h_prev = 0;
      return h;
 }
 
@@ -436,8 +461,7 @@ typedef hdrptr page_index[BOT_SIZE];
 static word page_table[TOP_SIZE];
 static word empty_index;
 
-#define get_header(p) header_loc(p)
-#define header_loc(p) \
+#define get_header(p) \
      (*ptrcast(page_index, page_table[top_part(p)]))[bot_part(p)]
 
 /* To assist in merging free blocks, we can find the two blocks that
@@ -454,7 +478,7 @@ static void page_setup(word base, unsigned size, hdrptr h) {
 	  if (page_table[top_part(p)] == empty_index)
 	       page_table[top_part(p)] = virtual_alloc(sizeof(page_index));
 
-          header_loc(p) = h;
+          get_header(p) = h;
      }
 }
 
@@ -496,8 +520,8 @@ static void make_free(hdrptr h) {
 }
 
 #ifdef SEGMEM
-/* contig -- test if blocks are physically contiguous */
-#define contig(h1, h2) \
+/* contiguous -- test if blocks are physically contiguous */
+#define contiguous(h1, h2) \
      voidptr(hdr(h1)->h_memory) + hdr(h1)->h_size \
           == voidptr(hdr(h2)->h_memory)
 #endif
@@ -535,7 +559,7 @@ static hdrptr free_block(hdrptr h, mybool mapped) {
 
      if (prev != 0 && hdr(prev)->h_objsize == 0
 #ifdef SEGMEM
-         && contig(prev, h)
+         && contiguous(prev, h)
 #endif
           ) {
 	  DEBUG_PRINT('l', ("Merging with prev\n"));
@@ -549,7 +573,7 @@ static hdrptr free_block(hdrptr h, mybool mapped) {
 
      if (next != 0 && hdr(next)->h_objsize == 0
 #ifdef SEGMEM
-         && contig(h, next)
+         && contiguous(h, next)
 #endif
           ) {
 	  DEBUG_PRINT('l', ("Merging with next\n"));
@@ -845,19 +869,20 @@ static void redirect(word *p) {
      word q, r, s;
      hdrptr h;
      int index;
+     unsigned objsize;
 
      q  = *p; /* q is the old pointer value */
      if (q == 0) return;
      h = get_header(q);
      if (h == 0) return;	/* Not in the managed heap */
-     ASSERT(hdr(h)->h_objsize > 0);
+     objsize = hdr(h)->h_objsize;
+     ASSERT(objsize > 0);
 
-     if (hdr(h)->h_objsize <= MAX_SMALL_BYTES) {
+     if (objsize <= MAX_SMALL_BYTES) {
 	  /* A small object */
-	  index = pool_map(hdr(h)->h_objsize);
-	  ASSERT(pool_size(index) == hdr(h)->h_objsize);
-	  r = hdr(h)->h_memory +
-               round_down(q-hdr(h)->h_memory, hdr(h)->h_objsize);
+	  index = pool_map(objsize);
+	  ASSERT(pool_size(index) == objsize);
+	  r = hdr(h)->h_memory + round_down(q - hdr(h)->h_memory, objsize);
 	  /* r is the start of the object containing q */
 
           if (get_word(r, 0) == BROKEN_HEART) 
@@ -1051,7 +1076,7 @@ static void traverse_stack(value *xsp) {
           if (! interpreted(c)) {
                /* Compiled primitive: f[PC].i is stack map */
                stkmap = pc;
-          } else if (pc != 0 && pointer(c[CP_STKMAP]) != NULL) {
+          } else if (pc != 0 && c[CP_STKMAP].a != 0) {
                /* Look up calling PC value in stack map table. */
                unsigned *r = pointer(c[CP_STKMAP]);
                DEBUG_PRINT('m', ("\n<SM pc=%#x>", pc));
@@ -1105,7 +1130,7 @@ static void migrate(void) {
 	       while (finger[i] != free_ptr[i]) {
 		    if (thumb[i] == block_pool[i] ||
                         finger[i] + pool_size(i) 
-                        > hdr(thumb[i])->h_memory + pool_block(i)) {
+                             > hdr(thumb[i])->h_memory + pool_block(i)) {
 			 thumb[i] = hdr(thumb[i])->h_next;
 			 finger[i] = hdr(thumb[i])->h_memory;
 		    }

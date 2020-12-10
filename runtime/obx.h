@@ -60,6 +60,8 @@ union value {
 #ifdef SEGMEM
 
 #define SEGBITS 20
+#define SEGMENT (1 << SEGBITS)
+#define SEGMASK ((1 << SEGBITS)-1)
 #define NSEGMENTS 4096
 
 #define stkaddr(p) (stack_vbase + ((uchar *) (p) - stack))
@@ -70,7 +72,7 @@ extern void *segmap[];
 EXTERN word stack_vbase, data_vbase;
 
 static inline void *physmap(word a) {
-     return segmap[a >> SEGBITS] + (a & ((1 << SEGBITS)-1));
+     return segmap[a >> SEGBITS] + (a & SEGMASK);
 }
 
 #else
