@@ -1081,7 +1081,6 @@ let type_code t =
     if (is_array t && flexity t = 0) || is_pointer t || is_record t
       || same_types t ptrtype then 'P' (* 32-bit pointer *)
     else if is_array t && flexity t = 1 then 'X' (* addr+bound *)
-    else if same_types t longptr then 'Q' (* 64-bit pointer *)
     else failwith (sprintf "Can't pass value type $" [fOType t])
 
 let vparam_code t =
