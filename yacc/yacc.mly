@@ -190,10 +190,9 @@ rhs :
       { index := 0; rhsmap := []; [] }
   | rhs symbol	                
       { let (x, y) = $symbol in
-	if is_token x then begin
-	  pr_sym := Some x;
-          if not (same_syms x error_sym) then x.x_genuine <- true 
-        end;
+	if is_token x then pr_sym := Some x;
+        if not (is_token x) || not (same_syms x error_sym) then
+          x.x_genuine <- true;
 	incr index; rhsmap := !rhsmap @ [(y, !index)];
         $rhs @ [x] }
   | rhs PREC SYMBOL                 

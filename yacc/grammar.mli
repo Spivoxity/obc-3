@@ -36,7 +36,7 @@ type symbol =
     mutable x_type: string;		(* Type tag *)
     mutable x_kind: assoc;		(* Associativity *)
     mutable x_prec: int;		(* Precedence level *)
-    mutable x_genuine: bool;		(* True for tokens known to scanner *)
+    mutable x_genuine: bool;		(* True for symbols actually used *)
     mutable x_rules: rule list;		(* List of productions with this lhs *)
     mutable x_nullable: bool;		(* True if nonterm derives empty *)
     mutable x_value: int;		(* Runtime value *) }
