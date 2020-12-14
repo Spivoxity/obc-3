@@ -871,7 +871,7 @@ let rec gen_stmt exit_lab s =
             SEQ (List.map (fun (e1, e2) ->
               SEQ [gen_expr e2; gen_addr e1]) pairs);
             SEQ (List.map (fun (e1, e2) ->
-              let t = e1.e_type in STORE (mem_kind t)) pairs)]
+              let t = e1.e_type in STORE (mem_kind t)) (List.rev pairs))]
 
       | ProcCall e ->
 	  SEQ [gen_expr e;

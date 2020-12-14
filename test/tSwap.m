@@ -50,11 +50,11 @@ END three;
 PROCEDURE four;
   VAR i: INTEGER; a: ARRAY 11 OF CHAR;
 BEGIN
-  i := 0;
-  WHILE i < 10 DO
-    i, a[i] := i+1, CHR(i+ORD('A'))
+  i := 10;
+  WHILE i > 0 DO
+    i, a[i-1] := i-1, CHR(i+ORD('A')-1)
   END;
-  a[i] := 0X;
+  a[10] := 0X;
   Out.String(a); Out.Ln
 END four;
 
@@ -271,38 +271,33 @@ END
 
 PROC tSwap.four 16 6 0
 ! PROCEDURE four;
-!   i := 0;
-CONST 0
+!   i := 10;
+CONST 10
 STLW -4
 LABEL L2
-!   WHILE i < 10 DO
+!   WHILE i > 0 DO
 LDLW -4
-CONST 10
-JGEQ L4
-!     i, a[i] := i+1, CHR(i+ORD('A'))
+JLEQZ L4
+!     i, a[i-1] := i-1, CHR(i+ORD('A')-1)
 LDLW -4
-INC
+DEC
 LOCAL -4
 LDLW -4
-CONST 65
+CONST 64
 PLUS
 CONVNC
 LOCAL -15
 LDLW -4
+DEC
 CONST 11
 BOUND 55
-OFFSET
+STIC
 STOREW
-STOREC
 JUMP L2
 LABEL L4
-!   a[i] := 0X;
+!   a[10] := 0X;
 CONST 0
-LOCAL -15
-LDLW -4
-CONST 11
-BOUND 57
-STIC
+STLC -5
 !   Out.String(a); Out.Ln
 CONST 11
 LOCAL -15
