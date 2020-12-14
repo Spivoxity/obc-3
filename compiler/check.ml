@@ -440,6 +440,23 @@ let rec check_stmt s env =
 	  sem_error "the LHS of an assignment must be a variable" [] lhs.e_loc;
 	check_assign rhs lt env "on the RHS of this assignment" []
 
+    | SimAssign pairs ->
+	if not !Config.extensions then
+	  sem_extend "simultaneous assignment is not allowed" [] s.s_loc;
+	List.iter (fun (e1, e2) ->
+	    let lt = check_desig e1 env in
+	    if not (is_var e1) then
+	      sem_error "the LHS of an assignment must be a variable" 
+		[] e1.e_loc;
+	    if not (scalar lt) then begin
+	      sem_error 
+		"simultaneous assignment is implemented only for scalar types"
+		[] e1.e_loc;
+	      sem_type lt
+	    end;
+	    check_assign e2 lt env "on the RHS of this assignment" [])
+	  pairs
+
     | ProcCall e ->
 	begin match e.e_guts with
 	    FuncCall (p, args) ->

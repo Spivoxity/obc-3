@@ -8,6 +8,8 @@ PROCEDURE (CONST x: INTEGER) p; END;
 
 PROCEDURE THEN; END p;
 
+BEGIN
+  x, y := 1, 2, 3
 END eCover07.
 
 (*<<
@@ -34,4 +36,8 @@ END eCover07.
 "eCover07.m", line 9: syntax error at token 'THEN'
 > PROCEDURE THEN; END p;
 >           ^^^^
+
+"eCover07.m", line 12: Wrong number of expressions on RHS
+>   x, y := 1, 2, 3
+>   ^^^^^^^^^^^^^^^
 >>*)
