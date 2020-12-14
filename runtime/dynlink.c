@@ -152,11 +152,6 @@ value *dlstub(value *bp) {
           case 'Q':
                avals[q].ptr = ptrcast(uchar, get_long(&bp[HEAD+p]));
                p += 2; q += 1; break;
-#ifdef SPECIALS
-          case 'S':
-               /* Static link for compilers course -- ignored */
-               p += 1; break;
-#endif
           default:
                panic("Bad type 2 %c", tstring[i+1]);
           }
