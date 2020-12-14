@@ -40,7 +40,7 @@ static const char *srcexts[] = { "m", "mod", "Mod", "obn", "ob2" };
 
 char *runtime = RUNTIMEJ;
 
-int has_ext(char *fname, char *ext)
+int has_ext(char *fname, const char *ext)
 {
      int n = strlen(fname), k = strlen(ext);
      return (n >= k+2 && fname[n-k-1] == '.' && strcmp(&fname[n-k], ext) == 0);

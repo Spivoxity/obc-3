@@ -48,10 +48,8 @@ export OBC_LIB
 
 if [ "$WINDOWS" = 1 ]; then
     fixup=d2u
-    fixexp='sed -e s/\([0-9]\)E\([+-]\)\([0-9][0-9]\)$/\1E\20\3/'
 else
     fixup=cat
-    fixexp=cat
 fi
 
 promote=false; code=true; run=true; cflags="-O"
@@ -104,7 +102,7 @@ for f in ${*:-`cd $srcdir; echo t*.m e*.m`}; do
 	sed -f $srcdir/promote.sed $srcdir/$f >$f.new
 	mv $f.new $srcdir/$f
     else
-	sed -n -e '1,/^(\*<</d' -e '/^>>\*)/q' -e p $srcdir/$f | $fixexp >out.0
+	sed -n -e '1,/^(\*<</d' -e '/^>>\*)/q' -e p $srcdir/$f >out.0
 	sed -n -e '1,/^(\*\[\[/d' -e '/^]]\*)/q' -e p $srcdir/$f >code.0
 	if $run; then $DIFF out.0 out || status=1; fi
 	if $code && [ -r code ]; then $fixup < code | $DIFF -c code.0 -; fi
