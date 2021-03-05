@@ -33,7 +33,7 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 3.2beta1, mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues)
+AC_INIT(obc, 3.2.0, mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues)
 AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
