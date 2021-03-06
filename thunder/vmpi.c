@@ -877,7 +877,7 @@ void vm_gen1i(operation op, int a) {
 }
 
 void vm_gen1a(operation op, void *a) {
-     vm_debug1(op, 1, fmt_val(a));
+     vm_debug1(op, 1, fmt_val((int) a));
      vm_space(0);
 
      switch (op) {
@@ -995,7 +995,7 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 void vm_gen2ra(operation op, vmreg rega, void *b) {
      int ra = rega->vr_reg;
 
-     vm_debug1(op, 2, rega->vr_name, fmt_val(b));
+     vm_debug1(op, 2, rega->vr_name, fmt_val((int) b));
      vm_space(0);
 
      switch (op) {
