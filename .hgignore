@@ -244,3 +244,6 @@ mipstest/out.0
 winport/.strip
 lib/_Builtin.tmp
 plx
+yacc/knuth26.ml
+yacc/knuth26.mli
+yacc/knuth26.output

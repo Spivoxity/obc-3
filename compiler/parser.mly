@@ -477,7 +477,7 @@ exprs :
   | expr COMMA exprs		{ $expr :: $exprs } ;
 
 qualid :	
-    IDENT %prec DOT		{ makeName (anon, $IDENT, lloc ()) }
+    IDENT 			{ makeName (anon, $IDENT, lloc ()) }
   | IDENT@x1 DOT IDENT@x2	{ makeName ($x1, $x2, lloc ()) };
 
 name :	
