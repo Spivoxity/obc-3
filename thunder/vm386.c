@@ -608,7 +608,7 @@ static void memory(int ra, int rb, int d, int rx, int s) {
 }
 
 
-/* ASSEMBLY ROUTINES for various instructions formats.  
+/* ASSEMBLY ROUTINES for various instruction formats.  
    These each produce debugging ouput.
 
    An instruction can have:
@@ -716,9 +716,9 @@ static void instr_rm(OPDECL, int rt, int rs, int imm, int rx, int s) {
 }
 
 /* instr_st -- store with indexing */
-static void instr_st(OPDECL, int rt, int rb, int imm, int ri, int s) {
-     vm_debug2("%s %s, %s", mnem, fmt_addr(rb, imm, ri, s), regname[rt]);
-     opcode(op), memory(rt, rb, imm, ri, s);
+static void instr_st(OPDECL, int rt, int rs, int imm, int rx, int s) {
+     vm_debug2("%s %s, %s", mnem, fmt_addr(rs, imm, rx, s), regname[rt]);
+     opcode(op), memory(rt, rs, imm, rx, s);
      vm_done();
 }
 
@@ -798,7 +798,7 @@ static void instr_fpm(OPDECL2, int rs, int imm, int rx, int s) {
 #define inc_r(r)          instr_reg(opINC_r, r)
 #define dec_r(r)          instr_reg(opDEC_r, r)
 #else
-#define inc_r(r)  	  instr2_r(opINC_m, r)
+#define inc_r(r)          instr2_r(opINC_m, r)
 #define dec_r(r)          instr2_r(opDEC_m, r)
 #endif
 
@@ -1710,26 +1710,6 @@ void vm_gen2ri(operation op, vmreg rega, int b) {
 
      default:
           vm_load_store(op, ra, NOREG, b, NOREG, 0);
-     }
-}
-
-void vm_gen2ra(operation op, vmreg rega, void *b) {
-     int ra = rega->vr_reg;
-
-     vm_debug1(op, 2, rega->vr_name, fmt_ptr(b));
-     vm_space(0);
-
-     switch (op) {
-     case MOV: 
-#ifdef M64X32
-          move_i64(ra, (uint64) b);
-#else
-	  move_i(ra, (int) b);
-#endif
-          break;
-
-     default:
-          badop();
      }
 }
 

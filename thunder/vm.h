@@ -94,16 +94,12 @@ BLTu/BGEu ra, rb/imm, lab
   -- unsigned conditional branches
 JUMP lab
   -- unconditional branch
-IJUMP ra, imm
-  -- indexed jump with implicit multiplication
 EQ/NE/LT/LE/GT/GE ra, rb, rb/imm                         
   -- comparisons with boolean result
 EQf/NEf/LTf/LEf/GTf/GEf ra, fb, fc
   -- float comparisons with boolean result
 EQd/NEd/LTd/LEd/GTd/GEd ra, fb, fc                 
   -- double comparisons with boolean result
-SXT ra, rb
-  -- convert integer to short (AND with 0xffff and sign extend)    
 CONVif/CONVid fa, rb
   -- convert integer to float or double
 CONVfd/CONVdf fa, fb
@@ -122,10 +118,6 @@ LDQ/STQ ra/fa, rb, imm
   -- load/store double
 ZEROf/ZEROd fa
   -- set float/double register to zero
-SXTOFF ra, rb
-  -- sign extend an addressing offset (typically from 32 to 64 bits)
-ADDOFF ra, rb, rc
-  -- add two addressing offsets.
 
 The remaining instructions are associated with subroutine calls, and are
 used only in special patterns.
@@ -172,7 +164,7 @@ Note that Keiko procedures are compiled into subroutines that accept
 one argument (the value of the Keiko stack pointer) and return no
 result.  The parameters to a Keiko procedure are passed in a separate
 memory area from the host's subroutine stack, and any result is
-also returned on the stack.
+also returned in the same area.
 
 
 IMPLEMENTATION HINTS
@@ -285,7 +277,7 @@ extern int vm_aflag;
 
 #define vm_gen2(op, a, b)                                               \
      _Generic(b, default: vm_gen2rr, intcases(vm_gen2ri),               \
-              vmlabel: vm_gen2rj, void *: vm_gen1a)(op, a, b)
+              vmlabel: vm_gen2rj)(op, a, b)
 
 #define vm_gen3(op, a, b, c)                                            \
      _Generic(c, default: vm_gen3rrr, intcases(vm_gen3rri),             \

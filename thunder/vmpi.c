@@ -459,7 +459,7 @@ static void ldst_ri(OPDECL, int rd, int rn, int off) {
 
 #define RRBIT  (0x20<<20) // Double-reg indirect
 
-// rd :=: mem[rn + rm]
+// rd :=: mem[rn + rm<<s]
 static void ldst_rr(OPDECL, int rd, int rn, int rm, int s) {
      vm_debug2("%s %s, [%s, %s]", mnem, regname[rd], regname[rn],
                fmt_shift(rm, s));
