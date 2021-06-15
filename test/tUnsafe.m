@@ -11,7 +11,7 @@ BEGIN
   Out.LongInt(x, 0); Out.Ln;
   x := x + 3000000;
   y := SYSTEM.VAL(LONGREAL, x-3000000) + 0.1;
-  Out.LongReal(y); Out.Ln;
+  Out.LongReal(y, 0); Out.Ln;
   x := SYSTEM.VAL(LONGINT, y-0.1);
   Out.LongInt(x, 0); Out.Ln;
 
@@ -20,7 +20,7 @@ BEGIN
   Out.Int(u, 0); Out.Ln;
   u := u + 3000000;
   v := SYSTEM.VAL(REAL, u-3000000) + 0.1;
-  Out.Real(v); Out.Ln;
+  Out.Real(v, 0); Out.Ln;
   u := SYSTEM.VAL(INTEGER, v-0.1);
   Out.Int(u, 0); Out.Ln
 END tUnsafe.
@@ -68,10 +68,11 @@ QMINUS
 DCONST 0.1
 DPLUS
 STGD tUnsafe.y
-!   Out.LongReal(y); Out.Ln;
+!   Out.LongReal(y, 0); Out.Ln;
+CONST 0
 LDGD tUnsafe.y
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 !   x := SYSTEM.VAL(LONGINT, y-0.1);
@@ -111,10 +112,11 @@ MINUS
 FCONST 0.1
 FPLUS
 STGF tUnsafe.v
-!   Out.Real(v); Out.Ln;
+!   Out.Real(v, 0); Out.Ln;
+CONST 0
 LDGF tUnsafe.v
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 !   u := SYSTEM.VAL(INTEGER, v-0.1);

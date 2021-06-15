@@ -40,15 +40,15 @@ BEGIN
 END Int;
 
 (** Real -- output a real number in scientific notation *)
-PROCEDURE Real*(x: REAL);
+PROCEDURE Real*(x: REAL; w: INTEGER);
 BEGIN
-  Files.WriteReal(Files.stderr, x)
+  Files.WriteReal(Files.stderr, x, w)
 END Real;
 
 (** LongReal -- output a long real in scientific notation *)
-PROCEDURE LongReal*(x: LONGREAL);
+PROCEDURE LongReal*(x: LONGREAL; w: INTEGER);
 BEGIN
-  Files.WriteLongReal(Files.stderr, x)
+  Files.WriteLongReal(Files.stderr, x, w)
 END LongReal;
 
 (** Fixed -- output a long real in fixed decimal notation *)

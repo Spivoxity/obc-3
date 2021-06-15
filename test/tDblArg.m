@@ -4,7 +4,7 @@ IMPORT Out;
 
 PROCEDURE f(b: BOOLEAN; x: LONGREAL); 
 BEGIN
-  IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x) END; 
+  IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x, 0) END; 
   Out.Ln
 END f;
 
@@ -28,9 +28,9 @@ MODULE tDblArg STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDblArg.f 0 3 0
+PROC tDblArg.f 0 4 0
 ! PROCEDURE f(b: BOOLEAN; x: LONGREAL); 
-!   IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x) END; 
+!   IF b THEN Out.String("*** Failed!") ELSE Out.LongReal(x, 0) END; 
 LDLC 12
 JEQZ L4
 CONST 12
@@ -39,9 +39,10 @@ GLOBAL Out.String
 CALL 2
 JUMP L2
 LABEL L4
+CONST 0
 LDLD 16
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 LABEL L2
 !   Out.Ln
 GLOBAL Out.Ln

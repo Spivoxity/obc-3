@@ -103,7 +103,7 @@ BEGIN
   (* Check results of Random.Uniform *)
   FOR x := 1 TO 20 DO
     r := Random.Uniform();
-    Out.Real(r); Out.Ln;
+    Out.Real(r, 0); Out.Ln;
     ASSERT((0.0 <= r) & (r < 1.0))
   END;
   Out.Ln;
@@ -581,10 +581,11 @@ JGT L36
 GLOBAL Random.Uniform
 CALLF 0
 STGF tRand07.r
-!     Out.Real(r); Out.Ln;
+!     Out.Real(r, 0); Out.Ln;
+CONST 0
 LDGF tRand07.r
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 !     ASSERT((0.0 <= r) & (r < 1.0))

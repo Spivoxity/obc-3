@@ -38,10 +38,10 @@ PROCEDURE WriteInt(f: File; n, width: INTEGER);
 PROCEDURE WriteLongInt(f: File; n: LONGINT; width: INTEGER);
 
 (** WriteReal -- output a real in scientific notation *)
-PROCEDURE WriteReal(f: File; x: REAL);
+PROCEDURE WriteReal(f: File; x: REAL; w: INTEGER);
 
 (** WriteLongReal -- output a long real in scientific notation *)
-PROCEDURE WriteLongReal(f: File; x: LONGREAL);
+PROCEDURE WriteLongReal(f: File; x: LONGREAL; w: INTEGER);
 
 (** WriteFixed -- output a long real in fixed decimal notation *)
 PROCEDURE WriteFixed(f: File; x: LONGREAL; width, dec: INTEGER);

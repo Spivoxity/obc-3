@@ -44,7 +44,7 @@ BEGIN
   v3 := Unit(51.487304,-0.124317);	(* MI6 HQ *)
   v4 := Unit(51.99647,-0.74287);	(* Bletchley Park *)
   LatLong(Cross(Cross(v2, v3), Cross(v1, v4)), lat, long);
-  Out.LongReal(lat); Out.String(", "); Out.LongReal(long); Out.Ln
+  Out.LongReal(lat, 0); Out.String(", "); Out.LongReal(long, 0); Out.Ln
 END tSpies07.
 
 (*<<
@@ -301,17 +301,19 @@ GLOBAL tSpies07.Cross
 CALLW 2
 GLOBAL tSpies07.LatLong
 CALL 3
-!   Out.LongReal(lat); Out.String(", "); Out.LongReal(long); Out.Ln
+!   Out.LongReal(lat, 0); Out.String(", "); Out.LongReal(long, 0); Out.Ln
+CONST 0
 LDGD tSpies07.lat
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 CONST 3
 GLOBAL tSpies07.%1
 GLOBAL Out.String
 CALL 2
+CONST 0
 LDGD tSpies07.long
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 RETURN

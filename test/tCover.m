@@ -37,7 +37,7 @@ END proc9;
 BEGIN
   l := 1122334455667788;
   x := l; x := ABS(x); x := SHORT(ABS(LONG(x)));
-  Out.Real(x); Out.Ln;
+  Out.Real(x, 0); Out.Ln;
   DEC(l); print(l);
   l := ASR(SHORT(l), 1); Out.LongInt(l, 0); Out.Ln;
   l := ASH(SHORT(l), 1); Out.LongInt(l, 0); Out.Ln;
@@ -164,10 +164,11 @@ GLOBAL ABSDOUBLE
 CALLD 2
 CONVDF
 STGF tCover.x
-!   Out.Real(x); Out.Ln;
+!   Out.Real(x, 0); Out.Ln;
+CONST 0
 LDGF tCover.x
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 !   DEC(l); print(l);

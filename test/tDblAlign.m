@@ -12,8 +12,8 @@ BEGIN
   y := MathL.pi;
   w := MathL.pi;
   x := 3; z := 4;
-  Out.LongReal(y); Out.Ln;
-  Out.LongReal(w); Out.Ln
+  Out.LongReal(y, 0); Out.Ln;
+  Out.LongReal(w, 0); Out.Ln
 END P;
 
 BEGIN
@@ -34,7 +34,7 @@ IMPORT MathL STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDblAlign.P 24 3 0
+PROC tDblAlign.P 24 4 0
 ! PROCEDURE P;
 !   y := MathL.pi;
 DCONST 3.14159265359
@@ -47,16 +47,18 @@ CONST 3
 STLW -4
 CONST 4
 STLW -16
-!   Out.LongReal(y); Out.Ln;
+!   Out.LongReal(y, 0); Out.Ln;
+CONST 0
 LDLD -12
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
-!   Out.LongReal(w); Out.Ln
+!   Out.LongReal(w, 0); Out.Ln
+CONST 0
 LDLD -24
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 RETURN

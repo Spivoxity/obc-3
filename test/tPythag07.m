@@ -8,7 +8,7 @@ PROCEDURE Pythag(x, y: LONGREAL): LONGREAL;
   VAR r: LONGREAL;
 BEGIN
   LOOP
-    Out.LongReal(x); Out.Char(' '); Out.LongReal(y); Out.Ln;
+    Out.LongReal(x, 0); Out.Char(' '); Out.LongReal(y, 0); Out.Ln;
     r := y/x; r := r * r;
     IF r < eps THEN EXIT END;
     r := r/(4.0+r);
@@ -19,8 +19,8 @@ BEGIN
 END Pythag;
 
 BEGIN
-  Out.LongReal(Pythag(FLT(1), FLT(1))); Out.Ln;
-  Out.LongReal(Pythag(FLT(3), FLT(4))); Out.Ln
+  Out.LongReal(Pythag(FLT(1), FLT(1)), 0); Out.Ln;
+  Out.LongReal(Pythag(FLT(3), FLT(4)), 0); Out.Ln
 END tPythag07.
 
 (*<<
@@ -47,17 +47,19 @@ ENDHDR
 PROC tPythag07.Pythag 8 6 0
 ! PROCEDURE Pythag(x, y: LONGREAL): LONGREAL;
 LABEL L1
-!     Out.LongReal(x); Out.Char(' '); Out.LongReal(y); Out.Ln;
+!     Out.LongReal(x, 0); Out.Char(' '); Out.LongReal(y, 0); Out.Ln;
+CONST 0
 LDLD 12
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 CONST 32
 ALIGNC
 GLOBAL Out.Char
 CALL 1
+CONST 0
 LDLD 20
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 !     r := y/x; r := r * r;
@@ -103,23 +105,25 @@ LDLD 12
 RETURN
 END
 
-PROC tPythag07.%main 0 5 0
-!   Out.LongReal(Pythag(FLT(1), FLT(1))); Out.Ln;
+PROC tPythag07.%main 0 6 0
+!   Out.LongReal(Pythag(FLT(1), FLT(1)), 0); Out.Ln;
+CONST 0
 DCONST 1.0
 DCONST 1.0
 GLOBAL tPythag07.Pythag
 CALLD 4
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
-!   Out.LongReal(Pythag(FLT(3), FLT(4))); Out.Ln
+!   Out.LongReal(Pythag(FLT(3), FLT(4)), 0); Out.Ln
+CONST 0
 DCONST 4.0
 DCONST 3.0
 GLOBAL tPythag07.Pythag
 CALLD 4
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 RETURN

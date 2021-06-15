@@ -233,25 +233,32 @@ void preload_symtab(FILE *binfp) {
      qsort(dict, ndict, sizeof(symbol), 
 	   (int (*)(const void *, const void *)) cf_syms);
      
-     fprintf(binfp,
-             "const struct { int kind; char *name; int val; }"
-             " preload_syms[] = {\n");
+     for (int i = 0; i < ndict; i++) {
+          symbol s = dict[i];
+          switch (s->s_kind) {
+          case X_PROC:
+               fprintf(binfp, "    .quad .L%d\n", i);
+               fprintf(binfp, "    .long %d, %d\n", X_PROC, s->s_value);
+               break;
+          case X_MODULE:
+               fprintf(binfp, "    .quad .L%d\n", i);
+               fprintf(binfp, "    .long %d, %d\n", X_MODULE, s->s_value);
+               break;
+          }
+     }
 
      for (int i = 0; i < ndict; i++) {
           symbol s = dict[i];
           switch (s->s_kind) {
           case X_PROC:
-               fprintf(binfp, "     { X_PROC, \"%s\", %u },\n",
-                       s->s_name, s->s_value);
-               break;
           case X_MODULE:
-               fprintf(binfp, "     { X_MODULE, \"%s\", %u },\n",
-                       s->s_name, s->s_value);
+               fprintf(binfp, "L%d:\n", i);
+               fprintf(binfp, "    .asciz \"%s\"\n", s->s_name);
                break;
           }
      }
 
-     fprintf(binfp, "};\n\n");
+     fprintf(binfp, "\n");
 }
                
 

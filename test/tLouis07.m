@@ -10,7 +10,7 @@ BEGIN
       xTypes07.Ext1:
         Out.String("One "); Out.Int(x.stuff1, 0); Out.Ln
     | xTypes07.Ext2:
-        Out.String("Two "); Out.Real(x.stuff2); Out.Ln
+        Out.String("Two "); Out.Real(x.stuff2, 0); Out.Ln
   END
 END b;
 
@@ -89,16 +89,17 @@ LDNW 4
 GLOBAL xTypes07.Ext2Cell
 JNEQ L7
 POP 1
-!         Out.String("Two "); Out.Real(x.stuff2); Out.Ln
+!         Out.String("Two "); Out.Real(x.stuff2, 0); Out.Ln
 CONST 5
 GLOBAL tLouis07.%2
 GLOBAL Out.String
 CALL 2
+CONST 0
 LDLW 12
 NCHECK 13
 LOADF
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 RETURN

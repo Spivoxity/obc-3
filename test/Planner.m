@@ -84,8 +84,8 @@ PROCEDURE Euclid(t, u: town): R;
   VAR dx, dy: R;
 BEGIN
   dx := t.Tx - u.Tx; dy := t.Ty - u.Ty;
-  (* Out.LongReal(dx); Out.Ln;
-  Out.LongReal(dy); Out.Ln; *)
+  (* Out.LongReal(dx, 0); Out.Ln;
+  Out.LongReal(dy, 0); Out.Ln; *)
   RETURN M.Sqrt(dx*dx + dy*dy)
 END Euclid;
 
@@ -139,8 +139,8 @@ BEGIN
   NEW(r1); NEW(r1); NEW(r2);
 
   IF leng < Euclid(t1, t2) THEN
-    Out.LongReal(leng); Out.Ln;
-    Out.LongReal(Euclid(t1, t2)); Out.Ln;
+    Out.LongReal(leng, 0); Out.Ln;
+    Out.LongReal(Euclid(t1, t2), 0); Out.Ln;
     Panic("Road is too short")
   END;
 

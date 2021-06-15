@@ -39,14 +39,16 @@ static int count = 0;
 static void binwrite(void *buf, int size) {
      if (preload) {
           for (int i = 0; i < size; i++) {
-               if (count == 0)
-                    fprintf(binfp, "     ");
-               else if (count < 8)
-                    fprintf(binfp, ", ");
-               else {
-                    fprintf(binfp, ",\n     ");
+               if (count >= 8) {
+                    fprintf(binfp, "\n");
                     count = 0;
                }
+
+               if (count == 0)
+                    fprintf(binfp, "    .byte ");
+               else
+                    fprintf(binfp, ", ");
+
                fprintf(binfp, "%#x", ((uchar *) buf)[i]);
                count++;
           }
@@ -852,6 +854,19 @@ void save_string(const char *label, char *str) {
 
 static int start;		/* Starting offset of binary */
 
+/* bintab -- start preloaded table */
+void bintab(char *name, int align) {
+     fprintf(binfp, "    .global %s\n", name);
+     fprintf(binfp, "    .balign %d\n", align);
+     fprintf(binfp, "%s:\n", name);
+}
+
+/* bindef -- output definition to preload file */
+void bindef(char *name, unsigned val) {
+     bintab(name, 4);
+     fprintf(binfp, "    .long %u\n", val);
+}
+
 void init_linker(char *outname, char *interp) {
      buf_init(dbuf, INIT_XMEM, 4, uchar, "data");
      buf_init(rbuf, INIT_XMEM/(WORD_SIZE * CODES_PER_BYTE), 
@@ -867,10 +882,9 @@ void init_linker(char *outname, char *interp) {
                exit(2);
           }
           
-          fprintf(binfp, "/* Preloaded Kieko code */\n\n");
-          fprintf(binfp, "#include \"obx.h\"\n");
-          fprintf(binfp, "#include \"exec.h\"\n\n");
-          fprintf(binfp, "const unsigned char preload_imem[] = {\n");
+          fprintf(binfp, "# Preloaded Kieko code\n\n");
+          fprintf(binfp, ".section .rodata\n");
+          bintab("preload_imem", 4);
           return;
      }
 
@@ -905,35 +919,33 @@ void end_linking(void) {
 
      if (preload) {
           if (count > 0) fprintf(binfp, "\n");
-          fprintf(binfp, "};\n\n");
+          fprintf(binfp, "\n");
 
-          fprintf(binfp, "const unsigned char preload_dmem[] = {\n");
+          bintab("preload_dmem", 4);
           count = 0;
           binwrite(dbuf, dloc);
           if (count > 0) fprintf(binfp, "\n");
-          fprintf(binfp, "};\n\n");
+          fprintf(binfp, "\n");
 
-          fprintf(binfp, "const unsigned char preload_reloc[] = {\n");
+          bintab("preload_reloc", 4);
           count = 0;
           binwrite(rbuf, rloc);
           if (count > 0) fprintf(binfp, "\n");
-          fprintf(binfp, "};\n\n");
+          fprintf(binfp, "\n");
 
-          fprintf(binfp, "const unsigned preload_segsize[] = {\n");
-          fprintf(binfp, "     %u, %u, %u, %u\n",
+          bintab("preload_segsize", 4);
+          fprintf(binfp, "     .long %u, %u, %u, %u\n",
                   iloc, dloc, bloc, stack_size);
-          fprintf(binfp, "};\n\n");
+          fprintf(binfp, "\n");
 
+          bintab("preload_syms", 4);
           preload_symtab(binfp);
 
-          fprintf(binfp, "const unsigned preload_entry = %u;\n",
-                  sym_val("MAIN"));
-          fprintf(binfp, "const unsigned preload_gcmap = %u;\n",
-                  sym_val("GCMAP"));
-          fprintf(binfp, "const unsigned preload_libdir = %u;\n",
-                  sym_val("LIBDIR"));
-          fprintf(binfp, "const unsigned preload_nprocs = %u;\n", nprocs);
-          fprintf(binfp, "const unsigned preload_nmods = %u;\n", nmods);
+          bindef("preload_entry", sym_val("MAIN"));
+          bindef("preload_gcmap", sym_val("GCMAP"));
+          bindef("preload_libdir", sym_val("LIBDIR"));
+          bindef("preload_nprocs", nprocs);
+          bindef("preload_nmods", nmods);
 
           fclose(binfp);
           return;

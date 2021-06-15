@@ -36,7 +36,7 @@ PROCEDURE Main;
 BEGIN
   FOR i := 0 TO N-1 DO b[i] := Random.Uniform() END;
   Sort(b, 0, N);
-  FOR i := 0 TO N-1 DO Out.Real(b[i]); Out.Ln END
+  FOR i := 0 TO N-1 DO Out.Real(b[i], 0); Out.Ln END
 END Main;
 
 BEGIN
@@ -202,20 +202,21 @@ CONST 20
 GLOBAL tForQuick.b
 GLOBAL tForQuick.Sort
 CALL 4
-!   FOR i := 0 TO N-1 DO Out.Real(b[i]); Out.Ln END
+!   FOR i := 0 TO N-1 DO Out.Real(b[i], 0); Out.Ln END
 CONST 0
 STLW -4
 LABEL L11
 LDLW -4
 CONST 19
 JGT L12
+CONST 0
 GLOBAL tForQuick.b
 LDLW -4
 CONST 20
 BOUND 39
 LDIF
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 INCL -4

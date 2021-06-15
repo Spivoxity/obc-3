@@ -9,7 +9,7 @@ VAR i: INTEGER; a: ARRAY 10 OF REAL;
 BEGIN
   i := 3;
   a[i] := 4.5;
-  Out.Real(a[3]);
+  Out.Real(a[3], 0);
   Out.Ln
 END tStif.
 
@@ -36,12 +36,13 @@ LDGW tStif.i
 CONST 10
 BOUND 11
 STIF
-!   Out.Real(a[3]);
+!   Out.Real(a[3], 0);
+CONST 0
 GLOBAL tStif.a
 CONST 3
 LDIF
 GLOBAL Out.Real
-CALL 1
+CALL 2
 !   Out.Ln
 GLOBAL Out.Ln
 CALL 0

@@ -21,8 +21,8 @@ BEGIN
 END arctan;
 
 BEGIN
-  Out.LongReal(16*arctan(1/5)-4*arctan(1/239)); Out.Ln;
-  Out.LongReal(MathL.pi); Out.Ln
+  Out.LongReal(16*arctan(1/5)-4*arctan(1/239), 0); Out.Ln;
+  Out.LongReal(MathL.pi, 0); Out.Ln
 END tPi.
 
 (*[[
@@ -80,8 +80,9 @@ LDLD -24
 RETURN
 END
 
-PROC tPi.%main 0 6 0
-!   Out.LongReal(16*arctan(1/5)-4*arctan(1/239)); Out.Ln;
+PROC tPi.%main 0 7 0
+!   Out.LongReal(16*arctan(1/5)-4*arctan(1/239), 0); Out.Ln;
+CONST 0
 DCONST 0.2
 GLOBAL tPi.arctan
 CALLD 2
@@ -94,13 +95,14 @@ DCONST 4.0
 DTIMES
 DMINUS
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
-!   Out.LongReal(MathL.pi); Out.Ln
+!   Out.LongReal(MathL.pi, 0); Out.Ln
+CONST 0
 DCONST 3.14159265359
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 RETURN

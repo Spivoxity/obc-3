@@ -11,7 +11,7 @@ VAR f: REAL;
 BEGIN
   f := 2.71;
   f := 3.14 * (-f);
-  Out.Real(f); Out.Ln
+  Out.Real(f, 0); Out.Ln
 END tFNeg.
 
 (*[[
@@ -22,7 +22,7 @@ MODULE tFNeg STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tFNeg.%main 0 2 0
+PROC tFNeg.%main 0 3 0
 !   f := 2.71;
 FCONST 2.71
 STGF tFNeg.f
@@ -32,10 +32,11 @@ FUMINUS
 FCONST 3.14
 FTIMES
 STGF tFNeg.f
-!   Out.Real(f); Out.Ln
+!   Out.Real(f, 0); Out.Ln
+CONST 0
 LDGF tFNeg.f
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 RETURN

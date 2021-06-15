@@ -21,7 +21,7 @@ PROCEDURE MOne(): REAL; BEGIN RETURN FLT(-1) END MOne;
 PROCEDURE Zero(): REAL; BEGIN RETURN FLT(0) END Zero;
 
 BEGIN
-  Out.Real(A(10, One, MOne, MOne, One, Zero)); Out.Ln
+  Out.Real(A(10, One, MOne, MOne, One, Zero), 0); Out.Ln
 END tMob07.
 
 (*<<
@@ -119,8 +119,9 @@ FCONST 0.0
 RETURN
 END
 
-PROC tMob07.%main 0 12 0
-!   Out.Real(A(10, One, MOne, MOne, One, Zero)); Out.Ln
+PROC tMob07.%main 0 13 0
+!   Out.Real(A(10, One, MOne, MOne, One, Zero), 0); Out.Ln
+CONST 0
 CONST 0
 GLOBAL tMob07.Zero
 CONST 0
@@ -135,7 +136,7 @@ CONST 10
 GLOBAL tMob07.A
 CALLF 11
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 RETURN

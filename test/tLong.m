@@ -19,9 +19,9 @@ VAR x: LONGREAL;
 BEGIN
   x := 3.0;
   IF x > 2.0 THEN Out.String("Greater"); Out.Ln END;
-  Out.LongReal(Mult(2.0, x)); Out.Ln;
+  Out.LongReal(Mult(2.0, x), 0); Out.Ln;
   Out.Fixed(MathL.Sqrt(x), 0, 6); Out.Ln;
-  Out.LongReal(1.23D20); Out.Ln
+  Out.LongReal(1.23D20, 0); Out.Ln
 END tLong.
 
 (*[[
@@ -42,7 +42,7 @@ DTIMES
 RETURN
 END
 
-PROC tLong.%main 0 5 0
+PROC tLong.%main 0 6 0
 !   x := 3.0;
 DCONST 3.0
 STGD tLong.x
@@ -57,13 +57,14 @@ CALL 2
 GLOBAL Out.Ln
 CALL 0
 LABEL L4
-!   Out.LongReal(Mult(2.0, x)); Out.Ln;
+!   Out.LongReal(Mult(2.0, x), 0); Out.Ln;
+CONST 0
 LDGD tLong.x
 DCONST 2.0
 GLOBAL tLong.Mult
 CALLD 4
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 !   Out.Fixed(MathL.Sqrt(x), 0, 6); Out.Ln;
@@ -76,10 +77,11 @@ GLOBAL Out.Fixed
 CALL 4
 GLOBAL Out.Ln
 CALL 0
-!   Out.LongReal(1.23D20); Out.Ln
+!   Out.LongReal(1.23D20, 0); Out.Ln
+CONST 0
 DCONST 1.23e+20
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 RETURN

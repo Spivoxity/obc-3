@@ -7,7 +7,7 @@ MODULE tPi07;
 IMPORT MathL, Out;
 
 BEGIN
-  Out.LongReal(MathL.pi); Out.Ln
+  Out.LongReal(MathL.pi, 0); Out.Ln
 END tPi07.
 
 (*[[
@@ -19,11 +19,12 @@ IMPORT MathL STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tPi07.%main 0 3 0
-!   Out.LongReal(MathL.pi); Out.Ln
+PROC tPi07.%main 0 4 0
+!   Out.LongReal(MathL.pi, 0); Out.Ln
+CONST 0
 DCONST 3.14159265359
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 RETURN

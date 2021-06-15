@@ -5,7 +5,7 @@ IMPORT SYSTEM, Out;
 VAR x: REAL; n: INTEGER;
 BEGIN
   x := SYSTEM.VAL(REAL, {0}) + 1.0E-45;
-  Out.Real(x); Out.Ln;
+  Out.Real(x, 0); Out.Ln;
 
   x := 3.14; n := SYSTEM.VAL(INTEGER, x + 0.5) + 3;
   Out.Int(n, 0); Out.Ln		
@@ -30,10 +30,11 @@ CONST 1
 FCONST 1.0e-45
 FPLUS
 STGF tValReal07.x
-!   Out.Real(x); Out.Ln;
+!   Out.Real(x, 0); Out.Ln;
+CONST 0
 LDGF tValReal07.x
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 !   x := 3.14; n := SYSTEM.VAL(INTEGER, x + 0.5) + 3;

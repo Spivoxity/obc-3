@@ -7,7 +7,7 @@ VAR x: LONGREAL;
 BEGIN
   x := Math.pi;
   x := -x;
-  Out.LongReal(x); Out.Ln
+  Out.LongReal(x, 0); Out.Ln
 END tDNeg.
 
 (*<<
@@ -23,7 +23,7 @@ IMPORT Math STAMP
 IMPORT Out STAMP
 ENDHDR
 
-PROC tDNeg.%main 0 3 0
+PROC tDNeg.%main 0 4 0
 !   x := Math.pi;
 DCONST 3.14159265359
 STGD tDNeg.x
@@ -31,10 +31,11 @@ STGD tDNeg.x
 LDGD tDNeg.x
 DUMINUS
 STGD tDNeg.x
-!   Out.LongReal(x); Out.Ln
+!   Out.LongReal(x, 0); Out.Ln
+CONST 0
 LDGD tDNeg.x
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 RETURN

@@ -13,7 +13,7 @@ VAR r: REAL;
 BEGIN
   r := Math.pi;
   Out.Fixed(-r, 0, 10); Out.Ln;
-  Out.Real(Math.Arctan2(-1.0,0.0)); Out.Ln;
+  Out.Real(Math.Arctan2(-1.0,0.0), 0); Out.Ln;
   IF 2.0 + r > 5.14 THEN
      Out.String("yes"); Out.Ln
   END
@@ -42,13 +42,14 @@ GLOBAL Out.Fixed
 CALL 4
 GLOBAL Out.Ln
 CALL 0
-!   Out.Real(Math.Arctan2(-1.0,0.0)); Out.Ln;
+!   Out.Real(Math.Arctan2(-1.0,0.0), 0); Out.Ln;
+CONST 0
 FCONST 0.0
 FCONST -1.0
 GLOBAL Math.Arctan2
 CALLF 2
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
 !   IF 2.0 + r > 5.14 THEN

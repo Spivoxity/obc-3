@@ -108,12 +108,12 @@ PROCEDURE WriteLongInt*(f: File; n: LONGINT; width: INTEGER);
 BEGIN FmtLong(raw(f), n, width) END WriteLongInt;
 
 (** WriteReal -- output a real in scientific notation *)
-PROCEDURE WriteReal*(f: File; x: REAL);
-BEGIN FmtReal(raw(f), x) END WriteReal;
+PROCEDURE WriteReal*(f: File; x: REAL; w: INTEGER);
+BEGIN FmtReal(raw(f), x, w) END WriteReal;
 
 (** WriteLongReal -- output a long real in scientific notation *)
-PROCEDURE WriteLongReal*(f: File; x: LONGREAL);
-BEGIN FmtLongReal(raw(f), x) END WriteLongReal;
+PROCEDURE WriteLongReal*(f: File; x: LONGREAL; w: INTEGER);
+BEGIN FmtLongReal(raw(f), x, w) END WriteLongReal;
 
 (** WriteFixed -- output a long real in fixed decimal notation *)
 PROCEDURE WriteFixed*(f: File; x: LONGREAL; width, dec: INTEGER);
@@ -185,8 +185,8 @@ PROCEDURE fwrite(VAR buf: ARRAY OF SYSTEM.BYTE; n, s: INTEGER; fp: RawFile)
 (* Wrappers around printf calls *)
 PROCEDURE FmtInt(fp: RawFile; n, w: INTEGER) IS "FmtInt";
 PROCEDURE FmtLong(fp: RawFile; n: LONGINT; w: INTEGER) IS "FmtLong";
-PROCEDURE FmtReal(fp: RawFile; x: REAL) IS "FmtReal";
-PROCEDURE FmtLongReal(fp: RawFile; x: LONGREAL) IS "FmtLongReal";
+PROCEDURE FmtReal(fp: RawFile; x: REAL; w: INTEGER) IS "FmtReal";
+PROCEDURE FmtLongReal(fp: RawFile; x: LONGREAL; w: INTEGER) IS "FmtLongReal";
 PROCEDURE FmtFixed(f: RawFile; x: LONGREAL; width, dec: INTEGER)
   IS "FmtFixed";
 PROCEDURE FmtString(fp: RawFile; CONST s: ARRAY OF CHAR; len: INTEGER)
@@ -216,12 +216,12 @@ void FmtLong(FILE *fp, longint n, int w) {
      fprintf(fp, fmt, w, n);
 }
 
-void FmtReal(FILE *fp, float x) {
-     fprintf(fp, "%#G", x);
+void FmtReal(FILE *fp, float x, int w) {
+     fprintf(fp, "%#*G", w, x);
 }
 
-void FmtLongReal(FILE *fp, double x) {
-     fprintf(fp, "%#.12G", x);
+void FmtLongReal(FILE *fp, double x, int w) {
+     fprintf(fp, "%#*.12G", w, x);
 }
 
 void FmtFixed(FILE *fp, double x, int width, int dec) {

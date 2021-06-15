@@ -53,8 +53,8 @@ BEGIN
   Out.Int(MAX(INTEGER), 0); Out.Ln;
   Out.Int(-2147483648, 0); Out.Ln;
 
-  Out.Real(MAX(REAL)); Out.Ln;
-  Out.LongReal(MAX(LONGREAL)); Out.Ln;
+  Out.Real(MAX(REAL), 0); Out.Ln;
+  Out.LongReal(MAX(LONGREAL), 0); Out.Ln;
 
   IF MAX(REAL) # MaxReal() THEN
     Out.String("Fail: MAX(REAL)"); Out.Ln
@@ -192,16 +192,18 @@ GLOBAL Out.Int
 CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   Out.Real(MAX(REAL)); Out.Ln;
+!   Out.Real(MAX(REAL), 0); Out.Ln;
+CONST 0
 FCONST 3.40282346639e+38
 GLOBAL Out.Real
-CALL 1
+CALL 2
 GLOBAL Out.Ln
 CALL 0
-!   Out.LongReal(MAX(LONGREAL)); Out.Ln;
+!   Out.LongReal(MAX(LONGREAL), 0); Out.Ln;
+CONST 0
 DCONST 1.79769313486e+308
 GLOBAL Out.LongReal
-CALL 2
+CALL 3
 GLOBAL Out.Ln
 CALL 0
 !   IF MAX(REAL) # MaxReal() THEN
