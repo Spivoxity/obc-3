@@ -53,4 +53,6 @@ PROCEDURE Exp*(x: REAL): REAL IS "expf";
 
 PROCEDURE Ln*(x: REAL): REAL IS "logf";
 
+PROCEDURE Power*(x, y: REAL): REAL IS "powf";
+
 END Math.
