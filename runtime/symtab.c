@@ -234,18 +234,18 @@ void preload_symtab(FILE *binfp) {
 	   (int (*)(const void *, const void *)) cf_syms);
      
      fprintf(binfp,
-             "const struct { int kind; char *name; int val; }"
+             "const struct { char *name; int kind; int val; }"
              " preload_syms[] = {\n");
 
      for (int i = 0; i < ndict; i++) {
           symbol s = dict[i];
           switch (s->s_kind) {
           case X_PROC:
-               fprintf(binfp, "     { X_PROC, \"%s\", %u },\n",
+               fprintf(binfp, "     { \"%s\", X_PROC, %u },\n",
                        s->s_name, s->s_value);
                break;
           case X_MODULE:
-               fprintf(binfp, "     { X_MODULE, \"%s\", %u },\n",
+               fprintf(binfp, "     { \"%s\", X_MODULE, %u },\n",
                        s->s_name, s->s_value);
                break;
           }
