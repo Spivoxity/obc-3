@@ -292,7 +292,7 @@ extern const uchar preload_imem[], preload_dmem[], preload_reloc[];
 extern const unsigned preload_segsize[];
 extern const unsigned preload_entry, preload_gcmap, preload_libdir;
 extern const unsigned preload_nprocs, preload_nmods;
-extern const struct _sym { char *name; int kind; int val; } preload_syms[];
+extern const struct _sym { int kind; char *name; int val; } preload_syms[];
 
 #define seglen preload_segsize
 
