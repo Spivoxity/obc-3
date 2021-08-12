@@ -151,9 +151,10 @@ void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
      running = FALSE;
      one_shot = FALSE;
 
-     /* %p may print NULL as "(nil)", so use %#x instead. */
      debug_message("regs %#x %#x %#x",
-		   dsegaddr(cp), stkaddr(bp), codeaddr(pc));
+		   (cp == NULL ? 0 : dsegaddr(cp)),
+                   (bp == NULL ? 0 : stkaddr(bp)),
+                   (pc == NULL ? 0 : codeaddr(pc)));
 
      va_start(va, fmt);
      debug_va_message(fmt, va);

@@ -35,7 +35,7 @@
 static FILE *binfp;		/* File for code output */
 static int count = 0;
 
-/* binwrite -- output code */
+/* binwrite -- output code, to binary or preload file */
 static void binwrite(void *buf, int size) {
      if (preload) {
           for (int i = 0; i < size; i++) {
@@ -54,6 +54,15 @@ static void binwrite(void *buf, int size) {
      }
      
      int UNUSED nwritten = fwrite(buf, 1, size, binfp);
+}
+
+/* binsave -- save buffer as preloaded table */
+void binsave(char *name, void *buf, int size) {
+     fprintf(binfp, "const unsigned char preload_%s[] = {\n", name);
+     count = 0;
+     binwrite(buf, size);
+     if (count > 0) fprintf(binfp, "\n");
+     fprintf(binfp, "};\n\n");
 }
 
 /* hexchar -- convert character from two-digit hex */
@@ -907,18 +916,9 @@ void end_linking(void) {
           if (count > 0) fprintf(binfp, "\n");
           fprintf(binfp, "};\n\n");
 
-          fprintf(binfp, "const unsigned char preload_dmem[] = {\n");
-          count = 0;
-          binwrite(dbuf, dloc);
-          if (count > 0) fprintf(binfp, "\n");
-          fprintf(binfp, "};\n\n");
-
-          fprintf(binfp, "const unsigned char preload_reloc[] = {\n");
-          count = 0;
-          binwrite(rbuf, rloc);
-          if (count > 0) fprintf(binfp, "\n");
-          fprintf(binfp, "};\n\n");
-
+          binsave("dmem", dbuf, dloc);
+          binsave("reloc", rbuf, rloc);
+          
           fprintf(binfp, "const unsigned preload_segsize[] = {\n");
           fprintf(binfp, "     %u, %u, %u, %u\n",
                   iloc, dloc, bloc, stack_size);
