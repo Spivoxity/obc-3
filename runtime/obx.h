@@ -60,9 +60,9 @@ union value {
 #ifdef SEGMEM
 
 #define SEGBITS 20
-#define SEGMENT (1 << SEGBITS)
+#define SEGSIZE (1 << SEGBITS)
 #define SEGMASK ((1 << SEGBITS)-1)
-#define NSEGMENTS 4096
+#define NSEGMENTS (1 << (32-SEGBITS))
 
 #define stkaddr(p) (stack_vbase + ((uchar *) (p) - stack))
 #define dsegaddr(p) (data_vbase + ((uchar *) (p) - dmem))
@@ -330,7 +330,8 @@ extern mybool intflag;
 
 void debug_init(void);
 void debug_message(char *fmt, ...);
-void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...);
+void debug_regs(value *cp, value *bp, uchar *pc);
+void debug_break(void);
 #endif
 
 /* jit.c */

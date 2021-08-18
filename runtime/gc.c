@@ -94,8 +94,13 @@ static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
 #define PAGE_WORDS (PAGESIZE / BYTES_PER_WORD)
 
 #define MB 1024*1024
+#ifdef SEGMEM
+#define INIT_SIZE SEGSIZE
+#define CHUNK_SIZE SEGSIZE
+#else
 #define INIT_SIZE (2*MB) /* Initial heap size */
 #define CHUNK_SIZE (1*MB) /* Amount that heap grows */
+#endif
 
 #define round_down(x, n) ((x)/(n)*(n))
 #define round_up(x, n)   round_down((x)+(n)-1, n)
@@ -224,7 +229,11 @@ static void *get_memory(unsigned size) {
    need space for the program's symbol table.  Grabbing scratch space
    16 pages at a time seems a fair compromise. */
 
+#ifdef SEGMEM
+#define SCRATCH_CHUNK SEGSIZE
+#else
 #define SCRATCH_CHUNK (16 * PAGESIZE)
+#endif
 
 /* The scratch allocator keeps hold of just one piece of free memory,
    and wastefully discards it if it is too small to satisfy the next
@@ -272,12 +281,12 @@ void *scratch_alloc(unsigned size) {
 
    A 32-bit address splits as 12 + 20 bits, with a 12-bit segment
    number, and index into segmap, and a 20-bit offset within the
-   segment.  The segmap array gives the base address (64 bits) for a
-   piece of storage obtained from malloc.  These segments do not have
-   to be contiguous with each other.  We can deal with pieces of
-   memory bigger than 1MB by allocating several slots in segmap to
-   them, and exploit the fact that incrementing virtual addresses will
-   carry from the offset into the segment bits.
+   segment.  The segmap array gives the base address (possibly 64
+   bits) for a piece of storage obtained from malloc.  These segments
+   do not have to be contiguous with each other.  We can deal with
+   pieces of memory bigger than 1MB by allocating several slots in
+   segmap to them, and exploit the fact that incrementing virtual
+   addresses will carry from the offset into the segment bits.
 
    The garbage collector operates entirely within the 'virtual' address
    space, and completely independently splits the virtual addresses as
@@ -298,11 +307,11 @@ static int nsegs = 1; // Segment 0 used for NULL
 
 /* map_segment -- allocate segment registers */
 word map_segment(void *p, unsigned len) {
-     word base = nsegs * SEGMENT;
+     word base = nsegs * SEGSIZE;
 
-     while (nsegs * SEGMENT < base + len) {
+     while (nsegs * SEGSIZE < base + len) {
           segmap[nsegs++] = p;
-          p += SEGMENT;
+          p += SEGSIZE;
      }
                                            
      return base;
@@ -320,11 +329,11 @@ static word alloc_ptr = 0, alloc_limit;
 word virtual_alloc(unsigned size) {
      word p;
 
-     ASSERT(size < SEGMENT);
+     ASSERT(size < SEGSIZE);
 
      if (alloc_ptr == 0 || alloc_ptr + size > alloc_limit) {
-          alloc_ptr = get_chunk(SEGMENT);
-          alloc_limit = alloc_ptr + SEGMENT;
+          alloc_ptr = get_chunk(SEGSIZE);
+          alloc_limit = alloc_ptr + SEGSIZE;
      }
 
      p = alloc_ptr;

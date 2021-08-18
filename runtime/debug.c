@@ -141,24 +141,20 @@ static int split_line(char *line, char **words) {
 mybool one_shot = FALSE;
 mybool intflag = FALSE;
 
+/* debug_regs -- send register values */
+void debug_regs(value *cp, value *bp, uchar *pc) {
+     debug_message("regs %#x %#x %#x", dsegaddr(cp), stkaddr(bp),
+                   (pc == NULL ? 0 : codeaddr(pc)));
+}
+     
 /* debug_break -- conduct breakpoint dialogue */
-void debug_break(value *cp, value *bp, uchar *pc, char *fmt, ...) {
+void debug_break(void) {
      char *cmd;
      char *arg[MAXWORDS];
      int nargs;
-     va_list va;
 
      running = FALSE;
      one_shot = FALSE;
-
-     debug_message("regs %#x %#x %#x",
-		   (cp == NULL ? 0 : dsegaddr(cp)),
-                   (bp == NULL ? 0 : stkaddr(bp)),
-                   (pc == NULL ? 0 : codeaddr(pc)));
-
-     va_start(va, fmt);
-     debug_va_message(fmt, va);
-     va_end(va);
 
      for (;;) {
 	  cmd = debug_command();
@@ -291,7 +287,9 @@ static void intr_handler(int sig) {
 	  intflag = TRUE;
      else {
 	  value *cp = valptr(prim_bp[CP]);
-	  debug_break(cp, prim_bp, NULL, "interrupt");
+	  debug_regs(cp, prim_bp, NULL);
+          debug_message("interrupt");
+          debug_break();
      }
 }
 #endif

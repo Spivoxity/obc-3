@@ -123,7 +123,8 @@ static inline void putlong(value *v, longint x) {
 #define swap(sp)        sp[-1] = sp[1]; sp[1] = sp[0]; sp[0] = sp[-1]
 #define slide(nargs)    sp += HEAD + nargs; cond_break();
 
-#define ror(a, b)       ((((unsigned) a) >> b) | (((unsigned) a) << (32-b)))
+#define rshu(a, b)      ((unsigned) a >> b)
+#define ror(a, b)       (((unsigned) a >> b) | ((unsigned) a << (32-b)))
 
 #define fcmpl(a, b)     (a > b ? 1 : a == b ? 0 : -1)
 #define fcmpg(a, b)     (a < b ? -1 : a == b ? 0 : 1)
@@ -142,9 +143,16 @@ static inline void putlong(value *v, longint x) {
 #endif
 
 #ifdef OBXDEB
-#define cond_break() \
+static void breakpoint(value *cp, value *bp, uchar *pc, char *cmd) {
+     debug_regs(cp, bp, pc);
+     debug_message(cmd);
+     debug_break();
+}
+
+#define cond_break()                                                    \
+     /* If single-stepping, break here unless we are about to break anyway */ \
      if (one_shot && *pc != K_LNUM_2 && *pc != K_BREAK_2) \
-          debug_break(cp, bp, pc, "stop")
+          breakpoint(cp, bp, pc, "stop")
 #else
 #define cond_break()
 #endif

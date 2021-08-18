@@ -298,7 +298,8 @@ int obgetc(FILE *fp) {
 	  int c = getc(fp);
 	  if (c == EOF && intflag && prim_bp != NULL) {
 	       value *cp = valptr(prim_bp[CP]);
-	       debug_break(cp , prim_bp, NULL, "interrupt");
+	       debug_regs(cp , prim_bp, NULL);
+               debug_break("interrupt");
 	       continue;
 	  }
 	  return c;

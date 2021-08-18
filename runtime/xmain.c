@@ -221,7 +221,9 @@ void error_stop(const char *msg, int val, int line, value *bp, uchar *pc) {
 #ifdef OBXDEB
      char buf[256];
      sprintf(buf, msg, val);
-     debug_break(cp, bp, pc, "error %d %s", line, buf);
+     debug_regs(cp, bp, pc);
+     debug_message("error %d %s", line, buf);
+     debug_break();
 #else
      module mod = find_module(dsegaddr(cp));
 
@@ -479,7 +481,8 @@ static void jit_test(void) {
 /* xmain_exit -- exit after program has finished */
 void NORETURN xmain_exit(int status) {
 #ifdef OBXDEB
-     debug_break(NULL, NULL, NULL, "exit");
+     debug_message("exit");
+     debug_break();
 #endif
 #ifdef PROFILE
      print_profile();
@@ -593,7 +596,8 @@ int main(int ac, char *av[]) {
 #endif	  
 
 #ifdef OBXDEB
-     debug_break(NULL, NULL, NULL, "ready");
+     debug_message("ready");
+     debug_break();
 #endif
 #ifdef DEBUG
      if (dflag)
