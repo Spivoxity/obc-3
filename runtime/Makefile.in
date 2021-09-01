@@ -144,7 +144,7 @@ clean:
 	rm -f oblink *.[ao]
 
 quiteclean: clean
-	rm -f action.c keiko.h template.c
+	rm -f action.c keiko.h template.c jitrules.c
 
 # distclean: also remove all non-distributed files
 realclean distclean: quiteclean

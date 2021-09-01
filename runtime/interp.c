@@ -107,6 +107,7 @@ static inline void putlong(value *v, longint x) {
 #define subs(p, n, t)   ((t *) (p))[n]
 #define const(n)        cp[CP_CONST+n]
 #define jump(lab)       pc = pc0 + lab
+#define condj(c, lab)   if (c) jump(lab)
 
 #define load(x, t)      indir(pointer(x), t)
 #define store(x, y, t)  indir(pointer(y), t) = x

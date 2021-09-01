@@ -67,12 +67,12 @@ extern int nregs;
 extern reg rBP, rSP, rCP, rI0, rRET;
 
 #define __VALKINDS__(v) \
-     v(CON) v(REG) v(ADDR) v(KONW) v(KONQ)       \
+     v(CNST) v(REGV) v(ADDR) v(KONW) v(KONQ)     \
      v(MEMC) v(MEMS) v(MEMW) v(MEMQ)             \
      v(FCMPL) v(FCMPG) v(DCMPL) v(DCMPG) v(QCMP) \
      v(STKW) v(STKQ)
 
-#define __v1__(sym) V_##sym,
+#define __v1__(sym) sym,
 typedef enum { __VALKINDS__(__v1__) } valkind;
 
 typedef struct _ctvalue {
@@ -146,10 +146,10 @@ void ldst_item(int op, reg rs, int i);
 #define push(k, t, v, r, s) pushx(k, t, v, r, NULL, 0, s)
 #define push2(k, t, r, r2, x, s) pushx(k, t, 0, r, r2, x, s)
 
-#define push_con(k) push(V_CON, INT, k, NULL, 1)
-#define push_reg(r) push(V_REG, INT, 0, r, 1)
+#define push_con(k) push(CNST, INT, k, NULL, 1)
+#define push_reg(r) push(REGV, INT, 0, r, 1)
 #define konst(op, ty, i, s) push(op, ty, 4*(CP_CONST+i), NULL, s)
-#define local(i)  push(V_ADDR, INT, i, rBP, 1)
+#define local(i)  push(ADDR, INT, i, rBP, 1)
 
 reg move_to_reg(int i, int ty);
 void move_to_frame(int i);

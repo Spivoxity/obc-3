@@ -383,6 +383,11 @@ proc make_body {key action argv} {
 	    regsub -all {\$1\.d} $body {getdbl(\&sp[0])} body
 	    return "putdbl(&sp\[0\], $body);"
 	}
+        M.dp {
+            # Double from value pointer
+	    regsub -all {\$1} $body {valptr(sp[1])} body
+	    return "sp--; putdbl(&sp\[0\], $body);"
+        }            
 	M.d? {
 	    # Double from value
 	    regsub -all {\$1} $body {sp[1]} body
@@ -396,6 +401,11 @@ proc make_body {key action argv} {
 	M.q {
 	    regsub -all {\$1\.q} $body {getlong(\&sp[0])} body
 	    return "putlong(&sp\[0\], $body);"
+	}
+	M.qp {
+	    # Long from value pointer
+	    regsub -all {\$1} $body {valptr(sp[1])} body
+	    return "sp--; putlong(&sp\[0\], $body);"
 	}
 	M.q? {
 	    # Long from value
@@ -421,7 +431,7 @@ proc make_body {key action argv} {
 	    return "sp--; sp\[0\].$suffix = $body;"
 	}	    
 	S0 {
-	    return "{ $body }"
+	    return "$body"
 	}
 	S[123] {
 	    regexp {S(.)} $key _ x
@@ -434,6 +444,11 @@ proc make_body {key action argv} {
 	S1d {
     	    regsub -all {\$1\.d} $body {getdbl(\&sp[0])} body
 	    return "$body sp += 2;"
+	}
+	S2dp {
+    	    regsub -all {\$1\.d} $body {getdbl(\&sp[1])} body
+	    regsub -all {\$2} $body {valptr(sp[0])} body
+	    return "$body sp += 3;"
 	}
 	S2d? {
     	    regsub -all {\$1\.d} $body {getdbl(\&sp[1])} body
@@ -449,6 +464,11 @@ proc make_body {key action argv} {
 	S1q {
     	    regsub -all {\$1\.q} $body {getlong(\&sp[0])} body
 	    return "$body sp += 2;"
+	}
+	S2qp {
+    	    regsub -all {\$1\.q} $body {getlong(\&sp[1])} body
+	    regsub -all {\$2} $body {valptr(sp[0])} body
+	    return "$body sp += 3;"
 	}
 	S2q? {
     	    regsub -all {\$1\.q} $body {getlong(\&sp[1])} body
