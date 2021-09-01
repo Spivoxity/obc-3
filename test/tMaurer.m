@@ -1,4 +1,4 @@
-(* Maurer, Letter to the editor, CACM *)
+(* Maurer, Letter to the editor, CACM 22, 11 (Nov. 1979) *)
 
 MODULE tMaurer;
 

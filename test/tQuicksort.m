@@ -45,22 +45,46 @@ BEGIN
   Quicksort(u, 0, N)
 END Sort;
 
-PROCEDURE Test;
+PROCEDURE OneSort(VAR u: vec);
+  VAR i, j, k, p: INTEGER;
+BEGIN
+  (* Cf. Knuth and Huang Bing-Chao, "A one-way, stackless Quicksort 
+     algorithm", in Selected Papers on Design of Algorithms.  I removed
+     the sentinel and recast the loop first as a LOOP then as a WHILE. *)
+  FOR k := 0 TO N-1 DO
+    WHILE u[k] >= 0 DO
+      j := k+1; i := k; p := u[k];
+      WHILE (j < N) & (u[j] >= 0) DO
+        IF u[j] < p THEN
+          u[i] := u[j]; i := i+1; u[j] := u[i]
+        END;
+        j := j+1
+      END;
+      u[i] := -p-1
+    END;
+    u[k] := -u[k]-1
+  END
+END OneSort;    
+
+PROCEDURE Test(sort: PROCEDURE (VAR u: vec));
   VAR i: INTEGER; a: vec;
 BEGIN
   FOR i := 0 TO N-1 DO a[i] := Random.Roll(10) END;
   FOR i := 0 TO N-1 DO Out.Int(a[i], 0) END; Out.Ln;
-  Sort(a);
+  sort(a);
   FOR i := 0 TO N-1 DO Out.Int(a[i], 0) END; Out.Ln
 END Test;
 
 BEGIN
-  Test
+  Test(Sort);
+  Test(OneSort)
 END tQuicksort.
 
 (*<<
 119978306115907675004286403777538494004382883317447914012890
 000000000111111122233333344444444555666777777778888888999999
+620173403342128490291000852607078642393887930158832751590364
+000000000011111222222233333333444445555666677777888888899999
 >>*)
 
 (*[[
@@ -223,77 +247,193 @@ CALL 3
 RETURN
 END
 
+PROC tQuicksort.OneSort 16 4 0x00100001
+! PROCEDURE OneSort(VAR u: vec);
+!   FOR k := 0 TO N-1 DO
+CONST 0
+STLW -12
+LABEL L18
+LDLW -12
+CONST 59
+JGT L19
+LABEL L20
+!     WHILE u[k] >= 0 DO
+LDLW 12
+LDLW -12
+CONST 60
+BOUND 55
+LDIW
+JLTZ L22
+!       j := k+1; i := k; p := u[k];
+LDLW -12
+INC
+STLW -8
+LDLW -12
+STLW -4
+LDLW 12
+LDLW -12
+CONST 60
+BOUND 56
+LDIW
+STLW -16
+LABEL L23
+!       WHILE (j < N) & (u[j] >= 0) DO
+LDLW -8
+CONST 60
+JGEQ L25
+LDLW 12
+LDLW -8
+CONST 60
+BOUND 57
+LDIW
+JLTZ L25
+!         IF u[j] < p THEN
+LDLW 12
+LDLW -8
+CONST 60
+BOUND 58
+LDIW
+LDLW -16
+JGEQ L28
+!           u[i] := u[j]; i := i+1; u[j] := u[i]
+LDLW 12
+LDLW -8
+CONST 60
+BOUND 59
+LDIW
+LDLW 12
+LDLW -4
+CONST 60
+BOUND 59
+STIW
+INCL -4
+LDLW 12
+LDLW -4
+CONST 60
+BOUND 59
+LDIW
+LDLW 12
+LDLW -8
+CONST 60
+BOUND 59
+STIW
+LABEL L28
+!         j := j+1
+INCL -8
+JUMP L23
+LABEL L25
+!       u[i] := -p-1
+LDLW -16
+UMINUS
+DEC
+LDLW 12
+LDLW -4
+CONST 60
+BOUND 73
+STIW
+JUMP L20
+LABEL L22
+!     u[k] := -u[k]-1
+LDLW 12
+LDLW -12
+CONST 60
+BOUND 75
+LDIW
+UMINUS
+DEC
+LDLW 12
+LDLW -12
+CONST 60
+BOUND 75
+STIW
+!   FOR k := 0 TO N-1 DO
+INCL -12
+JUMP L18
+LABEL L19
+RETURN
+END
+
 PROC tQuicksort.Test 244 4 0
-! PROCEDURE Test;
+! PROCEDURE Test(sort: PROCEDURE (VAR u: vec));
 !   FOR i := 0 TO N-1 DO a[i] := Random.Roll(10) END;
 CONST 0
 STLW -4
-LABEL L18
+LABEL L30
 LDLW -4
 CONST 59
-JGT L19
+JGT L31
 CONST 10
 GLOBAL Random.Roll
 CALLW 1
 LOCAL -244
 LDLW -4
 CONST 60
-BOUND 51
+BOUND 82
 STIW
 INCL -4
-JUMP L18
-LABEL L19
+JUMP L30
+LABEL L31
 !   FOR i := 0 TO N-1 DO Out.Int(a[i], 0) END; Out.Ln;
 CONST 0
 STLW -4
-LABEL L20
+LABEL L32
 LDLW -4
 CONST 59
-JGT L21
+JGT L33
 CONST 0
 LOCAL -244
 LDLW -4
 CONST 60
-BOUND 52
+BOUND 83
 LDIW
 GLOBAL Out.Int
 CALL 2
 INCL -4
-JUMP L20
-LABEL L21
+JUMP L32
+LABEL L33
 GLOBAL Out.Ln
 CALL 0
-!   Sort(a);
+!   sort(a);
 LOCAL -244
-GLOBAL tQuicksort.Sort
+LDLW 16
+STATLINK
+LDLW 12
+NCHECK 84
 CALL 1
 !   FOR i := 0 TO N-1 DO Out.Int(a[i], 0) END; Out.Ln
 CONST 0
 STLW -4
-LABEL L22
+LABEL L34
 LDLW -4
 CONST 59
-JGT L23
+JGT L35
 CONST 0
 LOCAL -244
 LDLW -4
 CONST 60
-BOUND 54
+BOUND 85
 LDIW
 GLOBAL Out.Int
 CALL 2
 INCL -4
-JUMP L22
-LABEL L23
+JUMP L34
+LABEL L35
 GLOBAL Out.Ln
 CALL 0
 RETURN
 END
 
-PROC tQuicksort.%main 0 1 0
-!   Test
+PROC tQuicksort.%main 0 3 0
+!   Test(Sort);
+CONST 0
+GLOBAL tQuicksort.Sort
 GLOBAL tQuicksort.Test
-CALL 0
+CALL 2
+!   Test(OneSort)
+CONST 0
+GLOBAL tQuicksort.OneSort
+GLOBAL tQuicksort.Test
+CALL 2
 RETURN
 END
 
