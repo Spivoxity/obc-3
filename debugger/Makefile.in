@@ -94,7 +94,7 @@ debprims.o: debprims.c
 	$(OCAMLC) -c -ccopt "-I .." -o $@ $<
 
 interface.ml:
-	ln -s interface-gtk$(LABLGTK_VERSION) $@
+	ln -s interface-gtk$(LABLGTK_VERSION).ml $@
 
 ## Rules
 
