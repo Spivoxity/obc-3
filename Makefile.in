@@ -75,6 +75,7 @@ ENABLE_DEBUGGER = @ENABLE_DEBUGGER@
 ABS_SRCDIR = @ABS_SRCDIR@
 ABS_BINDIR = @ABS_BINDIR@
 GC_LIB = @GC_LIB@
+USE_SYSTEM_LABLGTK = @USE_SYSTEM_LABLGTK@
 # end of Configuration stuff
 
 all : revid subdirs build sanity
@@ -112,7 +113,9 @@ else
 endif
 
 ifdef ENABLE_DEBUGGER
-  PREDIRS += lablgtk
+  ifndef USE_SYSTEM_LABLGTK
+    PREDIRS += lablgtk
+  endif
   SUBDIRS += debugger
   BUILD += obxdeb obdb
   DEBUILD += obdb0
@@ -142,7 +145,10 @@ $(PRIMS) lib/Files.k: lib; $(SKIP)
 yacc compiler lablgtk debugger: mllib
 compiler: yacc
 lib: compiler
-debugger: compiler lablgtk
+debugger: compiler
+ifndef USE_SYSTEM_LABLGTK
+  debugger: lablgtk
+endif
 $(PREDIRS) $(SUBDIRS): revid config.h
 
 $(PREDIRS) $(SUBDIRS) :

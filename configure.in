@@ -150,6 +150,12 @@ if test "$enable_segmem" = yes; then
   AC_DEFINE(SEGMEM, 1, [Define to use segmented addressing])
 fi
 
+AC_ARG_WITH(system-lablgtk,
+  AS_HELP_STRING([--with-system-lablgtk], [use installed lablgtk package]))
+if test "$with_system_lablgtk" = yes; then
+  AC_SUBST(USE_SYSTEM_LABLGTK, 1)
+fi
+
 # Checks for programs
 AC_PROG_CC
 AC_PROG_INSTALL

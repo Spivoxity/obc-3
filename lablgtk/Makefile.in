@@ -47,32 +47,34 @@ GTKPKGS = @GTKPKGS@
 PKG_FLAGS = @PKG_FLAGS@
 # End of config
 
-ALL = lablgtk.cma liblablgtk.a gtkThread.cmo
+ALL = lablgtk.cma lablgtksourceview2.cma \
+	liblablgtk.a liblablgtksourceview2.a gtkThread.cmo
 
 COBJS = ml_gdkpixbuf.o ml_gdk.o ml_glib.o ml_gobject.o ml_gpointer.o	\
 	ml_gvaluecaml.o wrappers.o ml_gtk.o ml_pango.o ml_gtkbin.o	\
 	ml_gtkbutton.o ml_gtkmenu.o ml_gtkmisc.o ml_gtkpack.o		\
-	ml_gtkstock.o ml_gtktext.o ml_gtktree.o ml_gtksourceview2.o
+	ml_gtkstock.o ml_gtktext.o ml_gtktree.o
 
 PROPS = gtkBase.props gtkBin.props gtkButton.props \
 	gtkMenu.props gtkMisc.props gtkPack.props \
-	gtkText.props gtkTree.props \
-	gtkSourceView2.props
+	gtkText.props gtkTree.props
 
 TAGS = gdkpixbuf_tags.var gdk_tags.var glib_tags.var gobject_tags.var \
-	gtk_tags.var pango_tags.var sourceView2_tags.var
+	gtk_tags.var pango_tags.var
 
 MLOBJS = gaux.cmo gpointer.cmo glib.cmo gobject.cmo gdkEnums.cmo	\
-	pangoEnums.cmo gtkEnums.cmo sourceView2Enums.cmo pango.cmo	\
+	pangoEnums.cmo gtkEnums.cmo pango.cmo	\
 	gdk.cmo gdkEvent.cmo gdkPixbuf.cmo gtk.cmo gtkSignal.cmo	\
 	gtkStock.cmo gtkObject.cmo $(PROPS:.props=Props.cmo)		\
 	gtkData.cmo gtkBase.cmo gtkPack.cmo gtkButton.cmo gtkMenu.cmo	\
 	gtkMisc.cmo gtkWindow.cmo gtkBin.cmo gtkText.cmo gtkTree.cmo	\
-	gtkMain.cmo gtkSourceView2.cmo gDraw.cmo gObj.cmo gData.cmo	\
+	gtkMain.cmo gDraw.cmo gObj.cmo gData.cmo	\
 	$(PROPS:%.props=o%Props.cmo) gContainer.cmo gPack.cmo		\
 	gButton.cmo gText.cmo gMenu.cmo gMisc.cmo gTree.cmo		\
-	gWindow.cmo gBin.cmo gMain.cmo gToolbox.cmo		\
-	gSourceView2.cmo
+	gWindow.cmo gBin.cmo gMain.cmo gToolbox.cmo		
+
+MLOBJS2 = sourceView2Enums.cmo gtkSourceView2Props.cmo gtkSourceView2.cmo \
+	ogtkSourceView2Props.cmo gSourceView2.cmo
 
 INCLUDE = -I ../mllib
 
@@ -89,9 +91,16 @@ endif
 lablgtk.cma: $(MLOBJS)
 	ocamlc $(MLFLAGS) -a -o $@ $^
 
+lablgtksourceview2.cma: $(MLOBJS2)
+	ocamlc $(MLFLAGS) -a -o $@ $^
+
 liblablgtk.a: $(COBJS)
 	ar cr $@ $^
 	$(RANLIB) $@	
+
+liblablgtksourceview2.a: ml_gtksourceview2.o
+	ar cr $@ $^
+	$(RANLIB) $@
 
 WARN = -w s
 
@@ -115,7 +124,8 @@ CCOPTS = -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' \
 %.o: %.c
 	ocamlc $(MLFLAGS) -c $(CCOPTS) -o $@ $<
 
-$(COBJS): gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
+$(COBJS) ml_gtksourceview2.o: \
+	gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
 	gtk_tags.h pango_tags.h sourceView2_tags.h \
 	ml_gdk.h ml_gdkpixbuf.h ml_glib.h \
 	ml_gobject.h ml_gpointer.h ml_gtk.h ml_gvaluecaml.h ml_pango.h \
@@ -138,8 +148,10 @@ clean: force
 
 quiteclean : clean
 	rm -f $(PROPS:%.props=%Props.ml) $(PROPS:%.props=o%Props.ml) \
+		gtkSourceView2Props.ml ogtkSourceView2Props.ml \
 		$(TAGS:%.var=%.h) $(TAGS:%.var=%.c) \
-		$(TAGS:%_tags.var=%Enums.ml)
+		$(TAGS:%_tags.var=%Enums.ml) sourceView2_tags.h \
+		sourceView2_tags.c sourceView2Enums.ml
 
 distclean: quiteclean
 	rm Makefile

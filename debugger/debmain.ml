@@ -262,13 +262,13 @@ class main_window () =
     make_menu "_Options" 
       [`C ("_Uglify syntax", notebook#uglify, notebook#set_uglify)];
 
-    if not Debconf.macos then
+    (* if not Debconf.macos then *)
       make_menu "_Help" [`I ("_About Obdb", self#about)]
-    else begin
+    (* else begin
       let about_item = GMenu.menu_item ~label:"About Obdb" () in
       let _ = about_item#connect#activate self#about in
       GMain.set_platform_menubar menubar about_item
-    end;
+    end *);
 
     ignore (peer#event#connect#delete 
       ~callback:(fun ev -> self#quit (); true));
