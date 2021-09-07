@@ -28,6 +28,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
+open Interface
 open Print
 open Binary
 open Symtab
@@ -75,7 +76,10 @@ class main_window () =
 
   let toolbutton text tooltip ifile =
     let icon = Debconf.image_resource ifile in
-    toolbar#insert_button ~text ~tooltip ~icon:icon#coerce () in
+    let button = GButton.tool_button ~label:text () in
+    button#set_icon_widget icon#coerce;
+    button#misc#set_tooltip_text tooltip;
+    toolbar#insert button; button in
 
   let runbtn = 
     toolbutton "Run" "Start or continue the program" "continue.png" in
@@ -297,10 +301,10 @@ let main () =
   ignore (GMain.init ());
   Glib.set_application_name "Oxford Oberon-2 debugger";
 
-  (let mgr = GSourceView2.source_language_manager ~default:true in
+  (let mgr = GSourceView.source_language_manager ~default:true in
     mgr#set_search_path (!Debconf.resource_dir :: mgr#search_path));
 
-  (let mgr = GSourceView2.source_style_scheme_manager ~default:true in
+  (let mgr = GSourceView.source_style_scheme_manager ~default:true in
     mgr#set_search_path (!Debconf.resource_dir :: mgr#search_path));
 
   GtkMain.Rc.parse_string 

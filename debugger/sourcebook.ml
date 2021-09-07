@@ -28,7 +28,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-open GSourceView2
+open Interface
 open Binary
 open Print
 open Symtab
@@ -62,9 +62,13 @@ let file_contents fname =
   close_in chan;
   Bytes.to_string buf
 
+external my_define_category : [`sourceview] Gobject.obj
+ -> string -> GdkPixbuf.pixbuf -> int -> string -> unit
+ = "my_define_category"
+
 class debug_view m enabled 
-    (buf : GSourceView2.source_buffer) 
-    (peer : GSourceView2.source_view) =
+    (buf : GSourceView.source_buffer) 
+    (peer : GSourceView.source_view) =
   object (self)
     method source_buffer = buf
 
@@ -137,26 +141,17 @@ class debug_view m enabled
 
   initializer
     peer#misc#modify_font_by_name Debconf.mono_font;
-    peer#set_mark_category_pixbuf "breakpoint" 
-      (Some (Debconf.pixbuf_resource "breakpoint.png"));
-    peer#set_mark_category_priority "breakpoint" 1;
-    peer#set_mark_category_pixbuf "here" 
-      (Some (Debconf.pixbuf_resource "here.png"));
-    peer#set_mark_category_priority "here" 2;
-    peer#set_mark_category_background "frame" 
-      (Some (GDraw.color (`NAME "#FFFF88")));
 
-    (* GtkSourceView 2.4.1 doesn't like mark categories that have no
-       associated image (see Bugzilla #564714).  Here's a workaround: *)
-    peer#set_mark_category_pixbuf "frame"
-      (Some (Debconf.pixbuf_resource "blank.png"));
+    define_category peer "breakpoint" "breakpoint.png" 1 "";
+    define_category peer "here" "here.png" 2 "";
+    define_category peer "frame" "blank.png" 0 "#FFFF88";
 
     ignore (peer#event#connect#button_press self#source_click);
   end
 
 let debug_view m enabled buf ?width ?height ?packing () =
   new debug_view m enabled buf
-    (GSourceView2.source_view ?width ?height ?packing
+    (GSourceView.source_view ?width ?height ?packing
        ~source_buffer:buf ~show_line_marks:true ~show_line_numbers:true 
        ~editable:false ~cursor_visible:false ())
 
@@ -164,11 +159,11 @@ class sourcebook_impl (peer : GPack.notebook) =
   let pagetbl = Hashtbl.create 10 in
 
   let language =
-    let mgr = GSourceView2.source_language_manager ~default:true in
+    let mgr = GSourceView.source_language_manager ~default:true in
     mgr#language "oberon" in
 
   let style_scheme =
-    let mgr = GSourceView2.source_style_scheme_manager ~default:true in
+    let mgr = GSourceView.source_style_scheme_manager ~default:true in
     mgr#style_scheme "sober" in
 
   let uglify = ref true in
@@ -185,7 +180,7 @@ class sourcebook_impl (peer : GPack.notebook) =
 	  ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC () in
       let text = file_contents fname in
       let buf = 
-	GSourceView2.source_buffer ~text ?language ?style_scheme 
+	GSourceView.source_buffer ~text ?language ?style_scheme 
 	  ~highlight_syntax:!uglify ~highlight_matching_brackets:false () in
       buf#place_cursor buf#start_iter;
       let view = debug_view m click_enabled buf ~packing:scroller#add () in

@@ -52,12 +52,13 @@ GTKPKGS = @GTKPKGS@
 WINDOWS = @WINDOWS@
 MACOS = @MACOS@
 USE_SYSTEM_LABLGTK = @USE_SYSTEM_LABLGTK@
+LABLGTK_VERSION = @LABLGTK_VERSION@
 # End
 
 all: obdb1
 
 ifdef USE_SYSTEM_LABLGTK
-  LABLGTK = +lablgtk2
+  LABLGTK = +lablgtk$(LABLGTK_VERSION)
 else
   LABLGTK = ../lablgtk
 endif
@@ -73,7 +74,8 @@ else
 endif
 
 ifndef USE_SYSTEM_LABLGTK
-  GTKMLLIBS = -cclib "-L../lablgtk -llablgtk -llablgtksourceview2 $(GTKLIBS)"
+  GTKSV = lablgtksourceview$(LABLGTK_VERSION)
+  GTKMLLIBS = -cclib "-L../lablgtk -llablgtk -l$(GTKSV) $(GTKLIBS)"
 endif
 
 LIBS = unix.cma threads.cma str.cma lablgtk.cma lablgtksourceview2.cma
@@ -84,12 +86,15 @@ obdb1: $(OBDB1) debprims.o
 		gtkThread.cmo $(OBDB1) $(MLLINKFLAGS) $(GTKMLLIBS) -o $@
 
 DEBUGGER = debconf.cmo binary.cmo info.cmo procio.cmo data.cmo \
-	control.cmo sourcebook.cmo varsview.cmo stackview.cmo
+	control.cmo interface.cmo sourcebook.cmo varsview.cmo stackview.cmo
 debugger.cma: $(DEBUGGER)
 	ocamlc $(MLFLAGS) -a -o $@ $^
 
 debprims.o: debprims.c
 	$(OCAMLC) -c -ccopt "-I .." -o $@ $<
+
+interface.ml:
+	ln -s interface-gtk$(LABLGTK_VERSION) $@
 
 ## Rules
 
@@ -119,10 +124,10 @@ clean:
 quiteclean: clean
 
 distclean: quiteclean
-	rm -f Makefile
+	rm -f Makefile interface.ml debconf.ml
 
 realclean: distclean
-	rm -f $(srcdir)/Depend debconf.ml
+	rm -f $(srcdir)/Depend 
 
 ## Configuration and dependencies
 
@@ -132,14 +137,11 @@ Makefile: $(srcdir)/Makefile.in ../config.status
 debconf.ml: $(srcdir)/debconf.ml.in ../config.status
 	cd .. && ./config.status --file=$(subdir)/$@
 
-deblex.mli: %: %.in
-	cp $< $@
-
 ML = procio.mli procio.ml binary.mli binary.ml \
 	info.mli info.ml data.mli data.ml control.mli control.ml \
 	debmain.ml sourcebook.ml \
 	sourcebook.mli varsview.ml varsview.mli stackview.ml \
-	stackview.mli debconf.ml
+	stackview.mli debconf.ml interface.ml
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)
