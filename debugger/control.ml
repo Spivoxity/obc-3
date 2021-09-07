@@ -52,8 +52,10 @@ let err_message = ref ""
 let location = ref NoLoc
 let monitor_version = ref ""
 
-(* regs -- the current register contents *)
-let vregs = ref { cp = Int32.zero; bp = Int32.zero; pc = Int32.zero }
+let init_regs = { cp = Int32.zero; bp = Int32.zero; pc = Int32.zero }
+
+(* vregs -- the current register contents *)
+let vregs = ref init_regs
 
 let state_name () =
   match !state with
@@ -65,11 +67,6 @@ let state_name () =
     | Running -> "Running"
     | Exited -> "Exited"
     | Error -> sprintf "Runtime error: $" [fStr !err_message]
-
-let join =
-  function
-      [] -> ""
-    | (x::xs) -> List.fold_left (fun a b -> a ^ " " ^ b) x xs
 
 let rec continue () =
   try
@@ -88,12 +85,12 @@ let rec continue () =
 
 	| ("error"::line::words) -> 
 	    state := Error; 
-	    err_message := join words;
+	    err_message := String.concat " " words;
 	    raise Exit
 
 	| ["regs"; cp; bp; pc] ->
 	    vregs := { cp = Int32.of_string cp; bp = Int32.of_string bp;
-						pc = Int32.of_string pc }
+			pc = Int32.of_string pc }
 
 	| ["module"; name; chksum] ->
 	    if name <> "_Builtin" && name <> "%Main" then
@@ -170,6 +167,7 @@ let interrupt () =
 let start_program args =
   Procio.init args;
   state := Ready;
+  vregs := init_regs;
   continue ()
 
 (* Traversing the stack *)
