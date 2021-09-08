@@ -86,7 +86,7 @@ CAMLprim value copy_string_g_free (char *str)
 
 static void ml_raise_glib (const char *errmsg)
 {
-  static value * exn = NULL;
+  static const value * exn = NULL;
   if (exn == NULL)
       exn = caml_named_value ("gerror");
   raise_with_string (*exn, (char*)errmsg);
@@ -152,7 +152,7 @@ static value *lookup_exn_map (GQuark domain)
     exn_data = l->data;
     if (exn_data->domain == domain) {
       if (exn_data->caml_exn == NULL)
-	exn_data->caml_exn = caml_named_value (exn_data->caml_exn_name);
+           exn_data->caml_exn = (value *)caml_named_value (exn_data->caml_exn_name);
       return exn_data->caml_exn;
     }
   }
@@ -177,7 +177,7 @@ static void ml_raise_gerror_exn(GError *err, value *exn)
 static void ml_raise_generic_gerror (GError *) Noreturn;
 static void ml_raise_generic_gerror (GError *err)
 {
-  static value *exn;
+  static const value *exn;
   value msg;
   if (exn == NULL) {
     exn = caml_named_value ("gerror");

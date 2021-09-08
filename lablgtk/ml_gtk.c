@@ -45,7 +45,7 @@
 
 void ml_raise_gtk (const char *errmsg)
 {
-  static value * exn = NULL;
+  static const value * exn = NULL;
   if (exn == NULL)
       exn = caml_named_value ("gtkerror");
   raise_with_string (*exn, (char*)errmsg);
@@ -344,7 +344,7 @@ CAMLprim value ml_gtk_widget_style_get_property (value w, value n)
     CAMLparam2 (w, n);
     CAMLlocal1 (ret);
     GtkWidget *widget = GtkWidget_val (w);
-    gchar *name = String_val (n);
+    const gchar *name = String_val (n);
     GParamSpec * pspec;
     pspec = gtk_widget_class_find_style_property
                (GTK_WIDGET_GET_CLASS (widget), name);
