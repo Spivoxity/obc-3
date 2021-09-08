@@ -9,26 +9,31 @@ binary distribution.
 
 If you do want or need to rebuild obc, here are basic instructions.
 
-1.  Clone the repository.
+1.  Clone the repository, and check out a specific release
 	
-	$ hg clone http://bitbucket.org/Spivey/obc-3 -u rel-3.0
+	$ git clone http://github.com/Spivoxity/obc-3 -b release-3.2
+        $ cd obc-3
 
+    Also install the prerequisites needed for the build.  On Debian:
+
+       $ sudo apt-get install build-essential ocaml-nox \
+               libgtksourceview2.0-dev
+               
 2.  Change to the directory obc-3, and type
 
         $ autoreconf
 	$ ./configure
 
-    If your machine is x86-based or ARM-based, then the runtime system
-    will be built to include a just-in-time translator from the OBC
-    bytecode into native machine code.  You can disable the JIT by
-    specifying --disable-jit.  The JIT is based on a virtual machine
-    model similar to the one provided by GNU Lightning, and would be
-    easy to port to other architectures.
+    If your machine has an x86, amd64 or ARM processor, then the
+    runtime system will be built to include a just-in-time translator
+    from the OBC bytecode into native machine code.  You can disable
+    the JIT by specifying --disable-jit.  The JIT is based on a
+    virtual machine model similar to the one provided by GNU
+    Lightning, and would be easy to port to other architectures.
     
-    The default is also to build the GUI debugger.  Doing so requires 
-    some GTK stuff to be installed, but you can disable it by specifying 
-    --disable-debugger.  Alternatively, use "sudo apt-get install
-    libgtksourceview2.0-dev" to pull in all the libraries that are needed.
+    The default is also to build the GUI debugger.  Doing so requires
+    some GTK stuff to be installed, but you can disable it by
+    specifying --disable-debugger.
 
     Various checks on your machine will be performed.  If the results
     are good enough, the rest of the installation will go smoothly;
@@ -40,10 +45,7 @@ If you do want or need to rebuild obc, here are basic instructions.
     The X libraries are loaded dynamically when the display is opened
     in XYplane, so Oberon programs do not depend on the presence of X
     to run, even if they have been built on a system configured for X
-    -- unless, that is, they actually use XYplane. Note: on amd64, the
-    module XYplane will not be built unless the 32-bit X libraries are
-    installed.  Use "sudo apt-get install libx11-dev:i386" to install
-    them.
+    -- unless, that is, they actually use XYplane.
 
     And if you want to install in some place other than
     /usr/local, you can type e.g.
@@ -54,23 +56,26 @@ If you do want or need to rebuild obc, here are basic instructions.
     disable dynamic linking on systems that don't support it.
 
 3.  Type "make".  This builds the various parts of the system.  It
-    takes only a minute or two on a modern workstation.
-
+    takes only a minute or two on a modern workstation or laptop.
     The makefiles use the VPATH feature of GNU make in order to
     support build directories (see below).
 
-4.  Check the last two lines of output from the build process: they
-    should be identical:
+4.  Check the last two or three lines of output from the build
+    process: they should be identical:
 
         The factorial of 20 is 2432902008176640000
         The factorial of 20 is 2432902008176640000
+        The factorial of 20 is 2432902008176640000
+
+    Three lines appear if you have built the JIT-based runtime: one as
+    a template, one showing the results from the JIT, and another
+    showing results from the bytecode interpreter, which is also used
+    to support debugging.
 
     If you feel like running some more tests, some regression tests
     can be found in the 'test' sub-directory.  Typing "make test" will
     automatically run the whole test suite, showing differences in the
-    code generated and in the output of the test programs.  Some other
-    tests that exercise profiling, separate compilation, and linking
-    of C primitives are run with "./bigtest" in the test directory.
+    code generated and in the output of the test programs.
 
 5.  If you want to check out the X windows implementation of XYplane,
     type
