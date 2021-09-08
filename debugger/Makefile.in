@@ -88,9 +88,6 @@ debugger.cma: $(DEBUGGER)
 debprims.o: debprims.c
 	$(OCAMLC) -c -ccopt '-I ..' -ccopt '$(GTKFLAGS)' -o $@ $<
 
-interface.ml:
-	ln -s interface-gtk$(LABLGTK_VERSION).ml $@
-
 ## Rules
 
 %.mli %.ml: %.mly
@@ -117,7 +114,6 @@ clean:
 	rm -f obdb1$(EXEEXT) debrun$(EXEEXT) obdb1.x *.cmi *.cmo *.cma *.o
 
 quiteclean: clean
-	rm -f interface.ml 
 
 distclean: quiteclean
 	rm -f Makefile debconf.ml

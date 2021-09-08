@@ -163,7 +163,7 @@ AC_ARG_WITH(system-lablgtk,
     AC_SUBST(USE_SYSTEM_LABLGTK, 1)
     if test "$with_system_lablgtk" = gtk2; then
       LABLGTK_INC='-I +lablgtk2 -I +lablgtksourceview2'
-      LABLGTK_LIBS='lablgtk2.cma lablgtksourceview2.cma'
+      LABLGTK_LIBS='lablgtk.cma lablgtksourceview2.cma gtkThread.cmo'
     else
       AC_DEFINE(HAVE_GTK3, 1, [Define if building for GTK3])
       LABLGTK_VERSION=3
@@ -178,11 +178,10 @@ AC_SUBST(LABLGTK_VERSION)
 AC_SUBST(LABLGTK_INC)
 AC_SUBST(LABLGTK_LIBS)
 AC_SUBST(LABLGTK_CCLIB)
+AC_CONFIG_LINKS(debugger/interface.ml:debugger/interface-gtk$LABLGTK_VERSION.ml)
 
 if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration"; fi
 AC_SUBST(GTKPKGS)
-
-
 
 # Checks for programs
 AC_PROG_CC
@@ -249,12 +248,11 @@ fi
 # Check ocaml version
 $as_echo_n "checking ocaml version... "
 if ! ocamlc; then echo not found; else
-  OCAML_VERSION=`ocamlc -v \
-      | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
-  $as_echo $OCAML_VERSION
-  XXXTMP=`echo $OCAML_VERSION | \
+  OCAMLV=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
+  $as_echo $OCAMLV
+  TMPV=`echo $OCAMLV | \
       sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
-  if test $XXXTMP -lt 40002; then
+  if test $TMPV -lt 40002; then
       AC_SUBST(COMPAT, bytes.cmo)
   fi
 fi
