@@ -150,17 +150,39 @@ if test "$enable_segmem" = yes; then
   AC_DEFINE(SEGMEM, 1, [Define to use segmented addressing])
 fi
 
-AC_SUBST(LABLGTK_VERSION, 2)
+# Default values if using built-in lablgtk
+LABLGTK_VERSION=2
+LABLGTK_INC='-I ../lablgtk'
+LABLGTK_LIBS='lablgtk.cma lablgtksourceview2.cma gtkThread.cmo'
+LABLGTK_CCLIB='-cclib "-L../lablgtk -llablgtk -llablgtksourceview2 $(GTKLIBS)"'
+GTKPKGS="gtk+-2.0 gtksourceview-2.0"
+
 AC_ARG_WITH(system-lablgtk,
   AS_HELP_STRING([--with-system-lablgtk], [use installed lablgtk package]),
   if test "$with_system_lablgtk" != no; then
     AC_SUBST(USE_SYSTEM_LABLGTK, 1)
     if test "$with_system_lablgtk" = gtk2; then
-      AC_SUBST(LABLGTK_VERSION, 2)
+      LABLGTK_INC='-I +lablgtk2 -I +lablgtksourceview2'
+      LABLGTK_LIBS='lablgtk2.cma lablgtksourceview2.cma'
     else
-      AC_SUBST(LABLGTK_VERSION, 3)
+      AC_DEFINE(HAVE_GTK3, 1, [Define if building for GTK3])
+      LABLGTK_VERSION=3
+      LABLGTK_INC='-I +lablgtk3 -I +lablgtk3-sourceview3'
+      LABLGTK_LIBS='lablgtk3.cma lablgtk3_sourceview3.cma'
+      GTKPKGS='gtk+-3.0 gtksourceview-3.0'
     fi
+    LABLGTK_CCLIB=
   fi)
+
+AC_SUBST(LABLGTK_VERSION)
+AC_SUBST(LABLGTK_INC)
+AC_SUBST(LABLGTK_LIBS)
+AC_SUBST(LABLGTK_CCLIB)
+
+if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration"; fi
+AC_SUBST(GTKPKGS)
+
+
 
 # Checks for programs
 AC_PROG_CC
@@ -361,10 +383,6 @@ AC_SUBST(SANSFONT)
 AC_SUBST(RESOURCES, "blank.png breakpoint.png continue.png here.png \
 oberon.lang pause.png sober.xml stepinto.png stepout.png stepover.png \
 restart.png exit.png")
-
-GTKPKGS="gtk+-2.0 gtksourceview-2.0"
-if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration"; fi
-AC_SUBST(GTKPKGS)
 
 if test "$WINDOWS" = 1; then
   OCAMLDIR='"/cygdrive/c/Program Files/Objective Caml/lib"'

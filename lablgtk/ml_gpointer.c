@@ -26,14 +26,21 @@
 #include <caml/alloc.h>
 #include <caml/memory.h>
 #include <caml/callback.h>
+#include <caml/version.h>
 #include <string.h>
 
 #include "wrappers.h"
 #include "ml_gpointer.h"
 
+#if OCAML_VERSION < 41000
+CAMLextern value *young_start, *young_end; /* from minor_gc.h */
+#else
+#include <caml/minor_gc.h>
+#endif
+
 CAMLprim value ml_stable_copy (value v)
 {
-    if (Is_block(v) && (char*)(v) < young_end && (char*)(v) > young_start)
+    if (Is_block(v) && (value*)(v) < young_end && (value*)(v) > young_start)
     {
         CAMLparam1(v);
         mlsize_t i, wosize = Wosize_val(v);

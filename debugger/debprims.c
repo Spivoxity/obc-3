@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include <caml/mlvalues.h>
+#include <assert.h>
 
 #ifdef WINDOWS
 #include <windows.h>
@@ -46,3 +47,17 @@ CAMLprim value ml_wake_child(value pid) {
 #endif
      return Val_unit;
 }
+
+#ifdef HAVE_GTK3
+
+#include <gdk/gdk.h>
+#include <lablgtk3/wrappers.h>
+
+CAMLprim value ml_rgba_parse(value arg) {
+     const char *spec = String_val(arg);
+     GdkRGBA rgba;
+     assert(gdk_rgba_parse(&rgba, spec));
+     return Val_copy(rgba);
+}
+     
+#endif
