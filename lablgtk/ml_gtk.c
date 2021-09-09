@@ -815,27 +815,6 @@ ML_0 (gtk_get_current_event, Val_GdkEvent)
 ML_1 (gtk_get_event_widget, GdkEvent_val, Val_GtkWidget)
 ML_2 (gtk_propagate_event, GtkWidget_val, GdkEvent_val, Unit)
 
-#ifdef MACOS
-#include <gtkosxapplication.h>
-#endif
-
-CAMLprim value ml_gtk_set_platform_menubar(value x, value y)
-{
-#ifdef MACOS
-    GtkMenuShell *menubar = GTK_MENU_SHELL(GtkWidget_val(x));
-    GtkMenuItem *about = GTK_MENU_ITEM(GtkWidget_val(y));
-    GtkosxApplication *app = g_object_new(GTKOSX_TYPE_APPLICATION, NULL); 
-
-    gtk_widget_hide((GtkWidget *) menubar);
-    gtkosx_application_set_menu_bar(app, menubar);
-    gtkosx_application_insert_app_menu_item(app, (GtkWidget *) about, 0);
-    gtkosx_application_ready(app);
-#endif
-
-    return Val_unit;
-}
-
-
 /* gtkrc.h */
 
 ML_1 (gtk_rc_add_default_file, String_val, Unit)

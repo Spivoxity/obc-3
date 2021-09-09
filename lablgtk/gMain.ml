@@ -34,10 +34,6 @@ let init = Main.init
 
 let version = Main.version
 
-let set_platform_menubar 
-   (menubar : GMenu.menu_shell) (about : GMenu.menu_item) = 
-  Main.set_platform_menubar menubar#as_widget about#as_widget
-
 module Grab = struct
   open Grab
   let add (w : #widget) = add w#as_widget

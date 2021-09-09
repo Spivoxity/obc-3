@@ -63,8 +63,6 @@ module Main = struct
   let version = get_version ()
   external get_current_event_time : unit -> int32
     = "ml_gtk_get_current_event_time"
-  external set_platform_menubar : [>`widget] obj -> [>`widget] obj -> unit 
-    = "ml_gtk_set_platform_menubar"
 end
 
 module Grab = struct

@@ -43,9 +43,6 @@ val quit : unit -> unit
 (** [major, minor, micro] *)
 val version : int * int * int
 
-(** Specify a platform-dependent menubar *)
-val set_platform_menubar : GMenu.menu_shell -> GMenu.menu_item -> unit
-
 
 (** Global structures *)
 

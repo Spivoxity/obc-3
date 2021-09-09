@@ -36,6 +36,11 @@ open Control
 
 let args = ref []
 
+external gtk_set_platform_menubar :
+  [>`widget] Gtk.obj -> [>`widget] Gtk.obj -> unit
+  = "ml_gtk_set_platform_menubar"
+
+
 (* Main window *)
 
 let ask_ok action =
@@ -243,8 +248,8 @@ class main_window () =
 
     List.iter (fun (btn, action) -> 
 	ignore (btn#connect#clicked ~callback:(fun ev -> self#run action)))
-      [runbtn, run; stepintobtn, step_into; 
-	stepoverbtn, step_over; stepoutbtn, step_out];
+      [(runbtn, run); (stepintobtn, step_into); 
+	(stepoverbtn, step_over); (stepoutbtn, step_out)];
     ignore (pausebtn#connect#clicked ~callback:(fun ev -> self#pause ()));
     ignore (restartbtn#connect#clicked ~callback:(fun ev -> self#restart ()));
     ignore (exitbtn#connect#clicked ~callback:(fun ev -> self#quit ()));
@@ -266,13 +271,13 @@ class main_window () =
     make_menu "_Options" 
       [`C ("_Uglify syntax", notebook#uglify, notebook#set_uglify)];
 
-    (* if not Debconf.macos then *)
+    if not Debconf.macos then
       make_menu "_Help" [`I ("_About Obdb", self#about)]
-    (* else begin
+    else begin
       let about_item = GMenu.menu_item ~label:"About Obdb" () in
-      let _ = about_item#connect#activate self#about in
-      GMain.set_platform_menubar menubar about_item
-    end *);
+      ignore (about_item#connect#activate self#about);
+      gtk_set_platform_menubar menubar#as_widget about_item#as_widget
+    end;
 
     ignore (peer#event#connect#delete 
       ~callback:(fun ev -> self#quit (); true));
