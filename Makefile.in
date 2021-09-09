@@ -113,9 +113,7 @@ else
 endif
 
 ifdef ENABLE_DEBUGGER
-  ifndef USE_SYSTEM_LABLGTK
-    PREDIRS += lablgtk
-  endif
+  PREDIRS += lablgtk3
   SUBDIRS += debugger
   BUILD += obxdeb obdb
   DEBUILD += obdb0
@@ -142,20 +140,17 @@ thunder/libthunder.a: thunder; $(SKIP)
 
 $(PRIMS) lib/Files.k: lib; $(SKIP)
 
-yacc compiler lablgtk debugger: mllib
+yacc compiler lablgtk3 debugger: mllib
 compiler: yacc
 lib: compiler
-debugger: compiler
-ifndef USE_SYSTEM_LABLGTK
-  debugger: lablgtk
-endif
+debugger: compiler lablgtk3
 $(PREDIRS) $(SUBDIRS): revid config.h
 
 $(PREDIRS) $(SUBDIRS) :
 	$(MAKE) -C $@ all
 
 ifdef MACOS
-lablgtk: macport/gtklib
+lablgtk3: macport/gtklib
 macport/gtklib:
 	$(MAKE) -C macport gtklib
 endif

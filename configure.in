@@ -39,7 +39,7 @@ AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
 	test/Makefile winport/Makefile debugger/Makefile \
-	lablgtk/Makefile macport/Makefile mllib/Makefile \
+	lablgtk3/Makefile macport/Makefile mllib/Makefile \
         armtest/Makefile mipstest/Makefile yacc/Makefile thunder/Makefile)
 AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
 AC_CONFIG_FILES(test/regress, chmod +x test/regress)
@@ -150,35 +150,7 @@ if test "$enable_segmem" = yes; then
   AC_DEFINE(SEGMEM, 1, [Define to use segmented addressing])
 fi
 
-# Default values if using built-in lablgtk
-LABLGTK_VERSION=2
-LABLGTK_INC='-I ../lablgtk'
-LABLGTK_LIBS='lablgtk.cma lablgtksourceview2.cma gtkThread.cmo'
-LABLGTK_CCLIB='-cclib "-L../lablgtk -llablgtk -llablgtksourceview2 $(GTKLIBS)"'
-GTKPKGS="gtk+-2.0 gtksourceview-2.0"
-
-AC_ARG_WITH(system-lablgtk,
-  AS_HELP_STRING([--with-system-lablgtk], [use installed lablgtk package]),
-  if test "$with_system_lablgtk" != no; then
-    AC_SUBST(USE_SYSTEM_LABLGTK, 1)
-    if test "$with_system_lablgtk" = gtk2; then
-      LABLGTK_INC='-I +lablgtk2 -I +lablgtksourceview2'
-      LABLGTK_LIBS='lablgtk.cma lablgtksourceview2.cma gtkThread.cmo'
-    else
-      AC_DEFINE(HAVE_GTK3, 1, [Define if building for GTK3])
-      LABLGTK_VERSION=3
-      LABLGTK_INC='-I +lablgtk3 -I +lablgtk3-sourceview3'
-      LABLGTK_LIBS='lablgtk3.cma lablgtk3_sourceview3.cma'
-      GTKPKGS='gtk+-3.0 gtksourceview-3.0'
-    fi
-    LABLGTK_CCLIB=
-  fi)
-
-AC_SUBST(LABLGTK_VERSION)
-AC_SUBST(LABLGTK_INC)
-AC_SUBST(LABLGTK_LIBS)
-AC_SUBST(LABLGTK_CCLIB)
-AC_CONFIG_LINKS(debugger/interface.ml:debugger/interface-gtk$LABLGTK_VERSION.ml)
+GTKPKGS="gtk+-3.0 gtksourceview-3.0"
 
 if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration"; fi
 AC_SUBST(GTKPKGS)

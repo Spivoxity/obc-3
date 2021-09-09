@@ -28,11 +28,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-open Interface
 open Binary
 open Print
 open Symtab
 open Dict
+
+external rgba_parse : string -> Gdk.rgba = "ml_rgba_parse"
 
 class type sourcebook =
   object
@@ -62,13 +63,9 @@ let file_contents fname =
   close_in chan;
   Bytes.to_string buf
 
-external my_define_category : [`sourceview] Gobject.obj
- -> string -> GdkPixbuf.pixbuf -> int -> string -> unit
- = "my_define_category"
-
 class debug_view m enabled 
-    (buf : GSourceView.source_buffer) 
-    (peer : GSourceView.source_view) =
+    (buf : GSourceView3.source_buffer) 
+    (peer : GSourceView3.source_view) =
   object (self)
     method source_buffer = buf
 
@@ -142,16 +139,23 @@ class debug_view m enabled
   initializer
     peer#misc#modify_font_by_name Debconf.mono_font;
 
-    define_category peer "breakpoint" "breakpoint.png" 1 "";
-    define_category peer "here" "here.png" 2 "";
-    define_category peer "frame" "blank.png" 0 "#FFFF88";
+    let define_category name icon prio bgrd =
+      let attr = GSourceView3.source_mark_attributes () in
+      attr#set_pixbuf (Debconf.pixbuf_resource icon);
+      if bgrd <> "" then
+        attr#set_background (rgba_parse bgrd);
+      peer#set_mark_attributes name attr prio in
+
+    define_category "breakpoint" "breakpoint.png" 1 "";
+    define_category "here" "here.png" 2 "";
+    define_category "frame" "blank.png" 0 "#FFFF88";
 
     ignore (peer#event#connect#button_press self#source_click);
   end
 
 let debug_view m enabled buf ?width ?height ?packing () =
   new debug_view m enabled buf
-    (GSourceView.source_view ?width ?height ?packing
+    (GSourceView3.source_view ?width ?height ?packing
        ~source_buffer:buf ~show_line_marks:true ~show_line_numbers:true 
        ~editable:false ~cursor_visible:false ())
 
@@ -159,11 +163,11 @@ class sourcebook_impl (peer : GPack.notebook) =
   let pagetbl = Hashtbl.create 10 in
 
   let language =
-    let mgr = GSourceView.source_language_manager ~default:true in
+    let mgr = GSourceView3.source_language_manager ~default:true in
     mgr#language "oberon" in
 
   let style_scheme =
-    let mgr = GSourceView.source_style_scheme_manager ~default:true in
+    let mgr = GSourceView3.source_style_scheme_manager ~default:true in
     mgr#style_scheme "sober" in
 
   let uglify = ref true in
@@ -180,7 +184,7 @@ class sourcebook_impl (peer : GPack.notebook) =
 	  ~hpolicy:`AUTOMATIC ~vpolicy:`AUTOMATIC () in
       let text = file_contents fname in
       let buf = 
-	GSourceView.source_buffer ~text ?language ?style_scheme 
+	GSourceView3.source_buffer ~text ?language ?style_scheme 
 	  ~highlight_syntax:!uglify ~highlight_matching_brackets:false () in
       buf#place_cursor buf#start_iter;
       let view = debug_view m click_enabled buf ~packing:scroller#add () in

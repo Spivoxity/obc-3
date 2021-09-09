@@ -52,10 +52,6 @@ PKG_FLAGS = @PKG_FLAGS@
 GTKPKGS = @GTKPKGS@
 WINDOWS = @WINDOWS@
 MACOS = @MACOS@
-LABLGTK_VERSION = @LABLGTK_VERSION@
-LABLGTK_INC = @LABLGTK_INC@
-LABLGTK_LIBS = @LABLGTK_LIBS@
-LABLGTK_CCLIB = @LABLGTK_CCLIB@
 # End
 
 all: obdb1
@@ -71,17 +67,18 @@ else
 	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
 endif
 
-INCLUDE = -I ../mllib -I ../compiler -I ../yacc $(LABLGTK_INC)
-LIBS = unix.cma threads.cma str.cma $(LABLGTK_LIBS)
+INCLUDE = -I ../mllib -I ../compiler -I ../yacc -I ../lablgtk3
+LIBS = unix.cma threads.cma str.cma \
+	../lablgtk3/lablgtk3.cma ../lablgtk3/gtkThread.cmo
 
 OBDB1 = ../mllib/mllib.cma ../yacc/yyparse.cmo ../compiler/basis.cma \
 	debugger.cma debmain.cmo debprims.o
 obdb1: $(OBDB1)
-	$(OCAMLC) $(MLFLAGS) -custom -thread $(LABLGTK_INC) $(LIBS) \
-		$(OBDB1) $(LABLGTK_CCLIB) $(MLLINKFLAGS) -o $@
+	$(OCAMLC) $(MLFLAGS) -custom -thread $(LIBS) $(OBDB1) \
+	    -cclib "-L../lablgtk3 -llablgtk3 $(GTKLIBS)" $(MLLINKFLAGS) -o $@
 
 DEBUGGER = debconf.cmo binary.cmo info.cmo procio.cmo data.cmo \
-	control.cmo interface.cmo sourcebook.cmo varsview.cmo stackview.cmo
+	control.cmo sourcebook.cmo varsview.cmo stackview.cmo
 debugger.cma: $(DEBUGGER)
 	ocamlc $(MLFLAGS) -a -o $@ $^
 
@@ -133,7 +130,7 @@ ML = procio.mli procio.ml binary.mli binary.ml \
 	info.mli info.ml data.mli data.ml control.mli control.ml \
 	debmain.ml sourcebook.ml \
 	sourcebook.mli varsview.ml varsview.mli stackview.ml \
-	stackview.mli debconf.ml interface.ml
+	stackview.mli debconf.ml
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)

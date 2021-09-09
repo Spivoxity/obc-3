@@ -1,0 +1,160 @@
+(* $Id$ *)
+
+prefix "Gtk"
+initializer "ml_gtkpack_init"
+
+header {
+open Gtk
+}
+
+oheader{
+open GtkPackProps
+}
+
+classes {
+  GtkAdjustment "Gtk.adjustment obj"
+}
+
+class Box hv set wrap : Container {
+  "homogeneous"          gboolean             : Read / Write
+  "spacing"              gint                 : Read / Write
+  "orientation"          GtkOrientation       : Read / Write / NoSet
+  method pack_start :
+      "[>`widget] obj -> expand:bool -> fill:bool -> padding:int -> unit"
+  method pack_end :
+      "[>`widget] obj -> expand:bool -> fill:bool -> padding:int -> unit"
+  method reorder_child : "[>`widget] obj -> pos:int -> unit"
+  method query_child_packing : "[>`widget] obj -> box_packing"
+  method set_child_packing :
+      "[>`widget] obj -> ?expand:bool -> ?fill:bool ->
+       ?padding:int -> ?from:Tags.pack_type -> unit"
+}
+
+class ButtonBox hv : Box {
+  "layout-style"         GtkButtonBoxStyle    : Read / Write
+  method get_child_secondary : "[> `widget] obj -> bool"
+  method set_child_secondary : "[> `widget] obj -> bool -> unit"
+  method get_child_non_homogeneous : "[> `widget] obj -> bool"
+  method set_child_non_homogeneous : "[> `widget] obj -> bool -> unit"
+}
+
+class Fixed : Container {
+  method put : "[>`widget] obj -> x:int -> y:int -> unit"
+  method move : "[>`widget] obj -> x:int -> y:int -> unit"
+}
+
+class Paned hv wrap : Container {
+  "position"             gint                 : Read / Write
+  "position-set"         gboolean             : Read / Write / NoWrap
+  "max-position"         gint                 : Read
+  "min-position"         gint                 : Read
+  "orientation"          GtkOrientation       : Read / Write / NoSet
+  method add1 : "[>`widget] obj -> unit"
+  method add2 : "[>`widget] obj -> unit"
+  method pack1 : "[>`widget] obj -> resize:bool -> shrink:bool -> unit"
+  method pack2 : "[>`widget] obj -> resize:bool -> shrink:bool -> unit"
+  method get_child1 : "widget obj"
+  method get_child2 : "widget obj"
+  (* omit signals *)
+}
+
+class Layout set : Container {
+  "hadjustment"          GtkAdjustment        : Read / Write
+  "height"               guint                : Read / Write
+  "vadjustment"          GtkAdjustment        : Read / Write
+  "width"                guint                : Read / Write
+  method put : "[>`widget] obj -> x:int -> y:int -> unit"
+  method move : "[>`widget] obj -> x:int -> y:int -> unit"
+  method get_bin_window : "Gdk.window"
+}
+
+conversions {
+  Pointer
+}
+
+class Notebook set wrap wrapsig : Container {
+  "enable-popup"         gboolean             : Read / Write
+  "group-name"           string               : Read / Write
+  "page"                 gint                 : Read / Write / NoSet / NoWrap
+  "scrollable"           gboolean             : Read / Write
+  "show-border"          gboolean             : Read / Write
+  "show-tabs"            gboolean             : Read / Write
+  "tab-pos"              GtkPositionType      : Read / Write
+  method insert_page_menu :
+     "[>`widget] obj -> tab_label:[>`widget] optobj ->
+      menu_label:[>`widget] optobj -> ?pos:int -> int"
+      (* default is append to end *)
+  method remove_page : "int -> unit"
+  method get_current_page : "int"
+  method get_nth_page : "int -> widget obj"
+  method page_num : "[>`widget] obj -> int"
+  method next_page
+  method prev_page
+  method get_tab_label : "[>`widget] obj -> widget obj"
+  method set_tab_label : "[>`widget] obj -> [>`widget] obj -> unit"
+  method get_menu_label : "[>`widget] obj -> widget obj"
+  method set_menu_label : "[>`widget] obj -> [>`widget] obj -> unit"
+  method reorder_child : "[>`widget] obj -> int -> unit"
+  method set_tab_reorderable : "[>`widget] obj -> bool -> unit"
+  method get_tab_reorderable : "[>`widget] obj -> bool"
+  signal switch_page : GtkWidget gint      / NoWrap
+  signal select_page : gboolean
+  signal reorder_tab : GtkDirectionType gboolean
+  signal change_current_page : gint
+  signal move_focus_out : GtkDirectionType
+  signal page_added : GtkWidget guint (* GTK+ 2.10 *)
+  signal page_removed : GtkWidget guint (* GTK+ 2.10 *)
+  signal page_reordered : GtkWidget guint (* GTK+ 2.10 *)
+  signal create_window : page:GtkWidget x:gint y:gint (* GTK+ 2.12 *)
+}
+
+class Table set wrap :Container {
+  "n-columns"(columns)   guint                : Read / Write
+  "n-rows"(rows)         guint                : Read / Write
+  "homogeneous"          gboolean             : Read / Write
+  "row-spacing"(row_spacings) guint           : Read / Write
+  "column-spacing"(col_spacings) guint        : Read / Write
+  method attach :
+    "[>`widget] obj -> left:int -> right:int -> top:int -> bottom:int ->
+     xoptions:Tags.attach_options list -> yoptions:Tags.attach_options list ->
+     xpadding:int -> ypadding:int -> unit"
+  method set_row_spacing : "int -> int -> unit"
+  method set_col_spacing : "int -> int -> unit"
+}
+
+class Grid set wrap : Container {
+  "baseline-row"(baseline_row) guint          : Read / Write
+  "row-homogeneous"(row_homogeneous) gboolean : Read / Write
+  "column-homogeneous"(col_homogeneous) gboolean : Read / Write
+  "row-spacing"(row_spacings) guint           : Read / Write
+  "column-spacing"(col_spacings) guint        : Read / Write
+  method attach :
+    "[>`widget] obj -> left:int -> top:int -> width:int -> height:int -> unit"
+}
+
+class SizeGroup set wrap : GObject {
+  "mode"                 GtkSizeGroupMode     : Read / Write
+  method add_widget : "[>`widget] obj -> unit"
+  method remove_widget : "[>`widget] obj -> unit"
+}
+
+class Stack set wrap wrapsig : Container {
+  method add_named : "[>`widget] obj -> string -> unit"
+  method add_titled : "[>`widget] obj -> string -> string -> unit"
+  method get_child_by_name : "string -> [>`widget] obj"
+  method set_visible_child_full : "string -> Tags.stack_transition_type -> unit"
+  "hhomogeneous" gboolean                  : Read / Write
+  "homogeneous" gboolean                   : Read / Write
+  "interpolate-size" gboolean              : Read / Write
+  "transition-duration" guint              : Read / Write
+  "transition-running" gboolean            : Read
+  "transition-type" GtkStackTransitionType : Read / Write
+  "vhomogeneous" gboolean                  : Read / Write
+  "visible-child" GtkWidget                : Read / Write
+  "visible-child-name" string              : Read / Write
+}
+
+class StackSwitcher set wrap wrapsig : Box {
+  "icon-size" gint    : Read / Write (** GTK 3.20 *) 
+  "stack" GtkStack    : Read / Write / Construct
+}

@@ -28,13 +28,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-open Interface
 open Print
 open Binary
 open Symtab
 open Control
-
-let args = ref []
 
 external gtk_set_platform_menubar :
   [>`widget] Gtk.obj -> [>`widget] Gtk.obj -> unit
@@ -42,6 +39,8 @@ external gtk_set_platform_menubar :
 
 
 (* Main window *)
+
+let args = ref []
 
 let ask_ok action =
   match !Control.state with
@@ -306,10 +305,10 @@ let main () =
   ignore (GMain.init ());
   Glib.set_application_name "Oxford Oberon-2 debugger";
 
-  (let mgr = GSourceView.source_language_manager ~default:true in
+  (let mgr = GSourceView3.source_language_manager ~default:true in
     mgr#set_search_path (!Debconf.resource_dir :: mgr#search_path));
 
-  (let mgr = GSourceView.source_style_scheme_manager ~default:true in
+  (let mgr = GSourceView3.source_style_scheme_manager ~default:true in
     mgr#set_search_path (!Debconf.resource_dir :: mgr#search_path));
 
   GtkMain.Rc.parse_string 

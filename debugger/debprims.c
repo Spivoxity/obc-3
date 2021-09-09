@@ -48,10 +48,8 @@ CAMLprim value ml_wake_child(value pid) {
      return Val_unit;
 }
 
-#ifdef HAVE_GTK3
-
 #include <gdk/gdk.h>
-#include <lablgtk3/wrappers.h>
+#include "../lablgtk3/wrappers.h"
 
 CAMLprim value ml_rgba_parse(value arg) {
      const char *spec = String_val(arg);
@@ -59,8 +57,6 @@ CAMLprim value ml_rgba_parse(value arg) {
      assert(gdk_rgba_parse(&rgba, spec));
      return Val_copy(rgba);
 }
-     
-#endif
 
 #ifdef MACOS
 #include <gtkosxapplication.h>
