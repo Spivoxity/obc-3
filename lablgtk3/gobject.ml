@@ -137,7 +137,8 @@ module Value = struct
     | `POINTER ->
         `POINTER (try Some (get_pointer v) with Gpointer.Null -> None)
     | _ -> (get v :> data_conv_get)
-    with Failure ("Gobject.get_int32"|"Gobject.get_pointer") -> `NONE
+    with Failure ("Gobject.get_int32"|"Gobject.get_pointer") 
+            [@warning "-52"] -> `NONE
 end
 
 module Closure = struct

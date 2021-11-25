@@ -793,7 +793,7 @@ ML_2 (gtk_source_view_set_draw_spaces,
 
 /* This code was taken from gedit */
 /* assign a unique name */
-static G_CONST_RETURN gchar *
+static const gchar *
 get_widget_name (GtkWidget *w)
 {
         const gchar *name;

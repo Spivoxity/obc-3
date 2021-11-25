@@ -259,11 +259,15 @@ CAMLprim value ml_g_log (value domain, value level, value msg)
 
 #define GMainLoop_val(val) ((GMainLoop*)Addr_val(val))
 ML_1 (g_main_new, Bool_val, Val_addr)
+#undef g_main_iteration
+#define g_main_iteration(b) g_main_context_iteration(NULL, b)
 ML_1 (g_main_iteration, Bool_val, Val_bool)
+#undef g_main_pending
+#define g_main_pending() g_main_context_pending(NULL)
 ML_0 (g_main_pending, Val_bool)
-ML_1 (g_main_is_running, GMainLoop_val, Val_bool)
-ML_1 (g_main_quit, GMainLoop_val, Unit)
-ML_1 (g_main_destroy, GMainLoop_val, Unit)
+ML_1 (g_main_loop_is_running, GMainLoop_val, Val_bool)
+ML_1 (g_main_loop_quit, GMainLoop_val, Unit)
+ML_1 (g_main_loop_unref, GMainLoop_val, Unit)
 
 static gboolean ml_g_source_func (gpointer data)
 {
@@ -540,7 +544,7 @@ CAMLprim value ml_g_get_charset()
   CAMLparam0();
   CAMLlocal1(couple);
   gboolean r;
-  G_CONST_RETURN char *c;
+  const char *c;
   r = g_get_charset(&c);
   couple = alloc_tuple(2);
   Store_field(couple,0,Val_bool(r));

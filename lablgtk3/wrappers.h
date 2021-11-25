@@ -29,6 +29,7 @@
 #define CAML_EXN_LOG(name) g_critical("%s: callback raised an exception", name)
 #define CAML_EXN_LOG_VERBOSE(name,exn) g_critical("%s: callback raised exception %s", name, format_caml_exception(Extract_exception(exn)))
 
+#include <caml/version.h>
 #include <caml/misc.h>
 #include <caml/mlvalues.h>
 #include <caml/fail.h>
