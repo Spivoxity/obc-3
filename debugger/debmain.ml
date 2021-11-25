@@ -105,8 +105,6 @@ class main_window () =
 
   let mutex = Mutex.create () in
 
-  let about_dialog = ref (fun () -> raise Not_found) in
-
   object (self)
     method report_status fmt args =
       statcxt#pop (); ignore (statcxt#push (sprintf fmt args))
@@ -221,18 +219,14 @@ class main_window () =
       with Not_found -> ()
 
     method about () =
-      try 
-	!about_dialog ()
-      with Not_found ->
-	let dialog = GWindow.about_dialog ~version:Config.version
-	  ~comments:(sprintf "Debugging monitor version $" 
-				[fStr !monitor_version]) () in
-	ignore (dialog#connect#close 
-	  ~callback:(fun ev -> dialog#misc#hide ()));
-	ignore (dialog#connect#response
-	  ~callback:(fun btn -> dialog#misc#hide ()));
-	about_dialog := dialog#present;
-	dialog#show ()
+      let dialog = GWindow.message_dialog
+          ~title:"About obdb"
+          ~message:(sprintf "$\nObdb version $\nMonitor version $"
+                        [fStr "Oxford Oberon-2 debugger";
+                          fStr Config.version; fStr !monitor_version])
+          ~buttons:GWindow.Buttons.ok () in
+      ignore (dialog#run ());
+      dialog#destroy ()
 
     method show () = peer#show ()
 
