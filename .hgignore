@@ -243,3 +243,4 @@ lablgtk3/sourceView3Enums.ml
 lablgtk3/sourceView3_tags.c
 lablgtk3/sourceView3_tags.h
 lablgtk3/varcc
+lablgtk3/sys_compat.ml

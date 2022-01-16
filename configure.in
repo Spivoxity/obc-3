@@ -227,6 +227,11 @@ if ! ocamlc; then echo not found; else
   if test $TMPV -lt 40002; then
       AC_SUBST(COMPAT, bytes.cmo)
   fi
+  if test $TMPV -lt 40006; then
+      AC_SUBST(SYS_COMPAT, sys_compat1.ml.in)
+  else
+      AC_SUBST(SYS_COMPAT, sys_compat2.ml.in)
+  fi
 fi
 
 

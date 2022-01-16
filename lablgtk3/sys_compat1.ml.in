@@ -1,0 +1,3 @@
+let modify_argv argv =
+  Array.blit argv 0 Sys.argv 0 (Array.length argv);
+  Obj.truncate (Obj.repr Sys.argv) (Array.length argv) [@warning "-3"]

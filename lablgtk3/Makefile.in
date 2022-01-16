@@ -45,6 +45,7 @@ DEPEND = @DEPEND@
 PKG_CONFIG = @PKG_CONFIG@
 GTKPKGS = @GTKPKGS@
 PKG_FLAGS = @PKG_FLAGS@
+SYS_COMPAT = @SYS_COMPAT@
 # End of config
 
 ALL = lablgtk3.cma liblablgtk3.a gtkThread.cmo
@@ -65,7 +66,7 @@ ALLPROPS = gtkBase.props $(PROPS)
 TAGS = gdkpixbuf_tags.var gdk_tags.var glib_tags.var gobject_tags.var \
 	gtk_tags.var pango_tags.var
 
-MLOBJS = gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo \
+MLOBJS = sys_compat.cmo gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo \
 	gdkEnums.cmo gtkEnums.cmo sourceView3Enums.cmo pangoEnums.cmo \
 	pango.cmo gPango.cmo \
 	gdk.cmo gdkEvent.cmo gdkKeysyms.cmo gdkPixbuf.cmo \
@@ -142,6 +143,9 @@ propcc varcc: %: %.ml
 #propcc.ml varcc.ml: %.ml: %.ml4
 #	camlp4 pa_o.cmo pa_op.cmo pr_o.cmo -impl $< >$@
 
+sys_compat.ml: $(SYS_COMPAT)
+	cp $< $@
+
 clean: force
 	rm -f *.cma *.cmi *.cmo *.o *.a propcc varcc
 
@@ -150,7 +154,7 @@ quiteclean : clean
 		gtkSourceView3Props.ml ogtkSourceView3Props.ml \
 		$(TAGS:%.var=%.h) $(TAGS:%.var=%.c) \
 		$(TAGS:%_tags.var=%Enums.ml) sourceView3_tags.h \
-		sourceView3_tags.c sourceView3Enums.ml
+		sourceView3_tags.c sourceView3Enums.ml sys_compat.ml
 
 distclean: quiteclean
 	rm Makefile

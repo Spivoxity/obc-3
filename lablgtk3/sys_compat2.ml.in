@@ -1,0 +1,1 @@
+external modify_argv : string array -> unit = "caml_sys_modify_argv"

@@ -28,15 +28,6 @@ open Gtk
 let () = Callback.register_exception "gtkerror" (Error"")
 let () = Gc.set {(Gc.get()) with Gc.max_overhead = 1000000}
 
-(*
-let modify_argv argv =
-  Array.blit ~src:argv ~dst:Sys.argv ~len:(Array.length argv)
-    ~src_pos:0 ~dst_pos:0;
-  Obj.truncate (Obj.repr Sys.argv) (Array.length argv) [@warning "-3"]
-*)
-
-external modify_argv : string array -> unit = "caml_sys_modify_argv"
-
 module Main = struct
   external init : string array -> string array = "ml_gtk_init"
   external disable_setlocale : unit -> unit = "ml_gtk_disable_setlocale"
@@ -52,7 +43,7 @@ module Main = struct
         raise (Error ("GtkMain.init: initialization failed\n" ^ err))
     in
     if setlocale then ignore (Glib.Main.setlocale `NUMERIC (Some "C"));
-    modify_argv argv;
+    Sys_compat.modify_argv argv;
     if setlocale then Glib.Main.setlocale `ALL None else ""
   open Glib
   let loops = ref []
