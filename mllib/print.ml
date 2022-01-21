@@ -30,7 +30,9 @@
 
 type arg = vtable -> unit
 
-and vtable = { outch : char -> unit; prf : string -> arg list -> unit }
+and vtable =
+  { outch : char -> unit; outs : string -> unit;
+    prf : string -> arg list -> unit }
 
 external format_float : string -> float -> string = "caml_format_float"
 
@@ -76,10 +78,27 @@ let portable_string_of_float x =
   run state0;
   Bytes.sub_string b 0 !j
 
+(* do_print1 -- the guts of printf and friends *)
+let rec do_print1 outch outs fmt args0 =
+  let vtab = { outch = outch; outs = outs; prf = do_print1 outch outs } in
+  let args = ref args0 in
+  for i = 0 to String.length fmt - 1 do
+    if fmt.[i] <> '$' then
+      outch fmt.[i]
+    else begin
+      (try List.hd !args vtab; args := List.tl !args
+	with Invalid_argument _ -> outs "***");
+    end
+  done
+
+let do_print outch fmt args =
+  let outs s =
+    for i = 0 to String.length s - 1 do outch s.[i] done in
+  do_print1 outch outs fmt args
+
 let fChr c vtab = vtab.outch c
 
-let fStr s vtab =
-  for i = 0 to String.length s - 1 do vtab.outch s.[i] done
+let fStr s vtab = vtab.outs s
 
 let fNum n = fStr (string_of_int n)
 let fHex n = fStr (Util.hex_of_int n)
@@ -87,19 +106,6 @@ let fFlo x = fStr (portable_string_of_float x)
 let fBool b = fStr (if b then "true" else "false")
 let fNum32 n = fStr (Int32.to_string n)
 let fHex32 n = fStr (Util.hex_of_int32 n)
-
-(* do_print -- the guts of printf and friends *)
-let rec do_print outch fmt args0 =
-  let vtab = { outch = outch; prf = do_print outch } in
-  let args = ref args0 in
-  for i = 0 to String.length fmt - 1 do
-    if fmt.[i] <> '$' then
-      outch fmt.[i]
-    else begin
-      (try List.hd !args vtab; args := List.tl !args
-	with Invalid_argument _ -> outch '*'; outch '*'; outch '*');
-    end
-  done
 
 let fExt g vtab = g vtab.prf
 
@@ -124,21 +130,23 @@ let fSeq(cvt, sep) xs =
 let fList(cvt) xs = fSeq(cvt, ", ") xs
 
 (* fprintf -- print to a file *)
-let fprintf fp fmt args = do_print (output_char fp) fmt args
+let fprintf fp fmt args =
+  do_print1 (output_char fp) (output_string fp) fmt args
 
 (* printf -- print on standard output *)
-let printf fmt args = fprintf stdout fmt args; flush stdout
+let printf fmt args =
+  fprintf stdout fmt args; flush stdout
 
 (* sprintf -- print to a string *)
 let sprintf fmt args =
   let sbuf = Buffer.create 20 in
-  do_print (Buffer.add_char sbuf) fmt args;
+  do_print1 (Buffer.add_char sbuf) (Buffer.add_string sbuf) fmt args;
   Buffer.contents sbuf
 
 open Format
 
 let rec do_grind fmt args0 =
-  let vtab = { outch = print_char; prf = do_grind } in
+  let vtab = { outch = print_char; outs = print_string; prf = do_grind } in
   let args = ref args0 in
   for i = 0 to String.length fmt - 1 do
     begin match fmt.[i] with
