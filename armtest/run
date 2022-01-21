@@ -1,4 +1,0 @@
-#!/bin/bash
-export OBC_LIB=.
-qemu-arm -B 0x100000 /usr/arm-linux-gnueabihf/lib/ld-linux.so.3 \
-    --library-path /usr/arm-linux-gnueabihf/lib ./obxj-arm "$@"
