@@ -33,14 +33,14 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 3.2alpha, mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues)
+AC_INIT(obc, 3.3.0, mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues)
 AC_PREREQ(2.50)
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
 	test/Makefile winport/Makefile debugger/Makefile \
 	lablgtk3/Makefile macport/Makefile mllib/Makefile \
-        armtest/Makefile mipstest/Makefile yacc/Makefile thunder/Makefile)
+        yacc/Makefile thunder/Makefile)
 AC_CONFIG_FILES(compiler/config.ml debugger/debconf.ml)
 AC_CONFIG_FILES(test/regress, chmod +x test/regress)
 AC_CONFIG_FILES(test/bigtest, chmod +x test/bigtest)
