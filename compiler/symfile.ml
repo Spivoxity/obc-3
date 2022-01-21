@@ -160,7 +160,7 @@ let xprintf fmt args =
         '\n' -> nl := true
       | '(' -> incr indent
       | ')' -> decr indent
-      | _ -> ()in
+      | _ -> () in
   do_print out fmt args
 
 let fExm =

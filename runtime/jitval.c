@@ -38,7 +38,7 @@
      OP    FIELDS      MEANING
                                 
      CON       val      val
-     REGV   reg          reg
+     REGV  reg          reg
      ADDR  reg val r2 k if r2 = NULL: reg + val else: reg + r2<<k
      KONW      val      konst_4[val]
      KONQ      val      konst_8[val]
@@ -474,7 +474,6 @@ static reg loadv(operation op, int cl, ctvalue v) {
 
      return r1;
 }
-
 
 static void storev(operation op, reg r, ctvalue v) {
      if (v->v_reg2 != NULL)

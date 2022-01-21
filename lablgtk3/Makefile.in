@@ -204,9 +204,7 @@ endif
 include $(srcdir)/Depend
 
 # Extra dependencies not found by script
-gtkBaseProps.cmo gtkBinProps.cmo gtkButtonProps.cmo gtkMenuProps.cmo	\
-gtkMiscProps.cmo gtkPackProps.cmo gtkSourceView3Props.cmo		\
-gtkTextProps.cmo gtkTreeProps.cmo: gtkObject.cmo
+$(ALLPROPS:%.props=%Props.cmo): gtkObject.cmo
 glib.cmo: gutf8.cmi
 gToolbox.cmo: gdkKeysyms.cmo
 
