@@ -445,12 +445,6 @@ void vm_gen1i(operation op, int a) {
      vm_space(0);
 
      switch (op) {
-     case CALL:
-          assert(argp == 0);
-          move_immed(R_T9, a);
-	  jump_r(opJALR, R_RA, R_T9);
-          break;
-
      case PREP:
 	  assert(a <= 3);
 	  argp = a;
@@ -476,6 +470,22 @@ void vm_gen1j(operation op, vmlabel lab) {
 
      default:
 	  badop();
+     }
+}
+
+void vm_gen1a(operation op, void *a) {
+     vm_debug1(op, 1, fmt_val((int) a));
+     vm_space(0);
+
+     switch (op) {
+     case CALL:
+          assert(argp == 0);
+          move_immed(R_T9, (int) a);
+	  jump_r(opJALR, R_RA, R_T9);
+          break;
+
+     default:
+          badop();
      }
 }
 
