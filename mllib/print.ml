@@ -28,11 +28,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
-type arg = vtable -> unit
+type arg = channel -> unit
 
-and vtable =
-  { outch : char -> unit; outs : string -> unit;
-    prf : string -> arg list -> unit }
+and channel =
+  <outch : char -> unit; outs : string -> unit;
+    prf : string -> arg list -> unit>
 
 external format_float : string -> float -> string = "caml_format_float"
 
@@ -80,7 +80,9 @@ let portable_string_of_float x =
 
 (* do_print1 -- the guts of printf and friends *)
 let rec do_print1 outch outs fmt args0 =
-  let vtab = { outch = outch; outs = outs; prf = do_print1 outch outs } in
+  let vtab =
+    object method outch = outch; method outs = outs;
+      method prf = do_print1 outch outs end in
   let args = ref args0 in
   for i = 0 to String.length fmt - 1 do
     if fmt.[i] <> '$' then
@@ -96,9 +98,9 @@ let do_print outch fmt args =
     for i = 0 to String.length s - 1 do outch s.[i] done in
   do_print1 outch outs fmt args
 
-let fChr c vtab = vtab.outch c
+let fChr c vtab = vtab#outch c
 
-let fStr s vtab = vtab.outs s
+let fStr s vtab = vtab#outs s
 
 let fNum n = fStr (string_of_int n)
 let fHex n = fStr (Util.hex_of_int n)
@@ -107,10 +109,10 @@ let fBool b = fStr (if b then "true" else "false")
 let fNum32 n = fStr (Int32.to_string n)
 let fHex32 n = fStr (Util.hex_of_int32 n)
 
-let fExt g vtab = g vtab.prf
+let fExt g vtab = g vtab#prf
 
 (* fMeta -- insert output of recursive call to printf *)
-let fMeta fmt args vtab = vtab.prf fmt args
+let fMeta fmt args vtab = vtab#prf fmt args
 
 let fFixNum (n, w) = 
   fExt (fun prf ->
@@ -146,7 +148,9 @@ let sprintf fmt args =
 open Format
 
 let rec do_grind fmt args0 =
-  let vtab = { outch = print_char; outs = print_string; prf = do_grind } in
+  let vtab =
+    object method outch = print_char; method outs = print_string;
+      method prf = do_grind end in
   let args = ref args0 in
   for i = 0 to String.length fmt - 1 do
     begin match fmt.[i] with
