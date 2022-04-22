@@ -34,8 +34,9 @@ dnl
 dnl See if indexed jumps will compile
 AC_DEFUN(AC_C_INDEXED_JUMPS,
   [AC_CACHE_CHECK(for indexed jumps, ac_cv_c_indexed_jumps,
-      [AC_TRY_COMPILE(, [void *a[] = { &&b, &&c }; b: goto *a[1]; c:;],
-        ac_cv_c_indexed_jumps=yes, ac_cv_c_indexed_jumps=no)])
+      [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(,[[void *a[] = { &&b, &&c }; b: goto *a[1]; c:;]])],
+        [ac_cv_c_indexed_jumps=yes], [ac_cv_c_indexed_jumps=no])])
     if test $ac_cv_c_indexed_jumps = yes; then
       AC_DEFINE(HAVE_INDEXED_JUMPS, 1, 
         [Define if indexed jumps work.])
@@ -44,8 +45,9 @@ AC_DEFUN(AC_C_INDEXED_JUMPS,
 dnl See if the C compiler understands __attribute__ ((unused))
 AC_DEFUN(AC_C_UNUSED,
   [AC_CACHE_CHECK(for 'unused' attribute, ac_cv_unused_attr,
-      [AC_TRY_COMPILE(, [int __attribute__ ((unused)) n],
-	ac_cv_unused_attr=yes, ac_cv_unused_attr=no)])
+      [AC_COMPILE_IFELSE(
+        [AC_LANG_SOURCE([[int __attribute__ ((unused)) n;]])],
+	[ac_cv_unused_attr=yes], [ac_cv_unused_attr=no])])
     if test $ac_cv_unused_attr = yes; then 
       UNUSED="__attribute__ ((unused))"
     fi
@@ -54,8 +56,9 @@ AC_DEFUN(AC_C_UNUSED,
 dnl See if the C compiler understands __attribute__ ((used))
 AC_DEFUN(AC_C_USED,
   [AC_CACHE_CHECK(for 'used' attribute, ac_cv_used_attr,
-      [AC_TRY_COMPILE(, [int __attribute__ ((used)) n],
-	ac_cv_used_attr=yes, ac_cv_used_attr=no)])
+      [AC_COMPILE_IFELSE(
+        [AC_LANG_SOURCE([[int __attribute__ ((used)) n;]])],
+	[ac_cv_used_attr=yes], [ac_cv_used_attr=no])])
     if test $ac_cv_used_attr = yes; then 
       USED="__attribute__ ((used))"
     fi
@@ -89,7 +92,7 @@ dnl Find the page size (check sys/param.h if this doesn't work)
 AC_DEFUN(AC_FIND_PAGESIZE,
   [AC_CHECK_FUNCS(getpagesize)
     AC_CACHE_CHECK(page size, ac_cv_pagesize,
-      [AC_TRY_RUN([#include <stdio.h>
+      [AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdio.h>
 	#ifndef HAVE_GETPAGESIZE
 	#ifdef HAVE_UNISTD_H
 	#include <unistd.h>
@@ -104,7 +107,8 @@ AC_DEFUN(AC_FIND_PAGESIZE,
 	  /* No newline here, in case a CRLF creeps in and cygwin chokes */
 	  fprintf(f, "%d", getpagesize());
 	  exit(0);
-	}], ac_cv_pagesize=`cat conftestval`, ac_cv_pagesize=4096)])
+	}]])], [ac_cv_pagesize=`cat conftestval`],
+	[ac_cv_pagesize=4096], [ac_cv_pagesize=4096])])
     AC_DEFINE_UNQUOTED(PAGESIZE, $ac_cv_pagesize, [Page size])
     AC_SUBST(PAGESIZE, $ac_cv_pagesize)
 

@@ -33,8 +33,8 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(obc, 3.2alpha, mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues)
-AC_PREREQ(2.50)
+AC_INIT([obc],[3.2alpha],[mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues])
+AC_PREREQ([2.71])
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
@@ -152,7 +152,7 @@ fi
 
 GTKPKGS="gtk+-3.0 gtksourceview-3.0"
 
-if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration"; fi
+if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration-gtk3"; fi
 AC_SUBST(GTKPKGS)
 
 # Checks for programs
@@ -191,7 +191,6 @@ AC_C_NORETURN
 AC_FIND_PAGESIZE
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS(time.h sys/time.h)
 
 # Checks for library functions.
@@ -218,10 +217,10 @@ if test "$WINDOWS" = 1; then
 fi
 
 # Check ocaml version
-$as_echo_n "checking ocaml version... "
+AS_ECHO_N([checking ocaml version...])
 if ! ocamlc; then echo not found; else
   OCAMLV=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
-  $as_echo $OCAMLV
+  AS_ECHO($OCAMLV)
   TMPV=`echo $OCAMLV | \
       sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
   if test $TMPV -lt 40002; then
