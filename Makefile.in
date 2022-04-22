@@ -88,7 +88,6 @@ DEBUILD = obc0 obb0 obtrace
 PRIMS = lib/primtab.o lib/oblib.a
 
 ifdef MACOS
-  EXTRADIRS += macport
   RTFLAGS += -pagezero_size 0x1000
 endif
 
@@ -118,7 +117,7 @@ ifdef ENABLE_DEBUGGER
   BUILD += obxdeb obdb
   DEBUILD += obdb0
   ifdef MACOS
-    BUILD += macdebug
+    # BUILD += macdebug
   endif
 endif
 
@@ -148,12 +147,6 @@ $(PREDIRS) $(SUBDIRS): revid config.h
 
 $(PREDIRS) $(SUBDIRS) :
 	$(MAKE) -C $@ all
-
-ifdef MACOS
-lablgtk3: macport/gtklib
-macport/gtklib:
-	$(MAKE) -C macport gtklib
-endif
 
 ALL_LIBS = $(EXTRA_LIBS) $(LIBS) $(MATHLIB) $(GC_LIB)
 obxdeb : ALL_LIBS = $(EXTRA_LIBS) $(DEB_LIBS) $(MATHLIB) $(GC_LIB)
@@ -381,14 +374,14 @@ force:
 
 # Automatic reconfiguration
 
-$(srcdir)/configure: configure.in aclocal.m4
+$(srcdir)/configure: configure.ac aclocal.m4
 	cd $(srcdir) && $(AUTOCONF)
 
 config.status: configure
 	./config.status --recheck
 
 $(srcdir)/config.h.in: stamp-h.in
-$(srcdir)/stamp-h.in: configure.in aclocal.m4
+$(srcdir)/stamp-h.in: configure.ac aclocal.m4
 	cd $(srcdir) && $(AUTOHEADER)
 	echo timestamp >$(srcdir)/stamp-h.in
 

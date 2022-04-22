@@ -58,14 +58,8 @@ all: obdb1
 
 PKGCONF = $(PKG_CONFIG) $(PKG_FLAGS)
 GTKFLAGS := $(shell $(PKGCONF) --cflags $(GTKPKGS))
-
-ifdef MACOS
-  GTKLIBS := -L$(abs_top_builddir)/macport/gtklib \
+GTKLIBS := $(shell $(PKG_CONFIG) --libs-only-L $(GTKPKGS)) \
 	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
-else
-  GTKLIBS := $(shell $(PKG_CONFIG) --libs-only-L $(GTKPKGS)) \
-	$(shell $(PKGCONF) --libs-only-l $(GTKPKGS))
-endif
 
 INCLUDE = -I ../mllib -I ../compiler -I ../yacc -I ../lablgtk3
 LIBS = unix.cma threads.cma str.cma \
@@ -83,7 +77,8 @@ debugger.cma: $(DEBUGGER)
 	ocamlc $(MLFLAGS) -a -o $@ $^
 
 debprims.o: debprims.c
-	$(OCAMLC) -c -ccopt '-I ..' -ccopt '$(GTKFLAGS)' -o $@ $<
+	$(OCAMLC) -c -ccopt '-I ..' -ccopt '-I ../lablgtk3' \
+	    -ccopt '$(GTKFLAGS)' -o $@ $<
 
 ## Rules
 

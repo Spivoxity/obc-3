@@ -59,7 +59,13 @@ CAMLprim value ml_rgba_parse(value arg) {
 }
 
 #ifdef MACOS
+#include <glib.h>
+#include <glib-object.h>
 #include <gtkosxapplication.h>
+
+#include "ml_glib.h"
+#include "ml_gobject.h"
+#include "ml_gtk.h"
 #endif
 
 CAMLprim value ml_gtk_set_platform_menubar(value x, value y)
