@@ -33,8 +33,8 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([obc],[3.2alpha],[mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues])
-AC_PREREQ([2.71])
+AC_INIT([obc],[3.4alpha],[mike@cs.ox.ac.uk or http://github.com/Spivoxity/obc-3/issues])
+AC_PREREQ([2.69])
 AC_CONFIG_SRCDIR(compiler/tree.mli)
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_FILES(Makefile compiler/Makefile runtime/Makefile lib/Makefile \
