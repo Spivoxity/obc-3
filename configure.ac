@@ -155,7 +155,7 @@ if test "$MACOS" = 1; then GTKPKGS="$GTKPKGS gtk-mac-integration-gtk3"; fi
 AC_SUBST(GTKPKGS)
 
 # Checks for programs
-AC_PROG_CC_C99
+AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
