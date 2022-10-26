@@ -107,8 +107,6 @@ const vmreg vm_ireg[] = {
      is easily achieved on Linux with the MAP_32BITS flag to mmap, and on
      Windows with an undocumented API call.
 
-   * We still use x87 for floating point.
-
    * All addresses that are passed to the code generation interface must
      fit in 32 bits.  That means global data storage needs to be in the bottom
      4GB of memory.  For function addresses, we use trampolines, so that the
@@ -537,18 +535,19 @@ static void memory(int ra, int rb, int d, int rx, int s) {
      but there are special cases involving the registers rSP=4
      and rBP=5:
 
-     A: (0,ra,rb)		[rb]			rb != rBP, rSP
-     B: (0,ra,4)  (s,rx,rb)	[rb + rx<<s]		rx != rSP; rb != rBP
-     C: (0,ra,4)  (s,rx,5)  d32	[d32 + rx<<s]		rx != rSP
-     D: (0,ra,4)  (s,4,rb) 	[rb]			rb != rBP
-     E: (0,ra,4)  (s,4,5)   d32	[d32]	
-     F: (0,ra,5)            d32	[d32] on i386; [pc + d32] on amd64
-     G: (1,ra,4)  (s,rx,rb) d8	[rb + d8 + rx<<s]	rx != rSP
-     H: (1,ra,4)  (s,4,rb)  d8	[rb + d8]
-     I: (1,ra,rb)           d8	[rb + d8]		rb != rSP
-     J: (2,ra,4)  (s,rx,rb) d32	[rb + d32 + rx<<s]	rx != rSP
-     K: (2,ra,4)  (s,4,rb)  d32	[rb + d32]*
-     L: (2,ra,rb)           d32	[rb + d32]*		rb != rSP 
+        ModR/M    SIB       D   Address         Constraints
+     A: (0,ra,rb)		[rb]		rb != rBP, rSP
+     B: (0,ra, 4) (s,rx,rb)	[rb+rx<<s]	rx != rSP; rb != rBP
+     C: (0,ra, 4) (s,rx, 5) d32	[d32+rx<<s]	rx != rSP
+     D: (0,ra, 4) (s, 4,rb)	[rb]		rb != rBP
+     E: (0,ra, 4) (s, 4, 5) d32	[d32]	
+     F: (0,ra, 5)           d32	[d32] on i386; [pc + d32] on amd64
+     G: (1,ra, 4) (s,rx,rb) d8	[rb+d8+rx<<s]   rx != rSP
+     H: (1,ra, 4) (s, 4,rb) d8	[rb+d8]
+     I: (1,ra,rb)           d8	[rb+d8]	        rb != rSP
+     J: (2,ra, 4) (s,rx,rb) d32	[rb+d32+rx<<s]  rx != rSP
+     K: (2,ra, 4) (s, 4,rb) d32	[rb+d32]*
+     L: (2,ra,rb)           d32	[rb+d32]*	rb != rSP 
 
      (On amd64, registers 12 and 13 also trigger the special cases,
      but we don't use them.) 
@@ -1066,14 +1065,15 @@ static void fneg_d(int rd, int rs) {
 }
 
 static void flop3(OPDECL, OPDECL_(move), int rd, int rs1, int rs2) {
-     if (rd != rs2) {
-          if (rd == rs1)
-               instr_rr(OP_(move), rd, rs1);
+     if (rd == rs1)
           instr_rr(OP, rd, rs2);
-     } else {
-          instr_rr(OP_(move), rF5, rs2);
+     else {
+          if (rd == rs2) {
+               instr_rr(OP_(move), rF5, rs2);
+               rs2 = rF5;
+          }
           instr_rr(OP_(move), rd, rs1);
-          instr_rr(OP, rd, rF5);
+          instr_rr(OP, rd, rs2);
      }
 }
           
@@ -1190,7 +1190,6 @@ static void flop3(OPDECL, OPDECL_(r), int rd, int rs1, int rs2) {
      else if (rd == rs2)
 	  flop2(OP_(r), op, rd, rs1);
      else {
-	  /* stX = stY op stZ */
 	  fld_r(rs1);
 	  flop2(OP, op_r, rF0, rs2+1);
 	  fstp_r(rd+1);
