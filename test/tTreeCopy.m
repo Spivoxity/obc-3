@@ -142,7 +142,7 @@ LDLW -4
 RETURN
 END
 
-PROC tTreeCopy.RandTree 4 3 0x00010001
+PROC tTreeCopy.RandTree 4 2 0x00010001
 ! PROCEDURE RandTree(d: INTEGER): Tree;
 !   IF Random.Roll(10) < d THEN
 CONST 10

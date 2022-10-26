@@ -39,8 +39,7 @@ STIF
 !   Out.Real(a[3], 0);
 CONST 0
 GLOBAL tStif07.a
-CONST 3
-LDIF
+LDNF 12
 GLOBAL Out.Real
 CALL 2
 !   Out.Ln

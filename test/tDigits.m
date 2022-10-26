@@ -63,7 +63,7 @@ CONST 1
 RETURN
 END
 
-PROC tDigits.%2.Avail 0 4 0x00100001
+PROC tDigits.%2.Avail 0 3 0x00100001
 ! PROCEDURE (r: DelSet) Avail(x: INTEGER): BOOLEAN;
 ! BEGIN RETURN (x # r.del) & r.parent.Avail(x) END Avail;
 LDLW 16

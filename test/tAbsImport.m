@@ -54,7 +54,7 @@ CALL 2
 RETURN
 END
 
-PROC tAbsImport.%main 0 3 0
+PROC tAbsImport.%main 0 2 0
 !   p := MkBlip();
 GLOBAL tAbsImport.MkBlip
 CALLW 0

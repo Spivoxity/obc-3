@@ -27,8 +27,7 @@ CONST 97
 STGC tLibErr.t
 CONST 98
 GLOBAL tLibErr.t
-CONST 1
-STIC
+STNC 1
 !   b := (t = 'ab')
 CONST 3
 GLOBAL tLibErr.%1

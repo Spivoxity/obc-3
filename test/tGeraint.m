@@ -55,7 +55,7 @@ CALL 0
 RETURN
 END
 
-PROC tGeraint.%main 0 5 0
+PROC tGeraint.%main 0 4 0
 !   NEW(v1); v0 := v1; v0.m(Out.Int)
 CONST 0
 GLOBAL tGeraint.r1

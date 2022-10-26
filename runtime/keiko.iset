@@ -77,6 +77,7 @@ inst OFFSET 0 B.a   { $1.a + $2.i }             { add_offset(0); }
 inst INDEXS 0 B.a   { $1.a + ($2.i<<1) }        { add_offset(1); }
 inst INDEXW 0 B.a   { $1.a + ($2.i<<2) }        { add_offset(2); }
 inst INDEXD 0 B.a   { $1.a + ($2.i<<3) }        { add_offset(3); }
+inst ADJUST {1 2} M.a { $1.a + $a }             {= PUSH $a, OFFSET}
 
 
 # LOADS AND STORES
@@ -97,12 +98,12 @@ inst STOREF 0 S2    { store($1.f, $2, float); } { store(MEMW, 1, 0); }
 # LDLs n :: --> mem_s[bp+n]
 # STLs n :: a --> []; mem_s[bp+n] := a
 inst LDLW {[-24,-4,4] [12,32,4] 1 2} V.i { ldl($a, int) } \
-                                                {= LOCAL $a, LDNW 0 }
+                                                {= LOCAL $a, LOADW }
 inst LDLS {1 2} V.i { ldl($a, short) }          {= LOCAL $a, LOADS }
 inst LDLC {1 2} V.i { ldl($a, uchar) }          {= LOCAL $a, LOADC }
 inst LDLF {1 2} V.f { ldl($a, float) }          {= LOCAL $a, LOADF }
 inst STLW {[-24,-4,4] [12,32,4] 1 2} S1 { stl($a, $1.i, int); } \
-                                                {= LOCAL $a, STNW 0 }
+                                                {= LOCAL $a, STOREW }
 inst STLS {1 2} S1  { stl($a, $1.i, short); }   {= LOCAL $a, STORES }
 inst STLC {1 2} S1  { stl($a, $1.i, uchar); }   {= LOCAL $a, STOREC }
 inst STLF {1 2} S1  { stl($a, $1.f, float); }   {= LOCAL $a, STOREF }
@@ -110,11 +111,11 @@ inst STLF {1 2} S1  { stl($a, $1.f, float); }   {= LOCAL $a, STOREF }
 # Load/store global
 # LDGs n :: --> mem_s[const(n)]
 # STGs n :: a --> []; mem_s[const(n)] := a
-inst LDGW {K L} V.i { ldg($a, int) }            {= LDKW $a, LDNW 0 }
+inst LDGW {K L} V.i { ldg($a, int) }            {= LDKW $a, LOADW }
 inst LDGS {K L} V.i { ldg($a, short) }          {= LDKW $a, LOADS }
 inst LDGC {K L} V.i { ldg($a, uchar) }          {= LDKW $a, LOADC }
 inst LDGF {K L} V.f { ldg($a, float) }          {= LDKW $a, LOADF }
-inst STGW {K L} S1  { stg($a, $1.i, int); }     {= LDKW $a, STNW 0 }
+inst STGW {K L} S1  { stg($a, $1.i, int); }     {= LDKW $a, STOREW }
 inst STGS {K L} S1  { stg($a, $1.i, short); }   {= LDKW $a, STORES }
 inst STGC {K L} S1  { stg($a, $1.i, uchar); }   {= LDKW $a, STOREC }
 inst STGF {K L} S1  { stg($a, $1.f, float); }   {= LDKW $a, STOREF }
@@ -123,25 +124,31 @@ inst STGF {K L} S1  { stg($a, $1.f, float); }   {= LDKW $a, STOREF }
 # LDNs n :: a -> mem_s[a+n]
 # STNs n :: a, b -> []; mem_s[b+n] := a
 inst LDNW {[-16,32,4] 1 2} M.i { ldn($a, $1) }  { deref(MEMW, INT, 1, arg1); }
+equiv LDNS 1        { ADJUST $a, LOADS }
+equiv LDNC 1        { ADJUST $a, LOADC }
+equiv LDNF 1        { ADJUST $a, LOADF }
 inst STNW {[-16,32,4] 1 2} S2 { stn($a, $1.i, $2); } \
                                                 { store(MEMW, 1, arg1); }    
+equiv STNS 1        { ADJUST $a, STORES }
+equiv STNC 1        { ADJUST $a, STOREC }
+equiv STNF 1        { ADJUST $a, STOREF }
 
 # Double indexed load/store
 # LDIs :: a, b --> mem_s[a+s*b]
 # STIs :: a, b, c --> []; mem_s[b+s*c] := a
-inst LDIW 0 B.i     { ldi($1, $2, int) }        {= INDEXW, LDNW 0 }
+inst LDIW 0 B.i     { ldi($1, $2, int) }        {= INDEXW, LOADW }
 inst LDIS 0 B.i     { ldi($1, $2, short) }      {= INDEXS, LOADS }
 inst LDIC 0 B.i     { ldi($1, $2, uchar) }      {= OFFSET, LOADC }
 inst LDIF 0 B.f     { ldi($1, $2, float) }      {= INDEXW, LOADF }
-inst STIW 0 S3      { sti($1.i, $2, $3, int); } {= INDEXW, STNW 0 }
+inst STIW 0 S3      { sti($1.i, $2, $3, int); } {= INDEXW, STOREW }
 inst STIS 0 S3      { sti($1.i, $2, $3, short); }  {= INDEXS, STORES }
 inst STIC 0 S3      { sti($1.i, $2, $3, uchar); }  {= OFFSET, STOREC }
 inst STIF 0 S3      { sti($1.f, $2, $3, float); }  {= INDEXW, STOREF }
 
 # If the argument of any of the above instructions is so large that it
 # does not fit in two bytes, then it's the job of the compiler to find
-# an equivalent sequence using LDKW that achieves the same effect:
-# for example, LDLW n --> LDKW [n] / LOADW
+# an equivalent sequence using CONST that achieves the same effect:
+# for example, LDLW n --> CONST n / LOADW
 
 # Loads and stores for doubles
 inst LOADD 0 M.dp   { getdbl($1) }              { deref(MEMQ, FLO, 2, 0); }
@@ -152,6 +159,8 @@ inst LOADQ 0 M.qp   { getlong($1) }             { loadq(); }
 inst STOREQ 0 S2qp  { putlong($2, $1.q); }      { store(MEMQ, 2, 0); }
 inst LDKQ {1 2} V.q { getlong(&const($a)) }     { konst(KONQ, INT, arg1, 2); }
     
+equiv LDND 1        { ADJUST $a, LOADD }
+equiv STND 1        { ADJUST $a, STORED }
 equiv LDID 0        { INDEXD, LOADD }
 equiv STID 0        { INDEXD, STORED }
 equiv LDLD 1        { LOCAL $a, LOADD }
@@ -159,6 +168,8 @@ equiv STLD 1        { LOCAL $a, STORED }
 equiv LDGD K        { LDKW $a, LOADD }
 equiv STGD K        { LDKW $a, STORED }
 
+equiv LDNQ 1        { ADJUST $a, LOADQ }
+equiv STNQ 1        { ADJUST $a, STOREQ }
 equiv LDIQ 0        { INDEXD, LOADQ }
 equiv STIQ 0        { INDEXD, STOREQ }
 equiv LDLQ 1        { LOCAL $a, LOADQ }
@@ -353,7 +364,7 @@ inst CONVNS 0 M.i   { (short) $1.i }            { gmonop(CONVis,INT,INT,1); }
 inst CONVNQ 0 M.qi  { $1.i }
 inst CONVQN 0 M.iq  { (int) $1.q }
 inst CONVQD 0 M.dq  { flo_convq($1.q) }         { callout(long_flo,1,FLO,2); }
-
+inst CONVDQ 0 M.qd  { long_convq($1.d) }
 
 # RUN-TIME CHECKS
 
@@ -491,7 +502,7 @@ inst RETURN 0 S0 {
 
      rp = sp; sp = bp; pc = codeptr(sp[PC].a);
      bp = valptr(sp[BP]); cp = valptr(bp[CP]);
-     do_find_proc;
+     do_find_proc();
 #ifdef PROFILE
      prof_exit(dsegaddr(cp), ticks);
      ticks = 0;

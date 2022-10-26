@@ -28,6 +28,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *)
 
+(* copy -- n copies of a value *)
 val copy : int -> 'a -> 'a list
 
 (* take -- first n elements of list *)

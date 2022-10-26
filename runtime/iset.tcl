@@ -155,6 +155,52 @@ proc dmp_trie {f q pfx} {
 
 # GENERATE HEADER FILE
 
+proc list-sub {from to list} {
+    set result {}
+    foreach x $list {
+        if {$x eq $from} {
+            lappend result $to
+        } else {
+            lappend result $x
+        }
+    }
+    return $result
+}
+
+proc append-instr {m0 x cxt} {
+    global macro
+    upvar $m0 m
+
+    # Extract the opcode and args
+    set words [split $x]
+    set op [lindex $words 0]
+    set args [lrange $words 1 end]
+    set nargs [llength $args]
+
+    # Check for macro
+    if {[info exists macro($op)]} {
+        # Substitute into args
+        set sargs [list-sub "\$a" $cxt $args]
+        foreach y $macro($op) {
+            append-instr m $y $sargs
+        }
+
+        return
+    }
+            
+    if {$nargs > 0 && [lindex $args 0] eq "\$a"} {
+        if {$cxt eq "ARG"} {
+            lappend m "[csym I $op]|IARG"
+        } else {
+            lappend m "[csym I $op]|ICON" $cxt
+        }
+    } elseif {$nargs > 0} {
+        lappend m "[csym I $op]|ICON" [lindex $args 0]
+    } else {
+        lappend m "[csym I $op]"
+    }
+}
+
 proc gen_header {f} {
     global ntempl maxargs instrs instrno dirs dirno ops action ntrie \
         expand opcode ncodes
@@ -169,15 +215,7 @@ proc gen_header {f} {
     foreach i $instrs {
 	set m [list [csym "" $i]]
 	if {[info exists expand($i)]} {
-	    foreach x $expand($i) {
-		if {[regexp {^(.*) \$a$} $x _ y]} {
-		    lappend m "[csym I $y]|IARG"
-		} elseif {[regexp {^(.*) (-?[0-9]*)$} $x _ y z]} {
-		    lappend m "[csym I $y]|ICON" $z
-		} else {
-		    lappend m "[csym I $x]"
-		}
-	    }
+	    foreach x $expand($i) { append-instr m $x ARG }
 	}
         puts -nonewline $f \
             " \\\n     i([join $m ", "])"

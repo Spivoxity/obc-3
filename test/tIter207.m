@@ -171,7 +171,7 @@ CALL 2
 RETURN
 END
 
-PROC tIter207.Accept 4 4 0x00310001
+PROC tIter207.Accept 4 3 0x00310001
 ! PROCEDURE Accept(p: List; v: Visitor);
 !   q := p;
 LDLW 12
@@ -198,7 +198,7 @@ LABEL L6
 RETURN
 END
 
-PROC tIter207.CRec.Visit 0 3 0x00100001
+PROC tIter207.CRec.Visit 0 2 0x00100001
 ! PROCEDURE (self: Counter) Visit(n: INTEGER);
 !   self.count := self.count+1
 LDLW 12

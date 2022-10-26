@@ -640,6 +640,7 @@ static void check_inproc(const char *opcode) {
 static void do_directive(const char *dir, int n, char *rands[], int nrands) {
      union { int n; float f; } fcvt;
      dblbuf dcvt;
+     char *name;
      int v;
 
      switch (n) {
@@ -737,11 +738,13 @@ static void do_directive(const char *dir, int n, char *rands[], int nrands) {
 #ifdef DEBUG
           if (dflag > 0) printf("Prim %s\n", rands[0]);
 #endif
+          name = rands[1];
+          if (*name == '=') name++;
           def_global(find_symbol(rands[0]), DATA, dloc, X_PROC);
           const_head(DLTRAP, dloc + 4*CP_CONST + 4, R_ADDR, 0, 0, NULL);
           data_value(0, R_WORD); // Pointer to access block
           put_string(rands[2]);  // Type descriptor
-          put_string(rands[1]);  // Symbol name
+          put_string(name);  // Symbol name
           dloc = align(dloc, 4);
           break;
 

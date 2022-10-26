@@ -54,7 +54,7 @@ CALL 0
 RETURN
 END
 
-PROC tMeth.foo.doit 0 4 0x00100001
+PROC tMeth.foo.doit 0 3 0x00100001
 ! PROCEDURE (VAR f: foo) doit;
 !   f.baz
 LDLW 16
@@ -75,7 +75,7 @@ CALL 2
 RETURN
 END
 
-PROC tMeth.%main 0 4 0
+PROC tMeth.%main 0 3 0
 !   Main;
 GLOBAL tMeth.Main
 CALL 0

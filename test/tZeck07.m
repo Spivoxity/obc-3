@@ -145,8 +145,7 @@ STGQ tZeck07.fib
 CONST 2
 CONVNQ
 GLOBAL tZeck07.fib
-CONST 1
-STIQ
+STNQ 8
 !   sum[0] := 0; sum[1] := 1;
 CONST 0
 CONVNQ
@@ -154,8 +153,7 @@ STGQ tZeck07.sum
 CONST 1
 CONVNQ
 GLOBAL tZeck07.sum
-CONST 1
-STIQ
+STNQ 8
 !   M := 1;
 CONST 1
 STGW tZeck07.M

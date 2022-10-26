@@ -245,7 +245,7 @@ CALLW 2
 RETURN
 END
 
-PROC tFibTree3.Print 0 4 0x00100001
+PROC tFibTree3.Print 0 3 0x00100001
 ! PROCEDURE Print(t:tree);
 !   IF t = NIL THEN
 LDLW 12
@@ -294,7 +294,7 @@ CALL 1
 RETURN
 END
 
-PROC tFibTree3.count 0 5 0x00100001
+PROC tFibTree3.count 0 4 0x00100001
 ! PROCEDURE count(t:tree): INTEGER;
 !   IF t = NIL THEN
 LDLW 12

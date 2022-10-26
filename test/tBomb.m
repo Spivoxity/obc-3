@@ -50,7 +50,7 @@ END tBomb.
 MODULE tBomb STAMP 0
 ENDHDR
 
-PROC tBomb.p 4 3 0x00010001
+PROC tBomb.p 4 2 0x00010001
 ! PROCEDURE p;
 !   z := NIL;
 CONST 0

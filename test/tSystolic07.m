@@ -533,7 +533,7 @@ LDLW -4
 RETURN
 END
 
-PROC tSystolic07.Init 0 3 0x00d00001
+PROC tSystolic07.Init 0 2 0x00d00001
 ! PROCEDURE Init(self: Process; pid: INTEGER; left, right: Channel; 
 !   self.pid := pid;
 LDLW 16
@@ -569,7 +569,7 @@ STNW 8
 RETURN
 END
 
-PROC tSystolic07.Run 0 3 0x00100001
+PROC tSystolic07.Run 0 2 0x00100001
 ! PROCEDURE Run(self: Process);
 LABEL L18
 !   WHILE (self.status = Ready) OR (self.status = Waking) DO
@@ -611,7 +611,7 @@ LABEL L20
 RETURN
 END
 
-PROC tSystolic07.Get 0 3 0x00300001
+PROC tSystolic07.Get 0 2 0x00300001
 ! PROCEDURE Get(self: Process; VAR x: INTEGER);
 !   CASE self.status OF
 LDLW 12
@@ -662,7 +662,7 @@ ERROR E_CASE 92
 RETURN
 END
 
-PROC tSystolic07.Put 0 3 0x00100001
+PROC tSystolic07.Put 0 2 0x00100001
 ! PROCEDURE Put(self: Process; x: INTEGER);
 !   CASE self.status OF
 LDLW 12
@@ -712,7 +712,7 @@ ERROR E_CASE 108
 RETURN
 END
 
-PROC tSystolic07.Goto 0 3 0x00100001
+PROC tSystolic07.Goto 0 2 0x00100001
 ! PROCEDURE Goto(self: Process; lab: INTEGER);
 !   self.next := lab
 LDLW 16
@@ -722,7 +722,7 @@ STNW 12
 RETURN
 END
 
-PROC tSystolic07.Halt 0 3 0x00100001
+PROC tSystolic07.Halt 0 2 0x00100001
 ! PROCEDURE Halt(self: Process);
 !   self.status := Dead
 CONST 0
@@ -748,7 +748,7 @@ LDLW -4
 RETURN
 END
 
-PROC tSystolic07.InitChan 0 3 0x00100001
+PROC tSystolic07.InitChan 0 2 0x00100001
 ! PROCEDURE InitChan(self: Channel; chid: INTEGER);
 !   self.chid := chid;
 LDLW 16
@@ -1010,8 +1010,7 @@ LABEL L54
 !       0: Get(self, self.x)
 LDLW -4
 NCHECK 214
-CONST 32
-OFFSET
+ADJUST 32
 LDLW -4
 GLOBAL tSystolic07.Get
 CALL 2
@@ -1020,8 +1019,7 @@ LABEL L55
 !     | 1: Get(self, self.y)
 LDLW -4
 NCHECK 215
-CONST 36
-OFFSET
+ADJUST 36
 LDLW -4
 GLOBAL tSystolic07.Get
 CALL 2
@@ -1154,8 +1152,7 @@ LABEL L70
 !       0: Get(self, self.x)
 LDLW -4
 NCHECK 240
-CONST 32
-OFFSET
+ADJUST 32
 LDLW -4
 GLOBAL tSystolic07.Get
 CALL 2

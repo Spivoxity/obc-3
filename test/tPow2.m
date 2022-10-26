@@ -72,7 +72,7 @@ LDLW -4
 RETURN
 END
 
-PROC tPow2.Plus 0 3 0x00300001
+PROC tPow2.Plus 0 2 0x00300001
 ! PROCEDURE Plus(x, y: Box): Box;
 !   RETURN box(x.value + y.value);
 LDLW 12
@@ -87,7 +87,7 @@ CALLW 1
 RETURN
 END
 
-PROC tPow2.Minus 0 3 0x00300001
+PROC tPow2.Minus 0 2 0x00300001
 ! PROCEDURE Minus(x, y: Box): Box;
 !   RETURN box(x.value - y.value)
 LDLW 12

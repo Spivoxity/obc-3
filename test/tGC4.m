@@ -105,8 +105,7 @@ STGW tGC4.p
 !   baz(p.b);
 LDGW tGC4.p
 NCHECK 38
-CONST 4
-OFFSET
+ADJUST 4
 GLOBAL tGC4.baz
 CALL 1
 !   NEW(q, 20000);

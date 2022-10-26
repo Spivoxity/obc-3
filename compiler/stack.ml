@@ -52,6 +52,7 @@ let arity =
     | BINOP (k, (Eq|Lt|Gt|Leq|Geq|Neq)) -> (2 * count k, [f])
     | BINOP (k, _) -> (2 * count k, flags k)
     | OFFSET -> (2, [t])
+    | ADJUST n -> (1, [t])
     | CONV (k1, k2) -> (count k1, flags k2)
     | JCASE _ -> (1, [])
     | JRANGE _ -> (3, [])

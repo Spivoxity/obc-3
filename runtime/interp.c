@@ -53,9 +53,9 @@
 #ifdef TRACE
 #define DISASS 1
 #undef JTABLE
-#define do_find_proc if (dflag > 1) thisproc = find_proc(dsegaddr(cp))
+#define do_find_proc() if (dflag > 1) thisproc = find_proc(dsegaddr(cp))
 #else
-#define do_find_proc
+#define do_find_proc()
 #endif
 
 #ifdef PROFILE
@@ -198,7 +198,7 @@ value *interp(value *sp0) {
      level++;
 
 enter:
-     do_find_proc;
+     do_find_proc();
 
 #ifdef PROFILE
      prof_enter(dsegaddr(cp), ticks, PROF_CALL);

@@ -52,8 +52,7 @@ CONST 121
 STGC tChars.x
 CONST 0
 GLOBAL tChars.x
-CONST 1
-STIC
+STNC 1
 !   Out.String(x);
 CONST 3
 GLOBAL tChars.x

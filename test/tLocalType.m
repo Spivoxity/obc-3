@@ -141,7 +141,7 @@ LDLW -8
 RETURN
 END
 
-PROC tLocalType.%3.Print 4 3 0x00100001
+PROC tLocalType.%3.Print 4 2 0x00100001
 SAVELINK
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN
@@ -257,7 +257,7 @@ LDLW -8
 RETURN
 END
 
-PROC tLocalType.%6.Print 4 3 0x00100001
+PROC tLocalType.%6.Print 4 2 0x00100001
 SAVELINK
 ! PROCEDURE Print(t:tree);
 !   IF NIL = t THEN

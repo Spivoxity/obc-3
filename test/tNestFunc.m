@@ -101,7 +101,7 @@ CALL 2
 RETURN
 END
 
-PROC tNestFunc.%2.S 4 3 0
+PROC tNestFunc.%2.S 4 2 0
 SAVELINK
 !   PROCEDURE S;
 !     F(8)
@@ -126,7 +126,7 @@ CALL 0
 RETURN
 END
 
-PROC tNestFunc.%3.V 4 3 0
+PROC tNestFunc.%3.V 4 2 0
 SAVELINK
 !   PROCEDURE V(x: INTEGER);
 !     y := x

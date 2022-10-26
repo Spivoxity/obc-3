@@ -70,7 +70,7 @@ MODULE tSuper STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSuper.foo.Reprint 0 5 0x00100001
+PROC tSuper.foo.Reprint 0 4 0x00100001
 ! PROCEDURE (VAR f: foo) Reprint(i: SHORTINT); 
 !   f.Print(i-1)
 LDLS 20
@@ -83,7 +83,7 @@ CALL 3
 RETURN
 END
 
-PROC tSuper.foo.Print 4 5 0x00100001
+PROC tSuper.foo.Print 4 4 0x00100001
 ! PROCEDURE (VAR f: foo) Print(i: INTEGER);
 !   b := (f IS baz);
 LDLW 16
@@ -161,7 +161,7 @@ CALL 3
 RETURN
 END
 
-PROC tSuper.DoPrint 0 5 0x00100001
+PROC tSuper.DoPrint 0 4 0x00100001
 ! PROCEDURE DoPrint(VAR f: foo);
 !   f.Print(2)
 CONST 2

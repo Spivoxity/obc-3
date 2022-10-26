@@ -236,6 +236,7 @@ void dbl_fix(value *sp);
 void dbl_cmpl(value *sp);
 void dbl_cmpg(value *sp);
 void dbl_widen(value *sp);
+void dbl_long(value *sp);
 void flo_zcheck(value *sp);
 void dbl_zcheck(value *sp);
 
@@ -283,6 +284,7 @@ void put_long(value *v, longint w);
 
 double flo_conv(int);
 double flo_convq(longint);
+longint long_convq(double);
 
 
 /* gc.c */

@@ -70,6 +70,7 @@ type icode =
   | LABEL of codelab		(* Set code label *)
   | LINE of int			(* Line number *)
 
+  | ADJUST of int		(* CONST n/OFFSET *)
   | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
   | STL of kind * int		(* LOCAL n/STORE s *)
@@ -77,8 +78,8 @@ type icode =
   | STG of kind * symbol	(* SYMBOL x/STORE s *)
   | LDI of kind			(* INDEX s/LOAD s *)
   | STI of kind			(* INDEX s/STORE s *)
-  | LDNW of int			(* CONST n/LDI 4 *)
-  | STNW of int			(* CONST n/STI 4 *)
+  | LDN of kind * int		(* CONST n/LDI s *)
+  | STN of kind * int		(* CONST n/STI s *)
   | INCL of int			(* LDLW n/INC/STLW n *)
   | DECL of int			(* LDLW n/DEC/STLW n *)
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)

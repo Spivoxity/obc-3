@@ -106,7 +106,7 @@ LDLW -4
 RETURN
 END
 
-PROC tGraeme.%3.add 0 3 0x00300001
+PROC tGraeme.%3.add 0 2 0x00300001
 ! PROCEDURE (self: Integer) add(other: Integer): Integer;
 ! BEGIN RETURN newInteger(self.val + other.val) END add;
 LDLW 12
@@ -149,7 +149,7 @@ LDLW -4
 RETURN
 END
 
-PROC tGraeme.%4.drive 0 4 0x00300001
+PROC tGraeme.%4.drive 0 3 0x00300001
 ! PROCEDURE (self: Car) drive(x: Integer);
 ! BEGIN self.dist := self.dist.add(x) END drive;
 LDLW 16
@@ -201,7 +201,7 @@ LDLW -4
 RETURN
 END
 
-PROC tGraeme.%5.main 4 4 0x00110001
+PROC tGraeme.%5.main 4 3 0x00110001
 ! PROCEDURE (self: Main) main;
 !   c := newCar(newInteger(10));
 CONST 10
@@ -232,7 +232,7 @@ CALL 0
 RETURN
 END
 
-PROC tGraeme.init 4 3 0x00010001
+PROC tGraeme.init 4 2 0x00010001
 ! PROCEDURE init;
 !   m := newMain();
 GLOBAL tGraeme.newMain

@@ -121,8 +121,10 @@ let ruleset1 replace =
     (* A little constant folding *)
     | CONST a :: CONST b :: BINOP (IntT, w) :: _ ->
 	replace 3 [CONST (int_binop w a b)]
-    | LOCAL o :: CONST n :: OFFSET :: _ ->
-	replace 3 [LOCAL (o + int_of_integer n)]
+    | CONST a :: OFFSET :: _ ->
+        replace 2 [ADJUST (int_of_integer a)]
+    | LOCAL a :: ADJUST n :: _ ->
+	replace 2 [LOCAL (a + n)]
     | CONST a :: MONOP (IntT, w) :: _ ->
 	replace 2 [CONST (int_monop w a)]
     | CONST a :: CONST b :: JUMPC (IntT, w, lab) :: _ ->
@@ -135,12 +137,12 @@ let ruleset1 replace =
 	replace 2 [CONST (integer_neg a); BINOP (IntT, Plus)]
     | CONST a :: BINOP (IntT, Plus) :: CONST b :: BINOP (k, Plus) :: _ ->
 	replace 4 [CONST (integer_add a b); BINOP (IntT, Plus)]
-    | CONST a :: OFFSET :: CONST b :: OFFSET :: _ ->
-	replace 4 [CONST (integer_add a b); OFFSET]
+    | ADJUST a :: ADJUST b  :: _ ->
+	replace 2 [ADJUST (a + b)]
     | CONST n :: BINOP (IntT, Plus) :: _ when n = integer 0 ->
 	replace 2 []
-    | CONST n :: OFFSET :: _ when n = integer 0 ->
-	replace 2 []
+    | ADJUST 0 :: _ ->
+	replace 1 []
     | CONST n :: BINOP (IntT, BitAnd) :: _ when n = integer (-1) ->
 	replace 2 []
     | CONST n :: BINOP (IntT, BitOr) :: _ when n = integer 0 ->
@@ -178,11 +180,11 @@ let ruleset1 replace =
 	  :: SWAP :: STORE s1 :: _  ->
 	replace 7 [GLOBAL x; LOAD s; CONST n; 
 	      		BINOP (IntT, Plus); GLOBAL x; STORE s1]
-    | CONST a :: OFFSET :: DUP 0 :: LOAD s :: CONST n 
+    | ADJUST a :: DUP 0 :: LOAD s :: CONST n 
 	  :: BINOP (IntT, Plus) :: SWAP :: STORE s1 :: _ ->
 	(* Allow use of LDN instruction *)
-	replace 8 [DUP 0; CONST a; OFFSET; LOAD s;
-	  CONST n; BINOP (IntT, Plus); SWAP; CONST a; OFFSET; STORE s1]
+	replace 7 [DUP 0; ADJUST a; LOAD s;
+	  CONST n; BINOP (IntT, Plus); SWAP; ADJUST a; STORE s1]
 
     (* For simultaneous assignment *)
     | (LOCAL _ | GLOBAL _ | CONST _ as i1) :: CONST b :: 
@@ -294,12 +296,10 @@ let ruleset2 replace =
 	  when s = integer 2 || s = integer 4 || s = integer 8 ->
 	replace 3 [INDEX (int_of_integer s)]
 
-    | CONST n :: OFFSET :: LOAD s :: _
-          when divisible n s ->
-        replace 3 [CONST (divide n s); LDI s]
-    | CONST n :: OFFSET :: STORE s :: _
-          when divisible n s ->
-	replace 3 [CONST (divide n s); STI s] 
+    | ADJUST n :: LOAD s :: _ ->
+        replace 2 [LDN (s, n)]
+    | ADJUST n :: STORE s :: _ when n mod (width s) = 0 ->
+	replace 2 [STN (s, n)]
 
     | CONST n :: BINOP (IntT, Times) :: OFFSET :: LOAD s :: _
           when divisible n s ->
@@ -317,17 +317,17 @@ let ruleset2 replace =
     | INDEX n :: STORE s :: _ when n = width s ->
 	replace 2 [STI s]
 
-    | CONST n :: LDI IntT :: _ -> 
-	replace 2 [LDNW (4 * int_of_integer n)]
-    | CONST n :: STI IntT :: _ -> 
-	replace 2 [STNW (4 * int_of_integer n)]
+    | CONST n :: LDI s :: _ -> 
+	replace 2 [LDN (s, width s * int_of_integer n)]
+    | CONST n :: STI s :: _ -> 
+	replace 2 [STN (s, width s * int_of_integer n)]
 
     | CONST z :: STATLINK :: _ when z = integer 0 ->
         replace 2 []
 
     (* Eliminate simple pops and swaps *)
-    | LDNW n :: SWAP :: POP 1 :: _ ->
-        replace 3 [SWAP; POP 1; LDNW n]
+    | LDN (s, n) :: SWAP :: POP 1 :: _ ->
+        replace 3 [SWAP; POP 1; LDN (s, n)]
     | DUP 0 :: SWAP :: _ ->
         replace 2 [DUP 0]
     | DUP n :: POP 1 :: _ ->
@@ -363,20 +363,22 @@ let ruleset3 replace =
 	replace 1 [CALL (n, IntT)]
 
       (* Eliminate operands that don't fit in 16 bits *)
+    | ADJUST n :: _ when not (fits 16 n) ->
+        replace 1 [CONST (integer n); OFFSET]
     | LOCAL n :: _ when not (fits 16 n) ->
 	replace 1 [LOCAL 0; CONST (integer n); OFFSET]
     | LDL (s, n) :: _ when not (fits 16 n) ->
 	replace 1 [LOCAL n; LOAD s]
+    | STL (s, n) :: _ when not (fits 16 n) ->
+	replace 1 [LOCAL n; STORE s]
     | INCL n :: _ when not (fits 16 n) ->
 	replace 1 [LDL (IntT, n); MONOP (IntT, Inc); STL (IntT, n)]
     | DECL n :: _ when not (fits 16 n) ->
 	replace 1 [LDL (IntT, n); MONOP (IntT, Dec); STL (IntT, n)]
-    | STL (s, n) :: _ when not (fits 16 n) ->
-	replace 1 [LOCAL n; STORE s]
-    | LDNW n :: _ when not (fits 16 n) ->
-	replace 1 [CONST (integer n); OFFSET; LOAD IntT]
-    | STNW n :: _ when not (fits 16 n) ->
-	replace 1 [CONST (integer n); OFFSET; STORE IntT]
+    | LDN (s, n) :: _ when not (fits 16 n) ->
+	replace 1 [CONST (integer n); OFFSET; LOAD s]
+    | STN (s, n) :: _ when not (fits 16 n) ->
+	replace 1 [CONST (integer n); OFFSET; STORE s]
 
       (* Delete NOP *)
     | NOP :: _ -> replace 1 []

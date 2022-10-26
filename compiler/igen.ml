@@ -110,20 +110,15 @@ let mem_kind t =
 
 let load_addr = SEQ [LOAD IntT; MARK]
 
-let offset n = SEQ [const n; OFFSET]
-
 let rec schain n =
-  if n = 1 then
-    SEQ [LOCAL stat_link; load_addr]
-  else
-    SEQ [schain (n-1); offset stat_link; load_addr]
+  SEQ [LOCAL 0; SEQ (Util.copy n (SEQ [ADJUST stat_link; LOAD IntT]))]
 
 (* local -- instructions to push local address *)
-let local l o =
-  if !level = l then
-    LOCAL o
+let local d =
+  if d.d_level = !level then
+    LOCAL d.d_offset
   else
-    SEQ [schain (!level - l); offset o]
+    SEQ [schain (!level - d.d_level); ADJUST d.d_offset]
 
 (* typejump -- code to jump on record type *)
 let typejump t tlab flab =
@@ -131,12 +126,12 @@ let typejump t tlab flab =
   let r = get_record t in
   let lab1 = label () in
   SEQ [LOAD IntT; DUP 0; 
-    offset Mach.depth_offset; LOAD IntT;
+    ADJUST Mach.depth_offset; LOAD IntT;
     const r.r_depth; JUMPC (IntT, Geq, lab1);
     POP 1; JUMP flab;
     LABEL lab1; 
-    offset Mach.ancestor_offset; load_addr;
-    offset (r.r_depth * word_size); load_addr;
+    ADJUST Mach.ancestor_offset; LOAD IntT;
+    ADJUST (r.r_depth * word_size); LOAD IntT;
     GLOBAL t.t_desc; JUMPC (PtrT, Eq, tlab); JUMP flab]
 
 let typecheck t e =
@@ -224,19 +219,19 @@ let rec gen_addr v =
 	      if d.d_level = 0 then
 		GLOBAL d.d_lab
 	      else
-		local d.d_level d.d_offset
+		local d
 	  | ParamDef ->
 	      if is_flex d.d_type then 
-		SEQ [local d.d_level d.d_offset; load_addr]
+		SEQ [local d; load_addr]
 	      else
-		local d.d_level d.d_offset
+		local d
 	  | CParamDef ->
 	      if scalar d.d_type then
-		local d.d_level d.d_offset
+		local d
 	      else
-		SEQ [local d.d_level d.d_offset; load_addr]
+		SEQ [local d; load_addr]
 	  | VParamDef ->
-	      SEQ [local d.d_level d.d_offset; load_addr]
+	      SEQ [local d; load_addr]
 	  | ProcDef ->
 	      (* This is needed when a procedure is passed as a parameter
 		 of type ARRAY OF SYSTEM.BYTE *)
@@ -253,7 +248,7 @@ let rec gen_addr v =
 
     | Select (r, x) ->
 	let d = get_def x in
-        SEQ [gen_addr r; offset d.d_offset]
+        SEQ [gen_addr r; ADJUST d.d_offset]
 
     | String (lab, n) ->
 	GLOBAL lab
@@ -267,14 +262,12 @@ let rec gen_addr v =
               if dx.d_kind <> VParamDef then failwith "addr of cast 3";
 	      SEQ [
 		check (SEQ [
-		  local dx.d_level (dx.d_offset + word_size);
-                  typecheck d.d_type v]);
-		local dx.d_level dx.d_offset; load_addr]
+		  local dx; ADJUST word_size; typecheck d.d_type v]);
+		local dx; load_addr]
 
           | Deref p ->
               SEQ [gen_expr p;
-                check (SEQ [DUP 0; null_check p;
-                  CONST (integer (-word_size)); OFFSET;
+                check (SEQ [DUP 0; null_check p; ADJUST (-word_size);
                   typecheck (base_type d.d_type) v])]
 
 	  | _ -> failwith "addr of cast 2"
@@ -298,14 +291,14 @@ and gen_bound d k e0 =
     match e0.e_guts with
 	Name x ->
 	  (* An open array parameter *)
-	  let d = get_def x in
-	  SEQ [local d.d_level (d.d_offset + (k+1) * word_size); LOAD IntT]
+	  let dx = get_def x in
+	  SEQ [local dx; ADJUST ((k+1) * word_size); LOAD IntT]
       | Deref p ->
 	  SEQ [
 	    (* Get descriptor address *)
-	    DUP d; offset (-word_size); load_addr;
+	    DUP d; ADJUST (-word_size); load_addr;
 	    (* Fetch k'th dimension *)
-	    offset (bound_offset + k * word_size); LOAD IntT]
+	    ADJUST (bound_offset + k * word_size); LOAD IntT]
       | _ -> failwith "gen_bound"
   end    
 
@@ -410,7 +403,7 @@ and gen_expr e =
 	  let d = get_def tn in
 	  if not (is_pointer d.d_type) then failwith "val of cast";
 	  SEQ [gen_expr e1;
-	    check (SEQ [DUP 0; null_check e1; offset (-word_size);
+	    check (SEQ [DUP 0; null_check e1; ADJUST (-word_size);
               typecheck (base_type d.d_type) e])]
 
       | _ -> failwith "gen_expr"
@@ -445,9 +438,9 @@ and gen_message r m args =
 	    DUP 1]				    (* desc *)
       | (ParamDef | CParamDef) ->
 	  SEQ [gen_addr r;			    (* addr *)
-	    DUP 0; offset (-word_size); LOAD IntT]  (* desc *)
+	    DUP 0; ADJUST (-word_size); LOAD IntT]  (* desc *)
       | _ -> failwith "method receiver");
-    offset (method_offset + word_size * d.d_offset); LOAD IntT;
+    ADJUST (method_offset + word_size * d.d_offset); LOAD IntT;
     gen_call p.p_pcount p.p_result]
 
 (*
@@ -520,7 +513,7 @@ and gen_function a =
 	    ProcDef ->
               GLOBAL d.d_lab
 	  | (ParamDef | CParamDef) ->
-	      SEQ [local d.d_level d.d_offset; load_addr]
+	      SEQ [local d; LOAD IntT]
 	  | _ ->
 	      gen_expr a
 	end
@@ -534,9 +527,9 @@ and gen_statlink a =
 	let d = get_def x in
 	begin match d.d_kind with
 	    ProcDef ->
-	      if d.d_level = 0 then const 0 else local d.d_level 0
+	      if d.d_level = 0 then const 0 else schain (!level - d.d_level)
 	  | (ParamDef | CParamDef) ->
-	      SEQ [local d.d_level (d.d_offset + word_size); load_addr]
+	      SEQ [local d; ADJUST word_size; LOAD IntT]
 	  | _ ->
 	      const 0
 	end
@@ -548,12 +541,12 @@ and gen_recarg a =
   match a.e_guts with
       Name x when is_vparam x ->
 	let d = get_def x in
-        SEQ [local d.d_level (d.d_offset + word_size); load_addr;
-	        local d.d_level d.d_offset; load_addr]
+        SEQ [local d; ADJUST word_size; load_addr;
+	        local d; load_addr]
     | Deref p -> 
 	SEQ [gen_expr p;
 	  check (null_check p);
-	  DUP 0; offset (-word_size); load_addr; SWAP]
+	  DUP 0; ADJUST (-word_size); load_addr; SWAP]
     | _ -> 
 	SEQ [GLOBAL a.e_type.t_desc; gen_addr a]
 
@@ -769,15 +762,15 @@ and gen_condval sense e =
 
 and gen_desc e =
   if is_pointer e.e_type then
-    SEQ [gen_expr e; check (null_check e); offset (-word_size)]
+    SEQ [gen_expr e; check (null_check e); ADJUST (-word_size)]
   else if is_record e.e_type then
     (match e.e_guts with
 	Name x ->
 	  let dx = get_def x in
 	  if dx.d_kind <> VParamDef then failwith "type test 2";
-	  local dx.d_level (dx.d_offset + word_size)
+          SEQ [local dx; ADJUST word_size]
       | Deref e1 ->
-	  SEQ [gen_expr e1; check (null_check e1); offset (-word_size)]
+	  SEQ [gen_expr e1; check (null_check e1); ADJUST (-word_size)]
       | _ -> 
 	  failwith "type test")
   else
@@ -792,7 +785,7 @@ and desc_type tn =
 
 let check_assign v desc =
   let lab1 = label () in
-  SEQ [load_addr; GLOBAL desc; JUMPC (PtrT, Eq, lab1);
+  SEQ [LOAD IntT; GLOBAL desc; JUMPC (PtrT, Eq, lab1);
     ERROR ("E_ASSIGN", expr_line v); LABEL lab1]
 
 let gen_rec_addr v desc =
@@ -803,7 +796,7 @@ let gen_rec_addr v desc =
 	  gen_addr v
 	else begin
 	  SEQ [
-	    check (SEQ [local d.d_level (d.d_offset + word_size);
+	    check (SEQ [local d; ADJUST word_size;
               check_assign v desc]);
 	    gen_addr v]
 	end
@@ -811,7 +804,7 @@ let gen_rec_addr v desc =
     | Deref p ->
 	SEQ [gen_expr p;
 	  check (SEQ [check (null_check p);
-	    DUP 0; offset (-word_size); check_assign v desc])]
+	    DUP 0; ADJUST (-word_size); check_assign v desc])]
 
     | _ ->
         gen_addr v
@@ -825,7 +818,7 @@ let proc_assign v e =
       Name x when is_param x ->
         SEQ [
           check (SEQ [gen_statlink e; CHECK (GlobProc, expr_line v)]);
-          const 0; gen_addr v; offset word_size; STORE IntT;
+          const 0; gen_addr v; ADJUST word_size; STORE IntT;
           gen_function e; gen_addr v; STORE IntT]
     | _ ->
         SEQ [

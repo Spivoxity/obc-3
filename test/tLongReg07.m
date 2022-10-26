@@ -68,14 +68,12 @@ STGQ tLongReg07.b
 CONST 42
 CONVNQ
 GLOBAL tLongReg07.b
-CONST 1
-STIQ
+STNQ 8
 !   b[2] := 76;
 CONST 76
 CONVNQ
 GLOBAL tLongReg07.b
-CONST 2
-STIQ
+STNQ 16
 !   Out.LongInt(Sum(b), 0); Out.Ln
 CONST 0
 CONST 3

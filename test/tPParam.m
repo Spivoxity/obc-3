@@ -58,7 +58,7 @@ CALL 0
 RETURN
 END
 
-PROC tPParam.p 0 3 0
+PROC tPParam.p 0 2 0
 ! PROCEDURE p(q: PROCEDURE);
 !   q := s;
 CONST 0

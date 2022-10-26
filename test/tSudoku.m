@@ -636,8 +636,7 @@ STNW 12
 CONST 0
 LDLW -12
 NCHECK 98
-CONST 16
-STIC
+STNC 16
 !       NEW(p.head); p.head.down := p.head; p.head.up := p.head;
 CONST 20
 GLOBAL tSudoku.%7
@@ -908,8 +907,7 @@ PROC tSudoku.Cover 8 3 0x00118001
 CONST 1
 LDLW 12
 NCHECK 148
-CONST 16
-STIC
+STNC 16
 !   p.prev.next := p.next; p.next.prev := p.prev;
 LDLW 12
 NCHECK 151
@@ -1073,12 +1071,11 @@ LABEL L37
 CONST 0
 LDLW 12
 NCHECK 183
-CONST 16
-STIC
+STNC 16
 RETURN
 END
 
-PROC tSudoku.ChooseColumn 8 3 0x00018001
+PROC tSudoku.ChooseColumn 8 2 0x00018001
 ! PROCEDURE ChooseColumn(): Column;
 !   col := root.next;
 LDGW tSudoku.root
@@ -1410,8 +1407,7 @@ LDLW -4
 NCHECK 266
 LDNW 16
 NCHECK 266
-CONST 16
-LDIC
+LDNC 16
 JEQZ L77
 !       Out.String("Conflict for "); PrintCol(q.column); Out.Ln
 CONST 14

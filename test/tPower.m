@@ -342,7 +342,7 @@ LABEL L19
 RETURN
 END
 
-PROC tPower.%7.out 4 5 0x00100001
+PROC tPower.%7.out 4 4 0x00100001
 SAVELINK
 !     PROCEDURE out(p : setofset);
 !       IF (p # NIL) & (p.cost > 0) THEN

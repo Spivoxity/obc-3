@@ -71,6 +71,7 @@ type icode =
   | LABEL of codelab		(* Set code label *)
   | LINE of int			(* Line number *)
 
+  | ADJUST of int		(* CONST n/OFFSET *)
   | INDEX of int		(* CONST n/BINOP Times/BINOP PlusA *)
   | LDL of kind * int		(* LOCAL n/LOAD s *)
   | STL of kind * int		(* LOCAL n/STORE s *)
@@ -78,8 +79,8 @@ type icode =
   | STG of kind * symbol	(* CONST x/STORE s *)
   | LDI of kind			(* INDEX s/LOAD s *)
   | STI of kind			(* INDEX s/STORE s *)
-  | LDNW of int			(* CONST n/LDI 4 *)
-  | STNW of int			(* CONST n/STI 4 *)
+  | LDN of kind * int		(* CONST n/LDI s *)
+  | STN of kind * int		(* CONST n/STI s *)
   | INCL of int			(* LDLW n/INC/STLW n *)
   | DECL of int			(* LDLW n/DEC/STLW n *)
   | JUMPCZ of op * codelab      (* CONST 0/JUMPC *)
@@ -174,6 +175,7 @@ let fInst =
     | MONOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
     | BINOP (t, w) ->  	fMeta "$$" [fType t; fOpcode w]
     | OFFSET ->		fStr "OFFSET"
+    | ADJUST n ->	fMeta "ADJUST $" [fNum n]
     | CONV (k1, k2) ->	fMeta "CONV$$" [fType1 k1; fType1 k2]
     | ALIGN s ->      	fMeta "ALIGN$" [fKind s]
     | BOUND ln ->	fMeta "BOUND $" [fNum ln]
@@ -205,8 +207,8 @@ let fInst =
     | STG (s, x) ->	fMeta "STG$ $" [fKind s; fSym x]
     | LDI s ->		fMeta "LDI$" [fKind s]
     | STI s ->		fMeta "STI$" [fKind s]
-    | LDNW n ->		fMeta "LDNW $" [fNum n]
-    | STNW n ->		fMeta "STNW $" [fNum n]
+    | LDN (s, n) ->	fMeta "LDN$ $" [fKind s; fNum n]
+    | STN (s, n) ->	fMeta "STN$ $" [fKind s; fNum n]
 
     | MARK ->		fStr "MARK"
     | SEQ _ ->		fStr "SEQ ..."

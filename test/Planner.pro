@@ -6,33 +6,33 @@ Execution profile:
 
      Ticks    Frac     Cumul   Calls   Procedure
  ---------------------------------------------------
-    302349    26.4%    26.4%    9361   Files.raw
-    212473    18.6%    45.0%    4178   Files.Eof
-    164348    14.4%    59.4%     148   Planner.Split
-    141452    12.4%    71.8%    4178   In.Char
-     89075     7.8%    79.6%     149   In.Line
-     71009     6.2%    85.8%    4177   Files.ReadChar
-     51164     4.5%    90.3%     246   Planner.Hash
-     23778     2.1%    92.3%     809   Files.WriteString
-     16497     1.4%    93.8%     809   Out.String
-      9959     0.9%    94.7%     105   Planner.ShowLink
-      8342     0.7%    95.4%      97   Planner.AddRoad
-      8293     0.7%    96.1%      45   Planner.VisitNeighbours
-      7447     0.7%    96.8%     196   Planner.Lookup
-      7371     0.6%    97.4%       1   Planner.Main
-      4365     0.4%    97.8%      97   Planner.Euclid
-      4300     0.4%    98.2%      50   Planner.AddTown
-      4116     0.4%    98.5%     196   Files.WriteChar
-      3593     0.3%    98.8%      47   Planner.Enqueue
-      2955     0.3%    99.1%     197   Conv.RealVal
+    301802    26.5%    26.5%    9361   Files.raw
+    212473    18.7%    45.2%    4178   Files.Eof
+    164348    14.4%    59.6%     148   Planner.Split
+    141452    12.4%    72.0%    4178   In.Char
+     89075     7.8%    79.8%     149   In.Line
+     71009     6.2%    86.1%    4177   Files.ReadChar
+     51164     4.5%    90.5%     246   Planner.Hash
+     23231     2.0%    92.6%     809   Files.WriteString
+     15950     1.4%    94.0%     809   Out.String
+      9457     0.8%    94.8%     105   Planner.ShowLink
+      8148     0.7%    95.5%      97   Planner.AddRoad
+      7755     0.7%    96.2%      45   Planner.VisitNeighbours
+      7210     0.6%    96.8%     196   Planner.Lookup
+      7174     0.6%    97.5%       1   Planner.Main
+      4171     0.4%    97.8%      97   Planner.Euclid
+      4150     0.4%    98.2%      50   Planner.AddTown
+      4116     0.4%    98.6%     196   Files.WriteChar
+      3303     0.3%    98.9%      47   Planner.Enqueue
+      2758     0.2%    99.1%     197   Conv.RealVal
       2548     0.2%    99.3%     196   Files.WriteLn
-      2506     0.2%    99.5%       1   Planner.Search
-      2232     0.2%    99.7%       1   Planner.Init
+      2461     0.2%    99.5%       1   Planner.Search
+      2231     0.2%    99.7%       1   Planner.Init
       1568     0.1%    99.9%     196   Out.Ln
       1080     0.1%   100.0%      45   Planner.Delmin
-       229     0.0%   100.0%       4   Planner.Requeue
+       219     0.0%   100.0%       4   Planner.Requeue
         30     0.0%   100.0%       1   Files.%main
-        28     0.0%   100.0%       1   Planner.InitQueue
+        27     0.0%   100.0%       1   Planner.InitQueue
         26     0.0%   100.0%       1   Files.WriteFixed
         19     0.0%   100.0%       1   Planner.ClearQueue
         16     0.0%   100.0%       1   Out.Fixed
@@ -51,7 +51,7 @@ Execution profile:
          0     0.0%   100.0%     395   NEW
          0     0.0%   100.0%       1   SYSTEM.GC
 
-Total of 1143191 clock ticks
+Total of 1138994 clock ticks
 
 Call graph profile:
 
@@ -68,49 +68,49 @@ index  total   self children   calls        name
 ----------------------------------------------------------------
                 0.6%  99.4%       1/1           Planner.%main [2]
 [3]    100.0%   0.6%  99.4%       1         Planner.Main [3]
-                7.8%  60.5%     149/149         In.Line [4]
+                7.8%  60.7%     149/149         In.Line [4]
                14.4%   0.0%     148/148         Planner.Split [8]
-                0.2%   9.6%       1/1           Planner.Search [10]
-                0.7%   4.6%      97/97          Planner.AddRoad [13]
+                0.2%   9.4%       1/1           Planner.Search [10]
+                0.7%   4.5%      97/97          Planner.AddRoad [13]
                 0.4%   0.9%      50/50          Planner.AddTown [18]
-                0.3%   0.0%     197/197         Conv.RealVal [24]
+                0.2%   0.0%     197/197         Conv.RealVal [24]
                 0.0%   0.0%       1/1           Planner.InitQueue [31]
                 0.0%   0.0%     247/484         COMPARE [37]
 ----------------------------------------------------------------
-                7.8%  60.5%     149/149         Planner.Main [3]
-[4]     68.3%   7.8%  60.5%     149         In.Line [4]
-               12.4%  48.1%    4178/4178        In.Char [5]
+                7.8%  60.7%     149/149         Planner.Main [3]
+[4]     68.6%   7.8%  60.7%     149         In.Line [4]
+               12.4%  48.3%    4178/4178        In.Char [5]
 ----------------------------------------------------------------
-               12.4%  48.1%    4178/4178        In.Line [4]
-[5]     60.5%  12.4%  48.1%    4178         In.Char [5]
-               18.6%  15.3%    4178/4178        Files.Eof [6]
-                6.2%   8.0%    4177/4177        Files.ReadChar [9]
+               12.4%  48.3%    4178/4178        In.Line [4]
+[5]     60.7%  12.4%  48.3%    4178         In.Char [5]
+               18.7%  15.4%    4178/4178        Files.Eof [6]
+                6.2%   8.1%    4177/4177        Files.ReadChar [9]
 ----------------------------------------------------------------
-               18.6%  15.3%    4178/4178        In.Char [5]
-[6]     33.9%  18.6%  15.3%    4178         Files.Eof [6]
-               15.3%   0.0%    4178/9361        Files.raw [7]
+               18.7%  15.4%    4178/4178        In.Char [5]
+[6]     34.0%  18.7%  15.4%    4178         Files.Eof [6]
+               15.4%   0.0%    4178/9361        Files.raw [7]
                 0.0%   0.0%    4178/8355        Files.obgetc [34]
                 0.0%   0.0%    4177/4177        Files.ungetc [35]
 ----------------------------------------------------------------
-               15.3%   0.0%    4178/9361        Files.Eof [6]
-                8.0%   0.0%    4177/9361        Files.ReadChar [9]
+               15.4%   0.0%    4178/9361        Files.Eof [6]
+                8.1%   0.0%    4177/9361        Files.ReadChar [9]
                 2.6%   0.0%     809/9361        Files.WriteString [15]
                 0.5%   0.0%     196/9361        Files.WriteChar [21]
                 0.0%   0.0%       1/9361        Files.WriteFixed [29]
-[7]     26.4%  26.4%   0.0%    9361         Files.raw [7]
+[7]     26.5%  26.5%   0.0%    9361         Files.raw [7]
 ----------------------------------------------------------------
                14.4%   0.0%     148/148         Planner.Main [3]
 [8]     14.4%  14.4%   0.0%     148         Planner.Split [8]
 ----------------------------------------------------------------
-                6.2%   8.0%    4177/4177        In.Char [5]
-[9]     14.2%   6.2%   8.0%    4177         Files.ReadChar [9]
-                8.0%   0.0%    4177/9361        Files.raw [7]
+                6.2%   8.1%    4177/4177        In.Char [5]
+[9]     14.3%   6.2%   8.1%    4177         Files.ReadChar [9]
+                8.1%   0.0%    4177/9361        Files.raw [7]
                 0.0%   0.0%    4177/8355        Files.obgetc [34]
 ----------------------------------------------------------------
-                0.2%   9.6%       1/1           Planner.Main [3]
-[10]     9.8%   0.2%   9.6%       1         Planner.Search [10]
-                0.7%   4.4%      45/45          Planner.VisitNeighbours [14]
-                0.3%   2.2%      50/105         Planner.ShowLink [11]
+                0.2%   9.4%       1/1           Planner.Main [3]
+[10]     9.6%   0.2%   9.4%       1         Planner.Search [10]
+                0.7%   4.3%      45/45          Planner.VisitNeighbours [14]
+                0.2%   2.2%      50/105         Planner.ShowLink [11]
                 0.2%   0.9%     179/809         Out.String [12]
                 0.1%   0.5%      91/196         Out.Ln [19]
                 0.2%   0.0%       1/1           Planner.Init [25]
@@ -119,31 +119,31 @@ index  total   self children   calls        name
                 0.0%   0.0%       1/1           Out.Fixed [28]
                 0.0%   0.0%       1/1           SYSTEM.GC [44]
 ----------------------------------------------------------------
-                0.6%   3.5%      55/105         Planner.VisitNeighbours [14]
-                0.3%   2.2%      50/105         Planner.Search [10]
-[11]     6.6%   0.9%   5.7%     105         Planner.ShowLink [11]
-                1.2%   3.9%     630/809         Out.String [12]
+                0.6%   3.4%      55/105         Planner.VisitNeighbours [14]
+                0.2%   2.2%      50/105         Planner.Search [10]
+[11]     6.4%   0.8%   5.6%     105         Planner.ShowLink [11]
+                1.2%   3.8%     630/809         Out.String [12]
                 0.1%   0.6%     105/196         Out.Ln [19]
 ----------------------------------------------------------------
-                1.2%   3.9%     630/809         Planner.ShowLink [11]
+                1.2%   3.8%     630/809         Planner.ShowLink [11]
                 0.2%   0.9%     179/809         Planner.Search [10]
-[12]     6.2%   1.4%   4.7%     809         Out.String [12]
-                2.1%   2.6%     809/809         Files.WriteString [15]
+[12]     6.0%   1.4%   4.6%     809         Out.String [12]
+                2.0%   2.6%     809/809         Files.WriteString [15]
 ----------------------------------------------------------------
-                0.7%   4.6%      97/97          Planner.Main [3]
-[13]     5.3%   0.7%   4.6%      97         Planner.AddRoad [13]
+                0.7%   4.5%      97/97          Planner.Main [3]
+[13]     5.2%   0.7%   4.5%      97         Planner.AddRoad [13]
                 0.6%   3.5%     194/196         Planner.Lookup [17]
                 0.4%   0.0%      97/97          Planner.Euclid [22]
                 0.0%   0.0%     291/395         NEW [38]
 ----------------------------------------------------------------
-                0.7%   4.4%      45/45          Planner.Search [10]
-[14]     5.1%   0.7%   4.4%      45         Planner.VisitNeighbours [14]
-                0.6%   3.5%      55/105         Planner.ShowLink [11]
+                0.7%   4.3%      45/45          Planner.Search [10]
+[14]     4.9%   0.7%   4.3%      45         Planner.VisitNeighbours [14]
+                0.6%   3.4%      55/105         Planner.ShowLink [11]
                 0.3%   0.0%      47/47          Planner.Enqueue [23]
                 0.0%   0.0%       4/4           Planner.Requeue [27]
 ----------------------------------------------------------------
-                2.1%   2.6%     809/809         Out.String [12]
-[15]     4.7%   2.1%   2.6%     809         Files.WriteString [15]
+                2.0%   2.6%     809/809         Out.String [12]
+[15]     4.6%   2.0%   2.6%     809         Files.WriteString [15]
                 2.6%   0.0%     809/9361        Files.raw [7]
                 0.0%   0.0%     809/809         Files.FmtString [36]
 ----------------------------------------------------------------
@@ -153,7 +153,7 @@ index  total   self children   calls        name
 ----------------------------------------------------------------
                 0.6%   3.5%     194/196         Planner.AddRoad [13]
                 0.0%   0.0%       2/196         Planner.Search [10]
-[17]     4.2%   0.7%   3.6%     196         Planner.Lookup [17]
+[17]     4.2%   0.6%   3.6%     196         Planner.Lookup [17]
                 3.6%   0.0%     196/246         Planner.Hash [16]
                 0.0%   0.0%     237/484         COMPARE [37]
 ----------------------------------------------------------------
@@ -183,8 +183,8 @@ index  total   self children   calls        name
                 0.3%   0.0%      47/47          Planner.VisitNeighbours [14]
 [23]     0.3%   0.3%   0.0%      47         Planner.Enqueue [23]
 ----------------------------------------------------------------
-                0.3%   0.0%     197/197         Planner.Main [3]
-[24]     0.3%   0.3%   0.0%     197         Conv.RealVal [24]
+                0.2%   0.0%     197/197         Planner.Main [3]
+[24]     0.2%   0.2%   0.0%     197         Conv.RealVal [24]
                 0.0%   0.0%     197/197         Conv.LongRealVal [39]
 ----------------------------------------------------------------
                 0.2%   0.0%       1/1           Planner.Search [10]

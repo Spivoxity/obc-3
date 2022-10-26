@@ -109,24 +109,31 @@ static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
    save brain cells, we assume a word has 32 bits; there are lots of
    constants that need changing if that is not true.  */
 
-#ifndef SEGMEM
+/* If SEGMEM is not being used, then grab_chunk obtains a chunk of
+   addressible memory from the operating system */
 
+#ifndef SEGMEM
 #ifdef HAVE_MMAP
+
 #include <fcntl.h>
 #include <sys/mman.h>
 
 #ifdef MACOS
+
 #define MAP_ANONYMOUS MAP_ANON
 #define HINT (void *) 0x10000000L
 #define MMAP_FLAGS MAP_PRIVATE
+
 #else
+
 #define HINT NULL
 #ifdef M64X32
 #define MMAP_FLAGS MAP_PRIVATE|MAP_32BIT
 #else
 #define MMAP_FLAGS MAP_PRIVATE
 #endif
-#endif
+
+#endif // MACOS
 
 static void *grab_chunk(unsigned size) {
      void *p;
@@ -155,7 +162,7 @@ static void *grab_chunk(unsigned size) {
      last_addr = p + size;
      return p;
 }
-#endif
+#endif // HAVE_MMAP
 
 #ifdef WINDOWS
 #include <windows.h>
@@ -190,8 +197,8 @@ static void *grab_chunk(unsigned size) {
 			 PAGE_READWRITE);
 }
 
-#endif
-#endif
+#endif // M64X32
+#endif // WINDOWS
 
 /* get_memory -- grab one or more pages from the operating system */
 static void *get_memory(unsigned size) {
@@ -213,8 +220,12 @@ static void *get_memory(unsigned size) {
 /* get_chunk -- grab memory addressible by the garbage collector */
 #define get_chunk(size) pun_memory(get_memory(size))
 
+#endif // SEGMEM
+
 
 /* SCRATCH ALLOCATOR */
+
+#ifndef SEGMEM
 
 /* Scratch storage is managed separately from the heap.  We allocate
   whole pages (e.g. for the page table) on page boundaries. Scratch
@@ -229,11 +240,7 @@ static void *get_memory(unsigned size) {
    need space for the program's symbol table.  Grabbing scratch space
    16 pages at a time seems a fair compromise. */
 
-#ifdef SEGMEM
-#define SCRATCH_CHUNK SEGSIZE
-#else
 #define SCRATCH_CHUNK (16 * PAGESIZE)
-#endif
 
 /* The scratch allocator keeps hold of just one piece of free memory,
    and wastefully discards it if it is too small to satisfy the next
@@ -341,7 +348,7 @@ word virtual_alloc(unsigned size) {
      return p;
 }
 
-#endif
+#endif // SEGMEM
 
 
 /* BLOCK HEADERS */

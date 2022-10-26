@@ -290,7 +290,7 @@ IMPORT Strings STAMP
 IMPORT Bit STAMP
 ENDHDR
 
-PROC tCDown2.%10.Put 4 5 0
+PROC tCDown2.%10.Put 4 4 0
 SAVELINK
 !   PROCEDURE Put(c: CHAR);
 !     buf[pos] := c; pos := pos+1

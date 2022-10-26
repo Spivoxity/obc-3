@@ -270,7 +270,7 @@ LDLW -4
 RETURN
 END
 
-PROC tMerge.arraystreamrec.Done 0 4 0x00100001
+PROC tMerge.arraystreamrec.Done 0 3 0x00100001
 ! PROCEDURE (s: arraystream) Done(): BOOLEAN;
 !   RETURN s.i >= LEN(s.a^)
 LDLW 12
@@ -286,7 +286,7 @@ GEQ
 RETURN
 END
 
-PROC tMerge.arraystreamrec.Current 0 4 0x00100001
+PROC tMerge.arraystreamrec.Current 0 3 0x00100001
 ! PROCEDURE (s: arraystream) Current(): INTEGER;
 !   RETURN s.a[s.i]
 LDLW 12
@@ -304,7 +304,7 @@ LDIW
 RETURN
 END
 
-PROC tMerge.arraystreamrec.Next 0 3 0x00100001
+PROC tMerge.arraystreamrec.Next 0 2 0x00100001
 ! PROCEDURE (s: arraystream) Next(k: INTEGER);
 !   s.i := s.i + k
 LDLW 12
@@ -345,7 +345,7 @@ LDLW -4
 RETURN
 END
 
-PROC tMerge.NewHalfStream 4 4 0x00110001
+PROC tMerge.NewHalfStream 4 3 0x00110001
 ! PROCEDURE NewHalfStream(base: stream; odd: BOOLEAN): halfstream;
 !   NEW(s);
 CONST 8
@@ -417,7 +417,7 @@ LDLW -4
 RETURN
 END
 
-PROC tMerge.halfstreamrec.Done 0 3 0x00100001
+PROC tMerge.halfstreamrec.Done 0 2 0x00100001
 ! PROCEDURE (s: halfstream) Done(): BOOLEAN; 
 ! BEGIN RETURN s.base.Done() END Done;
 LDLW 12
@@ -431,7 +431,7 @@ CALLW 1
 RETURN
 END
 
-PROC tMerge.halfstreamrec.Current 0 3 0x00100001
+PROC tMerge.halfstreamrec.Current 0 2 0x00100001
 ! PROCEDURE (s: halfstream) Current(): INTEGER;
 ! BEGIN RETURN s.base.Current() END Current;
 LDLW 12
@@ -445,7 +445,7 @@ CALLW 1
 RETURN
 END
 
-PROC tMerge.halfstreamrec.Next 0 4 0x00100001
+PROC tMerge.halfstreamrec.Next 0 3 0x00100001
 ! PROCEDURE (s: halfstream) Next(k: INTEGER);
 !   s.base.Next(2*k*s.inc)
 LDLW 16
@@ -520,8 +520,7 @@ STNW 4
 CONST 0
 LDLW -4
 NCHECK 124
-CONST 8
-STIC
+STNC 8
 !   RETURN s
 LDLW -4
 RETURN
@@ -537,8 +536,7 @@ STLW -12
 !   IF ~s.known THEN
 LDLW 12
 NCHECK 133
-CONST 8
-LDIC
+LDNC 8
 JNEQZ L10
 !     lx := s.p.Done(); rx := s.q.Done();
 LDLW 12
@@ -565,13 +563,11 @@ LDLC -2
 AND
 LDLW 12
 NCHECK 135
-CONST 9
-STIC
+STNC 9
 !     IF ~s.done THEN
 LDLW 12
 NCHECK 136
-CONST 9
-LDIC
+LDNC 9
 JNEQZ L10
 !       IF ~lx THEN lv := s.p.Current() END; 
 LDLC -1
@@ -610,13 +606,11 @@ OR
 AND
 LDLW 12
 NCHECK 139
-CONST 10
-STIC
+STNC 10
 !       IF s.isleft THEN s.current := lv ELSE s.current := rv END;
 LDLW 12
 NCHECK 140
-CONST 10
-LDIC
+LDNC 10
 JEQZ L22
 LDLW -8
 LDLW 12
@@ -633,13 +627,12 @@ LABEL L20
 CONST 1
 LDLW 12
 NCHECK 141
-CONST 8
-STIC
+STNC 8
 LABEL L10
 RETURN
 END
 
-PROC tMerge.mergestreamrec.Done 0 3 0x00100001
+PROC tMerge.mergestreamrec.Done 0 2 0x00100001
 ! PROCEDURE (s: mergestream) Done(): BOOLEAN;
 ! BEGIN s.Fix(); RETURN s.done END Done;
 LDLW 12
@@ -650,12 +643,11 @@ LDNW 28
 CALL 1
 LDLW 12
 NCHECK 147
-CONST 9
-LDIC
+LDNC 9
 RETURN
 END
 
-PROC tMerge.mergestreamrec.Current 0 3 0x00100001
+PROC tMerge.mergestreamrec.Current 0 2 0x00100001
 ! PROCEDURE (s: mergestream) Current(): INTEGER;
 !   s.Fix();
 LDLW 12
@@ -671,7 +663,7 @@ LDNW 12
 RETURN
 END
 
-PROC tMerge.mergestreamrec.Next 4 4 0x00100001
+PROC tMerge.mergestreamrec.Next 4 3 0x00100001
 ! PROCEDURE (s: mergestream) Next(k: INTEGER);
 !   i := 0;
 CONST 0
@@ -691,8 +683,7 @@ CALL 1
 !     IF s.isleft THEN s.p.Next(1) ELSE s.q.Next(1) END;
 LDLW 12
 NCHECK 161
-CONST 10
-LDIC
+LDNC 10
 JEQZ L28
 CONST 1
 LDLW 12
@@ -719,8 +710,7 @@ LABEL L26
 CONST 0
 LDLW 12
 NCHECK 162
-CONST 8
-STIC
+STNC 8
 !     i := i+1
 INCL -4
 JUMP L23
@@ -728,7 +718,7 @@ LABEL L25
 RETURN
 END
 
-PROC tMerge.mergestreamrec.Copy 0 4 0x00100001
+PROC tMerge.mergestreamrec.Copy 0 3 0x00100001
 ! PROCEDURE (s: mergestream) Copy(): stream;
 !   RETURN NewMergeStream(s.p.Copy(), s.q.Copy())
 LDLW 12
@@ -753,7 +743,7 @@ CALLW 2
 RETURN
 END
 
-PROC tMerge.sort 8 4 0x00118001
+PROC tMerge.sort 8 3 0x00118001
 ! PROCEDURE sort(s: stream): stream;
 !   p := NewHalfStream(s.Copy(), FALSE);
 CONST 0

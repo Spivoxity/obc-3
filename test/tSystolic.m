@@ -509,7 +509,7 @@ LDLW 16
 RETURN
 END
 
-PROC tSystolic.ProcRec.Init 0 3 0x00d00001
+PROC tSystolic.ProcRec.Init 0 2 0x00d00001
 ! PROCEDURE (self: Process) Init(pid: INTEGER; left, right: Channel); 
 !   self.pid := pid;
 LDLW 16
@@ -538,7 +538,7 @@ STNW 8
 RETURN
 END
 
-PROC tSystolic.ProcRec.Run 0 3 0x00100001
+PROC tSystolic.ProcRec.Run 0 2 0x00100001
 ! PROCEDURE (self: Process) Run;
 LABEL L18
 !   WHILE (self.status = Ready) OR (self.status = Waking) DO
@@ -579,7 +579,7 @@ LABEL L20
 RETURN
 END
 
-PROC tSystolic.ProcRec.Get 0 3 0x00300001
+PROC tSystolic.ProcRec.Get 0 2 0x00300001
 ! PROCEDURE (self: Process) Get(VAR x: INTEGER);
 !   CASE self.status OF
 LDLW 12
@@ -629,7 +629,7 @@ ERROR E_CASE 84
 RETURN
 END
 
-PROC tSystolic.ProcRec.Put 0 3 0x00100001
+PROC tSystolic.ProcRec.Put 0 2 0x00100001
 ! PROCEDURE (self: Process) Put(x: INTEGER);
 !   CASE self.status OF
 LDLW 12
@@ -678,7 +678,7 @@ ERROR E_CASE 100
 RETURN
 END
 
-PROC tSystolic.ProcRec.Goto 0 3 0x00100001
+PROC tSystolic.ProcRec.Goto 0 2 0x00100001
 ! PROCEDURE (self: Process) Goto(lab: INTEGER);
 !   self.next := lab
 LDLW 16
@@ -688,7 +688,7 @@ STNW 12
 RETURN
 END
 
-PROC tSystolic.ProcRec.Halt 0 3 0x00100001
+PROC tSystolic.ProcRec.Halt 0 2 0x00100001
 ! PROCEDURE (self: Process) Halt;
 !   self.status := Dead
 CONST 3
@@ -698,7 +698,7 @@ STNW 4
 RETURN
 END
 
-PROC tSystolic.MakeChannel 4 4 0x00010001
+PROC tSystolic.MakeChannel 4 3 0x00010001
 ! PROCEDURE MakeChannel(chid: INTEGER): Channel;
 !   NEW(ch); ch.Init(chid); RETURN ch
 CONST 12
@@ -717,7 +717,7 @@ LDLW -4
 RETURN
 END
 
-PROC tSystolic.ChanRec.Init 0 3 0x00100001
+PROC tSystolic.ChanRec.Init 0 2 0x00100001
 ! PROCEDURE (self: Channel) Init(chid: INTEGER);
 !   self.chid := chid;
 LDLW 16
@@ -794,7 +794,7 @@ LABEL L32
 RETURN
 END
 
-PROC tSystolic.MakeInjector 4 6 0x00210001
+PROC tSystolic.MakeInjector 4 5 0x00210001
 ! PROCEDURE MakeInjector(pid: INTEGER; right: Channel): Injector;
 !   NEW(p); p.Init(pid, NIL, right); RETURN p
 CONST 36
@@ -815,7 +815,7 @@ LDLW -4
 RETURN
 END
 
-PROC tSystolic.%5.Step 0 4 0x00100001
+PROC tSystolic.%5.Step 0 3 0x00100001
 ! PROCEDURE (self: Injector) Step;
 !   CASE self.pc OF
 LDLW 12
@@ -915,7 +915,7 @@ LABEL L35
 RETURN
 END
 
-PROC tSystolic.MakeComparator 4 6 0x00610001
+PROC tSystolic.MakeComparator 4 5 0x00610001
 ! PROCEDURE MakeComparator(pid: INTEGER; left, right: Channel): Comparator;
 !   NEW(p); p.Init(pid, left, right); RETURN p
 CONST 36
@@ -936,7 +936,7 @@ LDLW -4
 RETURN
 END
 
-PROC tSystolic.%6.Step 0 4 0x00100001
+PROC tSystolic.%6.Step 0 3 0x00100001
 ! PROCEDURE (self: Comparator) Step;
 !   CASE self.pc OF
 LDLW 12
@@ -956,8 +956,7 @@ LABEL L48
 !       0: self.Get(self.x)
 LDLW 12
 NCHECK 202
-CONST 28
-OFFSET
+ADJUST 28
 LDLW 12
 NCHECK 202
 DUP 0
@@ -969,8 +968,7 @@ LABEL L49
 !     | 1: self.Get(self.y)
 LDLW 12
 NCHECK 203
-CONST 32
-OFFSET
+ADJUST 32
 LDLW 12
 NCHECK 203
 DUP 0
@@ -1068,7 +1066,7 @@ LABEL L47
 RETURN
 END
 
-PROC tSystolic.MakeCollector 4 6 0x00210001
+PROC tSystolic.MakeCollector 4 5 0x00210001
 ! PROCEDURE MakeCollector(pid: INTEGER; left: Channel): Collector;
 !   NEW(p); p.Init(pid, left, NIL); RETURN p
 CONST 32
@@ -1089,7 +1087,7 @@ LDLW -4
 RETURN
 END
 
-PROC tSystolic.%7.Step 0 4 0x00100001
+PROC tSystolic.%7.Step 0 3 0x00100001
 ! PROCEDURE (self: Collector) Step;
 !   CASE self.pc OF
 LDLW 12
@@ -1105,8 +1103,7 @@ LABEL L61
 !       0: self.Get(self.x)
 LDLW 12
 NCHECK 226
-CONST 28
-OFFSET
+ADJUST 28
 LDLW 12
 NCHECK 226
 DUP 0

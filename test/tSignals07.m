@@ -359,8 +359,7 @@ STNW 16
 CONST 0
 LDLW -4
 NCHECK 35
-CONST 20
-STIC
+STNC 20
 !   signal[value] := p; stack[sp] := p; INC(sp); 
 LDLW -4
 GLOBAL tSignals07.signal
@@ -716,22 +715,20 @@ ERROR E_CASE 96
 RETURN
 END
 
-PROC tSignals07.Mark 0 3 0x00100001
+PROC tSignals07.Mark 0 2 0x00100001
 ! PROCEDURE Mark(s: Sig);
 !   IF (s # NIL) & ~s.marked THEN
 LDLW 12
 JEQZ L34
 LDLW 12
 NCHECK 111
-CONST 20
-LDIC
+LDNC 20
 JNEQZ L34
 !     s.marked := TRUE;
 CONST 1
 LDLW 12
 NCHECK 112
-CONST 20
-STIC
+STNC 20
 !     Mark(s.left); Mark(s.right)
 LDLW 12
 NCHECK 113
@@ -766,8 +763,7 @@ CONST 1024
 BOUND 121
 LDIW
 NCHECK 121
-CONST 20
-LDIC
+LDNC 20
 JEQZ L40
 !       stack[i].marked := FALSE;
 CONST 0
@@ -777,8 +773,7 @@ CONST 1024
 BOUND 122
 LDIW
 NCHECK 122
-CONST 20
-STIC
+STNC 20
 !       Print(stack[i])
 GLOBAL tSignals07.stack
 LDLW -4

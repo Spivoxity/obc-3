@@ -95,6 +95,10 @@ void long_flo(value *sp) {
      put_double(sp, get_long(sp));
 }
 
+void dbl_long(value *sp) {
+     put_long(sp, (longint) get_double(sp));
+}
+
 #ifndef M64X32
 void long_add(value *sp) {
      put_long(sp+2, get_long(sp+2) + get_long(sp));
@@ -215,6 +219,10 @@ double flo_conv(int x) {
 
 double flo_convq(longint x) {
      return (double) x;
+}
+
+longint long_convq(double x) {
+     return (longint) x;
 }
 #endif
 

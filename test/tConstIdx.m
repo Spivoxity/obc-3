@@ -25,7 +25,7 @@ MODULE tConstIdx STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tConstIdx.%main 0 6 0
+PROC tConstIdx.%main 0 5 0
 !   NEW(a, 10);
 CONST 10
 CONST 1

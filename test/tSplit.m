@@ -131,7 +131,7 @@ MODULE tSplit STAMP 0
 IMPORT Out STAMP
 ENDHDR
 
-PROC tSplit.%1.d 8 5 0
+PROC tSplit.%1.d 8 4 0
 SAVELINK
 !   PROCEDURE d(i, j: INTEGER): INTEGER;
 !     t := a[j] - a[i];
@@ -428,7 +428,7 @@ LDLW -8
 RETURN
 END
 
-PROC tSplit.%2.d 8 5 0
+PROC tSplit.%2.d 8 4 0
 SAVELINK
 !   PROCEDURE d(i, j: INTEGER): INTEGER;
 !     t := a[j] - a[i];
@@ -455,7 +455,7 @@ TIMES
 RETURN
 END
 
-PROC tSplit.%3.Cost 24 5 0
+PROC tSplit.%3.Cost 24 4 0
 SAVELINK
 !   PROCEDURE Cost(T: SET): INTEGER;
 !     u := -1; v := -1; c := 0;
