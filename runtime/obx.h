@@ -135,14 +135,22 @@ EXTERN word dynstub;
 
 #define interpreted(p) ((p)[CP_PRIM].a == interpreter)
 
-#ifndef M64X32
-#define primcall(p, sp)  ((primitive *) p[CP_PRIM].a)(sp)
-#else
+#ifdef M64X32
+#define WRAPFUNC 1
+#endif
+
+#ifdef SEGMEM
+#define WRAPFUNC 1
+#endif
+
+#ifdef WRAPFUNC
 #ifdef JIT
 #define primcall(p, sp)  (ptrcast(primitive, p[CP_PRIM].a))(sp)
 #else
 #define primcall(p, sp)  (*ptrcast(primitive *, p[CP_PRIM].a))(sp)
 #endif
+#else
+#define primcall(p, sp)  ((primitive *) p[CP_PRIM].a)(sp)
 #endif
 
 #define get1(p)  ((int) ((signed char) (p)[0]))

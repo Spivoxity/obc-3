@@ -617,16 +617,16 @@ value *interp(value *bp) {
 #endif
 
 word wrap_prim(primitive *prim) {
+#ifdef WRAPFUNC
 #ifdef JIT
      return vm_wrap((funptr) prim);
-#else
-#ifndef M64X32
-     return (word) prim;
 #else
      word addr = virtual_alloc_atomic(sizeof(primitive *));
      primitive **wrapper = ptrcast(primitive *, addr);
      *wrapper = prim;
      return addr;
 #endif
+#else
+     return (word) prim;
 #endif
 }

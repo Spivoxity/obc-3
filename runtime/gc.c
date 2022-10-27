@@ -109,9 +109,6 @@ static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
    save brain cells, we assume a word has 32 bits; there are lots of
    constants that need changing if that is not true.  */
 
-/* If SEGMEM is not being used, then grab_chunk obtains a chunk of
-   addressible memory from the operating system */
-
 #ifndef SEGMEM
 #ifdef HAVE_MMAP
 
@@ -121,7 +118,7 @@ static const char *assert_fmt = "*assertion %s failed on line %d of file %s";
 #ifdef MACOS
 
 #define MAP_ANONYMOUS MAP_ANON
-#define HINT (void *) 0x10000000L
+#define HINT (void *) 0x1000L
 #define MMAP_FLAGS MAP_PRIVATE
 
 #else
@@ -287,7 +284,7 @@ void *scratch_alloc(unsigned size) {
    interpreter interprets one of these addresses as a pointer.
 
    A 32-bit address splits as 12 + 20 bits, with a 12-bit segment
-   number, and index into segmap, and a 20-bit offset within the
+   number, an index into segmap, and a 20-bit offset within the
    segment.  The segmap array gives the base address (possibly 64
    bits) for a piece of storage obtained from malloc.  These segments
    do not have to be contiguous with each other.  We can deal with
