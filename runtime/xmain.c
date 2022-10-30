@@ -74,11 +74,11 @@ extern int vm_debug;
 /* Helper functions for the loader */
 
 void make_module(char *name, word addr, int chksum, int nlines) {
-     module m = scratch_alloc_atomic(sizeof(struct _module));
+     module m = scratch_alloc_atomic(sizeof(struct _module), "module");
      static int nm = 0;
 
      if (modtab == NULL)
-          modtab = scratch_alloc_atomic(nmods * sizeof(module));
+          modtab = scratch_alloc_atomic(nmods * sizeof(module), "modtab");
 
      m->m_name = name;
      m->m_addr =addr;
@@ -86,7 +86,8 @@ void make_module(char *name, word addr, int chksum, int nlines) {
      m->m_nlines = nlines;
      m->m_lcount = NULL;
      if (lflag && nlines > 0) {
-	  m->m_lcount = scratch_alloc_atomic(nlines * sizeof(unsigned));
+	  m->m_lcount =
+               scratch_alloc_atomic(nlines * sizeof(unsigned), "line counts");
 	  memset(m->m_lcount, 0, nlines * sizeof(int));
      }
 #endif
@@ -98,11 +99,11 @@ void make_module(char *name, word addr, int chksum, int nlines) {
 }
 
 void make_proc(char *name, word addr) {
-     proc p = scratch_alloc_atomic(sizeof(struct _proc));
+     proc p = scratch_alloc_atomic(sizeof(struct _proc), "proc");
      static int np = 0;
 
      if (proctab == NULL)
-          proctab = scratch_alloc_atomic(nprocs * sizeof(proc));
+          proctab = scratch_alloc_atomic(nprocs * sizeof(proc), "proctab");
 
      p->p_name = name;
      p->p_addr = addr;
@@ -156,8 +157,9 @@ static void backtrace(value *bp) {
 	and saving the last NBUF in a circular buffer. */
      for (n = 0;; n++) {
 	  /* Each frame contains the cp and bp of its caller */
-	  fp = valptr(fp[BP]);	/* Base pointer of next frame */
-	  if (fp == NULL) break;
+          unsigned next = fp[BP].a; /* Base pointer of next frame */
+          if (next == 0) break;
+	  fp = ptrcast(value, next);
 	  cp = valptr(fp[CP]);	/* Constant pool of next frame */
 	  fbuf[n%NBUF] = p = find_proc(dsegaddr(cp));
 	  if (n < TOP)
@@ -521,8 +523,12 @@ void NORETURN error_exit(int status) {
    "preloaded" image. */
 
 int main(int ac, char *av[]) {
+#ifndef MEMBASE
+#ifndef SEGMEM
 #ifndef M64X32
      if (sizeof(uchar *) != 4) panic("Bad pointer size");
+#endif
+#endif
 #endif
 
      argc = ac; argv = av;
@@ -621,7 +627,7 @@ word wrap_prim(primitive *prim) {
 #ifdef JIT
      return vm_wrap((funptr) prim);
 #else
-     word addr = virtual_alloc_atomic(sizeof(primitive *));
+     word addr = virtual_alloc_atomic(sizeof(primitive *), "wrapper");
      primitive **wrapper = ptrcast(primitive *, addr);
      *wrapper = prim;
      return addr;

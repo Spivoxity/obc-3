@@ -76,12 +76,22 @@ static inline void *physmap(word a) {
 }
 
 #else
-
-#define pun_memory(p) ((word) (ptrtype) (p))
 #define stkaddr(p) pun_memory(p)
 #define dsegaddr(p) pun_memory(p)
+
+#ifdef MEMBASE
+
+#define pun_memory(p) ((word) ((void *) (p) - membase))
+#define ptrcast(t, a) ((t *) (membase + (int) a))
+
+EXTERN void *membase;
+
+#else
+
+#define pun_memory(p) ((word) (ptrtype) (p))
 #define ptrcast(t, a) ((t *) (ptrtype) (a))
 
+#endif
 #endif
 
 #define codeaddr(p) ((p) - imem)
@@ -140,6 +150,10 @@ EXTERN word dynstub;
 #endif
 
 #ifdef SEGMEM
+#define WRAPFUNC 1
+#endif
+
+#ifdef MEMBASE
 #define WRAPFUNC 1
 #endif
 
@@ -298,25 +312,26 @@ longint long_convq(double);
 /* gc.c */
 
 /* scratch_alloc -- allocate memory that will not be freed */
-void *scratch_alloc(unsigned bytes);
+void *scratch_alloc(unsigned bytes, const char *reason);
 
 #ifdef USE_BOEHM
 /* scratch_alloc_atomic -- allocate memory that will not contain pointers */
-void *scratch_alloc_atomic(unsigned bytes);
+void *scratch_alloc_atomic(unsigned bytes, const char *reason);
 #else
-#define scratch_alloc_atomic(bytes) scratch_alloc(bytes)
+#define scratch_alloc_atomic(bytes, reason) scratch_alloc(bytes, reason)
 #endif
 
 #ifdef SEGMEM
 
-word virtual_alloc(unsigned bytes);
+word virtual_alloc(unsigned bytes, const char *reason);
 word map_segment(void *base, unsigned length);
-#define virtual_alloc_atomic(bytes) virtual_alloc(bytes)
+#define virtual_alloc_atomic(bytes, reason) virtual_alloc(bytes, reason)
 
 #else
 
-#define virtual_alloc(bytes) pun_memory(scratch_alloc(bytes))
-#define virtual_alloc_atomic(bytes) pun_memory(scratch_alloc_atomic(bytes))
+#define virtual_alloc(bytes, reason) pun_memory(scratch_alloc(bytes, reason))
+#define virtual_alloc_atomic(bytes, reason) \
+     pun_memory(scratch_alloc_atomic(bytes, reason))
 
 #endif
 

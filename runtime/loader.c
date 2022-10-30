@@ -154,7 +154,7 @@ static char *read_string() {
 	  buf[n++] = c;
      } while (c != '\0');
 
-     p = scratch_alloc_atomic(n);
+     p = scratch_alloc_atomic(n, "string");
      strcpy(p, buf);
      return p;
 }
@@ -261,11 +261,11 @@ void load_file(FILE *bfp) {
      binfp = bfp;
 
      /* Load the code */
-     imem = scratch_alloc_atomic(seglen[S_CODE]);
+     imem = scratch_alloc_atomic(seglen[S_CODE], "code segment");
      binread(imem, seglen[S_CODE]);
 
      /* Load and relocate the data */
-     dmem = scratch_alloc(seglen[S_DATA]+seglen[S_BSS]);
+     dmem = scratch_alloc(seglen[S_DATA]+seglen[S_BSS], "data segment");
 #ifdef SEGMEM
      data_vbase = map_segment(dmem, seglen[S_DATA]+seglen[S_BSS]);
 #endif
@@ -274,7 +274,7 @@ void load_file(FILE *bfp) {
      memset(dmem+seglen[S_DATA], 0, seglen[S_BSS]);
 
      /* Allocate stack */
-     stack = scratch_alloc(stack_size);
+     stack = scratch_alloc(stack_size, "stack");
 #ifdef SEGMEM
      stack_vbase = map_segment(stack, stack_size);
 #endif

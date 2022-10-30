@@ -52,8 +52,7 @@
 #define INIT_MODS 100		/* Init space for modules */
 #endif
 
-#define STACK_SIZE (1024 * 1024 - 32)	
-				/* Default stack size (bytes) */
+#define STACK_SIZE 1048576      /* Default stack size (bytes) */
 #define MIN_STACK 4096		/* Min stack size (bytes) */
 
 typedef enum { ABS, DATA, BSS, CODE, UNDEFINED } segment;

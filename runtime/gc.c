@@ -152,10 +152,24 @@ static void *grab_chunk(unsigned size) {
 #endif
 
      if (p == MAP_FAILED) return NULL;
+
 #ifdef M64X32     
      if ((((unsigned long) p) & ~0x7fffffff) != 0)
           panic("inaccessible memory allocated at %p", p);
 #endif     
+
+#ifdef MEMBASE
+     if (membase == NULL) {
+          membase = p;
+          if (debug['b'])
+               printf("membase = %p\n", membase);
+     }
+     { int a = p - membase;
+          if (membase + a != p)
+               panic("inaccessible memory allocated at %p", p);
+     }
+#endif
+     
      last_addr = p + size;
      return p;
 }
@@ -172,18 +186,18 @@ typedef long (*ntavm_ptr)(void *, void **, unsigned long, size_t *,
 #define NTAVM_ZEROBITS 1
 
 static void *grab_chunk(unsigned size0) {
-     static ntavm_ptr ntavm = NULL;
+     static ntavm_ptr NtAllocateVirtualMemory = NULL;
 
-     if (ntavm == NULL) {
+     if (NtAllocateVirtualMemory == NULL) {
           void *module = GetModuleHandleA("ntdll.dll");
-          ntavm = (ntavm_ptr)
+          NtAllocateVirtualMemory = (ntavm_ptr)
                GetProcAddress(module, "NtAllocateVirtualMemory");
      }
 
      void *p = NULL;
      size_t size = size0;
-     ntavm(INVALID_HANDLE_VALUE, &p, NTAVM_ZEROBITS, &size,
-           MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
+     NtAllocateVirtualMemory(INVALID_HANDLE_VALUE, &p, NTAVM_ZEROBITS, &size,
+                             MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
      return p;
 }
 
@@ -198,24 +212,26 @@ static void *grab_chunk(unsigned size) {
 #endif // WINDOWS
 
 /* get_memory -- grab one or more pages from the operating system */
-static void *get_memory(unsigned size) {
+static void *get_memory(unsigned size, const char *reason) {
      unsigned alloc_size = round_up(size, PAGESIZE);
      void *p;
 
      /* This happens e.g. if custom translation makes the code size zero */
      if (alloc_size == 0) return NULL;
 
-     DEBUG_PRINT('b', ("Need %u; requesting chunk of size %u\n",
-                       size, alloc_size));
+     if (debug['b'])
+          printf("Need %u for %s; requesting chunk of size %u\n",
+                 size, reason, alloc_size);
      p = grab_chunk(alloc_size);
      if (p == NULL) panic("out of memory");
-     DEBUG_PRINT('b', ("Allocated chunk at %p\n", p));
+     if (debug['b'])
+          printf("Allocated chunk at %p\n", p);
      ASSERT((ptrtype) p % PAGESIZE == 0);
      return p;
 }
 
 /* get_chunk -- grab memory addressible by the garbage collector */
-#define get_chunk(size) pun_memory(get_memory(size))
+#define get_chunk(size, reason) pun_memory(get_memory(size, reason))
 
 #endif // SEGMEM
 
@@ -246,7 +262,7 @@ static void *get_memory(unsigned size) {
 static void *scratch_free = NULL;
 static void *scratch_limit = NULL;
 
-void *scratch_alloc(unsigned size) {
+void *scratch_alloc(unsigned size, const char *reason) {
      unsigned alloc_size = round_up(size, SCRATCH_ALIGN);
      void *p;
 
@@ -255,9 +271,9 @@ void *scratch_alloc(unsigned size) {
 	      || (scratch_free != NULL
                   && scratch_limit - scratch_free >= 4*PAGESIZE))
 	       /* Avoid discarding a largish piece */
-	       return get_memory(alloc_size);
+	       return get_memory(alloc_size, reason);
 
-	  scratch_free = get_memory(SCRATCH_CHUNK);
+	  scratch_free = get_memory(SCRATCH_CHUNK, "scratch");
 	  scratch_limit = scratch_free + SCRATCH_CHUNK;
      }
 
@@ -365,11 +381,11 @@ word virtual_alloc(unsigned size) {
 #ifndef SEGMEM
 typedef word hdrptr;
 #define hdr(h) ptrcast(header, h)
-#define header_alloc() virtual_alloc(sizeof(header))
+#define header_alloc() virtual_alloc(sizeof(header), "gc header")
 #else
 typedef struct _header *hdrptr;
 #define hdr(h) h
-#define header_alloc() scratch_alloc(sizeof(header))
+#define header_alloc() scratch_alloc(sizeof(header), "gc header")
 #endif
 
 #define voidptr(a) ptrcast(void, a)
@@ -489,14 +505,15 @@ static void page_setup(word base, unsigned size, hdrptr h) {
      for (word p = base; p < base + size; p += PAGESIZE) {
 	  /* Make sure lower index exists */
 	  if (page_table[top_part(p)] == empty_index)
-	       page_table[top_part(p)] = virtual_alloc(sizeof(page_index));
+	       page_table[top_part(p)] =
+                    virtual_alloc(sizeof(page_index), "page index");
 
           get_header(p) = h;
      }
 }
 
 static void init_pagetable(void) {
-     empty_index = virtual_alloc(sizeof(page_index));
+     empty_index = virtual_alloc(sizeof(page_index), "empty page index");
      for (int i = 0; i < TOP_SIZE; i++) page_table[i] = empty_index;
 }
 
@@ -631,7 +648,7 @@ static hdrptr find_block(unsigned size, unsigned objsize) {
 	  GC_TRACE("[ex]");
 	  ASSERT(chunk % PAGESIZE == 0);
 	  h = alloc_header();
-	  hdr(h)->h_memory = get_chunk(chunk);
+	  hdr(h)->h_memory = get_chunk(chunk, "heap");
 	  hdr(h)->h_size = chunk;
 	  /* Add to the free list for merging and page table setup */
 	  h = free_block(h, FALSE);
@@ -1072,10 +1089,11 @@ static void redir_map(unsigned map, word origin, int bmshift) {
 
 /* traverse_stack -- chain down the stack, redirecting in each frame */
 static void traverse_stack(value *xsp) {
-     value *sp = NULL;
+     value *f = xsp, *sp = NULL;
      unsigned pc = 0;
+     word next;
 
-     for (value *f = xsp; f != NULL; f = valptr(f[BP])) {
+     while (TRUE) {
 	  value *c = valptr(f[CP]);
           unsigned stkmap = 0;
 
@@ -1106,7 +1124,13 @@ static void traverse_stack(value *xsp) {
           }
 
 	  pc = f[PC].i; sp = f + HEAD;
+
+          next = f[BP].a;
+          if (next == 0) break;
+          f = ptrcast(value, next);
      }
+
+     DEBUG_PRINT('m', ("\n"));
 }     
      
 /* migrate -- redirect within the heap, recursively copying to new space */
@@ -1284,6 +1308,18 @@ value *gc_collect(value *sp) {
      return sp;
 }
 
+/* gc_debug -- set debugging flags */
+void gc_debug(char *flags) {
+     int i;
+
+     for (i = 0; flags[i] != '\0'; i++)
+	  debug[(uchar) flags[i]] = TRUE;
+}
+
+int gc_heap_size() {
+     return heap_size;
+}
+
 /* gc_init -- initialise everything */
 void gc_init(void) {
      unsigned i;
@@ -1302,21 +1338,8 @@ void gc_init(void) {
      heap_size = INIT_SIZE;
 }
 
-
-/* gc_debug -- set debugging flags */
-void gc_debug(char *flags) {
-     int i;
-
-     for (i = 0; flags[i] != '\0'; i++)
-	  debug[(uchar) flags[i]] = TRUE;
-}
-
-int gc_heap_size() {
-     return heap_size;
-}
-
 /* vm_alloc -- upcall from vm to allocate code buffer */
 void *vm_alloc(int size) {
      /* scratch_alloc will allocate whole pages */
-     return scratch_alloc(size);
+     return scratch_alloc(size, "jit code");
 }

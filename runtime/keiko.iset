@@ -375,9 +375,9 @@ inst CONVDQ 0 M.qd  { long_convq($1.d) }
 inst BOUND 2 T2 \
     { if ((unsigned) $1.i >= (unsigned) $2.i) error(E_BOUND, $a); }
 inst NCHECK 2 T1 \
-    { if (pointer($1) == NULL) error(E_NULL, $a); }
+    { if ($1.a == 0) error(E_NULL, $a); }
 inst GCHECK 2 S1 \
-    { if (valptr($1) != NULL) error(E_GLOB, $a); }
+    { if ($1.a != 0) error(E_GLOB, $a); }
 inst ZCHECK 2 T1 \
     { if ($1.i == 0) error(E_DIV, $a); }
 inst FZCHECK 2 T1 \

@@ -147,7 +147,7 @@ static state make_state(word addr, int n, word *history) {
 
      if (t == NULL) {
 	  /* Create the dummy transition for (NULL, p) */
-	  t = scratch_alloc_atomic(sizeof(struct _trans));
+	  t = scratch_alloc_atomic(sizeof(struct _trans), "dummy transition");
 	  t->t_from = NULL;
 	  t->t_to = NULL;
 	  t->t_addr = addr;
@@ -161,10 +161,10 @@ static state make_state(word addr, int n, word *history) {
 	       return s;
 
      /* If all else fails, make a new state */
-     s = scratch_alloc_atomic(sizeof(struct _state));
+     s = scratch_alloc_atomic(sizeof(struct _state), "profile state");
      s->s_num = n_states++;
      s->s_depth = n;
-     s->s_history = scratch_alloc_atomic(n * sizeof(word));
+     s->s_history = scratch_alloc_atomic(n * sizeof(word), "profile history");
      memcpy(s->s_history, history, n * sizeof(word));
      s->s_calls = s->s_rec = s->s_time = 0;
      s->s_next = t->t_to;
@@ -225,7 +225,7 @@ static state next_state(state s0, word addr) {
      }
 
      /* Create the new transition */
-     t = scratch_alloc_atomic(sizeof(struct _trans));
+     t = scratch_alloc_atomic(sizeof(struct _trans), "profiling transition");
      t->t_from = s0;
      t->t_to = s;
      t->t_addr = addr;
@@ -337,9 +337,11 @@ void prof_exit(word addr, counter ticks)  {
 void prof_init(void) {
      if (gflag) {
 	  if (pstack == NULL)
-	       pstack = scratch_alloc_atomic(PSTACKSIZE * sizeof(state));
+	       pstack = scratch_alloc_atomic(PSTACKSIZE * sizeof(state),
+                                             "profile stack");
 	  if (trtable == NULL) {
-	       trtable = scratch_alloc_atomic(HSIZE * sizeof(trans));
+	       trtable = scratch_alloc_atomic(HSIZE * sizeof(trans),
+                                              "profile hashtable");
 	       for (int i = 0; i < HSIZE; i++) trtable[i] = NULL;
 	  }
 	       
@@ -382,7 +384,7 @@ static arc find_arc(word src, word dst) {
 	  if (a->a_src == psrc) break;
 
      if (a == NULL) {
-	  a = scratch_alloc_atomic(sizeof(struct _arc));
+	  a = scratch_alloc_atomic(sizeof(struct _arc), "profile arc");
 	  a->a_count = a->a_self1 = a->a_child1 =
                a->a_self2 = a->a_child2 = 0;
 	  a->a_src = psrc;
@@ -541,7 +543,7 @@ static void flat_profile(FILE *fp) {
 
 static void graph_profile(FILE *fp) {
      char buf1[64], buf2[64];
-     arc *abuf = scratch_alloc_atomic(256 * sizeof(arc));
+     arc *abuf = scratch_alloc_atomic(256 * sizeof(arc), "profile buffer");
 
      /* Finished executing, so we can sort the proc table into
 	a different order. */

@@ -246,11 +246,12 @@ value *dltrap(value *bp) {
      if (fun != NULL && tstring[0] != '*') {
           int np = strlen(tstring)-1;
           ffi_type *rtype = ffi_decode(tstring[0]);
-          ffi_type **atypes = scratch_alloc_atomic(np * sizeof(ffi_type *));
+          ffi_type **atypes =
+               scratch_alloc_atomic(np * sizeof(ffi_type *), "ffi type");
           for (int i = 0; tstring[i+1] != '\0'; i++)
                atypes[i] = ffi_decode(tstring[i+1]);
 
-          word a = virtual_alloc_atomic(sizeof(wrapper));
+          word a = virtual_alloc_atomic(sizeof(wrapper), "wrapper");
           wrapper *w = ptrcast(wrapper, a);
           w->fun = fun;
           ffi_prep_cif(&w->cif, FFI_DEFAULT_ABI, np, rtype, atypes);
