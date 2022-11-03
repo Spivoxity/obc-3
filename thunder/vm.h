@@ -221,7 +221,6 @@ void vm_gen1a(operation op, void *a);
 void vm_gen1j(operation op, vmlabel lab);
 void vm_gen2rr(operation op, vmreg a, vmreg b);
 void vm_gen2ri(operation op, vmreg a, int b);
-void vm_gen2ra(operation op, vmreg a, void *b);
 void vm_gen2rj(operation op, vmreg a, vmlabel b);
 void vm_gen3rrr(operation op, vmreg a, vmreg b, vmreg c);
 void vm_gen3rri(operation op, vmreg a, vmreg b, int c);
