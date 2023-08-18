@@ -31,14 +31,14 @@ our undergraduates in Oxford for their second programming course
 
 The following typographical conventions are used throughout this manual:
 \itemize
-\item Names of programs are shown in \pn{bold face} type.
-\item File names are shown in \fn{italic} type.
+\item Names of programs are shown in \pn{italic} type.
+\item File names are shown in \fn{sans serif} type.
 \item The text of Oberon programs is shown in {\sf sans serif} type,
 except that identifiers in the running text are shown in |italic|.
 \item The text of \unix\ commands is shown in \verb/typewriter/ type.
 Where an interaction with the computer is shown, the characters you
-type are shown in {\tti italic typewriter\/} type, and the computer's
-responses are shown in {\tt upright typewriter} type.
+type are shown in {\tti italic} {\tti typewriter\/} type, and the computer's
+responses are shown in {\tt upright} {\tt typewriter} type.
 \enditems
 
 %\input usingobc
@@ -54,7 +54,7 @@ the Oberon compiler into a form that can be directly obeyed by a
 machine.  For example, Figure~\ref{f:Fac.m} shows a little Oberon
 program for computing factorials.  As you can see, the name of the
 file exactly matches the name of the module |Fac| that it
-contains, even down to the capitalization of the name.
+contains, even down to the capitalisation of the name.
 (In the software lab at Oxford, you can find a copy of this 
 file at {\vsf /usr/local/practicals/ip1\allowbreak/examples/Fac.m}.)
 \figure
@@ -157,7 +157,7 @@ The biggest disadvantage of this scheme is that programs run more
 slowly than they would with a conventional compiler.  The
 interpreter-based implementation is perhaps 5 to 10 times slower than
 a code from a conventional compiler, whilst the JIT is also slower,
-because it generates code in a simple way without a lot of optimization.
+because it generates code in a simple way without a lot of optimisation.
 But we won't be writing any programs that run for a very long time, so
 that won't be too much of a disadvantage.%
 \footnote{Actually, there's a hidden advantage: having an artificially
@@ -328,25 +328,27 @@ will be provided
 when it is needed.  Nevertheless, \pn{make} is
 such a useful program that it's good to understand something of what
 it can do.
-
-Line 1 of the makefile is a comment: it starts with \verb/#/ and
+\itemize
+\item Line 1 of the makefile is a comment: it starts with \verb/#/ and
 continues to the end of the line.
-Lines 3--4 describe the last of the three commands needed to build the
-\pn{fib} program, using the list of files \verb/FIB/ defined on
-line~2.  Line 3 records the fact that the file \fn{fib} is made from
+\item Lines 4--5 describe the last of the three commands needed to build the
+\pn{fib} program, using the list of files \fn{FIB} defined on
+line~3.
+Line 4 records the fact that the file \fn{fib} is made from
 the two files \fn{FibFun.k} and \fn{FibMain.k}, so that it should
-be rebuilt if either of these two files is newer than it; and line 4
+be rebuilt if either of these two files is newer than it; and line 5
 (starting with a tab character) gives the \unix\ command to execute in
 this case.
-
-The other two commands needed to build \pn{fib} are summarized in
-the `pattern rule' on lines 
-6--7; this says that any file \fn{???.k} can be made from the
-corresponding file \fn{???.m} by running the command \verb/obc -c ???.m/.
-Line 5 records the fact that rebuilding \fn{FibFun.k} requires
+\item
+Line 7 records the fact that rebuilding \fn{FibFun.k} requires
 \fn{FibMain.k} to be rebuilt too, because the interface of the
 |FibFun| module may have changed.  
-
+\item
+The other two commands needed to build \pn{fib} are summarised in
+the `pattern rule' on lines 9--10;
+this says that any file \fn{???.k} can be made from the
+corresponding file \fn{???.m} by running the command \verb/obc -c ???.m/.
+\enditems
 Suppose we were to modify our program,
 perhaps to make it more acceptable to English tastes 
 by replacing the word ``{\sf Gimme}'' by the polite
@@ -460,7 +462,7 @@ and press \verb/`/ (grave accent).}
 %Now take your left foot, pass it
 %behind your right knee, and put the big toe in your right hip
 %pocket \dots%
-\verb/C-x `/) recognizes these error messages and
+\verb/C-x `/) recognises these error messages and
 finds the relevant file and the relevant line, putting the editor's
 cursor there ready to correct the error.  Subsequent invocations of
 \verb/next-error/ will take you to the locations of other errors
@@ -515,7 +517,7 @@ variables, or by using a debugger (see the next section).
 
 \item Your program may produce the right output, but run too slowly to
 be useful.  In this case, the solution is {\em not\/} to start madly
-`optimizing' everything in sight in the hope of speeding things up.
+`optimising' everything in sight in the hope of speeding things up.
 If you do that, you will probably spend most of your effort on parts
 of the program that have almost no effect on the overall speed, and
 you will certainly make your program more complicated, perhaps so much
@@ -604,7 +606,7 @@ otherwise continue further.
 
 Profiling is a process of gathering statistics about where a program
 spends its time, as the first step of speeding it up.  Profiling makes
-for more effective optimization, because it lets you concentrate your
+for more effective optimisation, because it lets you concentrate your
 effort on the things that will really make a difference.  In most
 large programs, the majority of the code accounts for only a small
 fraction of the execution time -- or to put it another way, a small
@@ -614,7 +616,7 @@ identify this small part of the code -- sometimes called the
 energies to improving it.  Perhaps there is a better algorithm or data
 structure that will speed up the time-consuming task.  Or perhaps a
 different approach to the whole program will make the problem area go
-away.  Time spent on optimizing the rest of the program, apart from
+away.  Time spent on optimising the rest of the program, apart from
 the inner loop, may be entirely wasted, because the effect on the
 overall speed may be negligible.
 
@@ -639,7 +641,7 @@ the usual Oberon run-time system; it runs your program exactly as
 usual, but it keeps statistics about what happens as the program
 runs.  Specifically, {\em obprof\/} keeps track of what procedure in your
 program is active, and measures how much time is spent in each procedure.
-When your program finishes, {\em obprof\/} summarizes the information it
+When your program finishes, {\em obprof\/} summaries the information it
 has gathered by listing the procedures in your program, how often each
 one was called, and the total time spent in the procedure.
 Figure~\ref{f:profile} shows the output that is produced for a trial
@@ -723,7 +725,7 @@ For further details, see the \pn{obprof} manual page.
 It's also possible to get the profiler to count how many times each
 line of the program is executed, and then to use an auxiliary program
 to produce a listing of the source code where each line is labelled
-with its execution count.  To do this, eunt \pn{obprof} with the
+with its execution count.  To do this, invoke \pn{obprof} with the
 command
 \interact
 $ _obprof -l prog arg1 ... argn_
@@ -820,7 +822,7 @@ This makes the executable larger, but makes it stand-alone.
 \item{*.c}
 Files of C code containing primitives.
 \item{*.o}
-Files of onject code for primitives.
+Files of object code for primitives.
 \item{--l \it lib}
 (with --C) \ Add the C library \fn{lib} to the runtime system
 \item{--L \it dir}
@@ -862,7 +864,7 @@ declarations'.
 
 \section Oberon--07 mode.
 
-The command-line flags \verb/-07/ changes the behaviour of the
+The command-line flag \verb/-07/ changes the behaviour of the
 compiler so that it accepts a language that is more like Oberon--07,
 Wirth's 2007 revision of Oberon.
 Specifically, the following changes are made:
@@ -881,7 +883,7 @@ The procedure |SIZE| becomes |SYSTEM.SIZE|.
 The rules for implicit conversion between numeric types are subtly
 different.
 \item6
-Exported variables are impicitly read-only, and `\verb/-/' is not
+Exported variables are implicitly read-only, and `\verb/-/' is not
 allowed as an export mark.
 \item7
 {\sf TRUE} and {\sf FALSE} are keywords, not predefined constants.
@@ -1034,7 +1036,7 @@ least~|w|.
 \item{PROCEDURE WriteReal(f: File; x: REAL);}
 Write a real number |x| to file |f|.
 \item{PROCEDURE WriteLongReal(f: File; x: LONGREAL);}
-Write a double-precsion real |x| to file |f|.
+Write a double-precision real |x| to file |f|.
 \item{PROCEDURE WriteFixed(f: File; x: LONGREAL;\\
                 wid: INTEGER; dec: INTEGER);}
 Write real number |x| to file |f| in a field of width |wid|, with
@@ -1123,7 +1125,7 @@ inclusive. The result is accurately random only if |n| is fairly small.
 \item{PROCEDURE Uniform(): REAL;}
 Generate a random real, uniformly distributed on $[0, 1]$.
 \item{PROCEDURE Randomize;}
-Initialize the random number generator so that it gives a different
+Initialise the random number generator so that it gives a different
 sequence of pseudo-random numbers on each run of the program.
 \item{CONST MAXRAND = 07FFFFFFFH;}
 This constant (equal to $2^{31}-1$) is the largest number that can be
@@ -1232,7 +1234,7 @@ fetched from address~|a|.
 \item{PROCEDURE PUT(a: INTEGER; v: T)}
 The argument can have any basic or pointer type; the value is stored at
 address~|a|.
-\item{PROCEDURE MOVE(a1, a1, n: INTEGER)}
+\item{PROCEDURE MOVE(a1, a2, n: INTEGER)}
 A block of |n| bytes at address |a1| is copied to address |a2|.
 \endspec
 
