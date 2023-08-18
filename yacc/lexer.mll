@@ -29,7 +29,6 @@
  *)
 
 {
-open Grammar
 open Yacc
 open Lexing
 open Print
@@ -55,10 +54,12 @@ let aloc = ref dummy_pos
 let atext = Buffer.create 512
 }
 
+let ltr = ['A'-'Z''a'-'z']
+let dgt = ['0'-'9']
+
 rule token = parse
-    ['A'-'Z''a'-'z']['A'-'Z''a'-'z''0'-'9''_']* as s
-				{ SYMBOL (lookup s) }
-  | ['0'-'9']+ as s		{ NUMBER s }
+    ltr ('_'* ltr | dgt)* as s	{ SYMBOL s }
+  | '_' dgt+ as s		{ SUFFIX s }
   | "%token"			{ TOKEN }
   | "%left"			{ LEFT }
   | "%right"			{ RIGHT }
@@ -73,11 +74,9 @@ rule token = parse
 				    add_line Output.sec3_code lexbuf;
 				    section3 lexbuf
 				  end }
-  | "."				{ DOT }				  
   | ":"				{ COLON }
   | "|"				{ VBAR }
   | ";"				{ SEMI }
-  | "@"				{ AT }
   | "<"([^'>''\n']+ as s)">"	{ TAG s }
   | "%{"			{ add_line Output.user_code lexbuf;
   				  quote lexbuf }

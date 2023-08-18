@@ -28,12 +28,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-%token<Grammar.symbol>  SYMBOL
-%token<string>          TAG NUMBER
+%token<string>          SYMBOL TAG NUMBER SUFFIX
 %token<Lexing.position * string>  SEMACT
 %token                  QUOTE 
 %token                  TOKEN LEFT RIGHT NONASSOC START TYPE PREC
-%token                  PPERCENT COLON SEMI VBAR DOT AT
+%token                  PPERCENT COLON SEMI VBAR DOT
 %token                  BADTOK EOF UNREACHABLE
 
 %start<unit>            grammar
@@ -112,7 +111,7 @@ let subst rhs pos s =
   sprintf "_$" [fNum i]
 
 let dollar_name = 
-  Str.regexp "\\$\\([A-Za-z_][A-Za-z0-9_]*\\(\\.[0-9]+\\)?\\)"
+  Str.regexp "\\$\\([A-Za-z_][A-Za-z0-9_]*\\)"
 
 let subst2 rhs pos s =
   let t = Str.matched_group 1 s in
@@ -158,24 +157,24 @@ tag :
 
 symbols :
     /* EMPTY */                 { [] }
-  | SYMBOL symbols              { $SYMBOL::$symbols } ; 
+  | symbol symbols              { $symbol::$symbols } ; 
 
 body :
     /* EMPTY */                 { () }
   | body para                   { () } ;
 
 para :
-    SYMBOL COLON prods SEMI     
-      { if not (is_nonterm $SYMBOL) then
+    symbol COLON prods SEMI     
+      { if not (is_nonterm $symbol) then
 	  Error.syntax (rhs_start_pos 1) "left-hand side is a token" [];
 	if !Grammar.start_syms = [] then
-	  Grammar.start_syms := [$SYMBOL];
+	  Grammar.start_syms := [$symbol];
 	List.iter (fun (line, rhs, prec, semact) ->
-	  ignore (create_rule $SYMBOL rhs prec semact line)) $prods } ;
+	  ignore (create_rule $symbol rhs prec semact line)) $prods } ;
 
 prods :
-    prod                        { [$1] }
-  | prod VBAR prods             { $1::$3 } ;
+    prod                        { [$prod] }
+  | prod VBAR prods             { $prod::$prods } ;
 
 prod :
     init rhs SEMACT             
@@ -188,15 +187,15 @@ init :
 rhs :
     /* EMPTY */                 
       { index := 0; rhsmap := []; [] }
-  | rhs symbol	                
-      { let (x, y) = $symbol in
+  | rhs item	                
+      { let (x, y) = $item in
 	if is_token x then pr_sym := Some x;
         if not (is_token x) || not (same_syms x error_sym) then
           x.x_genuine <- true;
 	incr index; rhsmap := !rhsmap @ [(y, !index)];
         $rhs @ [x] }
-  | rhs PREC SYMBOL                 
-      { let x = $SYMBOL in
+  | rhs PREC symbol                 
+      { let x = $symbol in
         if not (is_token x) then 
           Error.syntax (rhs_start_pos 2)
             "%prec must be followed by a token" [];
@@ -213,7 +212,9 @@ rhs :
 	r.r_context <- $rhs; 
 	$rhs @ [g] } ;
 
+item :
+    symbol			{ ($symbol, $symbol.x_name) }
+  | symbol SUFFIX		{ ($symbol, $symbol.x_name^$SUFFIX) } ;
+
 symbol :
-      SYMBOL@s			{ ($s, $s.x_name) }
-    | SYMBOL@s DOT NUMBER@n	{ ($s, $s.x_name^"."^$n) } 
-    | SYMBOL@s AT SYMBOL@x	{ ($s, $x.x_name) } ;
+    SYMBOL			{ Grammar.lookup $SYMBOL } ;

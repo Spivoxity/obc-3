@@ -354,8 +354,8 @@ stmt1 :
   | REPEAT stmts UNTIL expr	{ RepeatStmt ($stmts, $expr) }
   | LOOP stmts END		{ LoopStmt $stmts }
   | EXIT			{ ExitStmt }
-  | FOR desig ASSIGN expr@e1 TO expr@e2 step DO stmts END
-      { ForStmt ($desig, $e1, $e2, $step, $stmts, ref None) } 
+  | FOR desig ASSIGN expr_1 TO expr_2 step DO stmts END
+      { ForStmt ($desig, $expr_1, $expr_2, $step, $stmts, ref None) } 
   | WITH branches else END	{ WithStmt ($branches, $else) }
   | error			{ ErrStmt } ;
 
@@ -387,7 +387,7 @@ elements :
 
 element :
     expr			{ Single $expr }
-  | expr@e1 DOTDOT expr@e2	{ Range ($e1, $e2) } ;
+  | expr_1 DOTDOT expr_2	{ Range ($expr_1, $expr_2) } ;
 
 branches :
     branch			{ [$branch] }
@@ -407,8 +407,8 @@ step :
 
 expr :
     simple %prec error		{ $simple }
-  | simple@e1 RELOP simple@e2	{ expr (Binop ($RELOP, $e1, $e2)) }
-  | simple@e1 EQUAL simple@e2	{ expr (Binop (Eq, $e1, $e2)) } 
+  | simple_1 RELOP simple_2	{ expr (Binop ($RELOP, $simple_1, $simple_2)) }
+  | simple_1 EQUAL simple_2	{ expr (Binop (Eq, $simple_1, $simple_2)) } 
   | simple IS qualid		{ expr (TypeTest ($simple, $qualid)) } ;
 
 simple :
@@ -478,7 +478,7 @@ exprs :
 
 qualid :	
     IDENT 			{ makeName (anon, $IDENT, lloc ()) }
-  | IDENT@x1 DOT IDENT@x2	{ makeName ($x1, $x2, lloc ()) };
+  | IDENT_1 DOT IDENT_2		{ makeName ($IDENT_1, $IDENT_2, lloc ()) };
 
 name :	
     IDENT			{ makeName (anon, $IDENT, lloc ()) } ;

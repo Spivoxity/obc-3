@@ -50,7 +50,10 @@ COMPAT = @COMPAT@
 
 all : obc1 obb1
 
-INCLUDE = -I ../mllib -I ../yacc
+INCLUDE = -I ../mllib
+
+config.cmo symparse.cmo symfile.cmo lexer.cmo parser.cmo main.cmo : \
+	INCLUDE += -I ../yacc
 
 OBC1 = ../mllib/mllib.cma ../yacc/yyparse.cmo basis.cma compiler.cma main.cmo 
 obc1: $(OBC1)

@@ -94,12 +94,11 @@ file :
         y_fname = snd $header } } ;
 
 header :
-    LPAR SYMFILE modname version symbol@s1 int doc symbol@s2 RPAR
+    LPAR SYMFILE modname version symbol_1 int doc symbol_2 RPAR
       { env := new_block empty_env; level := 0;
-        let d = 
-	  make_def (intern "*body*") Private ProcDef bodytype $int None in
-	d.d_lab <- $s1; debug d;
-        ($doc, $s2) } ;
+        let d = make_def (intern "*body*") Private ProcDef bodytype $int None in
+	d.d_lab <- $symbol_1; debug d;
+        ($doc, $symbol_2) } ;
 
 modname :
     ident			{ modname := $ident } ;
@@ -142,9 +141,9 @@ def :
       { let d = $procdecl in 
 	d.d_env <- !env; 
 	decr level; env := pop_block !env }
-  | LPAR TARGET otype@t0 otype@t1 RPAR
-      { match $t0.t_guts with
-	    PointerType d -> d.d_type <- $t1
+  | LPAR TARGET otype_0 otype_1 RPAR
+      { match $otype_0.t_guts with
+	    PointerType d -> d.d_type <- $otype_1
 	  | _ -> failwith "TARGET" }
   | LPAR DEF otype RPAR		{ () } ;
 
@@ -153,12 +152,12 @@ procdecl :
       { let d = make_def $ident $exmark ProcDef $otype $int $doc in
 	d.d_lab <- $symbol;
 	debug d; install d; unpack $otype; d }
-  | METHOD otype@t0 ident exmark int@i3 doc int@i2 symbol otype@t1
-      { let r = get_record $t0 in
-	let d = make_def $ident $exmark ProcDef $t1 $i3 $doc in
-	d.d_offset <- $i2; d.d_lab <- $symbol;
+  | METHOD otype_0 ident exmark int_3 doc int_2 symbol otype_1
+      { let r = get_record $otype_0 in
+	let d = make_def $ident $exmark ProcDef $otype_1 $int_3 $doc in
+	d.d_offset <- $int_2; d.d_lab <- $symbol;
 	r.r_methods <- r.r_methods @ [d]; 
-	debug d; unpack $t1; d } ;
+	debug d; unpack $otype_1; d } ;
 
 kind :
     LOCAL			{ VarDef }
@@ -176,8 +175,8 @@ otype :
   | EQUAL int			{ use_type $int }
   | PLING int tguts		
       { def_type $int !modname $int $tguts }
-  | QUERY int@i1 ident int@i2 tname tguts	
-      { let t = def_type $i1 $ident $i2 $tguts in
+  | QUERY int_1 ident int_2 tname tguts	
+      { let t = def_type $int_1 $ident $int_2 $tguts in
 	t.t_name <- $tname; t } ;
 
 tguts :
@@ -227,5 +226,5 @@ prockind :
   | ABSMETH			{ AbsMeth } ;
 
 doc :
-     BRA int@i1 int@i2 KET	{ Some ($i1, $i2) }
+     BRA int_1 int_2 KET	{ Some ($int_1, $int_2) }
   | /* EMPTY */			{ None } ;

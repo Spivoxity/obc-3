@@ -2,9 +2,10 @@
 
 type token =
   | EOF
-  | SYMBOL of (Grammar.symbol)
+  | SYMBOL of (string)
   | TAG of (string)
   | NUMBER of (string)
+  | SUFFIX of (string)
   | SEMACT of (Lexing.position * string)
   | QUOTE
   | TOKEN
@@ -19,7 +20,6 @@ type token =
   | SEMI
   | VBAR
   | DOT
-  | AT
   | BADTOK
   | UNREACHABLE
 

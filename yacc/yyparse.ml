@@ -187,14 +187,14 @@ let yyparse tables start lexfun lexbuf =
 
       (* Perform the action *)
       if action > 0 then begin
-        (* Shift and go to state !action *)
+        (* Shift and go to state action *)
 	if !yydebug then debug "shift %d\n" action;
 	push action !lval !lpos !rpos;
 	token := -1;
 	if !errstate > 0 then decr errstate
       end
       else if action = 0 || action = yyerr then begin
-	(* Error *)
+	(* Signal an error and try to recover *)
 	if !yydebug then debug "error\n";
         if !errstate = 0 then tables.yyerror "syntax error";
         recover ()
@@ -250,17 +250,19 @@ let symbol_start_pos () =
   else 
     !r_stack.(!sp - !rhs_len)
 
-let symbol_end_pos () =
-  !r_stack.(!sp)
+let symbol_end_pos () = !r_stack.(!sp)
 
 let rhs_start_pos n = !l_stack.(!sp - !rhs_len + n)
-
 let rhs_end_pos n = !r_stack.(!sp - !rhs_len + n)
 
-let symbol_start () = let p = symbol_start_pos () in p.pos_cnum
-let symbol_end () = let p = symbol_end_pos () in p.pos_cnum
-let rhs_start n = let p = rhs_start_pos n in p.pos_cnum
-let rhs_end n = let p = rhs_end_pos n in p.pos_cnum
+let symbol_start () =
+  let p = symbol_start_pos () in p.pos_cnum
+let symbol_end () =
+  let p = symbol_end_pos () in p.pos_cnum
+let rhs_start n =
+  let p = rhs_start_pos n in p.pos_cnum
+let rhs_end n =
+  let p = rhs_end_pos n in p.pos_cnum
 
 let parse_error s = ()
 
