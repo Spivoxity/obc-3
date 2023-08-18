@@ -148,7 +148,7 @@ void ldst_item(int op, reg rs, int i);
 
 #define push_con(k) push(CNST, INT, k, NULL, 1)
 #define push_reg(r) push(REGV, INT, 0, r, 1)
-#define konst(op, ty, i, s) push(op, ty, 4*(CP_CONST+i), NULL, s)
+#define konst(op, ty, i, s) push(op, ty, CP_CONST+i, NULL, s)
 #define local(i)  push(ADDR, INT, i, rBP, 1)
 
 reg move_to_reg(int i, int ty);

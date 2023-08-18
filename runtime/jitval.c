@@ -559,11 +559,11 @@ reg move_to_reg(int i, int ty) {
  	  break;
  
      case KONW:
-          r = load(LDW, ty, rCP, v->v_val);
+          r = load(LDW, ty, rCP, 4*v->v_val);
           break;
 
      case KONQ:
-          r = load(LDQ, ty, rCP, v->v_val);
+          r = load(LDQ, ty, rCP, 4*v->v_val);
           break;
 
      case STKW:
@@ -604,7 +604,7 @@ ctvalue fix_const(int i, mybool rflag) {
 
      case KONW:
           v->v_op = CNST;
-          v->v_val = * (word *) ((uchar *) jit_cxt + v->v_val);
+          v->v_val = jit_cxt[v->v_val].a;
           break;
 
      default:
