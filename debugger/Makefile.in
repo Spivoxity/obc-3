@@ -97,7 +97,7 @@ debprims.o: debprims.c
 	$(OCAMLC) $(MLFLAGS) -c $(INCLUDE) -o $@ $<
 
 %.cmo: %.ml
-	$(OCAMLC) $(MLFLAGS) -c $(INCLUDE) -thread -o $@ $<
+	$(OCAMLC) $(MLFLAGS) -w -l -c $(INCLUDE) -thread -o $@ $<
 
 .DELETE_ON_ERROR:
 

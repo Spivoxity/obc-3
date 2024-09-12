@@ -102,9 +102,7 @@ liblablgtk3.a: $(COBJS)
 	ar cr $@ $^
 	$(RANLIB) $@	
 
-WARN = -w s
-
-# gobject.cmo: WARN += -w -52
+WARN = -w -s-l
 
 gtkThread.cmi: gtkThread.mli
 	ocamlc $(MLFLAGS) $(INCLUDE) -c -thread -o $@ $<
@@ -140,7 +138,10 @@ $(COBJS) ml_gtksourceview3.o: \
 propcc varcc: %: %.ml
 	ocamlc $(MLFLAGS) -o $@ $<
 
-#propcc.ml varcc.ml: %.ml: %.ml4
+# The utilities propcc and varcc were originally built using camlp4,
+# but I've saved the resulting ML source to avoid depending on it.
+# 
+# propcc.ml varcc.ml: %.ml: %.ml4
 #	camlp4 pa_o.cmo pa_op.cmo pr_o.cmo -impl $< >$@
 
 sys_compat.ml: $(SYS_COMPAT)
