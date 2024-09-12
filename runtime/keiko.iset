@@ -359,22 +359,23 @@ inst CONVQD 0 M.dq  { flo_convq($1.q) }         { callout(long_flo,1,FLO,2); }
 
 # The operand of these checks is the line number to show in the error
 # message.  God forbid people should make source files containing
-# more than 65536 lines
+# more than 65536 lines.  Using the cond_check macro prevents recent
+# versions of GCC from complaining about misleafing layout.
 
 inst BOUND 2 T2 \
-    { if ((unsigned) $1.i >= (unsigned) $2.i) error(E_BOUND, $a); }
+    { cond_check((unsigned) $1.i >= (unsigned) $2.i, E_BOUND, $a); }
 inst NCHECK 2 T1 \
-    { if (pointer($1) == NULL) error(E_NULL, $a); }
+    { cond_check(pointer($1) == NULL, E_NULL, $a); }
 inst GCHECK 2 S1 \
-    { if (valptr($1) != NULL) error(E_GLOB, $a); }
+    { cond_check(valptr($1) != NULL, E_GLOB, $a); }
 inst ZCHECK 2 T1 \
-    { if ($1.i == 0) error(E_DIV, $a); }
+    { cond_check($1.i == 0, E_DIV, $a); }
 inst FZCHECK 2 T1 \
-    { if ($1.f == 0.0) error(E_FDIV, $a); }
+    { cond_check($1.f == 0.0, E_FDIV, $a); }
 inst DZCHECK 2 T1d \
-    { if ($1.d == 0.0) error(E_FDIV, $a); }
+    { cond_check($1.d == 0.0, E_FDIV, $a); }
 inst QZCHECK 2 T1q \
-    { if ($1.q == 0) error(E_DIV, $a); }
+    { cond_check($1.q == 0, E_DIV, $a); }
 inst ERROR 12 S0 \
     { error($a, $b); }
 

@@ -100,6 +100,7 @@ static inline void putlong(value *v, longint x) {
 /* Macros used in action routines */
 
 #define error(msg, n)   runtime_error(msg, n, bp, pc0)
+#define cond_check(cond, msg, n)  if (cond) error(msg, n)
 
 #define local(n)        ((uchar *) bp + (n))
 #define parent(a, t)    indir(pointer(bp[SL]) + a, t)
