@@ -381,14 +381,14 @@ force:
 
 # Automatic reconfiguration
 
-$(srcdir)/configure: configure.in aclocal.m4
+$(srcdir)/configure: configure.ac aclocal.m4
 	cd $(srcdir) && $(AUTOCONF)
 
 config.status: configure
 	./config.status --recheck
 
 $(srcdir)/config.h.in: stamp-h.in
-$(srcdir)/stamp-h.in: configure.in aclocal.m4
+$(srcdir)/stamp-h.in: configure.ac aclocal.m4
 	cd $(srcdir) && $(AUTOHEADER)
 	echo timestamp >$(srcdir)/stamp-h.in
 
