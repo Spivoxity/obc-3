@@ -1,6 +1,9 @@
 (* -*- caml -*- *)
 (* $Id$ *)
 
+module Stream = MyStream
+module Genlex = MyGenlex
+
 (* Compile a list of variant tags into CPP defines *) 
 
 open StdLabels

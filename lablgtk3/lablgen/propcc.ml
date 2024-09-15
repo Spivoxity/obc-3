@@ -1,6 +1,9 @@
 (* -*- caml -*- *)
 (* $Id$ *)
 
+module Stream = MyStream
+module Genlex = MyGenlex
+
 open StdLabels
 open MoreLabels
 

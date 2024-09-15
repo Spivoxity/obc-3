@@ -129,28 +129,23 @@ $(COBJS) ml_gtksourceview3.o: \
 	ml_gobject.h ml_gpointer.h ml_gtk.h ml_gvaluecaml.h ml_pango.h \
 	pango_tags.h wrappers.h
 
-%Props.ml o%Props.ml: %.props propcc
-	./propcc -o $*Props.ml $<
+%Props.ml o%Props.ml: %.props lablgen/propcc
+	lablgen/propcc -o $*Props.ml $<
 
-%_tags.c %_tags.h %Enums.ml: %_tags.var varcc
-	./varcc -c $*_tags.c -h $*_tags.h $<
+%_tags.c %_tags.h %Enums.ml: %_tags.var lablgen/varcc
+	lablgen/varcc -c $*_tags.c -h $*_tags.h $<
 
-propcc varcc: %: %.ml
-	ocamlc $(MLFLAGS) -o $@ $<
-
-# The utilities propcc and varcc were originally built using camlp4,
-# but I've saved the resulting ML source to avoid depending on it.
-# 
-# propcc.ml varcc.ml: %.ml: %.ml4
-#	camlp4 pa_o.cmo pa_op.cmo pr_o.cmo -impl $< >$@
+lablgen/propcc lablgen/varcc:
+	$(MAKE) -C lablgen all
 
 sys_compat.ml: $(SYS_COMPAT)
 	cp $< $@
 
 clean: force
-	rm -f *.cma *.cmi *.cmo *.o *.a propcc varcc
+	rm -f *.o *.a *.cmo *.cmi *.cma
 
 quiteclean : clean
+	$(MAKE) -C lablgen $@
 	rm -f $(ALLPROPS:%.props=%Props.ml) $(ALLPROPS:%.props=o%Props.ml) \
 		gtkSourceView3Props.ml ogtkSourceView3Props.ml \
 		$(TAGS:%.var=%.h) $(TAGS:%.var=%.c) \

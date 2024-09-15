@@ -244,3 +244,5 @@ lablgtk3/sourceView3_tags.c
 lablgtk3/sourceView3_tags.h
 lablgtk3/varcc
 lablgtk3/sys_compat.ml
+lablgtk3/lablgen/propcc
+lablgtk3/lablgen/varcc
