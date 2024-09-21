@@ -46,6 +46,7 @@ PKG_CONFIG = @PKG_CONFIG@
 GTKPKGS = @GTKPKGS@
 PKG_FLAGS = @PKG_FLAGS@
 SYS_COMPAT = @SYS_COMPAT@
+LIBDIRS = @LIBDIRS@
 # End of config
 
 ALL = lablgtk3.cma liblablgtk3.a gtkThread.cmo
@@ -66,8 +67,10 @@ ALLPROPS = gtkBase.props $(PROPS)
 TAGS = gdkpixbuf_tags.var gdk_tags.var glib_tags.var gobject_tags.var \
 	gtk_tags.var pango_tags.var
 
+ENUMS =	gdkEnums.ml gtkEnums.ml sourceView3Enums.ml pangoEnums.ml
+
 MLOBJS = sys_compat.cmo gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo \
-	gdkEnums.cmo gtkEnums.cmo sourceView3Enums.cmo pangoEnums.cmo \
+	$(ENUMS:%.ml=%.cmo) \
 	pango.cmo gPango.cmo \
 	gdk.cmo gdkEvent.cmo gdkKeysyms.cmo gdkPixbuf.cmo \
 	gDraw.cmo \
@@ -84,6 +87,9 @@ MLOBJS = sys_compat.cmo gaux.cmo gpointer.cmo gutf8.cmo glib.cmo gobject.cmo \
 	gtkSourceView3.cmo gSourceView3.cmo 
 
 INCLUDE = -I ../mllib
+ifdef LIBDIRS
+INCLUDE += -I +unix
+endif
 
 all: $(ALL)
 
@@ -132,7 +138,9 @@ $(COBJS) ml_gtksourceview3.o: \
 %Props.ml o%Props.ml: %.props lablgen/propcc
 	lablgen/propcc -o $*Props.ml $<
 
-%_tags.c %_tags.h %Enums.ml: %_tags.var lablgen/varcc
+$(ENUMS): %Enums.ml: %_tags.h
+
+%_tags.c %_tags.h: %_tags.var lablgen/varcc
 	lablgen/varcc -c $*_tags.c -h $*_tags.h $<
 
 lablgen/propcc lablgen/varcc:
@@ -149,8 +157,7 @@ quiteclean : clean
 	rm -f $(ALLPROPS:%.props=%Props.ml) $(ALLPROPS:%.props=o%Props.ml) \
 		gtkSourceView3Props.ml ogtkSourceView3Props.ml \
 		$(TAGS:%.var=%.h) $(TAGS:%.var=%.c) \
-		$(TAGS:%_tags.var=%Enums.ml) sourceView3_tags.h \
-		sourceView3_tags.c sourceView3Enums.ml sys_compat.ml
+		$(ENUMS) sourceView3_tags.h sourceView3_tags.c sys_compat.ml
 
 distclean: quiteclean
 	rm Makefile
@@ -168,11 +175,11 @@ ML = gBin.mli gButton.mli gContainer.mli gData.mli gdk.mli		\
 	gMisc.mli gobject.mli gObj.mli gPack.mli gSourceView3.mli	\
 	gText.mli gtkSourceView3_types.mli gtkThread.mli gToolbox.mli	\
 	gTree.mli gWindow.mli gaux.ml gBin.ml gButton.ml	\
-	gContainer.ml gData.ml gdkEnums.ml gdkEvent.ml gdk.ml		\
+	gContainer.ml gData.ml gdkEvent.ml gdk.ml		\
 	gdkPixbuf.ml gDraw.ml glib.ml gMain.ml gMenu.ml gMisc.ml	\
 	gobject.ml gObj.ml gPack.ml gpointer.ml gSourceView3.ml		\
 	gText.ml gtkBase.ml gtkBaseProps.ml gtkBin.ml gtkBinProps.ml	\
-	gtkButton.ml gtkButtonProps.ml gtkData.ml gtkEnums.ml		\
+	gtkButton.ml gtkButtonProps.ml gtkData.ml 		\
 	gtkMain.ml gtkMenu.ml gtkMenuProps.ml gtkMisc.ml		\
 	gtkMiscProps.ml gtk.ml gtkObject.ml gtkPack.ml			\
 	gtkPackProps.ml gtkSignal.ml gtkSourceView3.ml			\
@@ -181,13 +188,13 @@ ML = gBin.mli gButton.mli gContainer.mli gData.mli gdk.mli		\
 	gToolbox.ml gTree.ml gWindow.ml ogtkBaseProps.ml	\
 	ogtkBinProps.ml ogtkButtonProps.ml ogtkMenuProps.ml		\
 	ogtkMiscProps.ml ogtkPackProps.ml ogtkSourceView3Props.ml	\
-	ogtkTextProps.ml ogtkTreeProps.ml pangoEnums.ml pango.ml	\
-	sourceView3Enums.ml gpointer.mli gutf8.mli gutf8.ml \
+	ogtkTextProps.ml ogtkTreeProps.ml pango.ml	\
+	gpointer.mli gutf8.mli gutf8.ml \
 	gtkSignal.mli gPango.mli gPango.ml gtkContainers.ml \
 	gtkContainersProps.ml ogtkContainersProps.ml gFile.mli \
 	gFile.ml gtkFileProps.ml ogtkFileProps.ml gtkFile.ml \
 	gdkKeysyms.ml gEdit.mli gEdit.ml gtkEditProps.ml \
-	ogtkEditProps.ml gtkEdit.ml
+	ogtkEditProps.ml gtkEdit.ml $(ENUMS)
 
 link: $(ML)
 	ocamldsort $(ML)

@@ -39,20 +39,24 @@ SHELL = /bin/sh
 DEPEND = @DEPEND@
 EXEEXT = @EXEEXT@
 VPATH = @srcdir@
+LIBDIRS = @LIBDIRS@
 # End of config
 
 all: myacc yyparse.cmo
 
 INCLUDE = -I ../mllib
+ifdef LIBDIRS
+  INCLUDE += -I +str
+endif
 
 COMMON = ../mllib/mllib.cma yyparse.cmo error.cmo table.cmo grammar.cmo \
 	lr0.cmo report.cmo lalr.cmo conflict.cmo compile.cmo output.cmo
 
 bootyacc: $(COMMON) bootlexer.cmo bootyacc.cmo bootmain.cmo
-	ocamlc $(MLFLAGS) str.cma $^ -o $@ 
+	ocamlc $(MLFLAGS) $(INCLUDE) str.cma $^ -o $@ 
 
 myacc: $(COMMON) lexer.cmo yacc.cmo main.cmo
-	ocamlc $(MLFLAGS) str.cma $^ -o $@ 
+	ocamlc $(MLFLAGS) $(INCLUDE) str.cma $^ -o $@ 
 
 bootlexer.ml bootmain.ml: boot%: %
 	sed -e 's/Yacc/Bootyacc/g' -e 's/Lexer/Bootlexer/' $< >$@

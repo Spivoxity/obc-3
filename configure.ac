@@ -216,10 +216,10 @@ if test "$WINDOWS" = 1; then
 fi
 
 # Check ocaml version
-AS_ECHO_N([checking ocaml version...])
-if ! ocamlc; then echo not found; else
+AS_ECHO_N("checking ocaml version...")
+if ! ocamlc -v >/dev/null; then AS_ECHO(" not found"); else
   OCAMLV=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
-  AS_ECHO($OCAMLV)
+  AS_ECHO(" $OCAMLV")
   TMPV=`echo $OCAMLV | \
       sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
   if test $TMPV -lt 40002; then
@@ -229,6 +229,9 @@ if ! ocamlc; then echo not found; else
       AC_SUBST(SYS_COMPAT, sys_compat1.ml.in)
   else
       AC_SUBST(SYS_COMPAT, sys_compat2.ml.in)
+  fi
+  if test $TMPV -ge 50000; then
+      AC_SUBST(LIBDIRS, 1)
   fi
 fi
 
