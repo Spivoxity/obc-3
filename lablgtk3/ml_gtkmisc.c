@@ -121,7 +121,7 @@ CAMLprim value ml_gtk_calendar_get_date (value w)
     value ret;
 
     gtk_calendar_get_date (GtkCalendar_val(w), &year, &month, &day);
-    ret = alloc_small (3, 0);
+    ret = caml_alloc_small (3, 0);
     Field(ret,0) = Val_int(year);
     Field(ret,1) = Val_int(month);
     Field(ret,2) = Val_int(day);
@@ -161,7 +161,7 @@ CAMLprim value ml_gtk_label_get_selection_bounds (value label)
   gint s, e;
   value r;
   if (gtk_label_get_selection_bounds (GtkLabel_val(label), &s, &e)) {
-    r = alloc_small(2, 0);
+    r = caml_alloc_small(2, 0);
     Field(r, 0) = Val_int(s);
     Field(r, 1) = Val_int(e);
     r = ml_some(r);

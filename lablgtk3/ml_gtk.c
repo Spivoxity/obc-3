@@ -49,7 +49,7 @@ void ml_raise_gtk (const char *errmsg)
   static const value * exn = NULL;
   if (exn == NULL)
       exn = caml_named_value ("gtkerror");
-  raise_with_string (*exn, (char*)errmsg);
+  caml_raise_with_string (*exn, (char*)errmsg);
 }
 
 /* conversion functions */
@@ -109,7 +109,7 @@ CAMLprim value ml_gtk_accelerator_parse(value acc)
   GdkModifierType mods;
   gtk_accelerator_parse(String_val(acc), &key, &mods);
   vmods = mods ? Val_GdkModifier_flags(mods) : Val_emptylist;
-  tup = alloc_small(2, 0);
+  tup = caml_alloc_small(2, 0);
   Field(tup, 0) = Val_int(key);
   Field(tup, 1) = vmods;
   CAMLreturn(tup);
@@ -312,7 +312,7 @@ CAMLprim value ml_gtk_widget_get_pointer (value w)
     int x,y;
     value ret;
     gtk_widget_get_pointer (GtkWidget_val(w), &x, &y);
-    ret = alloc_small (2,0);
+    ret = caml_alloc_small (2,0);
     Field(ret,0) = Val_int(x);
     Field(ret,1) = Val_int(y);
     return ret;
@@ -349,7 +349,7 @@ ML_1 (gtk_widget_get_window, GtkWidget_val, Val_GdkWindow)
 ML_1 (gtk_widget_get_parent, GtkWidget_val, Val_GtkWidget)
 static value Val_GtkAllocation (GtkAllocation allocation)
 {
-    value ret = alloc_small (4, 0);
+    value ret = caml_alloc_small (4, 0);
     Field(ret,0) = Val_int(allocation.x);
     Field(ret,1) = Val_int(allocation.y);
     Field(ret,2) = Val_int(allocation.width);
@@ -394,7 +394,7 @@ CAMLprim value ml_gtk_widget_style_get_property (value w, value n)
         g_value_init (gv, G_PARAM_SPEC_VALUE_TYPE (pspec));
         gtk_widget_style_get_property (widget, name, gv);
     } else {
-        invalid_argument("Gobject.Widget.style_get_property");
+        caml_invalid_argument("Gobject.Widget.style_get_property");
     }
     CAMLreturn (ret);
 }
@@ -432,7 +432,7 @@ CAMLprim value ml_gtk_drag_dest_set (value w, value f, value t, value a)
   n_targets = Wosize_val(t);
   if (n_targets)
       targets = (GtkTargetEntry *)
-	  alloc (Wosize_asize(n_targets * sizeof(GtkTargetEntry)),
+	  caml_alloc (Wosize_asize(n_targets * sizeof(GtkTargetEntry)),
 		 Abstract_tag);
   for (i=0; i<n_targets; i++) {
     targets[i].target = (gchar*)Bytes_val(Field(Field(t, i), 0));
@@ -471,8 +471,8 @@ CAMLprim value ml_gtk_drag_source_set (value w, value m, value t, value a)
   n_targets = Wosize_val(t);
   if (n_targets)
       targets = (GtkTargetEntry *)
-	  alloc (Wosize_asize(n_targets * sizeof(GtkTargetEntry)),
-		 Abstract_tag);
+	  caml_alloc (Wosize_asize(n_targets * sizeof(GtkTargetEntry)),
+		      Abstract_tag);
   for (i=0; i<n_targets; i++) {
     targets[i].target = (gchar*)Bytes_val(Field(Field(t, i), 0));
     targets[i].flags = Flags_Target_flags_val(Field(Field(t, i), 1));
@@ -504,7 +504,7 @@ CAMLprim value ml_gtk_selection_data_get_data (value val)
     const guchar *data = gtk_selection_data_get_data_with_length(sel, &length);
 
     if (length < 0) ml_raise_null_pointer();
-    ret = alloc_string (length);
+    ret = caml_alloc_string (length);
     if (length) memcpy ((void*)ret, data, length);
     return ret;
 }
@@ -512,7 +512,7 @@ ML_1 (gtk_selection_data_copy, GtkSelectionData_val, Val_GtkSelectionData)
 
 ML_4 (gtk_selection_data_set, GtkSelectionData_val, GdkAtom_val, Int_val,
       Insert((guchar*)String_option_val(arg4))
-      Option_val(arg4, string_length, -1) Ignore,
+      Option_val(arg4, caml_string_length, -1) Ignore,
       Unit)
 
 ML_3 (gtk_selection_owner_set, GtkWidget_val, GdkAtom_val,
@@ -552,7 +552,7 @@ static void clipboard_received_func (GtkClipboard *clipboard,
                                      gpointer data)
 {
   value arg = Val_pointer (selection_data);
-  callback_exn (*(value*)data, arg);
+  caml_callback_exn (*(value*)data, arg);
   ml_global_root_destroy (data);
 }
 CAMLprim value ml_gtk_clipboard_request_contents (value c, value a, value f)
@@ -566,8 +566,8 @@ static void clipboard_text_received_func (GtkClipboard *clipboard,
                                           const gchar *text,
                                           gpointer data)
 {
-  value arg = (text != NULL ? ml_some(copy_string(text)) : Val_unit);
-  callback_exn (*(value*)data, arg);
+  value arg = (text != NULL ? ml_some(caml_copy_string(text)) : Val_unit);
+  caml_callback_exn (*(value*)data, arg);
   ml_global_root_destroy (data);
 }
 CAMLprim value ml_gtk_clipboard_request_text (value c, value f)
@@ -605,7 +605,7 @@ CAMLprim value ml_gtk_clipboard_wait_for_targets (value c)
   if (targets != NULL) {
     while (n_targets > 0) {
       result = Val_GdkAtom(targets[--n_targets]);
-      new_cell = alloc_small(2,0);
+      new_cell = caml_alloc_small(2,0);
       Field(new_cell,0) = result;
       Field(new_cell,1) = last_cell;
       last_cell = new_cell;
@@ -638,7 +638,7 @@ static void ml_gtk_simple_callback (GtkWidget *w, gpointer data)
 {
     value val, *clos = (value*)data;
     val = Val_GtkWidget(w);
-    callback_exn (*clos, val);
+    caml_callback_exn (*clos, val);
 }
 CAMLprim value ml_gtk_container_foreach (value w, value clos)
 {
@@ -820,8 +820,8 @@ ml_activate_link_func (GtkAboutDialog *about, const gchar *link, gpointer data)
 {
   value v_link, *closure;
   closure = data;
-  v_link = copy_string (link);
-  callback_exn (*closure, v_link);
+  v_link = caml_copy_string (link);
+  caml_callback_exn (*closure, v_link);
 }
 
 /* not in 3
@@ -913,13 +913,13 @@ CAMLprim value ml_gtk_init (value argv)
     int argc = Wosize_val(argv), i;
     CAMLlocal1 (copy);
 
-    copy = (argc ? alloc (argc, Abstract_tag) : Atom(0));
+    copy = (argc ? caml_alloc (argc, Abstract_tag) : Atom(0));
     for (i = 0; i < argc; i++) Field(copy,i) = Field(argv,i);
     if( !gtk_init_check (&argc, (char ***)&copy) ){
       ml_raise_gtk ("ml_gtk_init: initialization failed");
     }
 
-    argv = (argc ? alloc (argc, 0) : Atom(0));
+    argv = (argc ? caml_alloc (argc, 0) : Atom(0));
     for (i = 0; i < argc; i++) caml_modify(&Field(argv,i), Field(copy,i));
     CAMLreturn (argv);
 }
@@ -934,14 +934,14 @@ ML_1 (gtk_grab_remove, GtkWidget_val, Unit)
 ML_0 (gtk_grab_get_current, Val_GtkWidget)
 CAMLprim value ml_gtk_get_version (value unit)
 {
-    value ret = alloc_small(3,0);
+    value ret = caml_alloc_small(3,0);
     Field(ret,0) = Val_int(gtk_major_version);
     Field(ret,1) = Val_int(gtk_minor_version);
     Field(ret,2) = Val_int(gtk_micro_version);
     return ret;
 }
 
-ML_0 (gtk_get_current_event_time, copy_int32)
+ML_0 (gtk_get_current_event_time, caml_copy_int32)
 ML_0 (gtk_get_current_event, Val_GdkEvent)
 ML_1 (gtk_get_event_widget, GdkEvent_val, Val_GtkWidget)
 ML_2 (gtk_propagate_event, GtkWidget_val, GdkEvent_val, Unit)

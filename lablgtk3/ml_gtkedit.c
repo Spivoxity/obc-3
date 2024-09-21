@@ -63,10 +63,10 @@ CAMLprim value ml_gtk_editable_get_selection_bounds(value w)
     value res = Val_unit;
 
     if (gtk_editable_get_selection_bounds(GtkEditable_val(w), &start, &end)) {
-        tmp = alloc_small(2,0);
+        tmp = caml_alloc_small(2,0);
         Field(tmp,0) = Val_int(start);
         Field(tmp,1) = Val_int(end);
-        res = alloc_small(1,0);
+        res = caml_alloc_small(1,0);
         Field(res,0) = tmp;
     }
     CAMLreturn(res);
@@ -75,7 +75,7 @@ CAMLprim value ml_gtk_editable_insert_text (value w, value s, value pos)
 {
     int position = Int_val(pos);
     gtk_editable_insert_text (GtkEditable_val(w), String_val(s),
-			      string_length(s), &position);
+			      caml_string_length(s), &position);
     return Val_int(position);
 }
 ML_3 (gtk_editable_delete_text, GtkEditable_val, Int_val, Int_val, Unit)
@@ -189,9 +189,9 @@ static gboolean ml_gtk_entry_completion_match_func (GtkEntryCompletion *completi
   value *closure = user_data;
   CAMLparam0();
   CAMLlocal3(vkey, viter, vret);
-  vkey = copy_string(key);
+  vkey = caml_copy_string(key);
   viter = Val_GtkTreeIter(iter);
-  vret = callback2_exn(*closure, vkey, viter);
+  vret = caml_callback2_exn(*closure, vkey, viter);
   if (Is_exception_result(vret))
     CAMLreturn(FALSE);
   CAMLreturn(Bool_val(vret));

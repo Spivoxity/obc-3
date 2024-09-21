@@ -59,7 +59,7 @@ CAMLprim value ml_gtkfile_init(value unit)
 
 static value some_string_and_free(gchar *s)
 {
-  value v = s ? ml_some(copy_string(s)) : Val_unit;
+  value v = s ? ml_some(caml_copy_string(s)) : Val_unit;
   g_free(s);
   return v;
 }
@@ -103,8 +103,8 @@ static gboolean ml_gtk_file_filter_func (const GtkFileFilterInfo *filter_info,
   l = Val_emptylist;
 #define CONS_MEMBER(memb, flag) \
   if (filter_info->contains & GTK_FILE_FILTER_##flag) {	\
-    s = copy_string (filter_info->memb);	\
-    v = alloc_small(2, 0);			\
+    s = caml_copy_string (filter_info->memb);	\
+    v = caml_alloc_small(2, 0);			\
     Field(v, 0) = MLTAG_##flag;			\
     Field(v, 1) = s;				\
     l = ml_cons (v, l);				\
@@ -114,7 +114,7 @@ static gboolean ml_gtk_file_filter_func (const GtkFileFilterInfo *filter_info,
   CONS_MEMBER (uri, URI)
   CONS_MEMBER (filename, FILENAME)
 #undef CONS_MEMBER
-  r = callback_exn (*cb, l);
+  r = caml_callback_exn (*cb, l);
   if (Is_exception_result (r)) CAMLreturn(TRUE);
   CAMLreturn (Bool_val(r));
 }

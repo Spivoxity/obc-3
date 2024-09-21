@@ -78,7 +78,7 @@ CAMLprim value ml_gtk_box_query_child_packing (value box, value child)
     value ret;
     gtk_box_query_child_packing (GtkBox_val(box), GtkWidget_val(child),
 				 &expand, &fill, &padding, &pack_type);
-    ret = alloc_small(4,0);
+    ret = caml_alloc_small(4,0);
     Field(ret,0) = Val_bool(expand);
     Field(ret,1) = Val_bool(fill);
     Field(ret,2) = Val_int(padding);

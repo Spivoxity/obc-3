@@ -149,7 +149,7 @@ ML_1(gtk_text_tag_table_get_size, GtkTextTagTable_val, Val_int)
 static void tag_foreach_func (GtkTextTag* t, gpointer user_data)
 {
   value arg = Val_GtkTextTag(t);
-  callback_exn (*(value*)user_data, arg);
+  caml_callback_exn (*(value*)user_data, arg);
 }
 
 CAMLprim value ml_gtk_text_tag_table_foreach (value t, value fun)
@@ -407,7 +407,7 @@ CAMLprim value ml_gtk_text_buffer_get_bounds(value tb)
   GtkTextIter res1,res2;
   gtk_text_buffer_get_bounds(GtkTextBuffer_val(tb), &res1, &res2);
 
-  res = alloc_tuple(2);
+  res = caml_alloc_tuple(2);
   Store_field(res,0,Val_GtkTextIter(&res1));
   Store_field(res,1,Val_GtkTextIter(&res2));
 
@@ -427,7 +427,7 @@ CAMLprim value ml_gtk_text_buffer_get_selection_bounds(value tb)
   CAMLlocal1(res);
   GtkTextIter res1,res2;
   gtk_text_buffer_get_selection_bounds(GtkTextBuffer_val(tb), &res1, &res2);
-  res = alloc_tuple(2);
+  res = caml_alloc_tuple(2);
   Store_field(res,0,Val_GtkTextIter(&res1));
   Store_field(res,1,Val_GtkTextIter(&res2));
   CAMLreturn(res);
@@ -528,7 +528,7 @@ CAMLprim value ml_gtk_text_view_get_line_at_y (value tv, value y)
   int res2;
   gtk_text_view_get_line_at_y(GtkTextView_val(tv),&res1,
 				    Int_val(y),&res2);
-  res = alloc_tuple(2);
+  res = caml_alloc_tuple(2);
   Store_field(res,0,Val_GtkTextIter(&res1));
   Store_field(res,1,Val_int(res2));
 
@@ -545,7 +545,7 @@ CAMLprim value ml_gtk_text_view_get_line_yrange (value tv, value ti)
   gtk_text_view_get_line_yrange(GtkTextView_val(tv),
 				GtkTextIter_val(ti),
 				&y,&h);
-  res = alloc_tuple(2);
+  res = caml_alloc_tuple(2);
   Store_field(res,0,Val_int(y));
   Store_field(res,1,Val_int(h));
   CAMLreturn(res);
@@ -576,7 +576,7 @@ CAMLprim value ml_gtk_text_view_buffer_to_window_coords (value tv,
 					Int_val(x),Int_val(y),
 					&bx,&by);
 
-  res = alloc_tuple(2);
+  res = caml_alloc_tuple(2);
   Store_field(res,0,Val_int(bx));
   Store_field(res,1,Val_int(by));
   CAMLreturn(res);
@@ -595,7 +595,7 @@ CAMLprim value ml_gtk_text_view_window_to_buffer_coords (value tv,
 					Int_val(x),Int_val(y),
 					&bx,&by);
 
-  res = alloc_tuple(2);
+  res = caml_alloc_tuple(2);
   Store_field(res,0,Val_int(bx));
   Store_field(res,1,Val_int(by));
   CAMLreturn(res);
@@ -840,8 +840,8 @@ CAMLprim value ml_gtk_text_iter_##dir##_search (value ti_start, \
 				 Option_val(ti_lim,GtkTextIter_val,NULL));\
   if (!b) res = Val_unit;\
   else \
-    { res = alloc(1,0);\
-      coup = alloc_tuple(2);\
+    { res = caml_alloc(1,0);\
+      coup = caml_alloc_tuple(2);\
       Store_field(coup,0,Val_GtkTextIter(ti1));\
       Store_field(coup,1,Val_GtkTextIter(ti2));\
       Store_field(res,0,coup);};\
@@ -853,7 +853,7 @@ Make_search(backward);
 static gboolean ml_gtk_text_char_predicate(gunichar ch, gpointer user_data)
 {
   value res, *clos = user_data;
-  res = callback_exn (*clos, Val_int(ch));
+  res = caml_callback_exn (*clos, Val_int(ch));
   if (Is_exception_result (res)) {
     CAML_EXN_LOG ("ml_gtk_text_char_predicate");
     return FALSE;

@@ -37,7 +37,7 @@ CAMLexport value copy_memblock_indirected (void *src, asize_t size)
     mlsize_t wosize = Wosize_asize(size);
     value ret;
     if (!src) ml_raise_null_pointer ();
-    ret = alloc_shr (wosize+2, Abstract_tag);
+    ret = caml_alloc_shr (wosize+2, Abstract_tag);
     Field(ret,1) = (value)2;
     memcpy ((value *) ret + 2, src, size);
     return ret;
@@ -45,7 +45,7 @@ CAMLexport value copy_memblock_indirected (void *src, asize_t size)
 
 value alloc_memblock_indirected (asize_t size)
 {
-    value ret = alloc_shr (Wosize_asize(size)+2, Abstract_tag);
+    value ret = caml_alloc_shr (Wosize_asize(size)+2, Abstract_tag);
     Field(ret,1) = (value)2;
     return ret;
 }
@@ -83,7 +83,7 @@ CAMLexport value ml_alloc_custom(struct custom_operations * ops,
 CAMLprim value ml_some (value v)
 {
      CAMLparam1(v);
-     value ret = alloc_small(1,0);
+     value ret = caml_alloc_small(1,0);
      Field(ret,0) = v;
      CAMLreturn(ret);
 }
@@ -91,7 +91,7 @@ CAMLprim value ml_some (value v)
 value ml_cons (value v, value l)
 {
   CAMLparam2(v, l);
-  value cell = alloc_small(2, Tag_cons);
+  value cell = caml_alloc_small(2, Tag_cons);
   Field(cell, 0) = v;
   Field(cell, 1) = l;
   CAMLreturn(cell);
@@ -102,12 +102,12 @@ void ml_raise_null_pointer ()
   static const value * exn = NULL;
   if (exn == NULL)
       exn = caml_named_value ("null_pointer");
-  raise_constant (*exn);
+  caml_raise_constant (*exn);
 }   
 
 CAMLexport value Val_pointer (void *ptr)
 {
-    value ret = alloc_small (2, Abstract_tag);
+    value ret = caml_alloc_small (2, Abstract_tag);
     if (!ptr) ml_raise_null_pointer ();
     Field(ret,1) = (value)ptr;
     return ret;
@@ -116,12 +116,12 @@ CAMLexport value Val_pointer (void *ptr)
 CAMLprim value copy_string_check (const char*str)
 {
     if (!str) ml_raise_null_pointer ();
-    return copy_string ((char*) str);
+    return caml_copy_string ((char*) str);
 }
 
 value copy_string_or_null (const char*str)
 {
-    return copy_string (str ? (char*) str : "");
+    return caml_copy_string (str ? (char*) str : "");
 }
 
 value Val_option_string (const char *s)
@@ -129,16 +129,16 @@ value Val_option_string (const char *s)
 
 CAMLprim value *ml_global_root_new (value v)
 {
-    value *p = stat_alloc(sizeof(value));
+    value *p = caml_stat_alloc(sizeof(value));
     *p = v;
-    register_global_root (p);
+    caml_register_global_root (p);
     return p;
 }
 
 CAMLexport void ml_global_root_destroy (void *data)
 {
-    remove_global_root ((value *)data);
-    stat_free (data);
+    caml_remove_global_root ((value *)data);
+    caml_stat_free (data);
 }
 
 CAMLexport value ml_lookup_from_c (const lookup_info table[], int data)
@@ -146,7 +146,7 @@ CAMLexport value ml_lookup_from_c (const lookup_info table[], int data)
     int i;
     for (i = table[0].data; i > 0; i--)
 	if (table[i].data == data) return table[i].key;
-    invalid_argument ("ml_lookup_from_c");
+    caml_invalid_argument ("ml_lookup_from_c");
 }
     
 CAMLexport int ml_lookup_to_c (const lookup_info table[], value key)
@@ -158,7 +158,7 @@ CAMLexport int ml_lookup_to_c (const lookup_info table[], value key)
 	else first = current + 1;
     }
     if (table[first].key == key) return table[first].data;
-    invalid_argument ("ml_lookup_to_c");
+    caml_invalid_argument ("ml_lookup_to_c");
 }
 
 CAMLexport value ml_lookup_flags_getter (const lookup_info table[], int data)
@@ -169,7 +169,7 @@ CAMLexport value ml_lookup_flags_getter (const lookup_info table[], int data)
   l = Val_emptylist;
   for (i = table[0].data; i > 0; i--)
     if ((table[i].data & data) == table[i].data) {
-      cell = alloc_small(2, Tag_cons);
+      cell = caml_alloc_small(2, Tag_cons);
       Field(cell, 0) = table[i].key;
       Field(cell, 1) = l;
       l = cell;
@@ -211,8 +211,8 @@ string_list_of_strv (const gchar * const *v)
   head = l = Val_emptylist;
   while (v[i] != NULL)
     {
-      s = copy_string (v[i]);
-      cell = alloc_small (2, Tag_cons);
+      s = caml_copy_string (v[i]);
+      cell = caml_alloc_small (2, Tag_cons);
       Field (cell, 0) = s;
       Field (cell, 1) = Val_emptylist;
       if (l == Val_emptylist)

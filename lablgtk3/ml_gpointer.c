@@ -39,8 +39,8 @@ CAMLprim value ml_stable_copy (value v)
         mlsize_t i, wosize = Wosize_val(v);
         int tag = Tag_val(v);
         value ret;
-        if (tag < No_scan_tag) invalid_argument("ml_stable_copy");
-        ret = alloc_shr (wosize, tag);
+        if (tag < No_scan_tag) caml_invalid_argument("ml_stable_copy");
+        ret = caml_alloc_shr (wosize, tag);
         for (i=0; i < wosize; i++) Field(ret,i) = Field(v,i);
         CAMLreturn(ret);
     }
@@ -50,7 +50,7 @@ CAMLprim value ml_string_at_pointer (value ofs, value len, value ptr)
 {
     char *start = ((char*)Pointer_val(ptr)) + Option_val(ofs, Int_val, 0);
     int length = Option_val(len, Int_val, strlen(start));
-    value ret = alloc_string(length);
+    value ret = caml_alloc_string(length);
     memcpy ((char*)ret, start, length);
     return ret;
 }
@@ -68,7 +68,7 @@ CAMLprim value ml_set_int_at_pointer (value ptr, value n)
 
 CAMLprim value ml_long_at_pointer (value ptr)
 {
-    return copy_nativeint(*(long*)Pointer_val(ptr));
+    return caml_copy_nativeint(*(long*)Pointer_val(ptr));
 }
 
 CAMLprim value ml_set_long_at_pointer (value ptr, value n)
@@ -112,5 +112,5 @@ CAMLprim value ml_gpointer_blit (value region1, value region2)
 
 CAMLprim value ml_gpointer_get_addr (value region)
 {
-    return copy_nativeint ((long)ml_gpointer_base (region));
+    return caml_copy_nativeint ((long)ml_gpointer_base (region));
 }

@@ -152,12 +152,12 @@ static void menu_popup_cb(GtkMenu *menu, gint *x, gint *y,
     *y = Int_val(Field(res,1));
     *push_in = Int_val(Field(res,2));
     caml_remove_global_root(clos);
-    stat_free(clos);
+    caml_stat_free(clos);
 }
 CAMLprim value ml_gtk_menu_popup_at (value menu, value button,
                                      value time, value func)
 {
-    value *clos = stat_alloc(sizeof(value));
+    value *clos = caml_stat_alloc(sizeof(value));
     *clos = func;
     caml_register_global_root(clos);
     gtk_menu_popup(GtkMenu_val(menu), NULL, NULL, &menu_popup_cb, clos,

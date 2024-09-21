@@ -54,7 +54,7 @@ Make_Val_final_pointer_ext(GtkIconSource, _new, Ignore, gtk_icon_source_free, 5)
 ML_0 (gtk_icon_source_new, Val_GtkIconSource_new)
 ML_2 (gtk_icon_source_set_filename, GtkIconSource_val, String_val, Unit)
 ML_2 (gtk_icon_source_set_pixbuf, GtkIconSource_val, GdkPixbuf_val, Unit)
-ML_1 (gtk_icon_source_get_filename, GtkIconSource_val, copy_string)
+ML_1 (gtk_icon_source_get_filename, GtkIconSource_val, caml_copy_string)
 ML_1 (gtk_icon_source_get_pixbuf, GtkIconSource_val, Val_GdkPixbuf)
 
 ML_2 (gtk_icon_source_set_direction_wildcarded, GtkIconSource_val, Bool_val, Unit)
@@ -81,7 +81,7 @@ CAMLprim value ml_gtk_icon_set_get_sizes(value s)
   gtk_icon_set_get_sizes(GtkIconSet_val(s), &arr, &n);
   p = Val_emptylist;
   for(; n>=0; n--){
-    c = alloc_small(2, Tag_cons);
+    c = caml_alloc_small(2, Tag_cons);
     Field(c, 0) = Val_icon_size(arr[n]);
     Field(c, 1) = p;
     p = c;
@@ -126,11 +126,11 @@ CAMLprim value ml_gtk_stock_lookup(value id)
   gboolean b;
   
   b = gtk_stock_lookup(String_val(id),&r);
-  if (!b) raise_not_found();
+  if (!b) caml_raise_not_found();
   p = Val_emptylist;
 #define TESTANDCONS(mod)\
   if (r.modifier & GDK_##mod##_MASK) \
-    { c = alloc_small(2,Tag_cons);\
+    { c = caml_alloc_small(2,Tag_cons);\
       Field(c,0) = Val_gdkModifier(GDK_##mod##_MASK); Field(c,1) = p; p = c;}
   TESTANDCONS(SHIFT);
   TESTANDCONS(LOCK);
@@ -141,7 +141,7 @@ CAMLprim value ml_gtk_stock_lookup(value id)
   TESTANDCONS(BUTTON4); TESTANDCONS(BUTTON5);
   TESTANDCONS(SUPER); TESTANDCONS(HYPER);
   TESTANDCONS(META); TESTANDCONS(RELEASE);
-  stock_result = alloc_tuple(4);
+  stock_result = caml_alloc_tuple(4);
   Store_field(stock_result,0,Val_string(r.stock_id));
   Store_field(stock_result,1,Val_string(r.label));
   Store_field(stock_result,2,p);

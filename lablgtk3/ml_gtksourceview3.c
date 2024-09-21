@@ -212,9 +212,9 @@ GType custom_completion_provider_get_type();
 #define IS_CUSTOM_COMPLETION_PROVIDER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_CUSTOM_COMPLETION_PROVIDER))
 #define METHOD(obj, n) (Field(*(obj->caml_object), n))
 // #define METHOD(obj, name) (callback(caml_get_public_method(obj->caml_object, hash_variant(name)), obj->caml_object))
-#define METHOD1(obj, n, arg1) (callback(Field(*(obj->caml_object), n), arg1))
-#define METHOD2(obj, n, arg1, arg2) (callback2(Field(*(obj->caml_object), n), arg1, arg2))
-#define METHOD3(obj, n, arg1, arg2, arg3) (callback3(Field(*(obj->caml_object), n), arg1, arg2, arg3))
+#define METHOD1(obj, n, arg1) (caml_callback(Field(*(obj->caml_object), n), arg1))
+#define METHOD2(obj, n, arg1, arg2) (caml_callback2(Field(*(obj->caml_object), n), arg1, arg2))
+#define METHOD3(obj, n, arg1, arg2, arg3) (caml_callback3(Field(*(obj->caml_object), n), arg1, arg2, arg3))
 
 CAMLprim value ml_custom_completion_provider_new (value obj) {
   CAMLparam1(obj);
@@ -561,7 +561,7 @@ CAMLprim value ml_gtk_source_view_get_mark_attributes(
       GtkSourceView_val(obj), String_val(category), &prio);
   if (attributes) {
     attr_opt = Val_copy(attributes);
-    result = alloc_small(1,0);
+    result = caml_alloc_small(1,0);
     Field(result,0) = attr_opt;
   }
   else

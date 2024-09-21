@@ -121,7 +121,7 @@ CAMLprim value  ml_g_type_interface_prerequisites(value type)
     GType *intf = g_type_interface_prerequisites(GType_val(type), &n);
     while (n-- > 0) {
         tmp = res;
-        res = alloc_small(2,0);
+        res = caml_alloc_small(2,0);
         Field(res,0) = Val_GType(intf[n]);
         Field(res,1) = tmp;
     }
@@ -139,7 +139,7 @@ CAMLprim value ml_g_type_register_static(value parent_type, value type_name)
   parent = GType_val (parent_type);
   g_type_query (parent, &query);
   if (query.type == G_TYPE_INVALID)
-    failwith ("g_type_register_static: invalid parent g_type");
+    caml_failwith ("g_type_register_static: invalid parent g_type");
 
   {
     const GTypeInfo info =
@@ -177,21 +177,21 @@ Make_Val_final_pointer_ext(GClosure, _sink , g_closure_ref_and_sink,
 static void notify_destroy(gpointer unit, GClosure *c)
 {
     // printf("release %p\n", &c->data);
-    remove_global_root((value*)&c->data);
+    caml_remove_global_root((value*)&c->data);
 }
 
 static void marshal (GClosure *closure, GValue *ret,
                      guint nargs, const GValue *args,
                      gpointer hint, gpointer marshall_data)
 {
-    value vargs = alloc(3,0);
+    value vargs = caml_alloc(3,0);
 
     CAMLparam1 (vargs);
-    Store_field(vargs, 0, (ret ? Val_GValue_wrap(ret) : alloc(2,0)));
+    Store_field(vargs, 0, (ret ? Val_GValue_wrap(ret) : caml_alloc(2,0)));
     Store_field(vargs, 1, Val_int(nargs));
     Store_field(vargs, 2, Val_GValue_wrap((GValue*)args));
 
-    callback_exn ((value)closure->data, vargs);
+    caml_callback_exn ((value)closure->data, vargs);
 
     CAMLreturn0;
 }
@@ -200,7 +200,7 @@ CAMLprim value ml_g_closure_new (value clos)
 {
     GClosure* closure = g_closure_new_simple(sizeof(GClosure), (gpointer)clos);
     // printf("register %p\n", &closure->data);
-    register_global_root((value*)&closure->data);
+    caml_register_global_root((value*)&closure->data);
     g_closure_add_invalidate_notifier(closure, NULL, notify_destroy);
     g_closure_set_marshal(closure, marshal);
     return Val_GClosure_sink(closure);
@@ -220,8 +220,9 @@ static struct custom_operations ml_custom_GValue =
 
 CAMLprim value ml_g_value_new(void)
 {
-    value ret = alloc_custom(&ml_custom_GValue, sizeof(value)+sizeof(GValue),
-                             20, 1000);
+    value ret = caml_alloc_custom(&ml_custom_GValue,
+				  sizeof(value)+sizeof(GValue),
+				  20, 1000);
     /* create an MLPointer */
     Field(ret,1) = (value)2;
     ((GValue*)&Field(ret,2))->g_type = 0;
@@ -244,8 +245,8 @@ CAMLprim value ml_g_value_release(value val)
 
 CAMLprim GValue* GValue_val(value val)
 {
-    void *v = MLPointer_val(val);
-    if (v == NULL) invalid_argument("GValue_val");
+    void *v = (void *) MLPointer_val(val);
+    if (v == NULL) caml_invalid_argument("GValue_val");
     return (GValue*)v;
 }
 
@@ -274,14 +275,14 @@ static struct custom_operations ml_custom_gboxed =
   custom_serialize_default, custom_deserialize_default };
 CAMLprim value Val_gboxed(GType t, gpointer p)
 {
-    value ret = alloc_custom(&ml_custom_gboxed, 2*sizeof(value), 10, 1000);
+    value ret = caml_alloc_custom(&ml_custom_gboxed, 2*sizeof(value), 10, 1000);
     Store_pointer(ret, g_boxed_copy (t,p));
     Field(ret,2) = (value)t;
     return ret;
 }
 CAMLprim value Val_gboxed_new(GType t, gpointer p)
 {
-    value ret = alloc_custom(&ml_custom_gboxed, 2*sizeof(value), 10, 1000);
+    value ret = caml_alloc_custom(&ml_custom_gboxed, 2*sizeof(value), 10, 1000);
     Store_pointer(ret, p);
     Field(ret,2) = (value)t;
     return ret;
@@ -300,7 +301,7 @@ static value g_value_get_mlvariant (GValue *val)
     value tag = (value)0;
 
     if (! G_IS_VALUE(val))
-      invalid_argument("Gobject.Value.get");
+      caml_invalid_argument("Gobject.Value.get");
 
     type = G_VALUE_TYPE(val);
 
@@ -330,15 +331,15 @@ static value g_value_get_mlvariant (GValue *val)
       break;
     case G_TYPE_FLOAT:
       tag = MLTAG_FLOAT;
-      tmp = copy_double ((double)DATA.v_float);
+      tmp = caml_copy_double ((double)DATA.v_float);
       break;
     case G_TYPE_DOUBLE:
       tag = MLTAG_FLOAT;
-      tmp = copy_double (DATA.v_double);
+      tmp = caml_copy_double (DATA.v_double);
       break;
     case G_TYPE_STRING:
       tag = MLTAG_STRING;
-      tmp = Val_option (DATA.v_pointer, copy_string);
+      tmp = Val_option (DATA.v_pointer, caml_copy_string);
       break;
     case G_TYPE_INTERFACE: /* assume interfaces are for objects */
     case G_TYPE_OBJECT:
@@ -366,11 +367,11 @@ static value g_value_get_mlvariant (GValue *val)
     case G_TYPE_INT64:
     case G_TYPE_UINT64:
       tag = MLTAG_INT64;
-      tmp = copy_int64 (DATA.v_int64);
+      tmp = caml_copy_int64 (DATA.v_int64);
       break;
     }
     if ((long)tag != 0) {
-        ret = alloc_small(2,0);
+        ret = caml_alloc_small(2,0);
         Field(ret,0) = tag;
         Field(ret,1) = tmp;
     }
@@ -436,12 +437,12 @@ static void g_value_set_mlvariant (GValue *val, value arg)
         if (tag == MLTAG_CAML && type == G_TYPE_CAML)
 	  g_value_store_caml_value (val, data);
 	else if (tag == MLTAG_POINTER)
-	  g_value_set_boxed(val, Option_val(data,MLPointer_val,NULL));
+	  g_value_set_boxed(val, (void *) Option_val(data,MLPointer_val,NULL));
 	else break;
         return;
     case G_TYPE_POINTER:
         if (tag != MLTAG_POINTER && tag != MLTAG_OBJECT) break;
-        DATA.v_pointer = Option_val(data,MLPointer_val,NULL);
+        DATA.v_pointer = (void *) Option_val(data,MLPointer_val,NULL);
         return;
     case G_TYPE_INT64:
     case G_TYPE_UINT64:
@@ -456,10 +457,10 @@ static void g_value_set_mlvariant (GValue *val, value arg)
         else break;
         return;
     default:
-        failwith ("Gobject.Value.set : cannot set this value");
+        caml_failwith ("Gobject.Value.set : cannot set this value");
     }
     /* fprintf(stderr,"value has type %s\n", g_type_name(type)); */
-    failwith ("GObject.Value.set : argument type mismatch");
+    caml_failwith ("GObject.Value.set : argument type mismatch");
     return;
 }
 
@@ -470,14 +471,14 @@ CAMLprim value ml_g_value_get_nativeint(value arg) {
     switch(G_TYPE_FUNDAMENTAL(G_VALUE_TYPE(val))) {
     case G_TYPE_INT:
     case G_TYPE_UINT:
-        return copy_nativeint (DATA.v_int);
+        return caml_copy_nativeint (DATA.v_int);
     case G_TYPE_LONG:
     case G_TYPE_ULONG:
     case G_TYPE_ENUM:
     case G_TYPE_FLAGS:
-        return copy_nativeint (DATA.v_long);
+        return caml_copy_nativeint (DATA.v_long);
     default:
-        invalid_argument ("Gobject.get_nativeint");
+        caml_invalid_argument ("Gobject.get_nativeint");
     }
     return Val_unit;
 }
@@ -487,12 +488,12 @@ CAMLprim value ml_g_value_get_int32(value arg) {
     switch(G_TYPE_FUNDAMENTAL(G_VALUE_TYPE(val))) {
     case G_TYPE_INT:
     case G_TYPE_UINT:
-        return copy_int32 (DATA.v_int);
+        return caml_copy_int32 (DATA.v_int);
     case G_TYPE_ENUM:
     case G_TYPE_FLAGS:
-        return copy_int32 (DATA.v_long);
+        return caml_copy_int32 (DATA.v_long);
     default:
-        failwith ("Gobject.get_int32");
+        caml_failwith ("Gobject.get_int32");
     }
     return Val_unit;
 }
@@ -507,7 +508,7 @@ CAMLprim value ml_g_value_get_pointer (value arg)
     case G_TYPE_POINTER:
         p = DATA.v_pointer; break;
     default:
-	failwith ("Gobject.get_pointer");
+	caml_failwith ("Gobject.get_pointer");
     }
     return Val_pointer(p);
 }
@@ -532,7 +533,7 @@ CAMLprim value ml_g_object_new (value type, value params)
       for (cell = params; cell != Val_unit; cell = Field(cell,1)) {
         param->name = String_val(Field(Field(cell,0),0));
         pspec = g_object_class_find_property (class, param->name);
-        if (!pspec) failwith ("Gobject.create");
+        if (!pspec) caml_failwith ("Gobject.create");
         g_value_init (&param->value, pspec->value_type);
         g_value_set_mlvariant (&param->value, Field(Field(cell,0),1));
         param++;
@@ -580,7 +581,7 @@ CAMLprim value ml_g_object_set_property_dyn (value vobj, value prop, value arg)
 /* gsignal.h */
 
 #define Copy_GSignalQuery(ml_query, ml_params, query) \
-  ml_query = alloc_small(6, 0); \
+  ml_query = caml_alloc_small(6, 0); \
   ml_params = caml_alloc(query->n_params, 0); \
   Store_field(ml_query, 0, Val_int(query->signal_id)); \
   Store_field(ml_query, 1, caml_copy_string (query->signal_name)); \
@@ -617,7 +618,7 @@ CAMLprim value ml_g_signal_query(value ml_i) {
 
   query = malloc(sizeof(GSignalQuery));
   g_signal_query(i, query);
-  if (query->signal_id == 0) invalid_argument("g_signal_query");
+  if (query->signal_id == 0) caml_invalid_argument("g_signal_query");
 
   Copy_GSignalQuery(ml_query, ml_query_params, query);
   free(query);
@@ -658,12 +659,12 @@ CAMLprim value ml_g_signal_emit_by_name (value obj, value sig, value params)
     GSignalQuery query;
 
     if(!g_signal_parse_name(String_val(sig), itype, &signal_id, &detail, TRUE))
-        failwith("GtkSignal.emit_by_name : bad signal name");
+        caml_failwith("GtkSignal.emit_by_name : bad signal name");
     g_value_init (iparams, itype);
     g_value_set_object (iparams, instance);
     g_signal_query (signal_id, &query);
     if (Wosize_val(params) != query.n_params)
-        failwith("GtkSignal.emit_by_name : bad parameters number");
+        caml_failwith("GtkSignal.emit_by_name : bad parameters number");
     return_type = query.return_type & ~G_SIGNAL_TYPE_STATIC_SCOPE;
     if (return_type != G_TYPE_NONE) {
         ret = ml_g_value_new();

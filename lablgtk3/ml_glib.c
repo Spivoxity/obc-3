@@ -64,8 +64,8 @@ value copy_string_v (const gchar * const *v)
   h = p = Val_emptylist;
   while (*v != NULL)
     {
-      s = copy_string (*v);
-      c = alloc_small (2, 0);
+      s = caml_copy_string (*v);
+      c = caml_alloc_small (2, 0);
       Field (c, 0) = s;
       Field (c, 1) = Val_emptylist;
       if (p == Val_emptylist)
@@ -90,7 +90,7 @@ static void ml_raise_glib (const char *errmsg)
   static const value * exn = NULL;
   if (exn == NULL)
       exn = caml_named_value ("gerror");
-  raise_with_string (*exn, (char*)errmsg);
+  caml_raise_with_string (*exn, (char*)errmsg);
 }
 
 CAMLprim value Val_GList (GList *list, value (*func)(gpointer))
@@ -101,7 +101,7 @@ CAMLprim value Val_GList (GList *list, value (*func)(gpointer))
   last_cell = cell = Val_unit;
   while (list != NULL) {
     result = func(list->data);
-    new_cell = alloc_small(2,0);
+    new_cell = caml_alloc_small(2,0);
     Field(new_cell,0) = result;
     Field(new_cell,1) = Val_unit;
     if (last_cell == Val_unit) cell = new_cell;
@@ -138,7 +138,7 @@ struct exn_data {
 
 CAMLprim void ml_register_exn_map (GQuark domain, char *caml_name)
 {
-  struct exn_data *exn_data = stat_alloc (sizeof *exn_data);
+  struct exn_data *exn_data = caml_stat_alloc (sizeof *exn_data);
   exn_data->domain = domain;
   exn_data->caml_exn_name = caml_name;
   exn_data->caml_exn = NULL;
@@ -166,13 +166,13 @@ static void ml_raise_gerror_exn(GError *err, const value *exn)
   CAMLparam0();
   CAMLlocal2(b, msg);
   g_assert (err && exn);
-  msg = copy_string(err->message);
-  b = alloc_small (3, 0);
+  msg = caml_copy_string(err->message);
+  b = caml_alloc_small (3, 0);
   Field (b, 0) = *exn;
   Field (b, 1) = Val_int(err->code);
   Field (b, 2) = msg;
   g_error_free (err);
-  mlraise(b);
+  caml_raise(b);
 }
 
 static void ml_raise_generic_gerror (GError *) Noreturn;
@@ -183,11 +183,11 @@ static void ml_raise_generic_gerror (GError *err)
   if (exn == NULL) {
     exn = caml_named_value ("gerror");
     if (exn == NULL)
-      failwith ("gerror");
+      caml_failwith ("gerror");
   }
-  msg = copy_string (err->message);
+  msg = caml_copy_string (err->message);
   g_error_free (err);
-  raise_with_arg (*exn, msg);
+  caml_raise_with_arg (*exn, msg);
 }
 
 CAMLprim void ml_raise_gerror(GError *err)
@@ -209,8 +209,8 @@ ml_g_log_func(const gchar *log_domain,
 	      gpointer data)
 {
     value msg, *clos_p = data;
-    msg = copy_string (message);
-    callback2_exn(*clos_p, Val_int(log_level), msg);
+    msg = caml_copy_string (message);
+    caml_callback2_exn(*clos_p, Val_int(log_level), msg);
 }
 
 ML_1 (Log_level_val, ID, Val_int)
@@ -222,7 +222,7 @@ CAMLprim value ml_g_log_set_handler (value domain, value levels, value clos)
 				Int_val(levels),
                                 ml_g_log_func, clos_p);
     CAMLparam1(domain);
-    value ret = alloc_small(3,0);
+    value ret = caml_alloc_small(3,0);
     Field(ret,0) = domain;
     Field(ret,1) = Val_int(id);
     Field(ret,2) = (value)clos_p;
@@ -272,7 +272,7 @@ ML_1 (g_main_loop_unref, GMainLoop_val, Unit)
 static gboolean ml_g_source_func (gpointer data)
 {
   value res, *clos = data;
-  res = callback_exn (*clos, Val_unit);
+  res = caml_callback_exn (*clos, Val_unit);
   if (Is_exception_result(res))
     {
       CAML_EXN_LOG ("GSourceFunc");
@@ -345,7 +345,7 @@ static gboolean ml_g_io_channel_watch(GIOChannel *s, GIOCondition c,
 {
     value res, cond, *clos_p = data;
     cond = ml_lookup_flags_getter (ml_table_io_condition, c);
-    res = callback_exn (*clos_p, cond);
+    res = caml_callback_exn (*clos_p, cond);
     if (Is_exception_result (res))
       {
 	CAML_EXN_LOG("GIOChannel watch");
@@ -427,7 +427,7 @@ CAMLprim value Val_GSList (GSList *list, value (*func)(gpointer))
   last_cell = cell = Val_unit;
   while (list != NULL) {
     result = func(list->data);
-    new_cell = alloc_small(2,0);
+    new_cell = caml_alloc_small(2,0);
     Field(new_cell,0) = result;
     Field(new_cell,1) = Val_unit;
     if (last_cell == Val_unit) cell = new_cell;
@@ -466,7 +466,7 @@ caml_copy_string_len_and_free (char *str, size_t len)
 {
   value v;
   g_assert (str != NULL);
-  v = alloc_string (len);
+  v = caml_alloc_string (len);
   memcpy (Bytes_val(v), str, len);
   g_free (str);
   return v;
@@ -477,7 +477,7 @@ CAMLprim value ml_g_convert(value str, value to, value from)
   gsize bw=0;
   gchar* c_res;
   GError *error=NULL;
-  c_res = g_convert(String_val(str),string_length(str),
+  c_res = g_convert(String_val(str),caml_string_length(str),
                     String_val(to),String_val(from),
                     NULL,&bw,&error);
   if (error != NULL) ml_raise_gerror(error);
@@ -489,7 +489,7 @@ CAMLprim value ml_g_convert_with_fallback(value fallback, value to, value from, 
   gsize bw=0;
   gchar* c_res;
   GError *error=NULL;
-  c_res = g_convert_with_fallback(String_val(str),string_length(str),
+  c_res = g_convert_with_fallback(String_val(str),caml_string_length(str),
 				  String_val(to),String_val(from),
 				  String_option_val(fallback),
 				  NULL,&bw,&error);
@@ -502,7 +502,7 @@ CAMLprim value ml_##cname(value str) { \
   gsize bw=0; \
   gchar* c_res; \
   GError *error=NULL; \
-  c_res = cname(String_val(str),string_length(str),NULL,&bw,&error); \
+  c_res = cname(String_val(str),caml_string_length(str),NULL,&bw,&error); \
   if (error != NULL) ml_raise_gerror(error); \
   return caml_copy_string_len_and_free (c_res, bw); \
 }
@@ -523,7 +523,7 @@ CAMLprim value ml_g_filename_from_uri (value uri)
     CAMLlocal3(v_h, v_f, v_p);
     v_h = Val_option(hostname, copy_string_g_free);
     v_f = copy_string_g_free (result);
-    v_p = alloc_small(2, 0);
+    v_p = caml_alloc_small(2, 0);
     Field(v_p, 0) = v_h;
     Field(v_p, 1) = v_f;
     CAMLreturn(v_p);
@@ -546,7 +546,7 @@ CAMLprim value ml_g_get_charset()
   gboolean r;
   const char *c;
   r = g_get_charset(&c);
-  couple = alloc_tuple(2);
+  couple = caml_alloc_tuple(2);
   Store_field(couple,0,Val_bool(r));
   Store_field(couple,1,Val_string(c));
   CAMLreturn(couple);
@@ -607,20 +607,20 @@ Unsupported(g_get_application_name)
 Unsupported(g_set_application_name)
 #endif
 
-ML_0 (g_get_user_name, copy_string)
-ML_0 (g_get_real_name, copy_string)
+ML_0 (g_get_user_name, caml_copy_string)
+ML_0 (g_get_real_name, caml_copy_string)
 CAMLprim value ml_g_get_home_dir (value unit)
 {
   const char *s = g_get_home_dir();
-  return s ? ml_some (copy_string (s)) : Val_unit;
+  return s ? ml_some (caml_copy_string (s)) : Val_unit;
 }
-ML_0 (g_get_tmp_dir, copy_string)
+ML_0 (g_get_tmp_dir, caml_copy_string)
 CAMLprim value ml_g_find_program_in_path (value p)
 {
   value v;
   char *s = g_find_program_in_path (String_val(p));
-  if (s == NULL) raise_not_found();
-  v = copy_string(s);
+  if (s == NULL) caml_raise_not_found();
+  v = caml_copy_string(s);
   g_free(s);
   return v;
 }
@@ -628,15 +628,15 @@ CAMLprim value ml_g_find_program_in_path (value p)
 CAMLprim value ml_g_getenv (value v)
 {
   const gchar *s = g_getenv(String_val(v));
-  if (s == NULL) raise_not_found();
-  return copy_string(s);
+  if (s == NULL) caml_raise_not_found();
+  return caml_copy_string(s);
 }
 
 #ifdef HASGTK24
 CAMLprim value ml_g_setenv (value v, value s, value o)
 {
   if (! g_setenv(String_val(v), String_val(s), Bool_val(o)))
-    failwith("g_setenv");
+    caml_failwith("g_setenv");
   return Val_unit;
 }
 ML_1 (g_unsetenv, String_val, Unit)
@@ -646,9 +646,9 @@ Unsupported_24(g_unsetenv)
 #endif /* HASGTK24 */
 
 #ifdef HASGTK26
-ML_0 (g_get_user_cache_dir, copy_string)
-ML_0 (g_get_user_data_dir, copy_string)
-ML_0 (g_get_user_config_dir, copy_string)
+ML_0 (g_get_user_cache_dir, caml_copy_string)
+ML_0 (g_get_user_data_dir, caml_copy_string)
+ML_0 (g_get_user_config_dir, caml_copy_string)
 ML_0 (g_get_system_data_dirs, copy_string_v)
 ML_0 (g_get_system_config_dirs, copy_string_v)
 #else

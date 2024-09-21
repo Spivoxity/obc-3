@@ -32,6 +32,7 @@
 #include <caml/callback.h>
 #include <caml/fail.h>
 #include <caml/intext.h>
+#include <caml/printexc.h>
 
 #include "wrappers.h"
 #include "ml_glib.h"
@@ -66,8 +67,8 @@ static void ml_GdkPixbuf_serialize (value v, unsigned long *wsize_32, unsigned l
   guint len;
   pixels = gdk_pixdata_from_pixbuf (&pixdata, pb, pixbuf_marshal_use_rle);
   stream = gdk_pixdata_serialize (&pixdata, &len);
-  serialize_int_4 (len);
-  serialize_block_1 (stream, len);
+  caml_serialize_int_4 (len);
+  caml_serialize_block_1 (stream, len);
   g_free (stream);
   g_free (pixels);
   *wsize_32 = 4;
@@ -82,9 +83,9 @@ static unsigned long ml_GdkPixbuf_deserialize (void *dst)
   guint8 *stream;
   guint len;
 
-  len = deserialize_uint_4();
-  stream = stat_alloc (len);
-  deserialize_block_1 (stream, len);
+  len = caml_deserialize_uint_4();
+  stream = caml_stat_alloc (len);
+  caml_deserialize_block_1 (stream, len);
   gdk_pixdata_deserialize (&pixdata, len, stream, &error);
   if (error) goto out;
   pb = gdk_pixbuf_from_pixdata (&pixdata, TRUE, &error);
@@ -92,7 +93,7 @@ static unsigned long ml_GdkPixbuf_deserialize (void *dst)
   *(GdkPixbuf **)dst = pb;
 
  out:
-  stat_free (stream);
+  caml_stat_free (stream);
   if (error != NULL)
     {
       char *msg;
@@ -100,7 +101,7 @@ static unsigned long ml_GdkPixbuf_deserialize (void *dst)
       GEnumValue *val   = g_enum_get_value (class, error->code);
       msg = val ? (char*)val->value_name : "";
       g_error_free (error);
-      deserialize_error (msg);
+      caml_deserialize_error (msg);
     }
   return sizeof pb;
 }
@@ -130,7 +131,7 @@ Make_Val_option(GdkPixbuf)
 CAMLprim value ml_gdkpixbuf_init(value unit)
 {
   ml_register_exn_map (GDK_PIXBUF_ERROR, "gdk_pixbuf_error");
-  register_custom_operations (&ml_custom_GdkPixbuf);
+  caml_register_custom_operations (&ml_custom_GdkPixbuf);
   return Val_unit;
 }
 
@@ -146,7 +147,7 @@ CAMLprim value ml_gdk_pixbuf_get_pixels (value pixbuf)
 {
     long pixels = (long)gdk_pixbuf_get_pixels (GdkPixbuf_val(pixbuf));
     unsigned int ofs = pixels & (sizeof(value)-1);
-    value ret = alloc_small(2,0);
+    value ret = caml_alloc_small(2,0);
     Field(ret,0) = (value)(pixels - ofs);
     Field(ret,1) = Val_int(ofs);
     return ret;
@@ -182,8 +183,8 @@ CAMLprim value ml_gdk_pixbuf_get_file_info(value f)
   gint w, h;
   GdkPixbufFormat *fmt;
   fmt = gdk_pixbuf_get_file_info (String_val (f), &w, &h);
-  v = alloc_tuple(3);
-  Store_field(v, 0, copy_string(gdk_pixbuf_format_get_name(fmt)));
+  v = caml_alloc_tuple(3);
+  Store_field(v, 0, caml_copy_string(gdk_pixbuf_format_get_name(fmt)));
   Store_field(v, 1, Val_int(w));
   Store_field(v, 2, Val_int(h));
   CAMLreturn(v);
@@ -256,8 +257,8 @@ convert_gdk_pixbuf_options (value options, char ***opt_k, char ***opt_v, gboolea
     {
       value cell = Field(options, 0);
       unsigned int i, len = list_length(cell);
-      *opt_k = stat_alloc(sizeof (char *) * (len + 1));
-      *opt_v = stat_alloc(sizeof (char *) * (len + 1));
+      *opt_k = caml_stat_alloc(sizeof (char *) * (len + 1));
+      *opt_v = caml_stat_alloc(sizeof (char *) * (len + 1));
       for (i=0; i<len; i++)
 	{
 	  const gchar *s;
@@ -285,8 +286,8 @@ CAMLprim value ml_gdk_pixbuf_save(value fname, value type, value options, value 
   char **opt_v;
   convert_gdk_pixbuf_options (options, &opt_k, &opt_v, FALSE);
   gdk_pixbuf_savev(GdkPixbuf_val(pixbuf), String_val(fname), String_val(type), opt_k, opt_v, &err);
-  stat_free(opt_k);
-  stat_free(opt_v);
+  caml_stat_free(opt_k);
+  caml_stat_free(opt_v);
   if(err) ml_raise_gerror(err);
   return Val_unit;
 }
@@ -302,13 +303,13 @@ ml_gdkpixbuf_savefunc (const gchar *buf, gsize count, GError **error, gpointer d
 {
   value *cb = data;
   value res, s;
-  s = alloc_string (count);
+  s = caml_alloc_string (count);
   memcpy (Bytes_val(s), buf, count);
-  res = callback_exn (*cb, s);
+  res = caml_callback_exn (*cb, s);
   if (Is_exception_result (res))
     {
       g_set_error (error, GDK_PIXBUF_ERROR, GDK_PIXBUF_ERROR_FAILED,
-		   "%s", format_caml_exception(Extract_exception(res)));
+		   "%s", caml_format_exception(Extract_exception(res)));
       return FALSE;
     }
   else

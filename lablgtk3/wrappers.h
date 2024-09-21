@@ -27,7 +27,7 @@
 
 /* Yell if a caml callback raised an exception */
 #define CAML_EXN_LOG(name) g_critical("%s: callback raised an exception", name)
-#define CAML_EXN_LOG_VERBOSE(name,exn) g_critical("%s: callback raised exception %s", name, format_caml_exception(Extract_exception(exn)))
+#define CAML_EXN_LOG_VERBOSE(name,exn) g_critical("%s: callback raised exception %s", name, caml_format_exception(Extract_exception(exn)))
 
 #include <caml/version.h>
 #include <caml/misc.h>
@@ -264,7 +264,7 @@ CAMLprim value cname##_bc (value *argv, int argn) \
 #define Char_val Int_val
 #define Float_val Double_val
 /* #define Float_val(x) ((float)Double_val(x)) */
-#define SizedString_val(x) String_val(x), string_length(x)
+#define SizedString_val(x) String_val(x), caml_string_length(x)
 
 #define Option_val(val,unwrap,default) \
 ((long)val-1 ? unwrap(Field(val,0)) : default)
@@ -282,9 +282,9 @@ CAMLprim value cname##_bc (value *argv, int argn) \
 
 #define Copy_array(ret,l,src,conv) \
  if (!l) ret = Atom(0); \
- else if (l <= Max_young_wosize) { int i; ret = alloc_tuple(l); \
+ else if (l <= Max_young_wosize) { int i; ret = caml_alloc_tuple(l); \
    for(i=0;i<l;i++) Field(ret,i) = conv(src[i]); } \
- else { int i; ret = alloc_shr(l,0); \
+ else { int i; ret = caml_alloc_shr(l,0); \
    for(i=0;i<l;i++) caml_initialize (&Field(ret,i), conv(src[i])); }
 
 #define Make_Val_final_pointer(type, init, final, adv) \
@@ -367,7 +367,7 @@ CAMLprim int OptFlags_##conv (value list) \
 #define Val_copy(val) copy_memblock_indirected (&val, sizeof(val))
 #define Val_string copy_string_check
 #define Val_optstring copy_string_or_null
-#define Optstring_val(v) (string_length(v) ? String_val(v) : (char*)NULL)
+#define Optstring_val(v) (caml_string_length(v) ? String_val(v) : (char*)NULL)
 #define Val_option(v,f) (v ? ml_some(f(v)) : Val_unit)
 #define Make_Val_option(T) \
 value Val_option_##T(T* v) { return Val_option(v,Val_##T); }

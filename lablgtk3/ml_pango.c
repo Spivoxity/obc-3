@@ -143,7 +143,7 @@ CAMLprim value ml_Pango_scale_val (value val)
       r=1;
       break;
     }
-  return copy_double(r);
+  return caml_copy_double(r);
 }
 
 /* PangoLanguage */
@@ -198,7 +198,7 @@ ML_1 (pango_layout_context_changed, PangoLayout_val, Unit)
 CAMLprim value ml_pango_layout_get_size(value layout)
 {
   int width, height;
-  value res = alloc_tuple(2);
+  value res = caml_alloc_tuple(2);
   pango_layout_get_size(PangoLayout_val(layout), &width, &height);
   Field(res,0) = Val_int(width);
   Field(res,1) = Val_int(height);
@@ -207,7 +207,7 @@ CAMLprim value ml_pango_layout_get_size(value layout)
 CAMLprim value ml_pango_layout_get_pixel_size(value layout)
 {
   int width, height;
-  value res = alloc_tuple(2);
+  value res = caml_alloc_tuple(2);
   pango_layout_get_pixel_size(PangoLayout_val(layout), &width, &height);
   Field(res,0) = Val_int(width);
   Field(res,1) = Val_int(height);
@@ -215,7 +215,7 @@ CAMLprim value ml_pango_layout_get_pixel_size(value layout)
 }
 CAMLexport value Val_PangoRectangle(PangoRectangle *rect)
 {
-  value res = alloc_tuple(4);
+  value res = caml_alloc_tuple(4);
   Field(res,0) = Val_int(rect->x); Field(res,1) = Val_int(rect->y);
   Field(res,2) = Val_int(rect->width); Field(res,3) = Val_int(rect->height);
   return res;
@@ -233,7 +233,7 @@ CAMLprim value ml_pango_layout_xy_to_index(value layout, value x, value y)
   value res;
   exact = pango_layout_xy_to_index(PangoLayout_val(layout), Int_val(x),
                                    Int_val(y), &index, &trailing);
-  res = alloc_tuple(3);
+  res = caml_alloc_tuple(3);
   Field(res,0) = Val_int(index);
   Field(res,1) = Val_int(trailing);
   Field(res,2) = Val_bool(exact);

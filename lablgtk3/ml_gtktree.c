@@ -106,7 +106,7 @@ CAMLprim value ml_gtk_tree_path_get_indices(value p)
 {
   gint *indices = gtk_tree_path_get_indices(GtkTreePath_val(p));
   gint i, depth = gtk_tree_path_get_depth(GtkTreePath_val(p));
-  value ret = alloc_tuple(depth);
+  value ret = caml_alloc_tuple(depth);
   for (i = 0; i < depth; i++) Field(ret,i) = Val_int(indices[i]);
   return ret;
 }
@@ -154,7 +154,7 @@ static gboolean gtk_tree_model_foreach_func(GtkTreeModel *model,
   CAMLlocal3(vpath, viter, vret);
   vpath = Val_GtkTreePath_copy(path);
   viter = Val_GtkTreeIter(iter);
-  vret = callback2_exn(*closure, vpath, viter);
+  vret = caml_callback2_exn(*closure, vpath, viter);
   if (Is_exception_result(vret)) {
     CAML_EXN_LOG("gtk_tree_model_foreach_func");
     CAMLreturn(FALSE);
@@ -180,7 +180,7 @@ CAMLprim value ml_gtk_tree_store_newv(value arr)
   int n_columns = Wosize_val(arr);
   int i;
   GType *types = (GType*)
-    (n_columns ? alloc (Wosize_asize(n_columns * sizeof(GType)), Abstract_tag)
+    (n_columns ? caml_alloc (Wosize_asize(n_columns * sizeof(GType)), Abstract_tag)
      : 0);
   for (i=0; i<n_columns; i++)
     types[i] = GType_val(Field(arr,i));
@@ -235,7 +235,7 @@ CAMLprim value ml_gtk_list_store_newv(value arr)
   int n_columns = Wosize_val(arr);
   int i;
   GType *types = (GType*)
-    (n_columns ? alloc (Wosize_asize(n_columns * sizeof(GType)), Abstract_tag)
+    (n_columns ? caml_alloc (Wosize_asize(n_columns * sizeof(GType)), Abstract_tag)
      : 0);
   for (i=0; i<n_columns; i++)
     types[i] = GType_val(Field(arr,i));
@@ -287,7 +287,7 @@ static gboolean gtk_tree_selection_func(GtkTreeSelection *s, GtkTreeModel *m,
 					gpointer clos_p)
 {
   value vp = Val_GtkTreePath_copy(p);
-  value ret = callback2_exn(*(value*)clos_p, vp, Val_bool(cs));
+  value ret = caml_callback2_exn(*(value*)clos_p, vp, Val_bool(cs));
   if (Is_exception_result(ret)) {
     CAML_EXN_LOG("gtk_tree_selection_func");
     return TRUE;
@@ -309,7 +309,7 @@ static void gtk_tree_selection_foreach_func(GtkTreeModel      *model,
 					    gpointer           data)
 {
   value p = Val_GtkTreePath_copy(path);
-  value ret = callback_exn(*(value*)data, p);
+  value ret = caml_callback_exn(*(value*)data, p);
   if (Is_exception_result(ret))
     CAML_EXN_LOG("gtk_tree_selection_foreach_func");
 }
@@ -388,7 +388,7 @@ static void gtk_tree_cell_data_func(GtkTreeViewColumn *tree_column,
   CAMLlocal3(vmod,vit,ret);
   vmod  = Val_GAnyObject(tree_model);
   vit   = Val_GtkTreeIter(iter);
-  ret = callback2_exn(*closure, vmod, vit);
+  ret = caml_callback2_exn(*closure, vmod, vit);
   if (Is_exception_result(ret))
     CAML_EXN_LOG_VERBOSE("gtk_tree_cell_data_func",ret);
   CAMLreturn0;
@@ -461,7 +461,7 @@ CAMLprim value ml_gtk_tree_view_get_cursor (value arg)
   GtkTreePath *path;
   GtkTreeViewColumn *col;
   gtk_tree_view_get_cursor(GtkTreeView_val(arg), &path, &col);
-  ret = alloc_tuple(2);
+  ret = caml_alloc_tuple(2);
   Store_field(ret,0,Val_option(path,Val_GtkTreePath));
   Store_field(ret,1,Val_option(col,Val_GtkWidget));
   CAMLreturn(ret);
@@ -485,7 +485,7 @@ CAMLprim value ml_gtk_tree_view_get_path_at_pos(value treeview,
     CAMLparam0 ();
     CAMLlocal1(tup);
 
-    tup = alloc_tuple(4);
+    tup = caml_alloc_tuple(4);
     Store_field(tup,0,Val_GtkTreePath(gpath));
     Store_field(tup,1,Val_GtkAny(gcolumn));
     Store_field(tup,2,Val_int(cell_x));
@@ -517,7 +517,7 @@ ml_gtk_tree_view_enable_model_drag_dest (value tv, value t, value a)
   int i, n_targets = Wosize_val(t);
   
   if (n_targets)
-    targets = (GtkTargetEntry *) alloc
+    targets = (GtkTargetEntry *) caml_alloc
       ( Wosize_asize(n_targets * sizeof(GtkTargetEntry))
       , Abstract_tag );
   for (i=0; i<n_targets; i++)
@@ -543,7 +543,7 @@ ml_gtk_tree_view_enable_model_drag_source (value tv, value m, value t, value a)
   int i, n_targets = Wosize_val(t);
   
   if (n_targets)
-    targets = (GtkTargetEntry *) alloc
+    targets = (GtkTargetEntry *) caml_alloc
       ( Wosize_asize(n_targets * sizeof(GtkTargetEntry))
       , Abstract_tag );
   for (i=0; i<n_targets; i++)
@@ -576,7 +576,7 @@ ml_gtk_tree_view_get_dest_row_at_pos (value treeview, value x, value y)
     CAMLparam0 ();
     CAMLlocal1(tup);
 
-    tup = alloc_tuple(2);
+    tup = caml_alloc_tuple(2);
     Store_field(tup,0,Val_GtkTreePath(path));
     Store_field(tup,1,Val_tree_view_drop_position(pos));
     CAMLreturn(ml_some (tup));
@@ -596,7 +596,7 @@ ml_gtk_row_separator_func (GtkTreeModel *model,
   CAMLlocal3 (arg1, arg2, mlret);
   arg1 = Val_GAnyObject (model);
   arg2 = Val_GtkTreeIter (iter);
-  mlret = callback2_exn (*closure, arg1, arg2);
+  mlret = caml_callback2_exn (*closure, arg1, arg2);
   if (Is_exception_result (ret))
     CAML_EXN_LOG ("gtk_row_separator_func");
   else
@@ -662,12 +662,12 @@ ml_gtk_tree_view_get_tooltip_context (value treeview, value x, value y, value kb
     &_x, &_y, Bool_val(kbd),
     &model, &path, &iter );
   
-  tup = alloc_tuple(3);
+  tup = caml_alloc_tuple(3);
   Store_field(tup, 0, Val_int(_x));
   Store_field(tup, 1, Val_int(_y));
   opt = Val_unit;
   if (boo) {
-    sub = alloc_tuple(3);
+    sub = caml_alloc_tuple(3);
     Store_field(sub, 0, Val_GAnyObject(model));
     Store_field(sub, 1, Val_GtkTreePath(path));
     Store_field(sub, 2, Val_GtkTreeIter(&iter));
@@ -761,7 +761,7 @@ CAMLprim value ml_gtk_tree_sortable_get_sort_column_id(value m)
   {
     value vo, ret;
     vo = Val_sort_type(order);
-    ret = alloc_small(2, 0);
+    ret = caml_alloc_small(2, 0);
     Field(ret, 0) = Val_int(sort_column_id);
     Field(ret, 1) = vo;
     return ml_some(ret);
@@ -780,7 +780,7 @@ static gint gtk_tree_iter_compare_func(GtkTreeModel *model,
   iter_a = Val_GtkTreeIter(a);
   iter_b = Val_GtkTreeIter(b);
   obj = Val_GAnyObject(model);
-  ret = callback3_exn(*clos, obj, iter_a, iter_b);
+  ret = caml_callback3_exn(*clos, obj, iter_a, iter_b);
   if (Is_exception_result(ret)) {
     CAML_EXN_LOG("gtk_tree_iter_compare_func");
     CAMLreturn(0);
@@ -823,7 +823,7 @@ static gboolean gtk_tree_model_filter_visible_func(GtkTreeModel *model,
   CAMLlocal3(ret, obj, it);
   it  = Val_GtkTreeIter(iter);
   obj = Val_GAnyObject(model);
-  ret = callback2_exn(*clos, obj, it);
+  ret = caml_callback2_exn(*clos, obj, it);
   if (Is_exception_result(ret)) {
     CAML_EXN_LOG("gtk_tree_model_filter_visible_func");
     CAMLreturn(FALSE);
@@ -890,7 +890,7 @@ static void ml_iconview_foreach (GtkIconView *icon_view, GtkTreePath *path,
   value *cb = data;
   value p;
   p = Val_GtkTreePath_copy(path);
-  callback_exn(*cb, p);
+  caml_callback_exn(*cb, p);
 }
 CAMLprim value ml_gtk_icon_view_selected_foreach (value i, value cb)
 {
@@ -912,7 +912,7 @@ CAMLprim value ml_gtk_icon_view_get_selected_items (value i)
   while (l) {
     GtkTreePath *p = l->data;
     path = Val_GtkTreePath(p);
-    cell = alloc_small(2, Tag_cons);
+    cell = caml_alloc_small(2, Tag_cons);
     Field(cell, 0) = path;
     Field(cell, 1) = list;
     list = cell;
@@ -965,7 +965,7 @@ value callback4(value closure, value arg1, value arg2, value arg3, value arg4)
   arg[1] = arg2;
   arg[2] = arg3;
   arg[3] = arg4;
-  return callbackN(closure, 4, arg);
+  return caml_callbackN(closure, 4, arg);
 }
 
 #define ACCESS_PUBLIC_METHOD(method,object, name, block)       \
@@ -1141,7 +1141,7 @@ encode_iter(Custom_model *custom_model, GtkTreeIter *iter, value v)
   { value callback_object = custom_model->callback_object;
   ACCESS_PUBLIC_METHOD(method,callback_object,"custom_encode_iter",
 
-  { value triple = callback2(method,callback_object,v);
+  { value triple = caml_callback2(method,callback_object,v);
     value v1 = Field(triple,0);
     value v2 = Field(triple,1);
     value v3 = Field(triple,2);
@@ -1193,7 +1193,7 @@ custom_model_get_flags (GtkTreeModel *tree_model)
 	  value callback_object = custom_model->callback_object;
 
   ACCESS_PUBLIC_METHOD(method, callback_object, "custom_flags",
-  { value flags_list = callback(method, callback_object);
+  { value flags_list = caml_callback(method, callback_object);
     GtkTreeModelFlags flags = (GtkTreeModelFlags) 0;
     static value iter_persist_hash=0;
     static value list_only_hash=0;
@@ -1221,7 +1221,7 @@ custom_model_get_n_columns (GtkTreeModel *tree_model)
   { Custom_model *custom_model = (Custom_model *) tree_model;
     value callback_object = custom_model->callback_object;
     ACCESS_PUBLIC_METHOD(method,callback_object,"custom_n_columns",
-    { value n_columns = callback(method,callback_object);
+    { value n_columns = caml_callback(method,callback_object);
       return Int_val(n_columns);})}
 }
 
@@ -1234,7 +1234,7 @@ custom_model_get_column_type (GtkTreeModel *tree_model, gint index)
     value callback_object = custom_model->callback_object;
 
   ACCESS_PUBLIC_METHOD(method,callback_object,"custom_get_column_type",
-  { value t = callback2(method,callback_object, Val_int(index));
+  { value t = caml_callback2(method,callback_object, Val_int(index));
     return GType_val(t);})}
 }
 
@@ -1256,9 +1256,9 @@ custom_model_get_iter (GtkTreeModel *tree_model,
      avoiding both copy and finalization) means trusting the OCaml
      programmer not to store the path somewhere... */
   { UNWRAP_OPTION(res,
-		  callback2(method,
-			    callback_object,
-			    Val_GtkTreePath(gtk_tree_path_copy(path))),
+		  caml_callback2(method,
+				 callback_object,
+				 Val_GtkTreePath(gtk_tree_path_copy(path))),
 		  if (res) {
 		    encode_iter(custom_model,iter,res);
 		    return TRUE;
@@ -1283,8 +1283,8 @@ custom_model_get_path (GtkTreeModel *tree_model,
    /* This copy is needed because Caml will eventually free the path from
      the callback when that Caml value is finalized; and GTK will eventually
      free the path we return to it. */
-  { value path = callback2(method,callback_object,
-			 decode_iter(custom_model,iter));
+  { value path = caml_callback2(method,callback_object,
+				decode_iter(custom_model,iter));
     return gtk_tree_path_copy(GtkTreePath_val(path));})}}
 }
 
@@ -1319,7 +1319,7 @@ custom_model_iter_next (GtkTreeModel  *tree_model,
   { value callback_object = custom_model->callback_object;
     ACCESS_PUBLIC_METHOD(method,callback_object,"custom_iter_next",
     { value row = decode_iter(custom_model, iter);
-      UNWRAP_OPTION(res,callback2(method,callback_object, row),
+      UNWRAP_OPTION(res,caml_callback2(method,callback_object, row),
 		    if (res) {
 		      encode_iter(custom_model,iter,res);
 		      return TRUE;
@@ -1342,7 +1342,7 @@ custom_model_iter_children (GtkTreeModel *tree_model,
   { value callback_object = custom_model->callback_object;
   ACCESS_PUBLIC_METHOD(method,callback_object,"custom_iter_children",
   { value arg = decode_iter_option(custom_model,parent);
-    UNWRAP_OPTION(res, callback2(method,callback_object,arg),
+    UNWRAP_OPTION(res, caml_callback2(method,callback_object,arg),
 		  if (res) {
 		    encode_iter(custom_model,iter,res);
 		    return TRUE;
@@ -1365,7 +1365,7 @@ custom_model_iter_has_child (GtkTreeModel *tree_model,
   ACCESS_PUBLIC_METHOD(method, callback_object,"custom_iter_has_child",
 
   { value row = decode_iter(custom_model,iter);
-    return Bool_val(callback2(method,callback_object, row));})}}
+    return Bool_val(caml_callback2(method,callback_object, row));})}}
 }
 
 static gint
@@ -1379,7 +1379,7 @@ custom_model_iter_n_children (GtkTreeModel *tree_model,
   { value callback_object = custom_model->callback_object;
   ACCESS_PUBLIC_METHOD(method,callback_object, "custom_iter_n_children",
   { value arg = decode_iter_option(custom_model,iter);
-    return Int_val(callback2(method,callback_object, arg));})}}
+    return Int_val(caml_callback2(method,callback_object, arg));})}}
 }
 
 static gboolean
@@ -1397,7 +1397,7 @@ custom_model_iter_nth_child (GtkTreeModel *tree_model,
   ACCESS_PUBLIC_METHOD(method, callback_object, "custom_iter_nth_child",
 
   { value arg = decode_iter_option(custom_model,parent);
-    UNWRAP_OPTION(res,callback3(method, callback_object, arg, Val_int(n)),
+    UNWRAP_OPTION(res,caml_callback3(method, callback_object, arg, Val_int(n)),
 		  if (res) {
 		    encode_iter(custom_model,iter,res);
 		    return TRUE;
@@ -1421,7 +1421,7 @@ custom_model_iter_parent (GtkTreeModel *tree_model,
     { value callback_object = custom_model->callback_object;
       ACCESS_PUBLIC_METHOD(method,callback_object, "custom_iter_parent",
       { value row = decode_iter(custom_model,child);
-	UNWRAP_OPTION(res,callback2(method,callback_object,row),
+	UNWRAP_OPTION(res,caml_callback2(method,callback_object,row),
 		      if (res) {
 			encode_iter(custom_model,iter,res);
 			return TRUE;
@@ -1442,7 +1442,7 @@ custom_model_ref_node (GtkTreeModel *tree_model, GtkTreeIter *iter)
     { value callback_object = custom_model->callback_object;
       ACCESS_PUBLIC_METHOD(method, callback_object, "custom_ref_node",
       { value row = decode_iter(custom_model,iter);
-	callback2(method, callback_object, row);})}}
+	caml_callback2(method, callback_object, row);})}}
 }
 
 static void
@@ -1456,7 +1456,7 @@ custom_model_unref_node (GtkTreeModel *tree_model, GtkTreeIter *iter)
     { value callback_object = custom_model->callback_object;
       ACCESS_PUBLIC_METHOD(method, callback_object, "custom_unref_node",
       { value row = decode_iter(custom_model,iter);
-	callback2(method, callback_object, row);})}}
+	caml_callback2(method, callback_object, row);})}}
 }
 
 /*****************************************************************************
@@ -1585,7 +1585,7 @@ CAMLprim value ml_gtk_tree_view_get_visible_range(value treeview) {
      if (! gtk_tree_view_get_visible_range(GtkTreeView_val(treeview),
 					   &startp, &endp))
 	  CAMLreturn(Val_unit);
-     result = alloc_tuple(2);
+     result = caml_alloc_tuple(2);
      Store_field(result, 0, Val_GtkTreePath(startp));
      Store_field(result, 1, Val_GtkTreePath(endp));
      CAMLreturn(ml_some(result));
