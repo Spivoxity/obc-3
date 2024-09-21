@@ -80,7 +80,7 @@ AC_DEFUN(AC_C_NORETURN,
 dnl test if C compiler understands -rdynamic
 AC_DEFUN(AC_TEST_RDYNAMIC,
   [AC_CACHE_CHECK(if ${CC-cc} understands -rdynamic, ac_cv_rdynamic,
-    [echo 'main() { return 0; }' >conftest.c
+    [echo 'int main() { return 0; }' >conftest.c
       if AC_TRY_COMMAND(${CC-cc} $CFLAGS -o conftest${ac_exeext} -rdynamic
 						conftest.c 2>conftest.err) \
 			&& ! grep -q 'unrecognized option' conftest.err 
@@ -101,7 +101,7 @@ AC_DEFUN(AC_FIND_PAGESIZE,
 	#define getpagesize() sysconf(_SC_PAGESIZE)
 	#endif
 	#endif
-	main() {
+	int main() {
 	  FILE *f = fopen("conftestval", "w");
 	  if (f == NULL) exit(1);
 	  /* No newline here, in case a CRLF creeps in and cygwin chokes */
