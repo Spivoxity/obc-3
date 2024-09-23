@@ -29,8 +29,8 @@
 #
 
 # Config stuff
-OCAMLC = ocamlc
-OCAMLLEX = ocamllex
+OCAMLC = @OCAMLC@
+OCAMLLEX = @OCAMLLEX@
 CAMLDEP = @top_srcdir@/camldep
 MLFLAGS = @MLFLAGS@
 srcdir = @srcdir@
@@ -53,22 +53,22 @@ COMMON = ../mllib/mllib.cma yyparse.cmo error.cmo table.cmo grammar.cmo \
 	lr0.cmo report.cmo lalr.cmo conflict.cmo compile.cmo output.cmo
 
 bootyacc: $(COMMON) bootlexer.cmo bootyacc.cmo bootmain.cmo
-	ocamlc $(MLFLAGS) $(INCLUDE) str.cma $^ -o $@ 
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) str.cma $^ -o $@ 
 
 myacc: $(COMMON) lexer.cmo yacc.cmo main.cmo
-	ocamlc $(MLFLAGS) $(INCLUDE) str.cma $^ -o $@ 
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) str.cma $^ -o $@ 
 
 bootlexer.ml bootmain.ml: boot%: %
 	sed -e 's/Yacc/Bootyacc/g' -e 's/Lexer/Bootlexer/' $< >$@
 
 %.cmo: %.ml
-	ocamlc $(MLFLAGS) $(INCLUDE) -c -o $@ $<
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -c -o $@ $<
 
 %.cmi: %.mli
-	ocamlc $(MLFLAGS) $(INCLUDE) -c -o $@ $<
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -c -o $@ $<
 
 %.ml: %.mll
-	ocamllex -o $@ $<
+	$(OCAMLLEX) -o $@ $<
 
 %.mli %.ml: %.mly bootyacc
 	./bootyacc $<

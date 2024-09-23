@@ -31,8 +31,7 @@
 #
 
 # Config stuff
-OCAMLC = ocamlc
-OCAMLLEX = ocamllex
+OCAMLC = @OCAMLC@
 MLFLAGS = @MLFLAGS@
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@

@@ -17,10 +17,10 @@ propcc.cmo varcc.cmo myGenlex.cmo: myGenlex.cmi myStream.cmi
 myStream.cmo: myStream.cmi
 
 %.cmi: %.mli
-	ocamlc -c $< -o $@ 
+	$(OCAMLC) -c $< -o $@ 
 
 %.cmo: %.ml
-	ocamlc -c $< -o $@
+	$(OCAMLC) -c $< -o $@
 
 clean:
 

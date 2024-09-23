@@ -35,6 +35,7 @@ srcdir = @srcdir@
 subdir = lablgtk3
 abs_top_srcdir = @abs_top_srcdir@
 abs_top_builddir = @abs_top_builddir@
+OCAMLC = @OCAMLC@
 MLFLAGS = @MLFLAGS@
 RANLIB = @RANLIB@
 WINDOWS = @WINDOWS@
@@ -102,7 +103,7 @@ ifdef MACOS
 endif
 
 lablgtk3.cma: $(MLOBJS)
-	ocamlc $(MLFLAGS) -a -o $@ $^
+	$(OCAMLC) $(MLFLAGS) -a -o $@ $^
 
 liblablgtk3.a: $(COBJS)
 	ar cr $@ $^
@@ -111,22 +112,22 @@ liblablgtk3.a: $(COBJS)
 WARN = -w -s-l
 
 gtkThread.cmi: gtkThread.mli
-	ocamlc $(MLFLAGS) $(INCLUDE) -c -thread -o $@ $<
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -c -thread -o $@ $<
 
 gtkThread.cmo: gtkThread.ml
-	ocamlc $(MLFLAGS) $(WARN) $(INCLUDE) -c -thread -o $@ $<
+	$(OCAMLC) $(MLFLAGS) $(WARN) $(INCLUDE) -c -thread -o $@ $<
 
 %.cmi: %.mli
-	ocamlc $(MLFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(OCAMLC) $(MLFLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.cmo: %.ml
-	ocamlc $(MLFLAGS) $(WARN) $(INCLUDE) -c -o $@ $< 
+	$(OCAMLC) $(MLFLAGS) $(WARN) $(INCLUDE) -c -o $@ $< 
 
 CCOPTS = -ccopt '-I .' -ccopt '-I ..' -ccopt '$(GTKFLAGS)' \
 	-ccopt -Wno-deprecated-declarations
 
 %.o: %.c
-	ocamlc $(MLFLAGS) -c $(CCOPTS) -o $@ $<
+	$(OCAMLC) $(MLFLAGS) -c $(CCOPTS) -o $@ $<
 
 $(COBJS) ml_gtksourceview3.o: \
 	gdk_tags.h gdkpixbuf_tags.h glib_tags.h gobject_tags.h \
@@ -195,9 +196,6 @@ ML = gBin.mli gButton.mli gContainer.mli gData.mli gdk.mli		\
 	gFile.ml gtkFileProps.ml ogtkFileProps.ml gtkFile.ml \
 	gdkKeysyms.ml gEdit.mli gEdit.ml gtkEditProps.ml \
 	ogtkEditProps.ml gtkEdit.ml $(ENUMS)
-
-link: $(ML)
-	ocamldsort $(ML)
 
 ifdef DEPEND
 $(srcdir)/Depend: $(ML)

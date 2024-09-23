@@ -31,9 +31,7 @@
 #
 
 # Config stuff
-OCAMLC = ocamlc
-OCAMLLEX = ocamllex
-MYACC = ../yacc/myacc
+OCAMLC = @OCAMLC@
 CAMLDEP = @top_srcdir@/camldep
 MLFLAGS = @MLFLAGS@
 MLLINKFLAGS = @MLLINKFLAGS@
@@ -46,7 +44,6 @@ SHELL = /bin/sh
 DEPEND = @DEPEND@
 EXEEXT = @EXEEXT@
 VPATH = @srcdir@
-OCAMLDIR = @OCAMLDIR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_FLAGS = @PKG_FLAGS@
 GTKPKGS = @GTKPKGS@
@@ -69,34 +66,28 @@ else
 endif
 
 INCLUDE = -I ../mllib -I ../compiler -I ../yacc -I ../lablgtk3
-LIBS = unix.cma threads.cma ../lablgtk3/lablgtk3.cma ../lablgtk3/gtkThread.cmo
 ifdef LIBDIRS
   INCLUDE += -I +unix
-  LIBS := -I +unix $(LIBS)
 endif
+
+LIBS = unix.cma threads.cma ../lablgtk3/lablgtk3.cma ../lablgtk3/gtkThread.cmo
 
 OBDB1 = ../mllib/mllib.cma ../yacc/yyparse.cmo ../compiler/basis.cma \
 	debugger.cma debmain.cmo debprims.o
 obdb1: $(OBDB1)
-	$(OCAMLC) $(MLFLAGS) -custom -thread $(LIBS) $(OBDB1) \
+	$(OCAMLC) $(MLFLAGS) -custom -thread $(INCLUDE) $(LIBS) $(OBDB1) \
 	    -cclib "-L../lablgtk3 -llablgtk3 $(GTKLIBS)" $(MLLINKFLAGS) \
 	    -ccopt -Wno-lto-type-mismatch -o $@
 
 DEBUGGER = debconf.cmo binary.cmo info.cmo procio.cmo data.cmo \
 	control.cmo sourcebook.cmo varsview.cmo stackview.cmo
 debugger.cma: $(DEBUGGER)
-	ocamlc $(MLFLAGS) -a -o $@ $^
+	$(OCAMLC) $(MLFLAGS) -a -o $@ $^
 
 debprims.o: debprims.c
 	$(OCAMLC) -c -ccopt '-I ..' -ccopt '$(GTKFLAGS)' -o $@ $<
 
 ## Rules
-
-%.mli %.ml: %.mly
-	$(MYACC) -v $<
-
-%.ml: %.mll
-	$(OCAMLLEX) -o $@ $<
 
 %.cmi: %.mli
 	$(OCAMLC) $(MLFLAGS) -c $(INCLUDE) -o $@ $<

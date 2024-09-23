@@ -160,11 +160,17 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
+AC_CHECK_PROGS(OCAMLC, ocamlc)
+test -z "$OCAMLC" && AC_MSG_FAILURE(ocamlc not found)
+
+AC_CHECK_PROGS(OCAMLLEX, ocamllex)
+test -z "$OCAMLLEX" && AC_MSG_FAILURE(ocamllex not found)
+
 AC_CHECK_PROGS(TCLSH, tclsh)
-test "$TCLSH" != "" || AC_MSG_ERROR(tclsh not found)
+test -z "$TCLSH" && AC_MSG_FAILURE(tclsh not found)
 
 AC_CHECK_PROGS(DIFF, gdiff diff)
-test "$DIFF" != "" || AC_MSG_ERROR(diff not found)
+test -z "$DIFF" && AC_MSG_FAILURE(diff not found)
 
 : ${GTKDIR=/usr}
 AC_ARG_VAR(GTKDIR, [Directory to find GTK])
@@ -197,7 +203,6 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(clock time gettimeofday strtoul stpcpy)
 AC_CHECK_FUNCS(mmap sigprocmask) # assume they work OK for our purposes
 AC_CHECK_FUNCS(getopt_long_only)
-
 AC_CHECK_LIB(m, sinf, MATHLIB=-lm)
 AC_SUBST(MATHLIB)
 
@@ -217,22 +222,20 @@ fi
 
 # Check ocaml version
 AS_ECHO_N("checking ocaml version...")
-if ! ocamlc -v >/dev/null; then AS_ECHO(" not found"); else
-  OCAMLV=`ocamlc -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
-  AS_ECHO(" $OCAMLV")
-  TMPV=`echo $OCAMLV | \
-      sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
-  if test $TMPV -lt 40002; then
-      AC_SUBST(COMPAT, bytes.cmo)
-  fi
-  if test $TMPV -lt 40006; then
-      AC_SUBST(SYS_COMPAT, sys_compat1.ml.in)
-  else
-      AC_SUBST(SYS_COMPAT, sys_compat2.ml.in)
-  fi
-  if test $TMPV -ge 50000; then
-      AC_SUBST(LIBDIRS, 1)
-  fi
+OCAMLV=`$OCAMLC -v | sed -n '1s/.*version \([[0-9]]*\.[[0-9]]*\).*/\1/p'`
+AS_ECHO(" $OCAMLV")
+TMPV=`echo $OCAMLV | \
+    sed -e 's/\./\.0000/' -e 's/\.0*\([[0-9]][[0-9]][[0-9]][[0-9]]\)/\1/'`
+if test $TMPV -lt 40002; then
+    AC_SUBST(COMPAT, bytes.cmo)
+fi
+if test $TMPV -lt 40006; then
+    AC_SUBST(SYS_COMPAT, sys_compat1.ml.in)
+else
+    AC_SUBST(SYS_COMPAT, sys_compat2.ml.in)
+fi
+if test $TMPV -ge 50000; then
+    AC_SUBST(LIBDIRS, 1)
 fi
 
 
@@ -361,10 +364,8 @@ oberon.lang pause.png sober.xml stepinto.png stepout.png stepover.png \
 restart.png exit.png")
 
 if test "$WINDOWS" = 1; then
-  OCAMLDIR='"/cygdrive/c/Program Files/Objective Caml/lib"'
   DEB_LIBS="$LIBS -lws2_32"
 else
-  OCAMLDIR=`ocamlc -where`
   BASE_LIBS=$LIBS
   if test "$ENABLE_DEBUGGER" = 1; then
       AC_SEARCH_LIBS(connect, socket)
@@ -372,7 +373,6 @@ else
   DEB_LIBS=$LIBS
   LIBS=$BASE_LIBS
 fi
-AC_SUBST(OCAMLDIR)
 AC_SUBST(DEB_LIBS)
 
 

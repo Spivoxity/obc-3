@@ -31,8 +31,8 @@
 #
 
 # Config stuff
-OCAMLC = ocamlc
-OCAMLLEX = ocamllex
+OCAMLC = @OCAMLC@
+OCAMLLEX = @OCAMLLEX@
 MYACC = ../yacc/myacc
 CAMLDEP = @top_srcdir@/camldep
 MLFLAGS = @MLFLAGS@
