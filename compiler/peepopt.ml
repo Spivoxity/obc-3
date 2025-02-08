@@ -255,7 +255,7 @@ let simple =
 
 let width =
   function
-       CharT | BoolT | SysByteT -> 1 
+       CharT | BoolT | ByteT | SysByteT -> 1 
      | ShortT -> 2
      | IntT | FloatT | PtrT -> 4
      | LongT | LongPtrT | DoubleT -> 8
